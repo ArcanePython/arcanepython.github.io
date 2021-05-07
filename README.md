@@ -1,5 +1,7 @@
 # Welcome to the ArcanePython931 tutorial section
 
-This is my  README. READMEs are where you can communicate what your project is and how to use it.
+Click topics in the above repository to find info about MSFS SDK scenery and small projects.
+
+You can download these tutorials using the green Code button.
 
 ![My scenery](Viewpoint0.JPG?raw=true "Scenery")
