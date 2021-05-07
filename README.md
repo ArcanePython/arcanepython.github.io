@@ -1,4 +1,4 @@
-# Welcome to the ArcanePython931 tutorial section
+# Welcome to the ArcanePython931 MSFS Land Art tutorial section
 
 Click topics in the above repository to find info about MSFS SDK scenery and small projects.
 
