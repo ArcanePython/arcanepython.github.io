@@ -1,0 +1,1 @@
+This land art example is free of copyright.
