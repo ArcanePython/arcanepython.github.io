@@ -1,0 +1,173 @@
+{
+    "asset" : {
+        "extensions" : {
+            "ASOBO_normal_map_convention" : {
+                "tangent_space_convention" : "DirectX"
+            }
+        },
+        "generator" : "Extended Khronos glTF Blender I/O v1.0.0",
+        "version" : "2.0"
+    },
+    "extensionsUsed" : [
+        "ASOBO_normal_map_convention",
+        "ASOBO_macro_light"
+    ],
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                1
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Cube",
+            "rotation" : [
+                0,
+                -0.05955694615840912,
+                0,
+                0.9982249140739441
+            ],
+            "scale" : [
+                1.6597108840942383,
+                1.9559247493743896,
+                2.3984873294830322
+            ],
+            "translation" : [
+                0,
+                12.933300018310547,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "ASOBO_macro_light" : {
+                    "color" : [
+                        1,
+                        1,
+                        1
+                    ],
+                    "intensity" : 1000,
+                    "cone_angle" : 360,
+                    "has_simmetry" : false,
+                    "flash_frequency" : 0,
+                    "flash_duration" : 0,
+                    "flash_phase" : 0,
+                    "rotation_speed" : 0,
+                    "day_night_cycle" : false
+                }
+            },
+            "name" : "Light",
+            "rotation" : [
+                0.5232754945755005,
+                0.34203392267227173,
+                -0.7269423604011536,
+                0.28416627645492554
+            ],
+            "translation" : [
+                16.16846466064453,
+                17.868980407714844,
+                4.248024940490723
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "emissiveFactor" : [
+                0,
+                0,
+                0
+            ],
+            "name" : "Material",
+            "pbrMetallicRoughness" : {
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.4000000059604645
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Cube",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2
+                    },
+                    "indices" : 3,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 96,
+            "max" : [
+                2.696504592895508,
+                1.9927929639816284,
+                6.523086071014404
+            ],
+            "min" : [
+                -2.2168216705322266,
+                -6.901110649108887,
+                -3.3428025245666504
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 96,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 96,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 144,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 1152,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1152,
+            "byteOffset" : 1152
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 768,
+            "byteOffset" : 2304
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 288,
+            "byteOffset" : 3072
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 3360,
+            "uri" : "fancyshape2L.bin"
+        }
+    ]
+}
