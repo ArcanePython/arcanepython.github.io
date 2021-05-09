@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<FSData version="9.0">
+	<!--SceneryObject name: SampleMyBox-->
+	<SceneryObject lat="51.78347673797079" lon="5.88516891216353" alt="0.00000000000000" pitch="0.000000" bank="0.000000" heading="-179.999995" imageComplexity="VERY_SPARSE" altitudeIsAgl="TRUE" snapToGround="TRUE" snapToNormal="FALSE">
+		<LibraryObject name="{B5A61705-0123-4CC3-A058-4EB7743564CF}" scale="1.000000"/>
+	</SceneryObject>
+</FSData>
+
