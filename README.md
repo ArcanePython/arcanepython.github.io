@@ -10,6 +10,6 @@ You can download these tutorials using the green Code button.
 
 ![My scenery](Viewpoint0.JPG?raw=true "Scenery")
 
-[a relative link](Tutorial2%20-%20Blender%20fun/readme.md)
+[a relative link](Tutorial2%20-%20Blender%20fun/readme.html)
 
 
