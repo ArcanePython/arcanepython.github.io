@@ -12,4 +12,6 @@
 
 - [Tutorial 03 - Modify the example project in MSFS](Tutorial3%20-%20Modify%20SimpleScenery/readme.html)
 
+- [Tutorial 04 - Textures](Tutorial4%20-%20Textures/)
+
 
