@@ -28,7 +28,7 @@ In Blender, all kinds of fancy Land Art objects can be created, like
 
 ![Click here to download below example scenery](fancyshape2L.blend?raw=true "Scenery")
 
-![Click here to download below example scenery in MSFS converted format](fancyshape2L/Download/fancyshape2L.zip)
+![Click here to download below example scenery in MSFS converted format](fancyshape2L/download/fancyshape2L.zip)
 
 ![My first land art sculpture in Blender](43a_OpenBlenderExportFancy.JPG?raw=true "Scenery")
 
