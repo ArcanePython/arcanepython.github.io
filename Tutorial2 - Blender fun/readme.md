@@ -30,7 +30,7 @@ In Blender, all kinds of fancy Land Art objects can be created, like
 
 ![My first land art sculpture in Blender](43a_OpenBlenderExportFancy.JPG?raw=true "Scenery")
 
-Blender can also do animated objects. I am not sure if all animated objects can be exported in a working 
+Blender can also do animated objects. I am not sure if all animated objects can be exported in a working/ 
 state to glTF. 
 
 
