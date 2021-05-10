@@ -7,7 +7,7 @@ First step is in game use General Options, set Developer mode On
 
 ![Switch on developer mode](00_DeveloperModeOn.JPG?raw=true "Scenery")
 
-Install SDK from the Window menu
+Install SDK from the Help menu
 
 ![Install SDK from the Window menu](01_InstallSDK.JPG?raw=true "Scenery")
 
