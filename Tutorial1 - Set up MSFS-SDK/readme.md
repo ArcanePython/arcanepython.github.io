@@ -21,7 +21,7 @@ In the SDK archive you'll find documentation,
 
 ![SDK directories overview](03_SDKInstalled_Help.JPG?raw=true "Scenery")
 
-And.. most important, the examples,
+And.. most important, the examples, that can be opened in MSFS and modified
 
 ![SDK directories overview](04_SDKExamples.JPG?raw=true "Scenery")
 
