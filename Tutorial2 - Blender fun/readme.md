@@ -31,7 +31,7 @@ In Blender, all kinds of fancy Land Art objects can be created, like
 Blender can also do animated objects. I am not sure if all animated objects can be exported in a working/ 
 state to glTF. 
 
-![Click here to download this example scenery](fancyshape2L.blend?raw=true "Scenery")
+![Click here to download this example scenery for use in Blender](fancyshape2L.blend?raw=true "Scenery")
 
 ![Click here to download this example scenery in MSFS converted format](fancyshape2L/download/fancyshape2L.zip)
 
