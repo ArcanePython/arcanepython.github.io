@@ -6,7 +6,7 @@
 
 ![My scenery](Viewpoint0.JPG?raw=true "Scenery")
 
-- [Tutorial 01 - SDK installation and setup](Tutorial1%20-%20Set%20up%20MSFS-SDK/)
+- [Tutorial 01 - SDK installation and setup](Tutorial1%20-%20Set%20up%20MSFS-SDK/readme.md)
 
 - [Tutorial 02 - Blender Example Land Art](Tutorial2%20-%20Blender%20fun/)
 
