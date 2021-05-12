@@ -33,6 +33,6 @@ state to glTF.
 
 ![Click here to download this example scenery for use in Blender](fancyshape2L.blend?raw=true "Scenery")
 
-![Click here to download this example scenery in MSFS converted format](fancyshape2L/download/fancyshape2L.zip)
+![<a href="fancyshape2L/download/fancyshape2L.zip">Click here to download this example scenery in MSFS converted format</a>](fancyshape2L/download/fancyshape2L.zip)
 
 
