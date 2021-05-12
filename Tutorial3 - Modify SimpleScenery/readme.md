@@ -1,2 +1,2 @@
-![Click here to download this example scenery in MSFS converted format](../MySimpleScenery/MySimpleScenery.zip)
+![Click here to download the checkers cube scenery in MSFS project format](../MySimpleScenery/MySimpleScenery.zip)
 
