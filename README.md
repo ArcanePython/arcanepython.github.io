@@ -1,2 +1,3 @@
 # desktop-tutorial
-GitHub Desktop tutorial repository
+
+https://arcanepython.github.io/desktop-tutorial/
