@@ -10,7 +10,7 @@
 
 - [Tutorial 02 - Blender Example Land Art](Tutorial2%20-%20Blender%20fun/)
 
-- [Tutorial 03 - Using the Example SimpleScenery in MSFS](Tutorial3%20-%20Modify%20SimpleScenery/readme.md)
+- [Tutorial 03 - Using the Example SimpleScenery in MSFS](Tutorial3%20-%20Modify%20SimpleScenery/)
 
 - [Tutorial 04 - Textures](Tutorial4%20-%20Textures/)
 
