@@ -4,7 +4,7 @@ For MSFS scenery modelling, Blender and 3dsMax are currently the 3d-design progr
 
 Microsoft Flight Simulator has adopted the glTF format for 3d models in its ModelLib scenery. 
 
-https://www.khronos.org/gltf/ (about the format)
+<a href="https://www.khronos.org/gltf/">https://www.khronos.org/gltf/</a> (about the format)
 
 https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0 (examples)
 
