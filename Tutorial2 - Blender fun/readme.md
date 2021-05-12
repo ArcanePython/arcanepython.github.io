@@ -6,17 +6,17 @@ Microsoft Flight Simulator has adopted the glTF format for 3d models in its Mode
 
 <a href="https://www.khronos.org/gltf/">https://www.khronos.org/gltf/</a> (about the format)
 
-https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0 (examples)
+<a href="https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0">https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0</a> (examples)
 
 For this tutorial, I'll focus on Blender export. 
 
 In order to run exports to glTF in the specific MSFS format, you will need to install the **Blender2MSFS addon**,
 
-https://www.fsdeveloper.com/wiki/index.php?title=Blender2MSFS (info about the addon)
+<a href="https://www.fsdeveloper.com/wiki/index.php?title=Blender2MSFS">https://www.fsdeveloper.com/wiki/index.php?title=Blender2MSFS</a> (info about the addon)
 
-https://www.fsdeveloper.com/forum/resources/blender2msfs-toolkit.256/ (the toolkit with a download link)
+<a href="https://www.fsdeveloper.com/forum/resources/blender2msfs-toolkit.256/">https://www.fsdeveloper.com/forum/resources/blender2msfs-toolkit.256/</a> (the toolkit with a download link)
 
-https://github.com/flybywiresim/msfs2blender2msfs (another download link latest version)
+<a href="https://github.com/flybywiresim/msfs2blender2msfs">https://github.com/flybywiresim/msfs2blender2msfs</a> (another download link latest version)
 
 In Blender, you can model aircraft, aircraft liveries, lights, buildings, street lights, traffic, plants, animals, nature..
 
