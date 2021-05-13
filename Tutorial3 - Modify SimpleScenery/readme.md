@@ -1,2 +1,49 @@
 ![Click here to download the checkers cube scenery in MSFS project format](../MySimpleScenery/MySimpleScenery.zip)
 
+<html><body>How to open a scenery project and show it<br><br>
+  
+  <img src="00_MySceneryProjectDir0.JPG"></img>
+  
+  Now, open the project in MSFS,<br>
+  <img src="01_MySceneryProjectLoad.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  Make sure you open the console,<br>
+  <img src="02_MySceneryProjectWindowConsole.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  .. and CLEAR the console,<br>
+  <img src="03_MySceneryProjectWindowClearConsole.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  Then click <b>Project - Build</b>  <br>
+   <img src="04_MySceneryProjectWindowBuild.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  .. and check the console. If it shows errors, clear it again and Project - Build, the console should have 0 errors.<br>
+  <br/><br/>
+  Then, open the Scenery editor via Menu Tools Scenery Editor,<br>
+   <img src="05_MySceneryProjectSceneryEditor.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  When it is enabled, click <b>Load this assset group</b>, else use Select to select the Asset.<br>
+  <img src="07_MySceneryProjectSceneryEditorLoading.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  .. the scenery is now loading.. <b>WAIT</b> for this.. when it is finished, you will see the checkers cube<br>
+  <img src="08_MySceneryProjectSceneryEditorLoaded.JPG" style="width: 75%; height: 75%"></img>  
+  <br/><br/>
+  Now, in the Scenery Editor, select menu <b>View - Objects</b><br>
+  <img src="09_MySceneryProjectSceneryEditorViewObjects.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+Find your object, by typing the name in the search box. Select it. Then check <b>"One-click placing"</b><br>
+<img src="10_MySceneryProjectSceneryEditorObjectPlace.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  To place an object, <b>left mouse button</b>. Uncheck One-click placing for now. We'll not repeat placement.<br>
+  <br>
+   Left-click on your object. Using keys W and R you can move and rotate the object..<br>
+  <img src="11_MySceneryProjectSceneryEditorObjectPlaceMove.JPG" style="width: 75%; height: 75%"></img>
+  <br/><br/>
+  In order to place save your scenery, that is place your object permanently, issue <b>Save Scenery</b><br>
+  <img src="12_MySceneryProjectSceneryEditorSaveScenery.JPG" style="width: 75%; height: 75%"></img>
+  .. and now repeat: <b>Project - Build</b><br><br>
+  After doing this, you could leave SDK mode and fly around. Your scenery will remain where it is..<br>
+  When you want to re-use your scenery every time MSFS is loaded, you'll use the <b>Export</b> option, which<br>
+  will create a ready ZIP-file for Community.<br> 
+  </body></html>
+
+
