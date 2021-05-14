@@ -1,13 +1,6 @@
 ## Blender Example Land Art
 
 For MSFS scenery modelling, Blender and 3dsMax are currently the 3d-design programs of choice.
-
-Microsoft Flight Simulator has adopted the glTF format for 3d models in its ModelLib scenery. 
-
-<a href="https://www.khronos.org/gltf/">https://www.khronos.org/gltf/</a> (about the format)
-
-<a href="https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0">https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0</a> (examples)
-
 For this tutorial, I'll focus on Blender export. 
 
 In order to run exports to glTF in the specific MSFS format, you will need to install the **Blender2MSFS addon**,
@@ -35,4 +28,11 @@ state to glTF.
 <a href="fancyshape2L.blend">Click here to download this example scenery for use in Blender</a>
 
 <a href="fancyshape2L/download/fancyshape2L.zip">Click here to download this example scenery in MSFS converted format</a>
+<br><br>
+<b>File format information</b>
+Microsoft Flight Simulator has adopted the glTF format for 3d models in its ModelLib scenery. 
+
+<a href="https://www.khronos.org/gltf/">https://www.khronos.org/gltf/</a> (about the format)
+
+<a href="https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0">https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0</a> (examples)
 
