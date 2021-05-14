@@ -86,7 +86,7 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   in the objects box and you'll be able to place it !
   
   <img src="45_MySceneryProjectNewObject.JPG"><BR>
-  <img src="46_MySceneryProjectPlacedFancy">
+  <img src="46_MySceneryProjectPlacedFancy.JPG">
   
  <br><br>
   <b>How to export to Community</b><br><br>
