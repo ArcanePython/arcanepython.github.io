@@ -1,9 +1,12 @@
-![Click here to download the checkers cube scenery in MSFS project format](../MySimpleScenery/MySimpleScenery.zip)
 
-<html><body><b>How to open a scenery project and show it</b><br><br>
+  <html><body><b>How to open a scenery project and show it</b><br><br>
+  
+  This shows the directories and files in the Example project. It was derived fromthe  SimpleScenery SDK example.
   
   <img src="00_MySceneryProjectDir0.JPG"></img>
-  
+
+![Click here to download the checkers cube scenery in MSFS project format](../MySimpleScenery/MySimpleScenery.zip)
+
   First start a flight. Projects can only be opened when you start a flight, because that initializes BING.</br>
   The example project is located at EHMD Malden Airfield in the Netherlands. <br><br>
   
