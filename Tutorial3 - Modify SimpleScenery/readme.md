@@ -78,7 +78,7 @@ Find your object, by typing the name in the search box. Select it. Then check <b
 
    <img src="43d_OpenBlenderFancyFillinXMLNameOptions.JPG">
 
-  Now click <b>Export to GLB 2.0 for MSFS</b>. Put the three result files into a new subdirectory <b>PackageSources\modellib\fancyshape2L</b> in the MSFS project.
+  Now click the blue button Export extended glTF 2.0. Put the three result files into a new subdirectory <b>PackageSources\modellib\fancyshape2L</b> in the MSFS project.
   
   <img src="44_MySceneryProjectAddedModelLib.JPG">
   
