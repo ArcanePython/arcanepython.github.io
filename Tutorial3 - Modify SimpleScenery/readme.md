@@ -82,7 +82,7 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   
   <img src="44_MySceneryProjectAddedModelLib.JPG">
   
-  When you now go back to MSFS, close and Open the project and follow above procedure again, you will find FancyShape2L
+  In the MSFS developer session, you Close and Open the project, click Build and check the console. Then load assets. You will find FancyShape2L
   in the objects box and you'll be able to place it !
   
  <br><br>
