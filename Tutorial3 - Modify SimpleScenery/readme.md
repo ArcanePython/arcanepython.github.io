@@ -54,6 +54,7 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   .. and now repeat: <b>Project - Build</b><br><br>
   After doing this, you could leave SDK mode and fly around. Your scenery will remain where it is..<br>
   
+  <br><br>
   <b>How to modify the example project</b><br><br>
   Below slides will explain how to add your own Blender design into MSFS
 
@@ -77,17 +78,18 @@ Find your object, by typing the name in the search box. Select it. Then check <b
 
    <img src="43d_OpenBlenderFancyFillinXMLNameOptions.JPG">
 
-  Now click Save. Put your result files into a new subdirectory PackageSources\Modellib\FancyShape2L in the MSFS project.
-  When you now go back to MSFS, close the project, reopen the project and follow above procedure you will find FancyShape2L
-  in the objects box and you'll be able to place it !
+  Now click <b>Export to GLB 2.0 for MSFS</b>. Put the three result files into a new subdirectory PackageSources\Modellib\FancyShape2L in the MSFS project.
   
   <img src="44_MySceneryProjectAddedModelLib.JPG">
   
+  When you now go back to MSFS, close and Open the project and follow above procedure again, you will find FancyShape2L
+  in the objects box and you'll be able to place it !
   
+ <br><br>
   <b>How to export to Community</b><br><br>
     
-  When you want to re-use your scenery every time MSFS is loaded, you'll use the <b>Export</b> option, which<br>
-  will create a ready ZIP-file for Community.<br> 
+  When you want to re-use your scenery every time MSFS is loaded, you can use the Project Editor <b>Export</b> option, which<br>
+  will create a ready made ZIP-file for Community in \Packages folder in your project.<br> 
 
 
   </body></html>
