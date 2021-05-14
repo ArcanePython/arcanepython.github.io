@@ -1,16 +1,17 @@
 
-  <html><body><b>How to open a scenery project and show it</b><br><br>
+  <html><body><b>How to open a scenery project and show it in MSFS</b><br><br>
   
-  This shows the directories and files in the Example project. It was derived fromthe  SimpleScenery SDK example.
-  
-  <img src="00_MySceneryProjectDir0.JPG"><br><br>
-
-  <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a><br><br>
-
-  First start a flight. Projects can only be opened when you start a flight, because that initializes BING.</br>
+  Always, first start a flight in MSFS. Projects can only be opened when you start a flight, because that initializes BING.</br>
   The example project is located at EHMD Malden Airfield in the Netherlands. <br><br>
   
-  So it is best to start load and click FLY at EHMD Malden Airfield. Then go General Options an set Developer mode.<br><br> 
+  So it is best to start loading <b>EHMD Malden Airfield</b>. Then go General Options an set Developer mode.<br><br> 
+  
+  <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a><br><br>
+
+  I placed the project files in MSFS SDK\Samples, but you could unpack the zipfile anywhere else on your disk.<br> 
+  Below overview shows the directories and files in the Example project<br>
+  
+  <img src="00_MySceneryProjectDir0.JPG"><br><br>
   
   Now, open the project in MSFS,<br>
   <img src="01_MySceneryProjectLoad.JPG" style="width: 75%; height: 75%">
