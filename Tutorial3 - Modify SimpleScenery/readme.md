@@ -54,13 +54,8 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   .. and now repeat: <b>Project - Build</b><br><br>
   After doing this, you could leave SDK mode and fly around. Your scenery will remain where it is..<br>
   
-  <b>How to open a scenery project and show it in MSFS</b><br><br>
+  <b>How to modify the example project</b><br><br>
   Below slides will explain how to add your own Blender design into MSFS
-  
-  
-
-  When you want to re-use your scenery every time MSFS is loaded, you'll use the <b>Export</b> option, which<br>
-  will create a ready ZIP-file for Community.<br> 
 
   Load the landart example you have downloaded in Tutorial #2 (the example Blender Land Art object <b>FancyShape2L.blend</b>)
   
@@ -71,6 +66,11 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   
   <img src="43b_OpenBlenderFancySelectObjectAndLight.JPG">
   
+  <b>How to export to Community</b><br><br>
+    
+  When you want to re-use your scenery every time MSFS is loaded, you'll use the <b>Export</b> option, which<br>
+  will create a ready ZIP-file for Community.<br> 
+
 
   </body></html>
 
