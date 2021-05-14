@@ -81,7 +81,7 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   When you now go back to MSFS, close the project, reopen the project and follow above procedure you will find FancyShape2L
   in the objects box and you'll be able to place it !
   
-  <img src="43e_MySceneryProjectAddModelLib.JPG">
+  <img src="44_MySceneryProjectAddedModelLib.JPG">
   
   
   <b>How to export to Community</b><br><br>
