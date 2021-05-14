@@ -5,7 +5,7 @@
   
   <img src="00_MySceneryProjectDir0.JPG"></img>
 
-![Click here to download the checkers cube scenery in MSFS project format](../MySimpleScenery/MySimpleScenery.zip)
+<a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a>
 
   First start a flight. Projects can only be opened when you start a flight, because that initializes BING.</br>
   The example project is located at EHMD Malden Airfield in the Netherlands. <br><br>
