@@ -1,10 +1,4 @@
-# desktop-tutorial
-
-https://arcanepython.github.io/desktop-tutorial/
-
 # ArcanePython931 MSFS Land Art tutorial section
-
-[[WORK IN PROGRESS]]
 
 ![My scenery](DaylightViewpoint7.JPG?raw=true "Scenery")
 
