@@ -6,6 +6,8 @@
   
   So it is best to start loading <b>EHMD Malden Airfield</b>. Then go General Options an set Developer mode.<br><br> 
   
+  <img src="00a_GoMalden.JPG" style="width: 75%; height: 75%"><br>
+  
   <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a><br><br>
 
   I placed the project files in MSFS SDK\Samples, but you could unpack the zipfile anywhere else on your disk.<br> 
