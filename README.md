@@ -12,7 +12,7 @@ https://arcanepython.github.io/desktop-tutorial/
 
 - [Tutorial 01 - SDK installation and setup](Tutorial1%20-%20Set%20up%20MSFS-SDK/)
 
-- [Tutorial 02 - Blender Example Land Art](Tutorial2%20-%20Blender%20fun/)
+- [Tutorial 02 - Blender Fun](Tutorial2%20-%20Blender%20fun/)
 
 - [Tutorial 03 - Using the Example SimpleScenery in MSFS](Tutorial3%20-%20Modify%20SimpleScenery/)
 
