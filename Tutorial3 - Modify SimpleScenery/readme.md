@@ -78,11 +78,11 @@ Find your object, by typing the name in the search box. Select it. Then check <b
 
    <img src="43d_OpenBlenderFancyFillinXMLNameOptions.JPG">
 
-  Now click <b>Export to GLB 2.0 for MSFS</b>. Put the three result files into a new subdirectory PackageSources\Modellib\FancyShape2L in the MSFS project.
+  Now click <b>Export to GLB 2.0 for MSFS</b>. Put the three result files into a new subdirectory <b>PackageSources\modellib\fancyshape2L</b> in the MSFS project.
   
   <img src="44_MySceneryProjectAddedModelLib.JPG">
   
-  In the MSFS developer session, you Close and Open the project, click Build and check the console. Then load assets. You will find FancyShape2L
+  In the MSFS developer session, you Close and Open the project, click Build and check the console. Then load assets. You will find fancyshape2L
   in the objects box and you'll be able to place it !
   
  <br><br>
