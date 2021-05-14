@@ -2,9 +2,9 @@
   <html><body><b>How to open a scenery project and show it in MSFS</b><br><br>
   
 First start a flight in MSFS. Projects can only be opened when you start a flight, because that initializes BING.</br>
-  The example project is located at EHMD Malden Airfield in the Netherlands. <br><br>
+  The example project is located at EHBE Malden Airfield in the Netherlands. <br><br>
   
-  So it is best to start loading <b>EHMD Malden Airfield</b>. Then go General Options an set Developer mode.<br><br> 
+  So it is best to start loading <b>EHBE Malden Airfield</b>. Then go General Options an set Developer mode.<br><br> 
   
   <img src="00a_GoMalden.JPG" style="width: 75%; height: 75%"><br>
   
