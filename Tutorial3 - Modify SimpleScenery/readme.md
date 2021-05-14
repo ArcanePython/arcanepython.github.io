@@ -8,7 +8,7 @@ First start a flight in MSFS. Projects can only be opened when you start a fligh
   
   <img src="00a_GoMalden.JPG" style="width: 75%; height: 75%"><br>
   
-  <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a><br><br>
+  <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the Example MSFS scenery project</a><br><br>
 
   I placed the project files in MSFS SDK\Samples, but you could unpack the zipfile anywhere else on your disk.<br> 
   Below overview shows the directories and files in the Example project<br>
