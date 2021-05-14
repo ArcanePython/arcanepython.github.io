@@ -28,6 +28,7 @@ state to glTF.
 <a href="fancyshape2L/download/fancyshape2L.zip">Click here to download this example scenery in MSFS converted format</a>
 <br><br>
 <b>File format information</b>
+
 Microsoft Flight Simulator has adopted the glTF format for 3d models in its ModelLib scenery. 
 
 <a href="https://www.khronos.org/gltf/">https://www.khronos.org/gltf/</a> (about the format)
