@@ -66,6 +66,24 @@ Find your object, by typing the name in the search box. Select it. Then check <b
   
   <img src="43b_OpenBlenderFancySelectObjectAndLight.JPG">
   
+  Go File menu, select Export. You'll get options to export glBT to MSFS. If you don't get this export option, check Tutorial #2 and download the addin for Blender.
+  
+   <img src="43c_OpenBlenderFancyExportToMSFS.JPG">
+   
+  On the right, some options are shown. Make sure you
+    - click the XML option
+    - fillin the name of your object as XML name (in this case: FancyShape2L)
+    - Check the option to export selected objects
+
+   <img src="43d_OpenBlenderFancyFillinXMLNameOptions.JPG">
+
+  Now click Save. Put your result files into a new subdirectory PackageSources\Modellib\FancyShape2L in the MSFS project.
+  When you now go back to MSFS, close the project, reopen the project and follow above procedure you will find FancyShape2L
+  in the objects box and you'll be able to place it !
+  
+  <img src="43e_MySceneryProjectAddModelLib.JPG">
+  
+  
   <b>How to export to Community</b><br><br>
     
   When you want to re-use your scenery every time MSFS is loaded, you'll use the <b>Export</b> option, which<br>
