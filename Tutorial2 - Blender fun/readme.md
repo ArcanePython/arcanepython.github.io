@@ -1,4 +1,4 @@
-## Blender Example Land Art
+## Blender Fun
 
 For MSFS scenery modelling, Blender and 3dsMax are currently the 3d-design programs of choice.
 For this tutorial, I'll focus on Blender export. 
