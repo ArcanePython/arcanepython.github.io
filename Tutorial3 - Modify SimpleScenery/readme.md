@@ -3,9 +3,9 @@
   
   This shows the directories and files in the Example project. It was derived fromthe  SimpleScenery SDK example.
   
-  <img src="00_MySceneryProjectDir0.JPG"></img>
+  <img src="00_MySceneryProjectDir0.JPG"><br><br>
 
-<a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a>
+  <a href="../MySimpleScenery/MySimpleScenery.zip">Click here to download the checkers cube scenery in MSFS project format</a><br><br>
 
   First start a flight. Projects can only be opened when you start a flight, because that initializes BING.</br>
   The example project is located at EHMD Malden Airfield in the Netherlands. <br><br>
@@ -13,21 +13,21 @@
   So it is best to start load and click FLY at EHMD Malden Airfield. Then go General Options an set Developer mode.<br><br> 
   
   Now, open the project in MSFS,<br>
-  <img src="01_MySceneryProjectLoad.JPG" style="width: 75%; height: 75%"></img>
+  <img src="01_MySceneryProjectLoad.JPG" style="width: 75%; height: 75%">
   <br/><br/>
   Make sure you open the console,<br>
-  <img src="02_MySceneryProjectWindowConsole.JPG" style="width: 75%; height: 75%"></img>
+  <img src="02_MySceneryProjectWindowConsole.JPG" style="width: 75%; height: 75%">
   <br/><br/>
   .. and CLEAR the console,<br>
-  <img src="03_MySceneryProjectWindowClearConsole.JPG" style="width: 75%; height: 75%"></img>
+  <img src="03_MySceneryProjectWindowClearConsole.JPG" style="width: 75%; height: 75%">
   <br/><br/>
   Then click <b>Project - Build</b>  <br>
-   <img src="04_MySceneryProjectWindowBuild.JPG" style="width: 75%; height: 75%"></img>
+   <img src="04_MySceneryProjectWindowBuild.JPG" style="width: 75%; height: 75%">
   <br/><br/>
   .. and check the console. If it shows errors, clear it again and Project - Build, the console should have 0 errors.<br>
   <br/><br/>
   Then, open the Scenery editor via Menu Tools Scenery Editor,<br>
-   <img src="05_MySceneryProjectSceneryEditor.JPG" style="width: 75%; height: 75%"></img>
+   <img src="05_MySceneryProjectSceneryEditor.JPG" style="width: 75%; height: 75%">
   <br/><br/>
   When it is enabled, click <b>Load this assset group</b>, else use Select to select the Asset.<br>
   <img src="07_MySceneryProjectSceneryEditorLoading.JPG" style="width: 75%; height: 75%"></img>
