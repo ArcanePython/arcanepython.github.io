@@ -75,15 +75,19 @@
         str+=lnk(commonhtml+"?plane&radius0=25&hx=0.8&hy=0.5","Plane");
         str+=lnk(commonhtml+"?greenhouse","Greenhouse");
         str+=`
-        </p>
-        Animations<br>
-        <p>
+        </p><p>
+        Animations (bone model)<br>
+        </p><p>
         `;
         str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
         str+=lnk(commonhtml+"?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39","Zelenski whales");
         str+=lnk(commonhtml+"?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Ukrainian Fish");
-        str+=lnk(commonhtml+"??textures&radius0=50","Gregg's Textures");
-        str+=`</p>`;
+        str+=`
+        </p><p>
+        Animations (others)<br>
+        </p>
+        `;
+        str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
         linksdiv.innerHTML =  str;
   
         var sym = "MSFT";
@@ -93,7 +97,6 @@
         });
         
 </script>                
-    <!-- script src="dist/index.73eb0017.js" type="module"></script -->
-    </body>
+     </body>
 </html>
       
