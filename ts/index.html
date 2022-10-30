@@ -56,9 +56,14 @@
         var canvasdiv = document.getElementById("canvasdiv");
         var canvas = document.getElementById("c");
         var linksdiv = document.getElementById("linksdiv");
-        linksdiv.innerHTML = `
+        function lnk(appendlink, appenddescrip)
+        { return '<a href="'+appendlink+'">'+appenddescrip+'</a></br>'; }
+        var str = `
         <br><br>Stills based on .OBJ<br>
-        <p>
+        <p>`;
+        var commonhtml = "dist/index.html";
+        str+=lnk(commonhtml+"?cube&radius0=9&hx=-0.8&hy=0.43","Textured cubes");
+        str+=`
           <a href="dist/index.html?cube&radius0=9&hx=-0.8&hy=0.43">Textured cubes</a><br>
           <a href="dist/index.html?koenigsegg&radius0=65&hx=0.8&hy=0.43">Koenigseggie</a><br>
           <a href="dist/index.html?rubik&radius0=15&hx=0.8&hy=0.8">Rubiks cubie</a><br>
@@ -77,6 +82,7 @@
           <a href="dist/index.html?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1">Ukrainian Fish</a><br>
           <a href="dist/index.html?textures&radius0=50">Textures</a><br>
        </p>`;
+        linksdiv.innerHTML =  str;
     </script>
     <script src="dist/src/index.73eb0017.js" type="module"></script>
 
