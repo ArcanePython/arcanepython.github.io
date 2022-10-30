@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.grid-container {
+  height: 99%;
+  grid-template-rows: 110px auto 80px;
+  grid-template-columns: auto auto 180px;
+  gap: 2px;
+  padding: 2px;
+  display: grid;
+}
+
+.grid-container > div {
+  text-align: center;
+  background-color: #fffc;
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.item1, .item3 {
+  grid-column: 1 / 3;
+}
+
+</style>
+<meta name="viewport" content="width=device-width">
+</head>
+<body>
+    <div class="grid-container">
+        <div class="item1" id="cdiv" style="-webkit-text-fill-color: #2c2ce2; background-color: azure">
+                 xyz
+        </div>
+        <div class="item2" id="projection" style="background-color: #fff8dc">  </div>
+        <div class="item3" id="canvasdiv" style="background-color: #aa3838; display: block">
+            <canvas id="c" style="width: 100%" tabindex="1"></canvas>
+        </div>
+        <div id="linksdiv" style="background-color: azure" class="item5">
+        </div>
+        <div id="app" style="background-color: #fff8dc">Title</div>
+        <div id="eye">Fill</div>  
+    </div>
+
+    <!------------------------------------------------------------------------------------------------------------------------->
+    <script language="Javascript">var canvasdiv = document.getElementById("canvasdiv");
+var canvas = document.getElementById("c");
+var linksdiv = document.getElementById("linksdiv");
+linksdiv.innerHTML = `
+        <br><br>Stills based on .OBJ<br>
+        <p>
+          <a href="index.html?cube&radius0=9&hx=-0.8&hy=0.43">Textured cubes</a><br>
+          <a href="index.html?koenigsegg&radius0=65&hx=0.8&hy=0.43">Koenigseggie</a><br>
+          <a href="index.html?rubik&radius0=15&hx=0.8&hy=0.8">Rubiks cubie</a><br>
+          <a href="index.html?building&radius0=45&hx=-0.68&hy=0.47&hxl=-0.61&difflight=1&speclight=0">Building</a><br>
+          <a href="index.html?chair&radius0=20&hx=0.8&hy=0.8">Chair</a><br>
+          <a href="index.html?chair2&radius0=138&hx=0.7&hy=0.4">Chair 2</a><br>
+          <a href="index.html?cat&radius0=137&hx=-1.4&hy=-0.77&hxl=-1.4&hyl=-0.77&difflight=0.8">Cat</a><br>
+          <a href="index.html?stone&radius0=4&hx=0.8&hy=0.5">Stone</a><br>
+          <a href="index.html?plane&radius0=25&hx=0.8&hy=0.5">Plane</a><br>
+          <a href="index.html?greenhouse">Greenhouse</a><br>
+        </p>
+        Animations<br>
+        <p>
+          <a href="index.html?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=60">Swirling bone triangles</a><br>
+          <a href="index.html?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39">Swirling bone triangle strip</a><br>
+          <a href="index.html?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1">Ukrainian Fish</a><br>
+          <a href="index.html?textures&radius0=50">Textures</a><br>
+       </p>`;
+
+</script>
+    <script src="index.73eb0017.js" defer=""></script>
+</body>
+</html>
