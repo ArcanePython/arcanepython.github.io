@@ -61,7 +61,9 @@
         var str = `
         <br><br>Stills based on .OBJ<br>
         <p>`;
-        var commonhtml = "dist/index.html";
+        var subdir = "dist";
+        var commonhtml =  subdir+"/index.html";
+        var commonjsparcel = "index.73eb0017.js";
         str+=lnk(commonhtml+"?cube&radius0=9&hx=-0.8&hy=0.43","Textured cubes");
         str+=lnk(commonhtml+"?koenigsegg&radius0=65&hx=0.8&hy=0.43","Koenigsegg");
         str+=lnk(commonhtml+"?rubik&radius0=15&hx=0.8&hy=0.8","Blue Rubik");
@@ -83,10 +85,15 @@
         str+=lnk(commonhtml+"??textures&radius0=50","Gregg's Textures");
         str+=`</p>`;
         linksdiv.innerHTML =  str;
-    </script>
-    <script src="dist/src/index.73eb0017.js" type="module"></script>
-
-    </body>
   
+        var sym = "MSFT";
+        document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(document.createElement('script'))
+             .src = jsloc + "/" + commonjsparcel;
+        });
+        
+</script>                
+    <!-- script src="dist/src/index.73eb0017.js" type="module"></script -->
+    </body>
 </html>
       
