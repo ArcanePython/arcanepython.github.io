@@ -1,0 +1,8 @@
+{
+    "extends": "@parcel/config-default",
+    "transformers": {
+        "*.txt": ["@parcel/transformer-raw"],
+        "*.obj": ["@parcel/transformer-raw"],
+        "*.mtl": ["@parcel/transformer-raw"]
+    }
+}
