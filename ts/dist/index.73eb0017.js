@@ -533,6 +533,7 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"3CPcP":[function(require,module,exports) {
 "use strict";
+//==================================================================================================================================
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, {
@@ -566,122 +567,237 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 const mtls = __importStar(require("./mouselistener")); // connect events for mouse and mouse wheel
-const skeleton = __importStar(require("./skeleton")); // read geometry from .obj / .mtl files
-const fish = __importStar(require("./fishanimation")); // read geometry from .obj / .mtl files
-const manytextures = __importStar(require("./manytextures")); // camera projection
-const objmtlimport_js_1 = require("./objmtlimport.js");
+const skeleton = __importStar(require("./skeleton")); // task: bone model (single)
+const fish = __importStar(require("./fishanimation")); // task: bone model (flock)
+const manytextures = __importStar(require("./manytextures")); // task: camera projection
+const drawimagespace = __importStar(require("./drawimagespace")); // task: image space texture
+const skybox = __importStar(require("./skybox")); // task: image space texture
+const animation1 = __importStar(require("./animation1")); // task: image space texture
+//import * as animation2 from "./animation2" // task: image space texture
+const skyboxcube = __importStar(require("./skyboxcube")); // task: show reflecting box
+const objmtlimport = __importStar(require("./objmtlimport.js")); // task: obj/mtl file imports
+const rotatingcubescene = __importStar(require("./rotatingcubescene"));
+const lightedscene = __importStar(require("./lightedscene"));
 const ShowOBJMTL = 1;
 const ShowTextures = 2;
-const ShowTriangleBone = 3;
-const ShowFish = 4;
-var selectedShow = ShowFish;
-//-----------------------------------------------------------------------------------------
-var dictPars;
-function GetUrlPars(s, dictPars) {
-    var p = s.indexOf("?");
-    var spar = s.substring(p + 1), ppar = "", cpar = "";
-    while(spar.indexOf("&") > 0){
-        ppar = spar.substring(0, spar.indexOf("&"));
-        var pp = ppar.indexOf("=");
-        if (pp >= 0) {
-            cpar = ppar.substring(0, pp);
-            ppar = ppar.substring(1 + pp);
-            dictPars.set(cpar, ppar);
-        } else dictPars.set(ppar, "");
-        spar = spar.substring(spar.indexOf("&") + 1);
+const ShowFish = 3;
+const ShowSkyBox = 4;
+const ShowAnimation1 = 5;
+var selectedShow = ShowAnimation1;
+//=== DISPATCH TASKS =================================================================================================================
+function preparedefaultparameters(dictPars) {
+    switch(selectedShow){
+        case ShowFish:
+            console.log("ShowFish");
+            dictPars.set("fish", "");
+            dictPars.set("radius0", "90");
+            dictPars.set("mesh", "strip");
+            dictPars.set("hx", "1.2");
+            dictPars.set("hy", "0.1");
+            dictPars.set("stride", "180");
+            dictPars.set("numrows", "39");
+            break;
+        case ShowSkyBox:
+            console.log("Skybox");
+            dictPars.set("skybox", "");
+            dictPars.set("radius0", "60");
+            dictPars.set("mesh", "strip");
+            dictPars.set("hx", "1.2");
+            dictPars.set("hy", "0.1");
+            dictPars.set("stride", "180");
+            dictPars.set("numrows", "39");
+            break;
+        case ShowTextures:
+            console.log("ShowTextures");
+            dictPars.set("textures", "");
+            break;
+        case ShowAnimation1:
+        case ShowOBJMTL:
+            dictPars.set("radius0", "45");
+            dictPars.set("hx", "-0.68");
+            dictPars.set("hy", "0.47");
+            dictPars.set("hxl", "-0.61");
+            dictPars.set("difflight", "0.5");
+            dictPars.set("speclight", "0.5");
+            break;
+        default:
+            return;
     }
-    p = spar.indexOf("=");
-    if (p >= 0) {
-        cpar = spar.substring(0, p);
-        ppar = spar.substring(1 + p);
-        dictPars.set(cpar, ppar);
-    } else dictPars.set(spar, "");
-    return dictPars;
 }
-function main() {
-    var s = window.location.href;
-    if (s.includes("?")) {
-        console.log("url parameters " + s);
-        dictPars = GetUrlPars(s, new Map());
-    }
-    if (dictPars == undefined) console.log("No arguments");
-    else dictPars.forEach((value, key)=>{
-        console.log("UrlPars key=" + key + " value=" + value);
-    });
-    // == Canvas and mouse
-    const canvas = document.querySelector("#c");
-    var app;
-    function OnMouseWheel(eventstring) {
-        document.getElementById("app").innerHTML = "mousewheel: [" + eventstring + "]";
-    }
-    function OnMouseMove(eventstring) {}
-    function OnMouseDown(eventstring) {
-        document.getElementById("app").innerHTML = "mousedown: [" + eventstring + "]";
-    }
-    function OnMouseUp(eventstring) {
-        document.getElementById("app").innerHTML = "mouseup: [" + eventstring + "] ";
-    }
-    if (canvas) {
-        app = new mtls.MouseListener(canvas);
-        app.OnMouseWheel = OnMouseWheel;
-        app.OnMouseMove = OnMouseMove;
-        app.OnMouseDown = OnMouseDown;
-        app.OnMouseUp = OnMouseUp;
-    }
-    //== WebGL2
-    const gl = canvas.getContext("webgl2"); // allow for vs300 shaders
-    //== dispatch to class
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("textures")) != undefined) {
-        new manytextures.ManyTextures(gl, app, dictPars);
-        return;
+function show(gl, app, dictPars) {
+    // perform show
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
+        var ims = new drawimagespace.drawimagespace(gl, app, dictPars);
+        console.log("imscreated.");
+        ims.main(gl, dictPars);
+        console.log("ins.main done.");
+        ims.initGUI({
+            move: false,
+            teal: true,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#D0A010"
+        });
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) {
+        var mta1 = new animation1.Animation1(gl, app, new rotatingcubescene.RotatingCubeScene(), dictPars);
+        mta1.main(gl, dictPars);
+        var baseapppars = {
+            move: false,
+            movetail: true,
+            speed: 0.01,
+            color0: "#A0A0A0"
+        };
+        mta1.initGUI({
+            b: baseapppars,
+            texture: "geotriangle2",
+            sling: 117
+        });
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined) {
+        var mta1 = new animation1.Animation1(gl, app, new lightedscene.LightedScene(), dictPars);
+        mta1.main(gl, dictPars);
+        var baseapppars = {
+            move: false,
+            movetail: true,
+            speed: 0.01,
+            color0: "#A0A0A0"
+        };
+        mta1.initGUI({
+            b: baseapppars,
+            texture: "geotriangle2",
+            sling: 117
+        });
+    /*  var mta2 = new animation2.Animation2(gl, app, dictPars);
+          mta2.main(gl, dictPars);
+          var baseapppars = {move: false, movetail: true, speed: 0.01, color0:"#A0A0A0"};
+          //mta2.initGUI({ b: baseapppars, texture: 'geotriangle2',  sling:117 });
+          */ } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("textures")) != undefined) {
+        var mt = new manytextures.ManyTextures(gl, app, dictPars);
+        mt.main(gl, dictPars);
+        mt.initGUI({
+            move: true,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#A0A0A0"
+        });
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeleton")) != undefined) {
-        new skeleton.Skeleton(gl, app, dictPars);
-        return;
+        var sk = new skeleton.Skeleton(gl, app, dictPars);
+        sk.main(gl, dictPars);
+        sk.initGUI({
+            move: false,
+            movetail: true,
+            speed: 0.06,
+            texture: "zelenskyy",
+            color0: "#afb9af"
+        });
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fish")) != undefined) {
-        new fish.FishAnimation(gl, app, dictPars);
-        return;
-    } else if (dictPars == undefined) {
-        dictPars = new Map();
-        switch(selectedShow){
-            case ShowTriangleBone:
-            case ShowFish:
-                dictPars === null || dictPars === void 0 || dictPars.set("radius0", "60");
-                dictPars === null || dictPars === void 0 || dictPars.set("mesh", "strip");
-                dictPars === null || dictPars === void 0 || dictPars.set("hx", "1.2");
-                dictPars === null || dictPars === void 0 || dictPars.set("hy", "0.1");
-                dictPars === null || dictPars === void 0 || dictPars.set("stride", "180");
-                dictPars === null || dictPars === void 0 || dictPars.set("numrows", "39");
-                console.log("run default skeleton " + dictPars);
-                if (selectedShow == ShowFish) new fish.FishAnimation(gl, app, dictPars);
-                else new skeleton.Skeleton(gl, app, dictPars);
-                return;
-            case ShowTextures:
-                dictPars === null || dictPars === void 0 || dictPars.set("textures", "");
-                new manytextures.ManyTextures(gl, app, dictPars);
-                return;
-            case ShowOBJMTL:
-                console.log("no entries");
-                //show building index.html?building&radius0=45&hx=-0.68&hy=0.47&hxl=-0.61&difflight=1&speclight=0
-                dictPars === null || dictPars === void 0 || dictPars.set("building", "");
-                dictPars === null || dictPars === void 0 || dictPars.set("radius0", "45");
-                dictPars === null || dictPars === void 0 || dictPars.set("hx", "-0.68");
-                dictPars === null || dictPars === void 0 || dictPars.set("hy", "0.47");
-                dictPars === null || dictPars === void 0 || dictPars.set("hxl", "-0.61");
-                dictPars === null || dictPars === void 0 || dictPars.set("difflight", "0.5");
-                dictPars === null || dictPars === void 0 || dictPars.set("speclight", "0.5");
-                new objmtlimport_js_1.ObjMtlImport(gl, app, dictPars);
-                return;
-            default:
-                return;
-        }
+        var fa = new fish.FishAnimation(gl, app, dictPars);
+        fa.main(gl, dictPars);
+        var baseapppars = {
+            move: true,
+            movetail: true,
+            speed: 0.4,
+            color0: "#A0A0A0"
+        };
+        fa.initGUI({
+            b: baseapppars,
+            texture: "geotriangle2",
+            sling: 117
+        });
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
+        var sbc = new skyboxcube.skyboxcube(gl, app, dictPars);
+        sbc.main(gl, dictPars);
+        sbc.initGUI({
+            movecube: true,
+            moveenv: true,
+            fieldOfViewDegrees: 32,
+            radiusCam: 5.0,
+            angVelocityCam: 0.005,
+            angVelocityCube: 0.003
+        });
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skybox")) != undefined) {
+        var sb = new skybox.skybox(gl, app, dictPars);
+        sb.initGUI({
+            movecube: false,
+            moveenv: false,
+            fieldOfViewDegrees: 32,
+            radiusCam: 5.0,
+            angVelocityCam: 0.005,
+            angVelocityCube: 0.003
+        });
+        sb.main(gl, dictPars);
     } else {
-        new objmtlimport_js_1.ObjMtlImport(gl, app, dictPars);
-        return;
+        var oi = new objmtlimport.ObjMtlImport(gl, app, dictPars);
+        oi.main(gl, dictPars);
+        oi.initGUI({
+            move: false,
+            speed: 0,
+            texture: "",
+            color0: "#9cbbcd"
+        });
+    }
+}
+//=== ENTRY MAIN ===============================================================================================================================
+function main() {
+    var canvas = document.querySelector("#c");
+    // const gl = someCanvas.getContext('webgl', {powerPreference: 'high-performance'});
+    var gl = canvas.getContext("webgl2", {
+        premultipliedAlpha: false,
+        powerPreference: "high-performance"
+    });
+    if (canvas && gl) {
+        var app;
+        var dictPars;
+        var s = window.location.href;
+        if (s.includes("?")) {
+            // == fetch URL arguments
+            dictPars = new Map();
+            var p = s.indexOf("?");
+            var spar = s.substring(p + 1), ppar = "", cpar = "";
+            while(spar.indexOf("&") > 0){
+                ppar = spar.substring(0, spar.indexOf("&"));
+                var pp = ppar.indexOf("=");
+                if (pp >= 0) {
+                    cpar = ppar.substring(0, pp);
+                    ppar = ppar.substring(1 + pp);
+                    dictPars.set(cpar, ppar);
+                } else dictPars.set(ppar, "");
+                spar = spar.substring(spar.indexOf("&") + 1);
+            }
+            p = spar.indexOf("=");
+            if (p >= 0) {
+                cpar = spar.substring(0, p);
+                ppar = spar.substring(1 + p);
+                dictPars.set(cpar, ppar);
+            } else dictPars.set(spar, "");
+        }
+        if (dictPars == undefined) {
+            console.log("No URL arguments, prepare defaults for " + selectedShow);
+            preparedefaultparameters(dictPars = new Map());
+        }
+        // report parameters set
+        dictPars.forEach((value, key)=>{
+            console.log("UrlPars key=" + key + " value=" + value);
+        });
+        // context found, create app connecting canvas with default mouse listeners
+        app = new mtls.MouseListener(canvas);
+        app.OnMouseWheel = (eventstring)=>{
+            document.getElementById("app").innerHTML = "mousewheel: [" + eventstring + "]";
+        };
+        app.OnMouseMove = (eventstring)=>{
+            document.getElementById("comment").innerHTML = "mousemove: [" + eventstring + "]";
+        };
+        app.OnMouseDown = (eventstring)=>{
+            document.getElementById("app").innerHTML = "mousedown: [" + eventstring + "]";
+        };
+        app.OnMouseUp = (eventstring)=>{
+            document.getElementById("app").innerHTML = "mouseup: [" + eventstring + "] ";
+        };
+        show(gl, app, dictPars); // LAUNCH
     }
 }
 main();
 
-},{"./mouselistener":"kqrhn","./skeleton":"7hZAU","./fishanimation":"jTKYD","./manytextures":"llxVM","./objmtlimport.js":"46ggt"}],"kqrhn":[function(require,module,exports) {
+},{"./mouselistener":"kqrhn","./skeleton":"7hZAU","./fishanimation":"jTKYD","./manytextures":"llxVM","./drawimagespace":"hcp33","./skybox":"1rzDA","./animation1":"5jcfD","./skyboxcube":"h51mu","./objmtlimport.js":"46ggt","./rotatingcubescene":"l3STp","./lightedscene":"1u3YO"}],"kqrhn":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -697,8 +813,10 @@ class MouseState {
         this.delta = 0.0;
         this.sx = this.sy = "0.5";
         this.x = this.y = 0.5;
+        this.dragpx0 = this.dragpy0 = 0.0;
         this.dragx0 = this.dragy0 = 0;
         this.dragdistance = 10;
+        this.dragpdistance = 0;
     }
 }
 exports.MouseState = MouseState;
@@ -734,6 +852,8 @@ class MouseListener {
         canvas.onmousedown = (e)=>{
             this.mouse.button = e.button;
             this.mouse.down = true;
+            this.mouse.dragpx0 = e.x;
+            this.mouse.dragpy0 = canvas.height - e.y;
             if (this.OnMouseDown != undefined) this.OnMouseDown(this.mouse.sx + " " + this.mouse.sy);
             this.mouse.dragx0 = this.mouse.x;
             this.mouse.dragy0 = this.mouse.y;
@@ -751,8 +871,8 @@ class MouseListener {
         canvas.onmousemove = (e)=>{
             var canvas = document.getElementById("c");
             let rect = canvas.getBoundingClientRect();
-            this.mouse.px = this.mouse.x;
-            this.mouse.py = this.mouse.y;
+            this.mouse.px = e.x;
+            this.mouse.py = canvas.height - e.y;
             this.mouse.x = (e.x - rect.left) / canvas.width;
             this.mouse.x = this.mouse.x * 2.0 - 1.0;
             this.mouse.y = (canvas.height - (e.y - rect.top)) / canvas.height;
@@ -761,14 +881,18 @@ class MouseListener {
             this.mouse.sx = this.mouse.x.toFixed(2);
             this.state.count += 1;
             if (this.mouse.dragging) {
+                var dpx = this.mouse.px - this.mouse.dragpx0;
+                var dpy = this.mouse.py - this.mouse.dragpy0;
                 var dx = this.mouse.x - this.mouse.dragx0;
                 var dy = this.mouse.y - this.mouse.dragy0;
                 var d = Math.sqrt(dx * dx + dy * dy);
+                var dp = Math.sqrt(dpx * dpx + dpy * dpy);
                 this.mouse.dragvector = [
                     dx / d,
                     dy / d
                 ];
                 this.mouse.dragdistance = d;
+                this.mouse.dragpdistance = dp;
             }
             if (this.OnMouseMove != undefined) this.OnMouseMove(this.mouse.sx + " " + this.mouse.sy);
             //console.log("setmouse "+this.mouse.x+","+this.mouse.y); }
@@ -824,87 +948,132 @@ const twgl_js_1 = require("./../node_modules/twgl.js");
 const camhandler = __importStar(require("./camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
+const twglbaseapp = __importStar(require("./twglbaseapp"));
+const datgui = __importStar(require("dat.gui"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");
-class Skeleton extends fish.FishHTranslated {
+class Skeleton extends twglbaseapp.twglbaseapp {
     constructor(cgl, capp, dictpar){
-        super(1.0, 0.03, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
+        super(cgl, capp, dictpar);
+        this.skeletonParameters = {
+            move: false,
+            movetail: true,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
+        //------------------------------------------------------------------------------------------------------------
+        this.gui = null;
+    }
+    main(gl, dictpar) {
+        var time0 = 0;
+        super.maininfo(gl, dictpar, boneanimation.vsSkeleton, boneanimation.fsSkeleton);
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
-        this.gl = cgl;
-        this.app = capp;
-        this.prepareSurfaceTextures(this.gl, "zelenskyy");
-        this.programInfo = twgl.createProgramInfo(this.gl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-        this.mesh = this.prepareMesh(this.gl, dictpar, 1.0);
-        this.numBones = this.mesh.type == this.gl.TRIANGLE_STRIP ? this.mesh.nsegments / this.mesh.bonediv : this.mesh.nsegments;
-        this.createBoneTexture(this.gl, dictpar);
-        this.createSurfaceTexture(this.gl);
-        this.uniforms = this.prepareUniforms(this.gl, dictpar); // this.phase0);
-        this.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(this.gl, this.programInfo, this.bufferInfo);
-        this.cam = camhandler.Camera.createZUpCamera(this.gl, dictpar, 50.0, this.app);
+        this.afish = new fish.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
+        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
+        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
+        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
+        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
+        this.afish.createBoneTexture(gl, time0, dictpar);
+        this.afish.createSurfaceTexture(gl);
+        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.bufferInfo);
+        this.cam = camhandler.Camera.createYUpCamera(gl, dictpar, 50.0, this.app);
         this.cam.zoominVelocity = 0.5;
-        requestAnimationFrame(()=>this.render(0));
+        requestAnimationFrame(()=>this.render(time0));
+    }
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = Skeleton.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.skeletonParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.skeletonParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(parameters); //this.fishAnimationParameters);
+        // Checkbox forward move animation on/off
+        gui.add(parameters, "move"); //this.fishAnimationParameters, 'move');
+        // Checkbox tail animation on/off
+        gui.add(parameters, "movetail");
+        // Slider for animation speed
+        gui.add(parameters, "speed").min(0.02).max(0.1).step(0.002);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(parameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        gui.updateDisplay();
+        return gui;
     }
     //------------------------------------------------------------------------------------------------------------------------------------
     render(time) {
-        //time=0;
         var gl = this.gl;
-        gl.useProgram(this.programInfo.program);
+        gl.useProgram(this.twglprograminfo[0].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.clearColor(0.1, 0.1, 0.1, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         var cam = this.cam;
-        cam.CamHandlingZUp(gl, this.app);
-        this.uniforms.worldviewprojection = cam.viewProjection;
+        cam.CamHandlingYUp(gl, this.app, 1.0, -1);
+        var uniforms = this.uniforms;
+        uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
-        this.computeBone(time);
-        this.prepareBoneTexture(gl, this.bindPoseInv2);
-        this.uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             20.0,
             -20,
             0.0
         ]); // draw a fish
-        twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.mesh.type);
-        this.uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+        twgl.setUniforms(this.twglprograminfo[0], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             0.0,
             0.0,
             0.0
         ]); // draw a fish
-        twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.mesh.type);
-        this.computeBone(time);
-        this.prepareBoneTexture(gl, this.bindPoseInv2);
-        this.uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+        twgl.setUniforms(this.twglprograminfo[0], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             50.0,
             -20,
             10.0
         ]); // draw a fish    
-        twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.mesh.type);
-        this.uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+        twgl.setUniforms(this.twglprograminfo[0], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             -10,
             5.0,
             -10
         ]); // draw a fish
-        twgl.setUniforms(this.programInfo, this.uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.mesh.type);
+        twgl.setUniforms(this.twglprograminfo[0], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         requestAnimationFrame(()=>this.render(++time));
     }
 }
 exports.Skeleton = Skeleton;
 
-},{"./../node_modules/twgl.js":"3uqAP","./camhandler":"4jukU","./boneanimation":"aOyYs","./fish":"otYB7"}],"3uqAP":[function(require,module,exports) {
+},{"./../node_modules/twgl.js":"3uqAP","./camhandler":"4jukU","./boneanimation":"aOyYs","./fish":"otYB7","./twglbaseapp":"cbghk","dat.gui":"k3xQk"}],"3uqAP":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "addExtensionsToContext", ()=>addExtensionsToContext);
@@ -11067,7 +11236,7 @@ class Camera {
         var cam = new Camera(dictpar);
         cam.zoominVelocity = szobj / 20.0;
         if (cam.radius0 == 0) {
-            cam.radius0 = 2.0 * szobj;
+            cam.radius0 = 3.0 * szobj;
             console.log("set cam.radius0 to 2*object size = " + cam.radius0);
         }
         cam.target = [
@@ -11103,6 +11272,9 @@ class Camera {
         var sLightPos = this.lightpos[0].toPrecision(4) + "," + this.lightpos[1].toPrecision(4) + "," + this.lightpos[2].toPrecision(4);
         document.getElementById("projection").innerHTML = "hx:" + (180.0 / Math.PI * this.ahoriz).toPrecision(3) + " hy:" + (180.0 / Math.PI * this.avert).toPrecision(3) + "<br>r0=" + this.radius0.toPrecision(4) + ", r=" + this.radius.toPrecision(4) + "<br>eye:[" + sEye + "]<br>target: [" + sTarget + "]<br>light: " + sLightPos;
     }
+    Position() {
+        return this.eye;
+    }
     //===================================================================================================================
     setYUpPerspective(gl, app) {
         const afov = this.fov * Math.PI / 180;
@@ -11119,8 +11291,8 @@ class Camera {
     setZUpPerspective(gl, app) {
         const afov = this.fov * Math.PI / 180;
         const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        const zNear = 0.1;
-        const zFar = 180;
+        const zNear = this.near;
+        const zFar = this.far;
         this.up = [
             0,
             0,
@@ -11177,12 +11349,12 @@ class Camera {
     setRadius(r) {
         this.radius = this.radius0 = r;
     }
-    CamHandlingYUp(gl, app) {
+    CamHandlingYUp(gl, app, camsignX, camsignY) {
         if ((app === null || app === void 0 ? void 0 : app.mouse.dragvector) != undefined && (app === null || app === void 0 ? void 0 : app.mouse.dragdistance) > 1e-2) {
             const ctrldown = app === null || app === void 0 ? void 0 : app.controlkeydown;
             if (!ctrldown) {
-                this.ahoriz = this.ahoriz - app.mouse.dragvector[0] * this.rotationVelocity;
-                this.avert = this.avert - app.mouse.dragvector[1] * this.rotationVelocity;
+                this.ahoriz = this.ahoriz - camsignX * (app.mouse.dragvector[0] * this.rotationVelocity);
+                this.avert = this.avert - camsignY * (app.mouse.dragvector[1] * this.rotationVelocity);
                 if (this.avert < -Math.PI / 2.0) this.avert = -Math.PI / 2.0 + 1e-3;
                 if (this.avert > Math.PI / 2.0) this.avert = Math.PI / 2.0 - 1e-3;
                 this.changeeye = true;
@@ -11209,12 +11381,12 @@ class Camera {
         }
     }
     // Camera with Z-AXIS up
-    CamHandlingZUp(gl, app) {
+    CamHandlingZUp(gl, app, camsignX, camsignY) {
         this.setZUpPerspective(gl, app);
         //   var change = false;
         if ((app === null || app === void 0 ? void 0 : app.mouse.dragvector) != undefined && (app === null || app === void 0 ? void 0 : app.mouse.dragdistance) > 1e-2) {
-            this.ahoriz = this.ahoriz - app.mouse.dragvector[0] * this.rotationVelocity;
-            this.avert = this.avert + app.mouse.dragvector[1] * this.rotationVelocity;
+            this.ahoriz = this.ahoriz - camsignX * app.mouse.dragvector[0] * this.rotationVelocity;
+            this.avert = this.avert - camsignY * app.mouse.dragvector[1] * this.rotationVelocity;
             if (this.avert < -Math.PI / 2.0) this.avert = -Math.PI / 2.0 + 1e-3;
             if (this.avert > Math.PI / 2.0) this.avert = Math.PI / 2.0 - 1e-3;
             this.changeeye = true;
@@ -11271,16 +11443,13 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.BoneAnimation = exports.fsSkeleton = exports.vsSkeleton = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
 const twgl_js_1 = require("./../node_modules/twgl.js");
-//import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
-//import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
-//import * as mtls from "./mouselistener";     // connect events for buttons and wheel
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 // -- vertex shader --
 exports.vsSkeleton = `#version 300 es
 
 // camera
-uniform mat4 worldviewprojection;
+uniform mat4 viewprojection;
 uniform vec3 lightWorldPos;
 uniform mat4 world;
 uniform mat4 viewInverse;
@@ -11315,7 +11484,7 @@ mat4 getBoneMatrix(uint boneNdx) {
 void main() {
   v_texCoord = a_texcoord;
   vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
-  gl_Position = worldviewprojection * world * bonemovedskinpos;
+  gl_Position = viewprojection * world * bonemovedskinpos;
  }
 `;
 exports.fsSkeleton = `#version 300 es
@@ -11335,21 +11504,28 @@ class BoneAnimation {
     constructor(){
         this.bindPose = [];
         this.bones = [];
-        this.boneMatrixTexture = null;
         this.boneMatrices = [];
-        this.surfaceTexture = null;
         // animation state
         this.px = 0.0;
         this.py = 0.0;
         this.pz = 0.0;
         this.scale = 1.0;
-        // bindPoseInv0: m4.Mat4[] = [] ;
         this.bindPoseInv2 = [];
         this.phase0 = 0;
-        this.mesh = null;
+        this.mesh = new stridedmesh.StridedMesh(1, 1, 1); // | null = null;   
+        this.uniforms = {
+            world: [],
+            projection: [],
+            viewprojection: [],
+            view: [],
+            surfaceTexture: {},
+            boneMatrixTexture: {},
+            color: []
+        };
         this.bufferInfo = null;
         this.skinVAO = null;
-        this.uniforms = null;
+    //   this.boneMatrixTexture = new WebGLTexture();
+    //   this.surfaceTexture = new WebGLTexture();
     }
     setNumBones(gl) {
         this.numBones = this.mesh.type == gl.TRIANGLE_STRIP ? this.mesh.nsegments / this.mesh.bonediv : this.mesh.nsegments;
@@ -11376,55 +11552,32 @@ class BoneAnimation {
             return twgl_js_1.m4.inverse(m);
         });
     }
-    prepareSurfaceTextures(gl, selectedSurface) {
-        var gradientname = require("./resources/models/stone/circlegradient.png");
-        var clovername = require("./images/clover.jpg");
-        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
-        var textures = twgl.createTextures(gl, {
-            checker: {
-                mag: gl.NEAREST,
-                min: gl.LINEAR,
-                src: [
-                    255,
-                    255,
-                    255,
-                    255,
-                    192,
-                    192,
-                    192,
-                    255,
-                    92,
-                    92,
-                    92,
-                    255,
-                    255,
-                    255,
-                    255,
-                    255, 
-                ]
-            },
-            clover: {
-                src: clovername
-            },
-            zelenskyy: {
-                src: zelenskyyname
-            },
-            gradient: {
-                src: gradientname
-            },
-            flagofukraine: {
-                src: flagofukrainname
-            }
-        });
-        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
-        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
-        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
-        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
-        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
-        return textures;
-    }
-    prepareBoneMatrices(gl, dictpar) {
+    /*
+      prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
+      {
+          var gradientname = require("./resources/models/stone/circlegradient.png");
+          var clovername = require("./images/clover.jpg");
+          var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+          var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+          var textures = twgl.createTextures(gl, {
+           checker: {
+             mag: gl.NEAREST,
+             min: gl.LINEAR,
+             src: [255, 255, 255, 255,  192, 192, 192, 255,
+                   92, 92, 92, 255, 255, 255, 255, 255, ],},
+           clover: { src: clovername },
+           zelenskyy: { src: zelenskyyname },
+           gradient: { src: gradientname },
+           flagofukraine: { src: flagofukrainname },
+          });
+         if (selectedSurface=="clover") this.surfaceTexture = textures.clover;
+         if (selectedSurface=="zelenskyy") this.surfaceTexture = textures.zelenskyy;
+         if (selectedSurface=="checker") this.surfaceTexture = textures.checker;
+         if (selectedSurface=="gradient") this.surfaceTexture = textures.gradient;
+         if (selectedSurface=="flagofukraine") this.surfaceTexture = textures.flagofukraine;
+         return textures;
+      }
+    */ prepareBoneMatrices(gl, dictpar) {
         if (this.numBones == undefined) return;
         this.boneArray = new Float32Array(this.numBones * 16);
         // prepare the texture for bone matrices
@@ -11440,8 +11593,10 @@ class BoneAnimation {
         }
     }
     prepareBoneTexture(gl, bindPosInv) {
-        // multiply each by its bindPoseInverse
-        this.bones.forEach((bone, ndx)=>{
+        if (bindPosInv == null) this.bones.forEach((bone, ndx)=>{
+            twgl_js_1.m4.multiply(bone, twgl_js_1.m4.identity(), this.boneMatrices[ndx]);
+        });
+        else this.bones.forEach((bone, ndx)=>{
             twgl_js_1.m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]);
         });
         // update the texture with the current matrices
@@ -11451,379 +11606,7 @@ class BoneAnimation {
 }
 exports.BoneAnimation = BoneAnimation;
 
-},{"./../node_modules/twgl.js":"3uqAP","./resources/models/stone/circlegradient.png":"50y7h","./images/clover.jpg":"iLTuo","./resources/models/stone/zelenskii.png":"gMM6z","./resources/models/stone/flagofukraine.png":"1o0L8"}],"50y7h":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "circlegradient.6cda9680.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"iLTuo":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "clover.bed4e0b3.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"gMM6z":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "zelenskii.830ddd79.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"1o0L8":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "flagofukraine.65ef6112.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"otYB7":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishOneJoint = exports.FishHRotated = exports.FishV = exports.FishHTranslated = exports.Fish = void 0;
-const twgl_js_1 = require("./../node_modules/twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const boneanimation = __importStar(require("./boneanimation"));
-class Fish extends boneanimation.BoneAnimation {
-    constructor(size, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile){
-        super();
-        this.size = size;
-        this.forwardspeed = forwardspeed;
-        this.phase0 = phase0;
-        this.deltaphase = deltaphase;
-        this.arange = arange;
-        this.ampl = ampl;
-        this.surfacetexturefile = surfacetexturefile;
-    }
-    computeBone(time) {
-        const aphase = this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase);
-        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
-    }
-    createSurfaceTexture(gl) {
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
-    }
-    createBoneTexture(gl, dictpar) {
-        gl.activeTexture(gl.TEXTURE0);
-        this.prepareBoneMatrices(gl, dictpar); // see derived class
-        this.computeBone(0);
-        this.bindPose = this.bones;
-        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
-    }
-    prepareUniforms(gl, dictpar) {
-        return {
-            world: twgl_js_1.m4.identity(),
-            projection: twgl_js_1.m4.identity(),
-            worldviewprojection: twgl_js_1.m4.identity(),
-            view: twgl_js_1.m4.translation([
-                0.0,
-                0.0,
-                0.0
-            ]),
-            surfaceTexture: this.surfaceTexture,
-            boneMatrixTexture: this.boneMatrixTexture,
-            color: [
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        };
-    }
-    numberDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return +spar;
-        return pardefault;
-    }
-    stringDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return spar;
-        return pardefault;
-    }
-}
-exports.Fish = Fish;
-//--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
-class FishHTranslated extends Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishHPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishHPositions();
-            console.log("created triangles mesh. phase=" + this.phase0);
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            var m = twgl_js_1.m4.identity();
-            var normx = i;
-            normx = normx / bones.length;
-            var ay = arange * (normx * di);
-            var az = arange * (normx * di);
-            twgl_js_1.m4.translate(m, [
-                this.px,
-                this.py + amp * Math.cos(0.5 * ay),
-                this.pz + amp * 10.0 * Math.sin(az)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.size * damp;
-        }
-        this.px += -this.forwardspeed; // * bones.length;    
-    }
-}
-exports.FishHTranslated = FishHTranslated;
-//--------------------------------------------------------------------------------------------------------
-class FishV extends Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishVPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-                this.px,
-                this.py + amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
-                this.pz + amp * Math.sin(+arange * i / bones.length + di)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.scale * damp;
-        }
-        this.px += -this.forwardspeed; // * bones.length;      
-    }
-}
-exports.FishV = FishV;
-//----------------------------------------------------------------------------------------------------------
-class FishHRotated extends Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishPPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishPPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arad = di * Math.PI / 180.0;
-        var asin = this.ampl * di; //Math.sin( this.phase0+12.0*arad)*this.arange;
-        var arange = this.arange;
-        var cay = -180;
-        var posay = 0.0;
-        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
-        var jointpos = 0.1;
-        var jointpos2 = 0.3;
-        for(var i = 0; i < bones.length; i++){
-            var nnormx = i / bones.length;
-            var nnormxal = 0.5 + 0.5 * Math.sin(7.0 * nnormx * asin * Math.PI * 2.0);
-            //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
-            posay = asin * nnormx;
-            var m = twgl_js_1.m4.identity();
-            m = twgl_js_1.m4.translate(m, [
-                jointpos * bonesize + this.px,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.rotateY(m, posay);
-            m = twgl_js_1.m4.translate(m, [
-                -(jointpos * bonesize + this.px),
-                0,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.translate(m, [
-                this.px,
-                0,
-                0,
-                0
-            ]);
-            //  m = m4.translate(m,[jointpos*bonesize,0,0]);
-            //   m = m4.rotateY(m, posay );
-            //   m = m4.translate(m,[this.px,0,0,0]);
-            bones[i] = m;
-        //  this.py+=0.0;
-        //  this.pz+=0.00000;
-        // amp+=this.size*damp;       
-        }
-        this.px += -this.forwardspeed; // * bones.length;    
-    }
-}
-exports.FishHRotated = FishHRotated;
-//----------------------------------------------------------------------------------------------------------
-class FishOneJoint extends Fish {
-    constructor(size, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile, jointpos, vaxis){
-        super(size, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile);
-        this.size = size;
-        this.forwardspeed = forwardspeed;
-        this.phase0 = phase0;
-        this.deltaphase = deltaphase;
-        this.arange = arange;
-        this.ampl = ampl;
-        this.surfacetexturefile = surfacetexturefile;
-        this.jointpos = jointpos;
-        this.vaxis = vaxis;
-    }
-    /*
-       computeBone( time: number)
-       {
-         var aphase = this.mesh!.bonediv * 0.01 * time;
-         aphase=aphase%360;
-         this.computeBoneMatrices(this.bones,aphase );
-       }
-    */ prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishVPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arad = di * Math.PI / 180.0;
-        var asin = di * this.ampl; //  Math.sin(this.phase0 + this.deltaphase*arad)*this.arange;
-        var arange = this.arange;
-        var cay = -180;
-        var posay = 0.0;
-        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
-        //var jointpos = 0.6;
-        //var jointpos2 = 0.3;
-        for(var i = 0; i < bones.length; i++){
-            var nnormx = i / bones.length;
-            if (nnormx > this.jointpos) posay = asin;
-            else posay = 0;
-            var m = twgl_js_1.m4.identity();
-            m = twgl_js_1.m4.translate(m, [
-                this.jointpos * bonesize + this.px,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.axisRotate(m, this.vaxis, posay);
-            m = twgl_js_1.m4.translate(m, [
-                -(this.jointpos * bonesize + this.px),
-                0,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.translate(m, [
-                this.px,
-                0,
-                0,
-                0
-            ]);
-            bones[i] = m;
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.size * damp;
-        }
-        this.px += -this.forwardspeed; // * bones.length;    
-    }
-}
-exports.FishOneJoint = FishOneJoint;
-
-},{"./../node_modules/twgl.js":"3uqAP","./stridedmesh":"8Kodn","./trianglesmesh":"a2gwM","./boneanimation":"aOyYs"}],"8Kodn":[function(require,module,exports) {
+},{"./../node_modules/twgl.js":"3uqAP","./stridedmesh":"8Kodn"}],"8Kodn":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11870,10 +11653,10 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
                 numComponents: 0,
                 data: new Float32Array()
             },
-            boneNdx: this.buildBoneIndex(this.nsegments, this.nrows, this.nsegments),
-            weight: this.buildBoneWeights(this.nsegments, this.nrows, this.nsegments),
-            indices: this.buildIndicesStridedTriangleStrip(this.nsegments, this.nrows, this.nsegments),
-            texcoord: this.buildTexCoords(this.nsegments, this.nrows, this.nsegments)
+            boneNdx: this.buildBoneIndex(this.nrows, this.nsegments),
+            weight: this.buildBoneWeights(this.nrows, this.nsegments),
+            indices: this.buildIndicesStridedTriangleStrip(this.nrows, this.nsegments),
+            texcoord: this.buildTexCoords(this.nrows, this.nsegments)
         };
     }
     buildPositions(n, nrows, stride) {
@@ -11897,7 +11680,7 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             data
         };
     }
-    buildCylPositions(n, nrows, stride) {
+    buildCylPositions(n, nrows, stride, r1, r2) {
         var posdata = [];
         var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 5;
         for(var y = 0; y < nrows; y++){
@@ -11905,8 +11688,8 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
                 var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
                 d = 1.0 - Math.cos(d);
                 cx = x * this.segmentsize;
-                cy = this.segmentsize * Math.sin(a) * r;
-                cz = this.segmentsize * Math.cos(a) * r;
+                cy = this.segmentsize * Math.sin(a) * r1;
+                cz = this.segmentsize * Math.cos(a) * r2;
                 posdata.push([
                     cx,
                     cy,
@@ -11937,12 +11720,12 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
                 if (x < dtail) r = r + dr;
                 var dtailr = x - htail;
                 if (dtailr < 0) {
-                    cy = this.segmentsize * Math.cos(a) * r;
-                    cz = this.segmentsize * Math.sin(a) * r;
+                    cy = this.segmentsize * Math.cos(-a) * r;
+                    cz = this.segmentsize * Math.sin(-a) * r;
                 } else {
                     var cdr = 1.0 - dtailr / dtail;
-                    cy = this.segmentsize * Math.cos(a) * r * cdr;
-                    cz = this.segmentsize * Math.sin(a) * r * (2.0 - cdr);
+                    cy = this.segmentsize * Math.cos(-a) * r * cdr;
+                    cz = this.segmentsize * Math.sin(-a) * r * (2.0 - cdr);
                 }
                 posdata.push([
                     cx,
@@ -12002,12 +11785,12 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
         var pos = this.buildFishVPositions(this.nsegments, this.nrows, this.nsegments);
         return pos;
     }
-    getFishPPositions() {
-        var pos = this.buildCylPositions(this.nsegments, this.nrows, this.nsegments);
+    getCylPositions(r1, r2) {
+        var pos = this.buildCylPositions(this.nsegments, this.nrows, this.nsegments, r1, r2);
         return pos;
     }
     //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-    buildIndicesStridedTriangleStrip(n, nrows, stride) {
+    buildIndicesStridedTriangleStrip(nrows, stride) {
         var inxdata = [];
         var crow = 1;
         var ca1 = stride;
@@ -12036,12 +11819,12 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             data
         };
     }
-    buildBoneIndex(n, nrows, stride) {
+    buildBoneIndex(nrows, stride) {
         var ndxdata = [];
         var n1 = 0, n2 = 0;
         for(var y = 0; y < nrows; y++){
             for(var x = 0; x < stride; x++)if (x % 2 == 0) {
-                if (this.bonediv == 2) {
+                if (this.bonediv >= 2) {
                     n1 = x / this.bonediv;
                     n2 = 99999;
                     ndxdata.push([
@@ -12083,7 +11866,7 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             data
         };
     }
-    buildTexCoords(n, nrows, stride) {
+    buildTexCoords(nrows, stride) {
         var i = 0, n1 = 1.0, n2 = 0.0;
         var wdata = [];
         var crow = 0;
@@ -12108,39 +11891,28 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             data
         };
     }
-    buildBoneWeights(n, nrows, stride) {
+    buildBoneWeights(nrows, stride) {
         var wdata = [];
         var n1 = 1.0, n2 = 0.0;
         for(var y = 0; y < nrows; y++){
             for(var x = 0; x < stride; x++)if (x % 2 == 0) {
-                if (this.bonediv == 2) {
-                    wdata.push([
-                        1.0,
-                        0.0,
-                        0,
-                        0
-                    ]);
-                    wdata.push([
-                        0.5,
-                        0.5,
-                        0,
-                        0
-                    ]);
-                } else {
-                    wdata.push([
-                        n1,
-                        n2,
-                        0,
-                        0
-                    ]);
-                    wdata.push([
-                        n1,
-                        n2,
-                        0,
-                        0
-                    ]);
-                }
-            }
+                wdata.push([
+                    1.0,
+                    0.0,
+                    0,
+                    0
+                ]);
+                wdata.push([
+                    0.5,
+                    0.5,
+                    0,
+                    0
+                ]);
+            /*   else
+                       {
+                         wdata.push([n1,n2,0,0]);
+                         wdata.push([n1,n2,0,0]);
+                       } */ }
         }
         var data = this.floatStraighten("BoneWeights", 4, wdata); // this.floatStraighten4("BoneWeights",wdata);
         return {
@@ -12212,7 +11984,366 @@ class StridedMesh0 {
 }
 exports.StridedMesh0 = StridedMesh0;
 
-},{}],"a2gwM":[function(require,module,exports) {
+},{}],"otYB7":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishOneJoint = exports.FishHRotated = exports.FishV = exports.FishHTranslated = exports.Fish = void 0;
+const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
+const twgl_js_1 = require("./../node_modules/twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const boneanimation = __importStar(require("./boneanimation"));
+class Fish extends boneanimation.BoneAnimation {
+    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile){
+        super();
+        this.size = size;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.forwardspeed = forwardspeed;
+        this.phase0 = phase0;
+        this.deltaphase = deltaphase;
+        this.arange = arange;
+        this.ampl = ampl;
+        this.surfacetexturefile = surfacetexturefile;
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    computeBone(time, domove, domovetail) {
+        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
+        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    prepareSurfaceTextures(gl, selectedSurface) {
+        var gradientname = require("./resources/models/stone/circlegradient.png");
+        var clovername = require("./images/clover.jpg");
+        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+        var textures = twgl.createTextures(gl, {
+            checker: {
+                mag: gl.NEAREST,
+                min: gl.LINEAR,
+                src: [
+                    255,
+                    255,
+                    255,
+                    255,
+                    192,
+                    192,
+                    192,
+                    255,
+                    92,
+                    92,
+                    92,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255, 
+                ]
+            },
+            clover: {
+                src: clovername
+            },
+            zelenskyy: {
+                src: zelenskyyname
+            },
+            gradient: {
+                src: gradientname
+            },
+            flagofukraine: {
+                src: flagofukrainname
+            }
+        });
+        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
+        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
+        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
+        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
+        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
+        return textures;
+    }
+    createSurfaceTexture(gl) {
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
+    }
+    createBoneTexture(gl, time, dictpar) {
+        gl.activeTexture(gl.TEXTURE0);
+        this.prepareBoneMatrices(gl, dictpar);
+        this.computeBone(time, false, false);
+        this.bindPose = this.bones;
+        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    createUniforms(gl, dictpar) {
+        return {
+            world: twgl_js_1.m4.identity(),
+            projection: twgl_js_1.m4.identity(),
+            viewprojection: twgl_js_1.m4.identity(),
+            view: twgl_js_1.m4.translation([
+                0.0,
+                0.0,
+                0.0
+            ]),
+            surfaceTexture: this.surfaceTexture,
+            boneMatrixTexture: this.boneMatrixTexture,
+            color: [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        };
+    }
+    numberDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return +spar;
+        return pardefault;
+    }
+    stringDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return spar;
+        return pardefault;
+    }
+}
+exports.Fish = Fish;
+//--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
+class FishHTranslated extends Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishHPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishHPositions();
+            console.log("created triangles mesh. phase=" + this.phase0);
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            var m = twgl_js_1.m4.identity();
+            var normx = i;
+            normx = normx / bones.length;
+            var ay = arange * (normx * di);
+            var az = arange * (normx * di);
+            twgl_js_1.m4.translate(m, [
+                this.px,
+                this.py + amp * Math.cos(0.5 * ay),
+                this.pz + amp * 10.0 * Math.sin(az)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.size * damp;
+        }
+    //      this.px+=-this.forwardspeed; // * bones.length;    
+    }
+}
+exports.FishHTranslated = FishHTranslated;
+//--------------------------------------------------------------------------------------------------------
+class FishV extends Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishVPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishVPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+                this.px,
+                this.py + amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
+                this.pz + amp * Math.sin(+arange * i / bones.length + di)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.scale * damp;
+        }
+    //   this.px+=-this.forwardspeed; // * bones.length;      
+    }
+}
+exports.FishV = FishV;
+//----------------------------------------------------------------------------------------------------------
+class FishHRotated extends Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2);
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishPPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arad = di * Math.PI / 180.0;
+        var asin = this.ampl * di * Math.PI * 2.0; //Math.sin( this.phase0+12.0*arad)*this.arange;
+        // var arange=this.arange;
+        // var cay = -180.0; 
+        var ay = 0.0;
+        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
+        var jointpos = 0.5;
+        var jointpos2 = 0.3;
+        for(var i = 0; i < bones.length; i++){
+            var nnormx = i / bones.length;
+            var nnormxal = 0.5 + 0.5 * Math.sin(this.arange * nnormx * asin);
+            //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
+            ay = asin * nnormxal;
+            var m = twgl_js_1.m4.identity();
+            m = twgl_js_1.m4.translate(m, [
+                jointpos * bonesize / 2 + this.px,
+                0,
+                0
+            ]);
+            m = twgl_js_1.m4.rotateY(m, ay);
+            m = twgl_js_1.m4.translate(m, [
+                -(jointpos * bonesize / 2 + this.px),
+                0,
+                0,
+                0
+            ]);
+            m = twgl_js_1.m4.translate(m, [
+                this.px,
+                0,
+                0,
+                0
+            ]);
+            //  m = m4.translate(m,[jointpos*bonesize,0,0]);
+            //   m = m4.rotateY(m, posay );
+            //   m = m4.translate(m,[this.px,0,0,0]);
+            bones[i] = m;
+        //  this.py+=0.0;
+        //  this.pz+=0.00000;
+        // amp+=this.size*damp;       
+        }
+    //    this.px+=-this.forwardspeed; // * bones.length;    
+    }
+}
+exports.FishHRotated = FishHRotated;
+//----------------------------------------------------------------------------------------------------------
+class FishOneJoint extends Fish {
+    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile, jointpos, vaxis){
+        super(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile);
+        this.size = size;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.forwardspeed = forwardspeed;
+        this.phase0 = phase0;
+        this.deltaphase = deltaphase;
+        this.arange = arange;
+        this.ampl = ampl;
+        this.surfacetexturefile = surfacetexturefile;
+        this.jointpos = jointpos;
+        this.vaxis = vaxis;
+    }
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishVPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction
+        var len = this.jointpos * bonesize; // len is distance from 0 to joint
+        var mtrans1 = twgl_js_1.m4.translation([
+            len,
+            0,
+            0
+        ]); // joint serves as a rotation point (trans to)
+        var mtrans2 = twgl_js_1.m4.translation([
+            -len,
+            0,
+            0
+        ]); // joint serves as a rotation point (trans back)
+        var ii = bones.length * this.jointpos; // ii is index where joint starts
+        var mrot = twgl_js_1.m4.axisRotate(mtrans1, this.vaxis, di * this.ampl); // rotation used beyond joint
+        for(var i = 0; i < bones.length; i++){
+            var m = i > ii ? mrot : mtrans1; // before joint, use trans1 matrix. After joint, use rotated trans1
+            bones[i] = twgl_js_1.m4.multiply(m, mtrans2); // bone matrix consists of local m translated back to origin
+        }
+        this.EndOfBoneTrans = twgl_js_1.m4.translate(mrot, [
+            bonesize - len - 0.1,
+            0,
+            0,
+            0
+        ]); // the end of the bone      
+    }
+}
+exports.FishOneJoint = FishOneJoint;
+
+},{"./../node_modules/twgl.js":"3uqAP","./stridedmesh":"8Kodn","./trianglesmesh":"a2gwM","./boneanimation":"aOyYs","./resources/models/stone/circlegradient.png":"50y7h","./images/clover.jpg":"iLTuo","./resources/models/stone/zelenskii.png":"gMM6z","./resources/models/stone/flagofukraine.png":"1o0L8"}],"a2gwM":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -12411,7 +12542,2969 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
 }
 exports.StridedMesh = StridedMesh;
 
-},{"./stridedmesh0":"l5gMp"}],"jTKYD":[function(require,module,exports) {
+},{"./stridedmesh0":"l5gMp"}],"50y7h":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "circlegradient.6cda9680.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"iLTuo":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "clover.bed4e0b3.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gMM6z":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "zelenskii.830ddd79.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"1o0L8":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "flagofukraine.65ef6112.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cbghk":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.twglbaseapp = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work, this twglbaseapp provides all tools like programInfo
+const baseapp = __importStar(require("./baseapp"));
+class twglbaseapp extends baseapp.baseapp {
+    constructor(){
+        super(...arguments);
+        this.twglprograminfo = null; // there can be several
+        this.twglprogram = null; // there can be several
+    }
+    createEnvironmentMapGeoTwgl(gl) {
+        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+    }
+    createEnvironmentMapTexture(gl, scene) {
+        if (scene >= 0) return super.createEnvironmentMapTexture(gl, scene);
+        else if (scene == -1) {
+            // external CubeMap texture hosted by Gregg's webgl2fundamentals
+            var texture = twgl.createTexture(gl, {
+                target: gl.TEXTURE_CUBE_MAP,
+                src: [
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg",
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg",
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg",
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg",
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg",
+                    "https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg", 
+                ],
+                min: gl.LINEAR_MIPMAP_LINEAR
+            });
+            return texture;
+        }
+        return null;
+    }
+    initprograminfos(gl, reportdiv, shaders) {
+        if (this.twglprograminfo == null || this.twglprograminfo == undefined) this.twglprograminfo = new Array(shaders.length);
+        var i = 0;
+        shaders.forEach((val)=>{
+            var p = twgl.createProgramInfo(gl, [
+                val.vs,
+                val.fs
+            ]);
+            if (p != null) {
+                console.log("Init program#" + i + " with shaders[" + i + "]\nvs:[" + shaders[i].vs + "\nfs:[" + shaders[i].fs + "]");
+                this.twglprograminfo[i++] = p;
+            } else document.getElementById(reportdiv).innerHTML = "gl.createProgram #1 fails.";
+        });
+        return false;
+    }
+    //--- base class maininfo() tasks set up twgl/WebGL2 programinfo(s) ---------------------------------------------------------------------------
+    maininfo(gl, dictpar, vs, fs) {
+        if (this.initprograminfos(gl, "cdiv", [
+            {
+                vs,
+                fs
+            }
+        ]) && this.twglprograminfo && this.gl) {
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            console.log("baseapp main ok, viewport " + gl.canvas.width + " x " + gl.canvas.height);
+        }
+    }
+    maininfos(gl, dictpar, shaders) {
+        if (this.initprograminfos(gl, "cdiv", shaders) && this.program && this.gl) {
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            console.log("baseapp maininfos ok, viewport " + gl.canvas.width + " x " + gl.canvas.height);
+        }
+    }
+    // -------------------------------------------------------------------------------------
+    //--- used in drawimagespace, reads the texture repository maps textures[] and texureaspects[] ----------------------
+    prepareSurfaceTextures(gl, selectedSurface) {
+        this.textureaspects.set("checker", 1.0);
+        this.textureaspects.set("clover", 1.0);
+        this.textureaspects.set("zelenskyy", 1.0);
+        this.textureaspects.set("aristotle", 1);
+        this.textureaspects.set("flagofukraine", 856.0 / 1288.0);
+        this.textureaspects.set("flagofukraine2", 1288.0 / 856.0);
+        this.textureaspects.set("geotriangle", 258.0 / 424.0);
+        this.textureaspects.set("geotriangle2", 0.5);
+        this.textureaspects.set("geotriangle2", 0.5);
+        this.textureaspects.set("protractorT2", 395.0 / 747.0);
+        var gradientname = require("./resources/models/stone/circlegradient.png");
+        var aristotlename = require("./resources/models/stone/aristoteles1.png");
+        var clovername = require("./images/clover.jpg");
+        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+        var flagofukrainname2 = require("./resources/models/stone/flagofukraine2.png");
+        var trianglename = require("./resources/models/stone/geodriehoek.png");
+        var trianglename2 = require("./resources/models/stone/geodriehoek2.png");
+        var protractorT2name = require("./resources/models/stone/protractorT2.png");
+        console.log("setting textures");
+        this.textures = twgl.createTextures(gl, {
+            checker: {
+                mag: gl.NEAREST,
+                min: gl.LINEAR,
+                src: [
+                    255,
+                    255,
+                    255,
+                    255,
+                    192,
+                    192,
+                    192,
+                    0,
+                    92,
+                    92,
+                    92,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255, 
+                ]
+            },
+            clover: {
+                src: clovername
+            },
+            zelenskyy: {
+                src: zelenskyyname
+            },
+            gradient: {
+                src: gradientname
+            },
+            flagofukraine: {
+                src: flagofukrainname
+            },
+            flagofukraine2: {
+                src: flagofukrainname2
+            },
+            geotriangle: {
+                src: trianglename
+            },
+            geotriangle2: {
+                src: trianglename2
+            },
+            aristotle: {
+                src: aristotlename
+            },
+            protractorT2: {
+                src: protractorT2name
+            }
+        });
+        console.log("reading textures");
+        if (selectedSurface == "checker") return this.textures.checker;
+        if (selectedSurface == "clover") return this.textures.clover;
+        if (selectedSurface == "zelenskyy") return this.textures.zelenskyy;
+        if (selectedSurface == "gradient") return this.textures.gradient;
+        if (selectedSurface == "flagofukraine") return this.textures.flagofukraine;
+        if (selectedSurface == "flagofukraine2") return this.textures.flagofukraine2;
+        if (selectedSurface == "geotriangle") return this.textures.geotriangle;
+        if (selectedSurface == "geotriangle2") return this.textures.geotriangle2;
+        if (selectedSurface == "aristotle") return this.textures.geotriangle2;
+        if (selectedSurface == "protractorT2") return this.textures.protractorT2;
+    }
+}
+exports.twglbaseapp = twglbaseapp;
+
+},{"twgl.js":"3uqAP","./baseapp":"6Sz8u","./resources/models/stone/circlegradient.png":"50y7h","./resources/models/stone/aristoteles1.png":"191Bf","./images/clover.jpg":"iLTuo","./resources/models/stone/zelenskii.png":"gMM6z","./resources/models/stone/flagofukraine.png":"1o0L8","./resources/models/stone/flagofukraine2.png":"inIlM","./resources/models/stone/geodriehoek.png":"8Yuji","./resources/models/stone/geodriehoek2.png":"byoCh","./resources/models/stone/protractorT2.png":"cTTe4"}],"6Sz8u":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.baseapp = void 0;
+const twgl_js_1 = require("twgl.js"); // Greg's work, this baseapp  only imports geometry matrix/vector tools
+const datgui = __importStar(require("dat.gui"));
+class baseapp {
+    constructor(cgl, capp, dictpar){
+        this.baseappParameters = {
+            color0: "#00A000",
+            move: false,
+            movetail: true,
+            speed: 0.04
+        };
+        this.gl = null;
+        this.app = null;
+        this.program = null; // there can be several
+        // textures repository
+        this.textureaspects = new Map();
+        this.textures = null;
+        //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
+        this.vsEnvironmentMap = `#version 300 es
+        in vec4 a_position;
+        out vec4 v_position;
+        void main() {
+        v_position = a_position;
+        gl_Position = vec4(a_position.xy, 1, 1);
+        }
+        `;
+        this.fsEnvironmentMap = `#version 300 es
+        precision highp float;
+
+        uniform samplerCube u_skybox;
+        uniform mat4 u_viewDirectionProjectionInverse;
+
+        in vec4 v_position;
+
+        // we need to declare an output for the fragment shader
+        out vec4 outColor;
+
+        void main() {
+        vec4 t = u_viewDirectionProjectionInverse * v_position;
+        // outColor = vec4(0,0,0,0);
+        outColor = texture(u_skybox, normalize(t.xyz / t.w));
+        }
+        `;
+        baseapp.instance = this;
+        this.cameraTarget = [
+            0,
+            0.5,
+            0
+        ];
+        this.cameraPosition = [
+            4,
+            0,
+            0
+        ];
+        document.getElementById("cdiv").innerHTML = "finding webgl2...";
+        var isWebGL2 = !!cgl;
+        if (!isWebGL2) document.getElementById("cdiv").innerHTML = "no webgl2";
+        else {
+            document.getElementById("cdiv").innerHTML = "webgl2 found";
+            this.gl = cgl;
+            this.app = capp;
+        }
+    }
+    onChangeColorValue(value) {
+        var thisinstance = baseapp.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    createGUI(parameters, instanceParameters) {
+        console.log("=> animation1 initGUI " + parameters);
+        this.baseappParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.baseappParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(parameters, instanceParameters);
+        // Checkbox forward move animation on/off
+        gui.add(parameters, "move");
+        // Checkbox tail animation on/off
+        gui.add(parameters, "movetail");
+        // Slider for animation speed
+        gui.add(parameters, "speed").min(0.002).max(0.02).step(0.002);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(parameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        return gui;
+    }
+    compileandconnectshaders(gl, program, vs, fs, reportdiv) {
+        var serr = "";
+        var vsshader = gl.createShader(gl.VERTEX_SHADER);
+        if (vsshader != null) {
+            gl.shaderSource(vsshader, vs);
+            gl.compileShader(vsshader);
+        } else serr += "vertex shader create issue";
+        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
+        if (fshader != null) {
+            gl.shaderSource(fshader, fs);
+            gl.compileShader(fshader);
+        } else serr += "fragment shader create issue";
+        if (serr.length > 0) document.getElementById(reportdiv).innerHTML = serr;
+        else {
+            serr = "";
+            gl.attachShader(program, vsshader);
+            gl.deleteShader(vsshader);
+            gl.attachShader(program, fshader);
+            gl.deleteShader(fshader);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                serr += `Link failed: ${gl.getProgramInfoLog(program)}`;
+                var logvertexshader = gl.getShaderInfoLog(vsshader);
+                if (logvertexshader) serr += `${logvertexshader}`;
+                var logfragmentshader = gl.getShaderInfoLog(fshader);
+                if (logfragmentshader) serr += `${logfragmentshader}`;
+                var re = /(\r\n|\r|\n)/gi;
+                var str = serr.replace(re, "<br>");
+                document.getElementById(reportdiv).innerHTML = "shader issue..<br>" + str;
+            } else return true;
+        }
+    }
+    //--- base class main() tasks set up WebGL2 program(s) ---------------------------------------------------------------------------
+    initprograms(gl, reportdiv, shaders) {
+        if (this.program == null || this.program == undefined) this.program = new Array(shaders.length);
+        var i = 0;
+        shaders.forEach((val)=>{
+            var p = gl.createProgram();
+            if (p != null) {
+                this.compileandconnectshaders(gl, p, val.vs, val.fs, reportdiv);
+                this.program[i++] = p;
+            } else document.getElementById(reportdiv).innerHTML = "gl.createProgram #1 fails.";
+        });
+        return false;
+    }
+    resizeCanvasToDisplaySize(canvas) {
+        // Lookup the size the browser is displaying the canvas in CSS pixels.
+        const displayWidth = canvas.clientWidth;
+        const displayHeight = canvas.clientHeight;
+        // Check if the canvas is not the same size.
+        const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight;
+        if (needResize) {
+            // Make the canvas the same size
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+        }
+        return needResize;
+    }
+    main(gl, dictpar, vs, fs) {
+        if (this.initprograms(gl, "cdiv", [
+            {
+                vs,
+                fs
+            }
+        ]) && this.program && this.gl) {
+            this.resizeCanvasToDisplaySize(gl.canvas);
+            console.log("baseapp main ok, viewport " + gl.canvas.width + " x " + gl.canvas.height);
+        }
+    }
+    mains(gl, dictpar, shaders) {
+        if (this.initprograms(gl, "cdiv", shaders) && this.program && this.gl) {
+            this.resizeCanvasToDisplaySize(gl.canvas);
+            console.log("baseapp mains ok, viewport " + gl.canvas.width + " x " + gl.canvas.height);
+        }
+    }
+    createEnvironmentMapGeo(gl, positionLocation) {
+        // Create a vertex array object (attribute state) and make it the one we're currently working with
+        this.vaoEnvironment = gl.createVertexArray();
+        gl.bindVertexArray(this.vaoEnvironment);
+        // Create a buffer for positions
+        var positionBuffer = gl.createBuffer();
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Put the positions in the buffer
+        var positions = new Float32Array([
+            -1,
+            -1,
+            1,
+            -1,
+            -1,
+            1,
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1, 
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        // Turn on the position attribute
+        gl.enableVertexAttribArray(positionLocation);
+        // Bind the position buffer.
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 2; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
+    }
+    createEnvironmentMapTexture(gl, scene) {
+        /*   if (scene==-1)
+           {
+               // external CubeMap texture hosted by Gregg's webgl2fundamentals
+               var texture = twgl.createTexture(gl, {
+                   target: gl.TEXTURE_CUBE_MAP,
+                   src: [
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',
+                   'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',
+                   ],
+                   min: gl.LINEAR_MIPMAP_LINEAR,
+               });
+               return texture;
+           } else
+         */ {
+            // local CubeMap texture hosted in parcel dist\images
+            var mytexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+            var pos_x_name = "", pos_y_name = "", pos_z_name = "";
+            var neg_x_name = "", neg_y_name = "", neg_z_name = "";
+            var p = scene;
+            switch(p){
+                case 0:
+                    pos_x_name = require("./images/chmuseum/pos-x.jpg");
+                    pos_y_name = require("./images/chmuseum/pos-y.jpg");
+                    pos_z_name = require("./images/chmuseum/pos-z.jpg");
+                    neg_x_name = require("./images/chmuseum/neg-x.jpg");
+                    neg_y_name = require("./images/chmuseum/neg-y.jpg");
+                    neg_z_name = require("./images/chmuseum/neg-z.jpg");
+                    break;
+                case 1:
+                    pos_x_name = require("./images/yokohama/posx.jpg");
+                    pos_y_name = require("./images/yokohama/posy.jpg");
+                    pos_z_name = require("./images/yokohama/posz.jpg");
+                    neg_x_name = require("./images/yokohama/negx.jpg");
+                    neg_y_name = require("./images/yokohama/negy.jpg");
+                    neg_z_name = require("./images/yokohama/negz.jpg");
+                    break;
+            }
+            const faceInfos = [
+                {
+                    target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+                    url: pos_x_name
+                },
+                {
+                    target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+                    url: neg_x_name
+                },
+                {
+                    target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+                    url: pos_y_name
+                },
+                {
+                    target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                    url: neg_y_name
+                },
+                {
+                    target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                    url: pos_z_name
+                },
+                {
+                    target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                    url: neg_z_name
+                }, 
+            ];
+            var nImage = 0;
+            faceInfos.forEach((faceInfo)=>{
+                const { target , url  } = faceInfo;
+                // Upload the canvas to the cubemap face.
+                const level = 0;
+                const internalFormat = gl.RGBA;
+                const width = 256;
+                const height = 256;
+                const format = gl.RGBA;
+                const type = gl.UNSIGNED_BYTE;
+                // setup each face so it's immediately renderable
+                gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
+                // Asynchronously load an image
+                const image = new Image();
+                this.requestCORSIfNotSameOrigin(image, url);
+                image.src = url;
+                image.addEventListener("load", function() {
+                    // Now that the image has loaded make copy it to the texture.
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+                    gl.texImage2D(target, level, internalFormat, format, type, image);
+                    // lx note: this is too early! console yields a warning..  
+                    // gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    console.log("nImage=" + nImage + "/" + faceInfos.length + " loaded: " + image.src);
+                    // instead.. initialize mipmap when all face textures are read
+                    if (++nImage == faceInfos.length) {
+                        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                    }
+                });
+            });
+            return mytexture;
+        }
+        return null;
+    }
+    requestCORSIfNotSameOrigin(img, url) {
+        if (new URL(url, window.location.href).origin !== window.location.origin) img.crossOrigin = "";
+    }
+    computeprojectionmatrices(gl, fov) {
+        // Build a projection matrix.
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        this.projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
+        // Build a view matrix.
+        var up = [
+            0,
+            1,
+            0
+        ];
+        var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        this.viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+        // viewDirectionMatrix is viewMatrix without translation (direction only)
+        this.viewDirectionMatrix = twgl_js_1.m4.copy(this.viewMatrix);
+        this.viewDirectionMatrix[12] = 0;
+        this.viewDirectionMatrix[13] = 0;
+        this.viewDirectionMatrix[14] = 0;
+        //
+        this.viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(this.projectionMatrix, this.viewDirectionMatrix);
+        return this.viewDirectionProjectionMatrix;
+    //
+    }
+    renderenvironmentmap(gl, fov, vao, uniformlocs, time) {
+        gl.bindVertexArray(vao);
+        this.computeprojectionmatrices(gl, fov);
+        gl.depthFunc(gl.LESS); // use the default depth test
+        // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);
+        // var viewDirectionProjectionInverseMatrix = m4.inverse(this.viewDirectionProjectionMatrix!);
+        gl.uniformMatrix4fv(uniformlocs.invproj, false, twgl_js_1.m4.inverse(this.viewDirectionProjectionMatrix));
+        gl.uniform1i(uniformlocs.loc, 0);
+        gl.depthFunc(gl.LEQUAL);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+}
+exports.baseapp = baseapp;
+baseapp.instance = null;
+
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./images/chmuseum/pos-x.jpg":"a9sca","./images/chmuseum/pos-y.jpg":"lyQqL","./images/chmuseum/pos-z.jpg":"aPDGD","./images/chmuseum/neg-x.jpg":"fpDpr","./images/chmuseum/neg-y.jpg":"5wZyZ","./images/chmuseum/neg-z.jpg":"9k2KL","./images/yokohama/posx.jpg":"6MAhy","./images/yokohama/posy.jpg":"jQrDm","./images/yokohama/posz.jpg":"axQiE","./images/yokohama/negx.jpg":"d4Kua","./images/yokohama/negy.jpg":"5tE9m","./images/yokohama/negz.jpg":"10sgW"}],"k3xQk":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "color", ()=>color);
+parcelHelpers.export(exports, "controllers", ()=>controllers);
+parcelHelpers.export(exports, "dom", ()=>dom$1);
+parcelHelpers.export(exports, "gui", ()=>gui);
+parcelHelpers.export(exports, "GUI", ()=>GUI$1);
+/**
+ * dat-gui JavaScript Controller Library
+ * https://github.com/dataarts/dat.gui
+ *
+ * Copyright 2011 Data Arts Team, Google Creative Lab
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */ function ___$insertStyle(css) {
+    if (!css) return;
+    if (typeof window === "undefined") return;
+    var style = document.createElement("style");
+    style.setAttribute("type", "text/css");
+    style.innerHTML = css;
+    document.head.appendChild(style);
+    return css;
+}
+function colorToString(color, forceCSSHex) {
+    var colorFormat = color.__state.conversionName.toString();
+    var r = Math.round(color.r);
+    var g = Math.round(color.g);
+    var b = Math.round(color.b);
+    var a = color.a;
+    var h = Math.round(color.h);
+    var s = color.s.toFixed(1);
+    var v = color.v.toFixed(1);
+    if (forceCSSHex || colorFormat === "THREE_CHAR_HEX" || colorFormat === "SIX_CHAR_HEX") {
+        var str = color.hex.toString(16);
+        while(str.length < 6)str = "0" + str;
+        return "#" + str;
+    } else if (colorFormat === "CSS_RGB") return "rgb(" + r + "," + g + "," + b + ")";
+    else if (colorFormat === "CSS_RGBA") return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+    else if (colorFormat === "HEX") return "0x" + color.hex.toString(16);
+    else if (colorFormat === "RGB_ARRAY") return "[" + r + "," + g + "," + b + "]";
+    else if (colorFormat === "RGBA_ARRAY") return "[" + r + "," + g + "," + b + "," + a + "]";
+    else if (colorFormat === "RGB_OBJ") return "{r:" + r + ",g:" + g + ",b:" + b + "}";
+    else if (colorFormat === "RGBA_OBJ") return "{r:" + r + ",g:" + g + ",b:" + b + ",a:" + a + "}";
+    else if (colorFormat === "HSV_OBJ") return "{h:" + h + ",s:" + s + ",v:" + v + "}";
+    else if (colorFormat === "HSVA_OBJ") return "{h:" + h + ",s:" + s + ",v:" + v + ",a:" + a + "}";
+    return "unknown format";
+}
+var ARR_EACH = Array.prototype.forEach;
+var ARR_SLICE = Array.prototype.slice;
+var Common = {
+    BREAK: {},
+    extend: function extend(target) {
+        this.each(ARR_SLICE.call(arguments, 1), function(obj) {
+            var keys = this.isObject(obj) ? Object.keys(obj) : [];
+            keys.forEach((function(key) {
+                if (!this.isUndefined(obj[key])) target[key] = obj[key];
+            }).bind(this));
+        }, this);
+        return target;
+    },
+    defaults: function defaults(target) {
+        this.each(ARR_SLICE.call(arguments, 1), function(obj) {
+            var keys = this.isObject(obj) ? Object.keys(obj) : [];
+            keys.forEach((function(key) {
+                if (this.isUndefined(target[key])) target[key] = obj[key];
+            }).bind(this));
+        }, this);
+        return target;
+    },
+    compose: function compose() {
+        var toCall = ARR_SLICE.call(arguments);
+        return function() {
+            var args = ARR_SLICE.call(arguments);
+            for(var i = toCall.length - 1; i >= 0; i--)args = [
+                toCall[i].apply(this, args)
+            ];
+            return args[0];
+        };
+    },
+    each: function each(obj, itr, scope) {
+        if (!obj) return;
+        if (ARR_EACH && obj.forEach && obj.forEach === ARR_EACH) obj.forEach(itr, scope);
+        else if (obj.length === obj.length + 0) {
+            var key = void 0;
+            var l = void 0;
+            for(key = 0, l = obj.length; key < l; key++){
+                if (key in obj && itr.call(scope, obj[key], key) === this.BREAK) return;
+            }
+        } else for(var _key in obj){
+            if (itr.call(scope, obj[_key], _key) === this.BREAK) return;
+        }
+    },
+    defer: function defer(fnc) {
+        setTimeout(fnc, 0);
+    },
+    debounce: function debounce(func, threshold, callImmediately) {
+        var timeout = void 0;
+        return function() {
+            var obj = this;
+            var args = arguments;
+            function delayed() {
+                timeout = null;
+                if (!callImmediately) func.apply(obj, args);
+            }
+            var callNow = callImmediately || !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(delayed, threshold);
+            if (callNow) func.apply(obj, args);
+        };
+    },
+    toArray: function toArray(obj) {
+        if (obj.toArray) return obj.toArray();
+        return ARR_SLICE.call(obj);
+    },
+    isUndefined: function isUndefined(obj) {
+        return obj === undefined;
+    },
+    isNull: function isNull(obj) {
+        return obj === null;
+    },
+    isNaN: function(_isNaN) {
+        function isNaN1(_x) {
+            return _isNaN.apply(this, arguments);
+        }
+        isNaN1.toString = function() {
+            return _isNaN.toString();
+        };
+        return isNaN1;
+    }(function(obj) {
+        return isNaN(obj);
+    }),
+    isArray: Array.isArray || function(obj) {
+        return obj.constructor === Array;
+    },
+    isObject: function isObject(obj) {
+        return obj === Object(obj);
+    },
+    isNumber: function isNumber(obj) {
+        return obj === obj + 0;
+    },
+    isString: function isString(obj) {
+        return obj === obj + "";
+    },
+    isBoolean: function isBoolean(obj) {
+        return obj === false || obj === true;
+    },
+    isFunction: function isFunction(obj) {
+        return obj instanceof Function;
+    }
+};
+var INTERPRETATIONS = [
+    {
+        litmus: Common.isString,
+        conversions: {
+            THREE_CHAR_HEX: {
+                read: function read(original) {
+                    var test = original.match(/^#([A-F0-9])([A-F0-9])([A-F0-9])$/i);
+                    if (test === null) return false;
+                    return {
+                        space: "HEX",
+                        hex: parseInt("0x" + test[1].toString() + test[1].toString() + test[2].toString() + test[2].toString() + test[3].toString() + test[3].toString(), 0)
+                    };
+                },
+                write: colorToString
+            },
+            SIX_CHAR_HEX: {
+                read: function read(original) {
+                    var test = original.match(/^#([A-F0-9]{6})$/i);
+                    if (test === null) return false;
+                    return {
+                        space: "HEX",
+                        hex: parseInt("0x" + test[1].toString(), 0)
+                    };
+                },
+                write: colorToString
+            },
+            CSS_RGB: {
+                read: function read(original) {
+                    var test = original.match(/^rgb\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/);
+                    if (test === null) return false;
+                    return {
+                        space: "RGB",
+                        r: parseFloat(test[1]),
+                        g: parseFloat(test[2]),
+                        b: parseFloat(test[3])
+                    };
+                },
+                write: colorToString
+            },
+            CSS_RGBA: {
+                read: function read(original) {
+                    var test = original.match(/^rgba\(\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*,\s*(\S+)\s*\)/);
+                    if (test === null) return false;
+                    return {
+                        space: "RGB",
+                        r: parseFloat(test[1]),
+                        g: parseFloat(test[2]),
+                        b: parseFloat(test[3]),
+                        a: parseFloat(test[4])
+                    };
+                },
+                write: colorToString
+            }
+        }
+    },
+    {
+        litmus: Common.isNumber,
+        conversions: {
+            HEX: {
+                read: function read(original) {
+                    return {
+                        space: "HEX",
+                        hex: original,
+                        conversionName: "HEX"
+                    };
+                },
+                write: function write(color) {
+                    return color.hex;
+                }
+            }
+        }
+    },
+    {
+        litmus: Common.isArray,
+        conversions: {
+            RGB_ARRAY: {
+                read: function read(original) {
+                    if (original.length !== 3) return false;
+                    return {
+                        space: "RGB",
+                        r: original[0],
+                        g: original[1],
+                        b: original[2]
+                    };
+                },
+                write: function write(color) {
+                    return [
+                        color.r,
+                        color.g,
+                        color.b
+                    ];
+                }
+            },
+            RGBA_ARRAY: {
+                read: function read(original) {
+                    if (original.length !== 4) return false;
+                    return {
+                        space: "RGB",
+                        r: original[0],
+                        g: original[1],
+                        b: original[2],
+                        a: original[3]
+                    };
+                },
+                write: function write(color) {
+                    return [
+                        color.r,
+                        color.g,
+                        color.b,
+                        color.a
+                    ];
+                }
+            }
+        }
+    },
+    {
+        litmus: Common.isObject,
+        conversions: {
+            RGBA_OBJ: {
+                read: function read(original) {
+                    if (Common.isNumber(original.r) && Common.isNumber(original.g) && Common.isNumber(original.b) && Common.isNumber(original.a)) return {
+                        space: "RGB",
+                        r: original.r,
+                        g: original.g,
+                        b: original.b,
+                        a: original.a
+                    };
+                    return false;
+                },
+                write: function write(color) {
+                    return {
+                        r: color.r,
+                        g: color.g,
+                        b: color.b,
+                        a: color.a
+                    };
+                }
+            },
+            RGB_OBJ: {
+                read: function read(original) {
+                    if (Common.isNumber(original.r) && Common.isNumber(original.g) && Common.isNumber(original.b)) return {
+                        space: "RGB",
+                        r: original.r,
+                        g: original.g,
+                        b: original.b
+                    };
+                    return false;
+                },
+                write: function write(color) {
+                    return {
+                        r: color.r,
+                        g: color.g,
+                        b: color.b
+                    };
+                }
+            },
+            HSVA_OBJ: {
+                read: function read(original) {
+                    if (Common.isNumber(original.h) && Common.isNumber(original.s) && Common.isNumber(original.v) && Common.isNumber(original.a)) return {
+                        space: "HSV",
+                        h: original.h,
+                        s: original.s,
+                        v: original.v,
+                        a: original.a
+                    };
+                    return false;
+                },
+                write: function write(color) {
+                    return {
+                        h: color.h,
+                        s: color.s,
+                        v: color.v,
+                        a: color.a
+                    };
+                }
+            },
+            HSV_OBJ: {
+                read: function read(original) {
+                    if (Common.isNumber(original.h) && Common.isNumber(original.s) && Common.isNumber(original.v)) return {
+                        space: "HSV",
+                        h: original.h,
+                        s: original.s,
+                        v: original.v
+                    };
+                    return false;
+                },
+                write: function write(color) {
+                    return {
+                        h: color.h,
+                        s: color.s,
+                        v: color.v
+                    };
+                }
+            }
+        }
+    }
+];
+var result = void 0;
+var toReturn = void 0;
+var interpret = function interpret() {
+    toReturn = false;
+    var original = arguments.length > 1 ? Common.toArray(arguments) : arguments[0];
+    Common.each(INTERPRETATIONS, function(family) {
+        if (family.litmus(original)) {
+            Common.each(family.conversions, function(conversion, conversionName) {
+                result = conversion.read(original);
+                if (toReturn === false && result !== false) {
+                    toReturn = result;
+                    result.conversionName = conversionName;
+                    result.conversion = conversion;
+                    return Common.BREAK;
+                }
+            });
+            return Common.BREAK;
+        }
+    });
+    return toReturn;
+};
+var tmpComponent = void 0;
+var ColorMath = {
+    hsv_to_rgb: function hsv_to_rgb(h, s, v) {
+        var hi = Math.floor(h / 60) % 6;
+        var f = h / 60 - Math.floor(h / 60);
+        var p = v * (1.0 - s);
+        var q = v * (1.0 - f * s);
+        var t = v * (1.0 - (1.0 - f) * s);
+        var c = [
+            [
+                v,
+                t,
+                p
+            ],
+            [
+                q,
+                v,
+                p
+            ],
+            [
+                p,
+                v,
+                t
+            ],
+            [
+                p,
+                q,
+                v
+            ],
+            [
+                t,
+                p,
+                v
+            ],
+            [
+                v,
+                p,
+                q
+            ]
+        ][hi];
+        return {
+            r: c[0] * 255,
+            g: c[1] * 255,
+            b: c[2] * 255
+        };
+    },
+    rgb_to_hsv: function rgb_to_hsv(r, g, b) {
+        var min = Math.min(r, g, b);
+        var max = Math.max(r, g, b);
+        var delta = max - min;
+        var h = void 0;
+        var s = void 0;
+        if (max !== 0) s = delta / max;
+        else return {
+            h: NaN,
+            s: 0,
+            v: 0
+        };
+        if (r === max) h = (g - b) / delta;
+        else if (g === max) h = 2 + (b - r) / delta;
+        else h = 4 + (r - g) / delta;
+        h /= 6;
+        if (h < 0) h += 1;
+        return {
+            h: h * 360,
+            s: s,
+            v: max / 255
+        };
+    },
+    rgb_to_hex: function rgb_to_hex(r, g, b) {
+        var hex = this.hex_with_component(0, 2, r);
+        hex = this.hex_with_component(hex, 1, g);
+        hex = this.hex_with_component(hex, 0, b);
+        return hex;
+    },
+    component_from_hex: function component_from_hex(hex, componentIndex) {
+        return hex >> componentIndex * 8 & 0xFF;
+    },
+    hex_with_component: function hex_with_component(hex, componentIndex, value) {
+        return value << (tmpComponent = componentIndex * 8) | hex & ~(0xFF << tmpComponent);
+    }
+};
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) {
+    return typeof obj;
+} : function(obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+var classCallCheck = function(instance, Constructor) {
+    if (!(instance instanceof Constructor)) throw new TypeError("Cannot call a class as a function");
+};
+var createClass = function() {
+    function defineProperties(target, props) {
+        for(var i = 0; i < props.length; i++){
+            var descriptor = props[i];
+            descriptor.enumerable = descriptor.enumerable || false;
+            descriptor.configurable = true;
+            if ("value" in descriptor) descriptor.writable = true;
+            Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }
+    return function(Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);
+        if (staticProps) defineProperties(Constructor, staticProps);
+        return Constructor;
+    };
+}();
+var get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;
+    var desc = Object.getOwnPropertyDescriptor(object, property);
+    if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);
+        if (parent === null) return undefined;
+        else return get(parent, property, receiver);
+    } else if ("value" in desc) return desc.value;
+    else {
+        var getter = desc.get;
+        if (getter === undefined) return undefined;
+        return getter.call(receiver);
+    }
+};
+var inherits = function(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+        constructor: {
+            value: subClass,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
+    if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+var possibleConstructorReturn = function(self, call) {
+    if (!self) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+var Color = function() {
+    function Color() {
+        classCallCheck(this, Color);
+        this.__state = interpret.apply(this, arguments);
+        if (this.__state === false) throw new Error("Failed to interpret color arguments");
+        this.__state.a = this.__state.a || 1;
+    }
+    createClass(Color, [
+        {
+            key: "toString",
+            value: function toString() {
+                return colorToString(this);
+            }
+        },
+        {
+            key: "toHexString",
+            value: function toHexString() {
+                return colorToString(this, true);
+            }
+        },
+        {
+            key: "toOriginal",
+            value: function toOriginal() {
+                return this.__state.conversion.write(this);
+            }
+        }
+    ]);
+    return Color;
+}();
+function defineRGBComponent(target, component, componentHexIndex) {
+    Object.defineProperty(target, component, {
+        get: function get$$1() {
+            if (this.__state.space === "RGB") return this.__state[component];
+            Color.recalculateRGB(this, component, componentHexIndex);
+            return this.__state[component];
+        },
+        set: function set$$1(v) {
+            if (this.__state.space !== "RGB") {
+                Color.recalculateRGB(this, component, componentHexIndex);
+                this.__state.space = "RGB";
+            }
+            this.__state[component] = v;
+        }
+    });
+}
+function defineHSVComponent(target, component) {
+    Object.defineProperty(target, component, {
+        get: function get$$1() {
+            if (this.__state.space === "HSV") return this.__state[component];
+            Color.recalculateHSV(this);
+            return this.__state[component];
+        },
+        set: function set$$1(v) {
+            if (this.__state.space !== "HSV") {
+                Color.recalculateHSV(this);
+                this.__state.space = "HSV";
+            }
+            this.__state[component] = v;
+        }
+    });
+}
+Color.recalculateRGB = function(color, component, componentHexIndex) {
+    if (color.__state.space === "HEX") color.__state[component] = ColorMath.component_from_hex(color.__state.hex, componentHexIndex);
+    else if (color.__state.space === "HSV") Common.extend(color.__state, ColorMath.hsv_to_rgb(color.__state.h, color.__state.s, color.__state.v));
+    else throw new Error("Corrupted color state");
+};
+Color.recalculateHSV = function(color) {
+    var result = ColorMath.rgb_to_hsv(color.r, color.g, color.b);
+    Common.extend(color.__state, {
+        s: result.s,
+        v: result.v
+    });
+    if (!Common.isNaN(result.h)) color.__state.h = result.h;
+    else if (Common.isUndefined(color.__state.h)) color.__state.h = 0;
+};
+Color.COMPONENTS = [
+    "r",
+    "g",
+    "b",
+    "h",
+    "s",
+    "v",
+    "hex",
+    "a"
+];
+defineRGBComponent(Color.prototype, "r", 2);
+defineRGBComponent(Color.prototype, "g", 1);
+defineRGBComponent(Color.prototype, "b", 0);
+defineHSVComponent(Color.prototype, "h");
+defineHSVComponent(Color.prototype, "s");
+defineHSVComponent(Color.prototype, "v");
+Object.defineProperty(Color.prototype, "a", {
+    get: function get$$1() {
+        return this.__state.a;
+    },
+    set: function set$$1(v) {
+        this.__state.a = v;
+    }
+});
+Object.defineProperty(Color.prototype, "hex", {
+    get: function get$$1() {
+        if (this.__state.space !== "HEX") {
+            this.__state.hex = ColorMath.rgb_to_hex(this.r, this.g, this.b);
+            this.__state.space = "HEX";
+        }
+        return this.__state.hex;
+    },
+    set: function set$$1(v) {
+        this.__state.space = "HEX";
+        this.__state.hex = v;
+    }
+});
+var Controller = function() {
+    function Controller(object, property) {
+        classCallCheck(this, Controller);
+        this.initialValue = object[property];
+        this.domElement = document.createElement("div");
+        this.object = object;
+        this.property = property;
+        this.__onChange = undefined;
+        this.__onFinishChange = undefined;
+    }
+    createClass(Controller, [
+        {
+            key: "onChange",
+            value: function onChange(fnc) {
+                this.__onChange = fnc;
+                return this;
+            }
+        },
+        {
+            key: "onFinishChange",
+            value: function onFinishChange(fnc) {
+                this.__onFinishChange = fnc;
+                return this;
+            }
+        },
+        {
+            key: "setValue",
+            value: function setValue(newValue) {
+                this.object[this.property] = newValue;
+                if (this.__onChange) this.__onChange.call(this, newValue);
+                this.updateDisplay();
+                return this;
+            }
+        },
+        {
+            key: "getValue",
+            value: function getValue() {
+                return this.object[this.property];
+            }
+        },
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                return this;
+            }
+        },
+        {
+            key: "isModified",
+            value: function isModified() {
+                return this.initialValue !== this.getValue();
+            }
+        }
+    ]);
+    return Controller;
+}();
+var EVENT_MAP = {
+    HTMLEvents: [
+        "change"
+    ],
+    MouseEvents: [
+        "click",
+        "mousemove",
+        "mousedown",
+        "mouseup",
+        "mouseover"
+    ],
+    KeyboardEvents: [
+        "keydown"
+    ]
+};
+var EVENT_MAP_INV = {};
+Common.each(EVENT_MAP, function(v, k) {
+    Common.each(v, function(e) {
+        EVENT_MAP_INV[e] = k;
+    });
+});
+var CSS_VALUE_PIXELS = /(\d+(\.\d+)?)px/;
+function cssValueToPixels(val) {
+    if (val === "0" || Common.isUndefined(val)) return 0;
+    var match = val.match(CSS_VALUE_PIXELS);
+    if (!Common.isNull(match)) return parseFloat(match[1]);
+    return 0;
+}
+var dom = {
+    makeSelectable: function makeSelectable(elem, selectable) {
+        if (elem === undefined || elem.style === undefined) return;
+        elem.onselectstart = selectable ? function() {
+            return false;
+        } : function() {};
+        elem.style.MozUserSelect = selectable ? "auto" : "none";
+        elem.style.KhtmlUserSelect = selectable ? "auto" : "none";
+        elem.unselectable = selectable ? "on" : "off";
+    },
+    makeFullscreen: function makeFullscreen(elem, hor, vert) {
+        var vertical = vert;
+        var horizontal = hor;
+        if (Common.isUndefined(horizontal)) horizontal = true;
+        if (Common.isUndefined(vertical)) vertical = true;
+        elem.style.position = "absolute";
+        if (horizontal) {
+            elem.style.left = 0;
+            elem.style.right = 0;
+        }
+        if (vertical) {
+            elem.style.top = 0;
+            elem.style.bottom = 0;
+        }
+    },
+    fakeEvent: function fakeEvent(elem, eventType, pars, aux) {
+        var params = pars || {};
+        var className = EVENT_MAP_INV[eventType];
+        if (!className) throw new Error("Event type " + eventType + " not supported.");
+        var evt = document.createEvent(className);
+        switch(className){
+            case "MouseEvents":
+                var clientX = params.x || params.clientX || 0;
+                var clientY = params.y || params.clientY || 0;
+                evt.initMouseEvent(eventType, params.bubbles || false, params.cancelable || true, window, params.clickCount || 1, 0, 0, clientX, clientY, false, false, false, false, 0, null);
+                break;
+            case "KeyboardEvents":
+                var init = evt.initKeyboardEvent || evt.initKeyEvent;
+                Common.defaults(params, {
+                    cancelable: true,
+                    ctrlKey: false,
+                    altKey: false,
+                    shiftKey: false,
+                    metaKey: false,
+                    keyCode: undefined,
+                    charCode: undefined
+                });
+                init(eventType, params.bubbles || false, params.cancelable, window, params.ctrlKey, params.altKey, params.shiftKey, params.metaKey, params.keyCode, params.charCode);
+                break;
+            default:
+                evt.initEvent(eventType, params.bubbles || false, params.cancelable || true);
+                break;
+        }
+        Common.defaults(evt, aux);
+        elem.dispatchEvent(evt);
+    },
+    bind: function bind(elem, event, func, newBool) {
+        var bool = newBool || false;
+        if (elem.addEventListener) elem.addEventListener(event, func, bool);
+        else if (elem.attachEvent) elem.attachEvent("on" + event, func);
+        return dom;
+    },
+    unbind: function unbind(elem, event, func, newBool) {
+        var bool = newBool || false;
+        if (elem.removeEventListener) elem.removeEventListener(event, func, bool);
+        else if (elem.detachEvent) elem.detachEvent("on" + event, func);
+        return dom;
+    },
+    addClass: function addClass(elem, className) {
+        if (elem.className === undefined) elem.className = className;
+        else if (elem.className !== className) {
+            var classes = elem.className.split(/ +/);
+            if (classes.indexOf(className) === -1) {
+                classes.push(className);
+                elem.className = classes.join(" ").replace(/^\s+/, "").replace(/\s+$/, "");
+            }
+        }
+        return dom;
+    },
+    removeClass: function removeClass(elem, className) {
+        if (className) {
+            if (elem.className === className) elem.removeAttribute("class");
+            else {
+                var classes = elem.className.split(/ +/);
+                var index = classes.indexOf(className);
+                if (index !== -1) {
+                    classes.splice(index, 1);
+                    elem.className = classes.join(" ");
+                }
+            }
+        } else elem.className = undefined;
+        return dom;
+    },
+    hasClass: function hasClass(elem, className) {
+        return new RegExp("(?:^|\\s+)" + className + "(?:\\s+|$)").test(elem.className) || false;
+    },
+    getWidth: function getWidth(elem) {
+        var style = getComputedStyle(elem);
+        return cssValueToPixels(style["border-left-width"]) + cssValueToPixels(style["border-right-width"]) + cssValueToPixels(style["padding-left"]) + cssValueToPixels(style["padding-right"]) + cssValueToPixels(style.width);
+    },
+    getHeight: function getHeight(elem) {
+        var style = getComputedStyle(elem);
+        return cssValueToPixels(style["border-top-width"]) + cssValueToPixels(style["border-bottom-width"]) + cssValueToPixels(style["padding-top"]) + cssValueToPixels(style["padding-bottom"]) + cssValueToPixels(style.height);
+    },
+    getOffset: function getOffset(el) {
+        var elem = el;
+        var offset = {
+            left: 0,
+            top: 0
+        };
+        if (elem.offsetParent) do {
+            offset.left += elem.offsetLeft;
+            offset.top += elem.offsetTop;
+            elem = elem.offsetParent;
+        }while (elem);
+        return offset;
+    },
+    isActive: function isActive(elem) {
+        return elem === document.activeElement && (elem.type || elem.href);
+    }
+};
+var BooleanController = function(_Controller) {
+    inherits(BooleanController, _Controller);
+    function BooleanController(object, property) {
+        classCallCheck(this, BooleanController);
+        var _this2 = possibleConstructorReturn(this, (BooleanController.__proto__ || Object.getPrototypeOf(BooleanController)).call(this, object, property));
+        var _this = _this2;
+        _this2.__prev = _this2.getValue();
+        _this2.__checkbox = document.createElement("input");
+        _this2.__checkbox.setAttribute("type", "checkbox");
+        function onChange() {
+            _this.setValue(!_this.__prev);
+        }
+        dom.bind(_this2.__checkbox, "change", onChange, false);
+        _this2.domElement.appendChild(_this2.__checkbox);
+        _this2.updateDisplay();
+        return _this2;
+    }
+    createClass(BooleanController, [
+        {
+            key: "setValue",
+            value: function setValue(v) {
+                var toReturn = get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), "setValue", this).call(this, v);
+                if (this.__onFinishChange) this.__onFinishChange.call(this, this.getValue());
+                this.__prev = this.getValue();
+                return toReturn;
+            }
+        },
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                if (this.getValue() === true) {
+                    this.__checkbox.setAttribute("checked", "checked");
+                    this.__checkbox.checked = true;
+                    this.__prev = true;
+                } else {
+                    this.__checkbox.checked = false;
+                    this.__prev = false;
+                }
+                return get(BooleanController.prototype.__proto__ || Object.getPrototypeOf(BooleanController.prototype), "updateDisplay", this).call(this);
+            }
+        }
+    ]);
+    return BooleanController;
+}(Controller);
+var OptionController = function(_Controller) {
+    inherits(OptionController, _Controller);
+    function OptionController(object, property, opts) {
+        classCallCheck(this, OptionController);
+        var _this2 = possibleConstructorReturn(this, (OptionController.__proto__ || Object.getPrototypeOf(OptionController)).call(this, object, property));
+        var options = opts;
+        var _this = _this2;
+        _this2.__select = document.createElement("select");
+        if (Common.isArray(options)) {
+            var map = {};
+            Common.each(options, function(element) {
+                map[element] = element;
+            });
+            options = map;
+        }
+        Common.each(options, function(value, key) {
+            var opt = document.createElement("option");
+            opt.innerHTML = key;
+            opt.setAttribute("value", value);
+            _this.__select.appendChild(opt);
+        });
+        _this2.updateDisplay();
+        dom.bind(_this2.__select, "change", function() {
+            var desiredValue = this.options[this.selectedIndex].value;
+            _this.setValue(desiredValue);
+        });
+        _this2.domElement.appendChild(_this2.__select);
+        return _this2;
+    }
+    createClass(OptionController, [
+        {
+            key: "setValue",
+            value: function setValue(v) {
+                var toReturn = get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), "setValue", this).call(this, v);
+                if (this.__onFinishChange) this.__onFinishChange.call(this, this.getValue());
+                return toReturn;
+            }
+        },
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                if (dom.isActive(this.__select)) return this;
+                this.__select.value = this.getValue();
+                return get(OptionController.prototype.__proto__ || Object.getPrototypeOf(OptionController.prototype), "updateDisplay", this).call(this);
+            }
+        }
+    ]);
+    return OptionController;
+}(Controller);
+var StringController = function(_Controller) {
+    inherits(StringController, _Controller);
+    function StringController(object, property) {
+        classCallCheck(this, StringController);
+        var _this2 = possibleConstructorReturn(this, (StringController.__proto__ || Object.getPrototypeOf(StringController)).call(this, object, property));
+        var _this = _this2;
+        function onChange() {
+            _this.setValue(_this.__input.value);
+        }
+        function onBlur() {
+            if (_this.__onFinishChange) _this.__onFinishChange.call(_this, _this.getValue());
+        }
+        _this2.__input = document.createElement("input");
+        _this2.__input.setAttribute("type", "text");
+        dom.bind(_this2.__input, "keyup", onChange);
+        dom.bind(_this2.__input, "change", onChange);
+        dom.bind(_this2.__input, "blur", onBlur);
+        dom.bind(_this2.__input, "keydown", function(e) {
+            if (e.keyCode === 13) this.blur();
+        });
+        _this2.updateDisplay();
+        _this2.domElement.appendChild(_this2.__input);
+        return _this2;
+    }
+    createClass(StringController, [
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                if (!dom.isActive(this.__input)) this.__input.value = this.getValue();
+                return get(StringController.prototype.__proto__ || Object.getPrototypeOf(StringController.prototype), "updateDisplay", this).call(this);
+            }
+        }
+    ]);
+    return StringController;
+}(Controller);
+function numDecimals(x) {
+    var _x = x.toString();
+    if (_x.indexOf(".") > -1) return _x.length - _x.indexOf(".") - 1;
+    return 0;
+}
+var NumberController = function(_Controller) {
+    inherits(NumberController, _Controller);
+    function NumberController(object, property, params) {
+        classCallCheck(this, NumberController);
+        var _this = possibleConstructorReturn(this, (NumberController.__proto__ || Object.getPrototypeOf(NumberController)).call(this, object, property));
+        var _params = params || {};
+        _this.__min = _params.min;
+        _this.__max = _params.max;
+        _this.__step = _params.step;
+        if (Common.isUndefined(_this.__step)) {
+            if (_this.initialValue === 0) _this.__impliedStep = 1;
+            else _this.__impliedStep = Math.pow(10, Math.floor(Math.log(Math.abs(_this.initialValue)) / Math.LN10)) / 10;
+        } else _this.__impliedStep = _this.__step;
+        _this.__precision = numDecimals(_this.__impliedStep);
+        return _this;
+    }
+    createClass(NumberController, [
+        {
+            key: "setValue",
+            value: function setValue(v) {
+                var _v = v;
+                if (this.__min !== undefined && _v < this.__min) _v = this.__min;
+                else if (this.__max !== undefined && _v > this.__max) _v = this.__max;
+                if (this.__step !== undefined && _v % this.__step !== 0) _v = Math.round(_v / this.__step) * this.__step;
+                return get(NumberController.prototype.__proto__ || Object.getPrototypeOf(NumberController.prototype), "setValue", this).call(this, _v);
+            }
+        },
+        {
+            key: "min",
+            value: function min(minValue) {
+                this.__min = minValue;
+                return this;
+            }
+        },
+        {
+            key: "max",
+            value: function max(maxValue) {
+                this.__max = maxValue;
+                return this;
+            }
+        },
+        {
+            key: "step",
+            value: function step(stepValue) {
+                this.__step = stepValue;
+                this.__impliedStep = stepValue;
+                this.__precision = numDecimals(stepValue);
+                return this;
+            }
+        }
+    ]);
+    return NumberController;
+}(Controller);
+function roundToDecimal(value, decimals) {
+    var tenTo = Math.pow(10, decimals);
+    return Math.round(value * tenTo) / tenTo;
+}
+var NumberControllerBox = function(_NumberController) {
+    inherits(NumberControllerBox, _NumberController);
+    function NumberControllerBox(object, property, params) {
+        classCallCheck(this, NumberControllerBox);
+        var _this2 = possibleConstructorReturn(this, (NumberControllerBox.__proto__ || Object.getPrototypeOf(NumberControllerBox)).call(this, object, property, params));
+        _this2.__truncationSuspended = false;
+        var _this = _this2;
+        var prevY = void 0;
+        function onChange() {
+            var attempted = parseFloat(_this.__input.value);
+            if (!Common.isNaN(attempted)) _this.setValue(attempted);
+        }
+        function onFinish() {
+            if (_this.__onFinishChange) _this.__onFinishChange.call(_this, _this.getValue());
+        }
+        function onBlur() {
+            onFinish();
+        }
+        function onMouseDrag(e) {
+            var diff = prevY - e.clientY;
+            _this.setValue(_this.getValue() + diff * _this.__impliedStep);
+            prevY = e.clientY;
+        }
+        function onMouseUp() {
+            dom.unbind(window, "mousemove", onMouseDrag);
+            dom.unbind(window, "mouseup", onMouseUp);
+            onFinish();
+        }
+        function onMouseDown(e) {
+            dom.bind(window, "mousemove", onMouseDrag);
+            dom.bind(window, "mouseup", onMouseUp);
+            prevY = e.clientY;
+        }
+        _this2.__input = document.createElement("input");
+        _this2.__input.setAttribute("type", "text");
+        dom.bind(_this2.__input, "change", onChange);
+        dom.bind(_this2.__input, "blur", onBlur);
+        dom.bind(_this2.__input, "mousedown", onMouseDown);
+        dom.bind(_this2.__input, "keydown", function(e) {
+            if (e.keyCode === 13) {
+                _this.__truncationSuspended = true;
+                this.blur();
+                _this.__truncationSuspended = false;
+                onFinish();
+            }
+        });
+        _this2.updateDisplay();
+        _this2.domElement.appendChild(_this2.__input);
+        return _this2;
+    }
+    createClass(NumberControllerBox, [
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                this.__input.value = this.__truncationSuspended ? this.getValue() : roundToDecimal(this.getValue(), this.__precision);
+                return get(NumberControllerBox.prototype.__proto__ || Object.getPrototypeOf(NumberControllerBox.prototype), "updateDisplay", this).call(this);
+            }
+        }
+    ]);
+    return NumberControllerBox;
+}(NumberController);
+function map(v, i1, i2, o1, o2) {
+    return o1 + (o2 - o1) * ((v - i1) / (i2 - i1));
+}
+var NumberControllerSlider = function(_NumberController) {
+    inherits(NumberControllerSlider, _NumberController);
+    function NumberControllerSlider(object, property, min, max, step) {
+        classCallCheck(this, NumberControllerSlider);
+        var _this2 = possibleConstructorReturn(this, (NumberControllerSlider.__proto__ || Object.getPrototypeOf(NumberControllerSlider)).call(this, object, property, {
+            min: min,
+            max: max,
+            step: step
+        }));
+        var _this = _this2;
+        _this2.__background = document.createElement("div");
+        _this2.__foreground = document.createElement("div");
+        dom.bind(_this2.__background, "mousedown", onMouseDown);
+        dom.bind(_this2.__background, "touchstart", onTouchStart);
+        dom.addClass(_this2.__background, "slider");
+        dom.addClass(_this2.__foreground, "slider-fg");
+        function onMouseDown(e) {
+            document.activeElement.blur();
+            dom.bind(window, "mousemove", onMouseDrag);
+            dom.bind(window, "mouseup", onMouseUp);
+            onMouseDrag(e);
+        }
+        function onMouseDrag(e) {
+            e.preventDefault();
+            var bgRect = _this.__background.getBoundingClientRect();
+            _this.setValue(map(e.clientX, bgRect.left, bgRect.right, _this.__min, _this.__max));
+            return false;
+        }
+        function onMouseUp() {
+            dom.unbind(window, "mousemove", onMouseDrag);
+            dom.unbind(window, "mouseup", onMouseUp);
+            if (_this.__onFinishChange) _this.__onFinishChange.call(_this, _this.getValue());
+        }
+        function onTouchStart(e) {
+            if (e.touches.length !== 1) return;
+            dom.bind(window, "touchmove", onTouchMove);
+            dom.bind(window, "touchend", onTouchEnd);
+            onTouchMove(e);
+        }
+        function onTouchMove(e) {
+            var clientX = e.touches[0].clientX;
+            var bgRect = _this.__background.getBoundingClientRect();
+            _this.setValue(map(clientX, bgRect.left, bgRect.right, _this.__min, _this.__max));
+        }
+        function onTouchEnd() {
+            dom.unbind(window, "touchmove", onTouchMove);
+            dom.unbind(window, "touchend", onTouchEnd);
+            if (_this.__onFinishChange) _this.__onFinishChange.call(_this, _this.getValue());
+        }
+        _this2.updateDisplay();
+        _this2.__background.appendChild(_this2.__foreground);
+        _this2.domElement.appendChild(_this2.__background);
+        return _this2;
+    }
+    createClass(NumberControllerSlider, [
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                var pct = (this.getValue() - this.__min) / (this.__max - this.__min);
+                this.__foreground.style.width = pct * 100 + "%";
+                return get(NumberControllerSlider.prototype.__proto__ || Object.getPrototypeOf(NumberControllerSlider.prototype), "updateDisplay", this).call(this);
+            }
+        }
+    ]);
+    return NumberControllerSlider;
+}(NumberController);
+var FunctionController = function(_Controller) {
+    inherits(FunctionController, _Controller);
+    function FunctionController(object, property, text) {
+        classCallCheck(this, FunctionController);
+        var _this2 = possibleConstructorReturn(this, (FunctionController.__proto__ || Object.getPrototypeOf(FunctionController)).call(this, object, property));
+        var _this = _this2;
+        _this2.__button = document.createElement("div");
+        _this2.__button.innerHTML = text === undefined ? "Fire" : text;
+        dom.bind(_this2.__button, "click", function(e) {
+            e.preventDefault();
+            _this.fire();
+            return false;
+        });
+        dom.addClass(_this2.__button, "button");
+        _this2.domElement.appendChild(_this2.__button);
+        return _this2;
+    }
+    createClass(FunctionController, [
+        {
+            key: "fire",
+            value: function fire() {
+                if (this.__onChange) this.__onChange.call(this);
+                this.getValue().call(this.object);
+                if (this.__onFinishChange) this.__onFinishChange.call(this, this.getValue());
+            }
+        }
+    ]);
+    return FunctionController;
+}(Controller);
+var ColorController = function(_Controller) {
+    inherits(ColorController, _Controller);
+    function ColorController(object, property) {
+        classCallCheck(this, ColorController);
+        var _this2 = possibleConstructorReturn(this, (ColorController.__proto__ || Object.getPrototypeOf(ColorController)).call(this, object, property));
+        _this2.__color = new Color(_this2.getValue());
+        _this2.__temp = new Color(0);
+        var _this = _this2;
+        _this2.domElement = document.createElement("div");
+        dom.makeSelectable(_this2.domElement, false);
+        _this2.__selector = document.createElement("div");
+        _this2.__selector.className = "selector";
+        _this2.__saturation_field = document.createElement("div");
+        _this2.__saturation_field.className = "saturation-field";
+        _this2.__field_knob = document.createElement("div");
+        _this2.__field_knob.className = "field-knob";
+        _this2.__field_knob_border = "2px solid ";
+        _this2.__hue_knob = document.createElement("div");
+        _this2.__hue_knob.className = "hue-knob";
+        _this2.__hue_field = document.createElement("div");
+        _this2.__hue_field.className = "hue-field";
+        _this2.__input = document.createElement("input");
+        _this2.__input.type = "text";
+        _this2.__input_textShadow = "0 1px 1px ";
+        dom.bind(_this2.__input, "keydown", function(e) {
+            if (e.keyCode === 13) onBlur.call(this);
+        });
+        dom.bind(_this2.__input, "blur", onBlur);
+        dom.bind(_this2.__selector, "mousedown", function() {
+            dom.addClass(this, "drag").bind(window, "mouseup", function() {
+                dom.removeClass(_this.__selector, "drag");
+            });
+        });
+        dom.bind(_this2.__selector, "touchstart", function() {
+            dom.addClass(this, "drag").bind(window, "touchend", function() {
+                dom.removeClass(_this.__selector, "drag");
+            });
+        });
+        var valueField = document.createElement("div");
+        Common.extend(_this2.__selector.style, {
+            width: "122px",
+            height: "102px",
+            padding: "3px",
+            backgroundColor: "#222",
+            boxShadow: "0px 1px 3px rgba(0,0,0,0.3)"
+        });
+        Common.extend(_this2.__field_knob.style, {
+            position: "absolute",
+            width: "12px",
+            height: "12px",
+            border: _this2.__field_knob_border + (_this2.__color.v < 0.5 ? "#fff" : "#000"),
+            boxShadow: "0px 1px 3px rgba(0,0,0,0.5)",
+            borderRadius: "12px",
+            zIndex: 1
+        });
+        Common.extend(_this2.__hue_knob.style, {
+            position: "absolute",
+            width: "15px",
+            height: "2px",
+            borderRight: "4px solid #fff",
+            zIndex: 1
+        });
+        Common.extend(_this2.__saturation_field.style, {
+            width: "100px",
+            height: "100px",
+            border: "1px solid #555",
+            marginRight: "3px",
+            display: "inline-block",
+            cursor: "pointer"
+        });
+        Common.extend(valueField.style, {
+            width: "100%",
+            height: "100%",
+            background: "none"
+        });
+        linearGradient(valueField, "top", "rgba(0,0,0,0)", "#000");
+        Common.extend(_this2.__hue_field.style, {
+            width: "15px",
+            height: "100px",
+            border: "1px solid #555",
+            cursor: "ns-resize",
+            position: "absolute",
+            top: "3px",
+            right: "3px"
+        });
+        hueGradient(_this2.__hue_field);
+        Common.extend(_this2.__input.style, {
+            outline: "none",
+            textAlign: "center",
+            color: "#fff",
+            border: 0,
+            fontWeight: "bold",
+            textShadow: _this2.__input_textShadow + "rgba(0,0,0,0.7)"
+        });
+        dom.bind(_this2.__saturation_field, "mousedown", fieldDown);
+        dom.bind(_this2.__saturation_field, "touchstart", fieldDown);
+        dom.bind(_this2.__field_knob, "mousedown", fieldDown);
+        dom.bind(_this2.__field_knob, "touchstart", fieldDown);
+        dom.bind(_this2.__hue_field, "mousedown", fieldDownH);
+        dom.bind(_this2.__hue_field, "touchstart", fieldDownH);
+        function fieldDown(e) {
+            setSV(e);
+            dom.bind(window, "mousemove", setSV);
+            dom.bind(window, "touchmove", setSV);
+            dom.bind(window, "mouseup", fieldUpSV);
+            dom.bind(window, "touchend", fieldUpSV);
+        }
+        function fieldDownH(e) {
+            setH(e);
+            dom.bind(window, "mousemove", setH);
+            dom.bind(window, "touchmove", setH);
+            dom.bind(window, "mouseup", fieldUpH);
+            dom.bind(window, "touchend", fieldUpH);
+        }
+        function fieldUpSV() {
+            dom.unbind(window, "mousemove", setSV);
+            dom.unbind(window, "touchmove", setSV);
+            dom.unbind(window, "mouseup", fieldUpSV);
+            dom.unbind(window, "touchend", fieldUpSV);
+            onFinish();
+        }
+        function fieldUpH() {
+            dom.unbind(window, "mousemove", setH);
+            dom.unbind(window, "touchmove", setH);
+            dom.unbind(window, "mouseup", fieldUpH);
+            dom.unbind(window, "touchend", fieldUpH);
+            onFinish();
+        }
+        function onBlur() {
+            var i = interpret(this.value);
+            if (i !== false) {
+                _this.__color.__state = i;
+                _this.setValue(_this.__color.toOriginal());
+            } else this.value = _this.__color.toString();
+        }
+        function onFinish() {
+            if (_this.__onFinishChange) _this.__onFinishChange.call(_this, _this.__color.toOriginal());
+        }
+        _this2.__saturation_field.appendChild(valueField);
+        _this2.__selector.appendChild(_this2.__field_knob);
+        _this2.__selector.appendChild(_this2.__saturation_field);
+        _this2.__selector.appendChild(_this2.__hue_field);
+        _this2.__hue_field.appendChild(_this2.__hue_knob);
+        _this2.domElement.appendChild(_this2.__input);
+        _this2.domElement.appendChild(_this2.__selector);
+        _this2.updateDisplay();
+        function setSV(e) {
+            if (e.type.indexOf("touch") === -1) e.preventDefault();
+            var fieldRect = _this.__saturation_field.getBoundingClientRect();
+            var _ref = e.touches && e.touches[0] || e, clientX = _ref.clientX, clientY = _ref.clientY;
+            var s = (clientX - fieldRect.left) / (fieldRect.right - fieldRect.left);
+            var v = 1 - (clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
+            if (v > 1) v = 1;
+            else if (v < 0) v = 0;
+            if (s > 1) s = 1;
+            else if (s < 0) s = 0;
+            _this.__color.v = v;
+            _this.__color.s = s;
+            _this.setValue(_this.__color.toOriginal());
+            return false;
+        }
+        function setH(e) {
+            if (e.type.indexOf("touch") === -1) e.preventDefault();
+            var fieldRect = _this.__hue_field.getBoundingClientRect();
+            var _ref2 = e.touches && e.touches[0] || e, clientY = _ref2.clientY;
+            var h = 1 - (clientY - fieldRect.top) / (fieldRect.bottom - fieldRect.top);
+            if (h > 1) h = 1;
+            else if (h < 0) h = 0;
+            _this.__color.h = h * 360;
+            _this.setValue(_this.__color.toOriginal());
+            return false;
+        }
+        return _this2;
+    }
+    createClass(ColorController, [
+        {
+            key: "updateDisplay",
+            value: function updateDisplay() {
+                var i = interpret(this.getValue());
+                if (i !== false) {
+                    var mismatch = false;
+                    Common.each(Color.COMPONENTS, function(component) {
+                        if (!Common.isUndefined(i[component]) && !Common.isUndefined(this.__color.__state[component]) && i[component] !== this.__color.__state[component]) {
+                            mismatch = true;
+                            return {};
+                        }
+                    }, this);
+                    if (mismatch) Common.extend(this.__color.__state, i);
+                }
+                Common.extend(this.__temp.__state, this.__color.__state);
+                this.__temp.a = 1;
+                var flip = this.__color.v < 0.5 || this.__color.s > 0.5 ? 255 : 0;
+                var _flip = 255 - flip;
+                Common.extend(this.__field_knob.style, {
+                    marginLeft: 100 * this.__color.s - 7 + "px",
+                    marginTop: 100 * (1 - this.__color.v) - 7 + "px",
+                    backgroundColor: this.__temp.toHexString(),
+                    border: this.__field_knob_border + "rgb(" + flip + "," + flip + "," + flip + ")"
+                });
+                this.__hue_knob.style.marginTop = (1 - this.__color.h / 360) * 100 + "px";
+                this.__temp.s = 1;
+                this.__temp.v = 1;
+                linearGradient(this.__saturation_field, "left", "#fff", this.__temp.toHexString());
+                this.__input.value = this.__color.toString();
+                Common.extend(this.__input.style, {
+                    backgroundColor: this.__color.toHexString(),
+                    color: "rgb(" + flip + "," + flip + "," + flip + ")",
+                    textShadow: this.__input_textShadow + "rgba(" + _flip + "," + _flip + "," + _flip + ",.7)"
+                });
+            }
+        }
+    ]);
+    return ColorController;
+}(Controller);
+var vendors = [
+    "-moz-",
+    "-o-",
+    "-webkit-",
+    "-ms-",
+    ""
+];
+function linearGradient(elem, x, a, b) {
+    elem.style.background = "";
+    Common.each(vendors, function(vendor) {
+        elem.style.cssText += "background: " + vendor + "linear-gradient(" + x + ", " + a + " 0%, " + b + " 100%); ";
+    });
+}
+function hueGradient(elem) {
+    elem.style.background = "";
+    elem.style.cssText += "background: -moz-linear-gradient(top,  #ff0000 0%, #ff00ff 17%, #0000ff 34%, #00ffff 50%, #00ff00 67%, #ffff00 84%, #ff0000 100%);";
+    elem.style.cssText += "background: -webkit-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);";
+    elem.style.cssText += "background: -o-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);";
+    elem.style.cssText += "background: -ms-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);";
+    elem.style.cssText += "background: linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);";
+}
+var css = {
+    load: function load(url, indoc) {
+        var doc = indoc || document;
+        var link = doc.createElement("link");
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        link.href = url;
+        doc.getElementsByTagName("head")[0].appendChild(link);
+    },
+    inject: function inject(cssContent, indoc) {
+        var doc = indoc || document;
+        var injected = document.createElement("style");
+        injected.type = "text/css";
+        injected.innerHTML = cssContent;
+        var head = doc.getElementsByTagName("head")[0];
+        try {
+            head.appendChild(injected);
+        } catch (e) {}
+    }
+};
+var saveDialogContents = '<div id="dg-save" class="dg dialogue">\n\n  Here\'s the new load parameter for your <code>GUI</code>\'s constructor:\n\n  <textarea id="dg-new-constructor"></textarea>\n\n  <div id="dg-save-locally">\n\n    <input id="dg-local-storage" type="checkbox"/> Automatically save\n    values to <code>localStorage</code> on exit.\n\n    <div id="dg-local-explain">The values saved to <code>localStorage</code> will\n      override those passed to <code>dat.GUI</code>\'s constructor. This makes it\n      easier to work incrementally, but <code>localStorage</code> is fragile,\n      and your friends may not see the same values you do.\n\n    </div>\n\n  </div>\n\n</div>';
+var ControllerFactory = function ControllerFactory(object, property) {
+    var initialValue = object[property];
+    if (Common.isArray(arguments[2]) || Common.isObject(arguments[2])) return new OptionController(object, property, arguments[2]);
+    if (Common.isNumber(initialValue)) {
+        if (Common.isNumber(arguments[2]) && Common.isNumber(arguments[3])) {
+            if (Common.isNumber(arguments[4])) return new NumberControllerSlider(object, property, arguments[2], arguments[3], arguments[4]);
+            return new NumberControllerSlider(object, property, arguments[2], arguments[3]);
+        }
+        if (Common.isNumber(arguments[4])) return new NumberControllerBox(object, property, {
+            min: arguments[2],
+            max: arguments[3],
+            step: arguments[4]
+        });
+        return new NumberControllerBox(object, property, {
+            min: arguments[2],
+            max: arguments[3]
+        });
+    }
+    if (Common.isString(initialValue)) return new StringController(object, property);
+    if (Common.isFunction(initialValue)) return new FunctionController(object, property, "");
+    if (Common.isBoolean(initialValue)) return new BooleanController(object, property);
+    return null;
+};
+function requestAnimationFrame(callback) {
+    setTimeout(callback, 1000 / 60);
+}
+var requestAnimationFrame$1 = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || requestAnimationFrame;
+var CenteredDiv = function() {
+    function CenteredDiv() {
+        classCallCheck(this, CenteredDiv);
+        this.backgroundElement = document.createElement("div");
+        Common.extend(this.backgroundElement.style, {
+            backgroundColor: "rgba(0,0,0,0.8)",
+            top: 0,
+            left: 0,
+            display: "none",
+            zIndex: "1000",
+            opacity: 0,
+            WebkitTransition: "opacity 0.2s linear",
+            transition: "opacity 0.2s linear"
+        });
+        dom.makeFullscreen(this.backgroundElement);
+        this.backgroundElement.style.position = "fixed";
+        this.domElement = document.createElement("div");
+        Common.extend(this.domElement.style, {
+            position: "fixed",
+            display: "none",
+            zIndex: "1001",
+            opacity: 0,
+            WebkitTransition: "-webkit-transform 0.2s ease-out, opacity 0.2s linear",
+            transition: "transform 0.2s ease-out, opacity 0.2s linear"
+        });
+        document.body.appendChild(this.backgroundElement);
+        document.body.appendChild(this.domElement);
+        var _this = this;
+        dom.bind(this.backgroundElement, "click", function() {
+            _this.hide();
+        });
+    }
+    createClass(CenteredDiv, [
+        {
+            key: "show",
+            value: function show() {
+                var _this = this;
+                this.backgroundElement.style.display = "block";
+                this.domElement.style.display = "block";
+                this.domElement.style.opacity = 0;
+                this.domElement.style.webkitTransform = "scale(1.1)";
+                this.layout();
+                Common.defer(function() {
+                    _this.backgroundElement.style.opacity = 1;
+                    _this.domElement.style.opacity = 1;
+                    _this.domElement.style.webkitTransform = "scale(1)";
+                });
+            }
+        },
+        {
+            key: "hide",
+            value: function hide() {
+                var _this = this;
+                var hide = function hide() {
+                    _this.domElement.style.display = "none";
+                    _this.backgroundElement.style.display = "none";
+                    dom.unbind(_this.domElement, "webkitTransitionEnd", hide);
+                    dom.unbind(_this.domElement, "transitionend", hide);
+                    dom.unbind(_this.domElement, "oTransitionEnd", hide);
+                };
+                dom.bind(this.domElement, "webkitTransitionEnd", hide);
+                dom.bind(this.domElement, "transitionend", hide);
+                dom.bind(this.domElement, "oTransitionEnd", hide);
+                this.backgroundElement.style.opacity = 0;
+                this.domElement.style.opacity = 0;
+                this.domElement.style.webkitTransform = "scale(1.1)";
+            }
+        },
+        {
+            key: "layout",
+            value: function layout() {
+                this.domElement.style.left = window.innerWidth / 2 - dom.getWidth(this.domElement) / 2 + "px";
+                this.domElement.style.top = window.innerHeight / 2 - dom.getHeight(this.domElement) / 2 + "px";
+            }
+        }
+    ]);
+    return CenteredDiv;
+}();
+var styleSheet = ___$insertStyle(".dg ul{list-style:none;margin:0;padding:0;width:100%;clear:both}.dg.ac{position:fixed;top:0;left:0;right:0;height:0;z-index:0}.dg:not(.ac) .main{overflow:hidden}.dg.main{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear}.dg.main.taller-than-window{overflow-y:auto}.dg.main.taller-than-window .close-button{opacity:1;margin-top:-1px;border-top:1px solid #2c2c2c}.dg.main ul.closed .close-button{opacity:1 !important}.dg.main:hover .close-button,.dg.main .close-button.drag{opacity:1}.dg.main .close-button{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear;border:0;line-height:19px;height:20px;cursor:pointer;text-align:center;background-color:#000}.dg.main .close-button.close-top{position:relative}.dg.main .close-button.close-bottom{position:absolute}.dg.main .close-button:hover{background-color:#111}.dg.a{float:right;margin-right:15px;overflow-y:visible}.dg.a.has-save>ul.close-top{margin-top:0}.dg.a.has-save>ul.close-bottom{margin-top:27px}.dg.a.has-save>ul.closed{margin-top:0}.dg.a .save-row{top:0;z-index:1002}.dg.a .save-row.close-top{position:relative}.dg.a .save-row.close-bottom{position:fixed}.dg li{-webkit-transition:height .1s ease-out;-o-transition:height .1s ease-out;-moz-transition:height .1s ease-out;transition:height .1s ease-out;-webkit-transition:overflow .1s linear;-o-transition:overflow .1s linear;-moz-transition:overflow .1s linear;transition:overflow .1s linear}.dg li:not(.folder){cursor:auto;height:27px;line-height:27px;padding:0 4px 0 5px}.dg li.folder{padding:0;border-left:4px solid rgba(0,0,0,0)}.dg li.title{cursor:pointer;margin-left:-4px}.dg .closed li:not(.title),.dg .closed ul li,.dg .closed ul li>*{height:0;overflow:hidden;border:0}.dg .cr{clear:both;padding-left:3px;height:27px;overflow:hidden}.dg .property-name{cursor:default;float:left;clear:left;width:40%;overflow:hidden;text-overflow:ellipsis}.dg .cr.function .property-name{width:100%}.dg .c{float:left;width:60%;position:relative}.dg .c input[type=text]{border:0;margin-top:4px;padding:3px;width:100%;float:right}.dg .has-slider input[type=text]{width:30%;margin-left:0}.dg .slider{float:left;width:66%;margin-left:-5px;margin-right:0;height:19px;margin-top:4px}.dg .slider-fg{height:100%}.dg .c input[type=checkbox]{margin-top:7px}.dg .c select{margin-top:5px}.dg .cr.function,.dg .cr.function .property-name,.dg .cr.function *,.dg .cr.boolean,.dg .cr.boolean *{cursor:pointer}.dg .cr.color{overflow:visible}.dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:23px;z-index:10}.dg .c:hover .selector,.dg .selector.drag{display:block}.dg li.save-row{padding:0}.dg li.save-row .button{display:inline-block;padding:0px 6px}.dg.dialogue{background-color:#222;width:460px;padding:15px;font-size:13px;line-height:15px}#dg-new-constructor{padding:10px;color:#222;font-family:Monaco, monospace;font-size:10px;border:0;resize:none;box-shadow:inset 1px 1px 1px #888;word-wrap:break-word;margin:12px 0;display:block;width:440px;overflow-y:scroll;height:100px;position:relative}#dg-local-explain{display:none;font-size:11px;line-height:17px;border-radius:3px;background-color:#333;padding:8px;margin-top:10px}#dg-local-explain code{font-size:10px}#dat-gui-save-locally{display:none}.dg{color:#eee;font:11px 'Lucida Grande', sans-serif;text-shadow:0 -1px 0 #111}.dg.main::-webkit-scrollbar{width:5px;background:#1a1a1a}.dg.main::-webkit-scrollbar-corner{height:0;display:none}.dg.main::-webkit-scrollbar-thumb{border-radius:5px;background:#676767}.dg li:not(.folder){background:#1a1a1a;border-bottom:1px solid #2c2c2c}.dg li.save-row{line-height:25px;background:#dad5cb;border:0}.dg li.save-row select{margin-left:5px;width:108px}.dg li.save-row .button{margin-left:5px;margin-top:1px;border-radius:2px;font-size:9px;line-height:7px;padding:4px 4px 5px 4px;background:#c5bdad;color:#fff;text-shadow:0 1px 0 #b0a58f;box-shadow:0 -1px 0 #b0a58f;cursor:pointer}.dg li.save-row .button.gears{background:#c5bdad url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQJJREFUeNpiYKAU/P//PwGIC/ApCABiBSAW+I8AClAcgKxQ4T9hoMAEUrxx2QSGN6+egDX+/vWT4e7N82AMYoPAx/evwWoYoSYbACX2s7KxCxzcsezDh3evFoDEBYTEEqycggWAzA9AuUSQQgeYPa9fPv6/YWm/Acx5IPb7ty/fw+QZblw67vDs8R0YHyQhgObx+yAJkBqmG5dPPDh1aPOGR/eugW0G4vlIoTIfyFcA+QekhhHJhPdQxbiAIguMBTQZrPD7108M6roWYDFQiIAAv6Aow/1bFwXgis+f2LUAynwoIaNcz8XNx3Dl7MEJUDGQpx9gtQ8YCueB+D26OECAAQDadt7e46D42QAAAABJRU5ErkJggg==) 2px 1px no-repeat;height:7px;width:8px}.dg li.save-row .button:hover{background-color:#bab19e;box-shadow:0 -1px 0 #b0a58f}.dg li.folder{border-bottom:0}.dg li.title{padding-left:16px;background:#000 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.2)}.dg .closed li.title{background-image:url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlGIWqMCbWAEAOw==)}.dg .cr.boolean{border-left:3px solid #806787}.dg .cr.color{border-left:3px solid}.dg .cr.function{border-left:3px solid #e61d5f}.dg .cr.number{border-left:3px solid #2FA1D6}.dg .cr.number input[type=text]{color:#2FA1D6}.dg .cr.string{border-left:3px solid #1ed36f}.dg .cr.string input[type=text]{color:#1ed36f}.dg .cr.function:hover,.dg .cr.boolean:hover{background:#111}.dg .c input[type=text]{background:#303030;outline:none}.dg .c input[type=text]:hover{background:#3c3c3c}.dg .c input[type=text]:focus{background:#494949;color:#fff}.dg .c .slider{background:#303030;cursor:ew-resize}.dg .c .slider-fg{background:#2FA1D6;max-width:100%}.dg .c .slider:hover{background:#3c3c3c}.dg .c .slider:hover .slider-fg{background:#44abda}\n");
+css.inject(styleSheet);
+var CSS_NAMESPACE = "dg";
+var HIDE_KEY_CODE = 72;
+var CLOSE_BUTTON_HEIGHT = 20;
+var DEFAULT_DEFAULT_PRESET_NAME = "Default";
+var SUPPORTS_LOCAL_STORAGE = function() {
+    try {
+        return !!window.localStorage;
+    } catch (e) {
+        return false;
+    }
+}();
+var SAVE_DIALOGUE = void 0;
+var autoPlaceVirgin = true;
+var autoPlaceContainer = void 0;
+var hide = false;
+var hideableGuis = [];
+var GUI = function GUI(pars) {
+    var _this = this;
+    var params = pars || {};
+    this.domElement = document.createElement("div");
+    this.__ul = document.createElement("ul");
+    this.domElement.appendChild(this.__ul);
+    dom.addClass(this.domElement, CSS_NAMESPACE);
+    this.__folders = {};
+    this.__controllers = [];
+    this.__rememberedObjects = [];
+    this.__rememberedObjectIndecesToControllers = [];
+    this.__listening = [];
+    params = Common.defaults(params, {
+        closeOnTop: false,
+        autoPlace: true,
+        width: GUI.DEFAULT_WIDTH
+    });
+    params = Common.defaults(params, {
+        resizable: params.autoPlace,
+        hideable: params.autoPlace
+    });
+    if (!Common.isUndefined(params.load)) {
+        if (params.preset) params.load.preset = params.preset;
+    } else params.load = {
+        preset: DEFAULT_DEFAULT_PRESET_NAME
+    };
+    if (Common.isUndefined(params.parent) && params.hideable) hideableGuis.push(this);
+    params.resizable = Common.isUndefined(params.parent) && params.resizable;
+    if (params.autoPlace && Common.isUndefined(params.scrollable)) params.scrollable = true;
+    var useLocalStorage = SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(this, "isLocal")) === "true";
+    var saveToLocalStorage = void 0;
+    var titleRow = void 0;
+    Object.defineProperties(this, {
+        parent: {
+            get: function get$$1() {
+                return params.parent;
+            }
+        },
+        scrollable: {
+            get: function get$$1() {
+                return params.scrollable;
+            }
+        },
+        autoPlace: {
+            get: function get$$1() {
+                return params.autoPlace;
+            }
+        },
+        closeOnTop: {
+            get: function get$$1() {
+                return params.closeOnTop;
+            }
+        },
+        preset: {
+            get: function get$$1() {
+                if (_this.parent) return _this.getRoot().preset;
+                return params.load.preset;
+            },
+            set: function set$$1(v) {
+                if (_this.parent) _this.getRoot().preset = v;
+                else params.load.preset = v;
+                setPresetSelectIndex(this);
+                _this.revert();
+            }
+        },
+        width: {
+            get: function get$$1() {
+                return params.width;
+            },
+            set: function set$$1(v) {
+                params.width = v;
+                setWidth(_this, v);
+            }
+        },
+        name: {
+            get: function get$$1() {
+                return params.name;
+            },
+            set: function set$$1(v) {
+                params.name = v;
+                if (titleRow) titleRow.innerHTML = params.name;
+            }
+        },
+        closed: {
+            get: function get$$1() {
+                return params.closed;
+            },
+            set: function set$$1(v) {
+                params.closed = v;
+                if (params.closed) dom.addClass(_this.__ul, GUI.CLASS_CLOSED);
+                else dom.removeClass(_this.__ul, GUI.CLASS_CLOSED);
+                this.onResize();
+                if (_this.__closeButton) _this.__closeButton.innerHTML = v ? GUI.TEXT_OPEN : GUI.TEXT_CLOSED;
+            }
+        },
+        load: {
+            get: function get$$1() {
+                return params.load;
+            }
+        },
+        useLocalStorage: {
+            get: function get$$1() {
+                return useLocalStorage;
+            },
+            set: function set$$1(bool) {
+                if (SUPPORTS_LOCAL_STORAGE) {
+                    useLocalStorage = bool;
+                    if (bool) dom.bind(window, "unload", saveToLocalStorage);
+                    else dom.unbind(window, "unload", saveToLocalStorage);
+                    localStorage.setItem(getLocalStorageHash(_this, "isLocal"), bool);
+                }
+            }
+        }
+    });
+    if (Common.isUndefined(params.parent)) {
+        this.closed = params.closed || false;
+        dom.addClass(this.domElement, GUI.CLASS_MAIN);
+        dom.makeSelectable(this.domElement, false);
+        if (SUPPORTS_LOCAL_STORAGE) {
+            if (useLocalStorage) {
+                _this.useLocalStorage = true;
+                var savedGui = localStorage.getItem(getLocalStorageHash(this, "gui"));
+                if (savedGui) params.load = JSON.parse(savedGui);
+            }
+        }
+        this.__closeButton = document.createElement("div");
+        this.__closeButton.innerHTML = GUI.TEXT_CLOSED;
+        dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_BUTTON);
+        if (params.closeOnTop) {
+            dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_TOP);
+            this.domElement.insertBefore(this.__closeButton, this.domElement.childNodes[0]);
+        } else {
+            dom.addClass(this.__closeButton, GUI.CLASS_CLOSE_BOTTOM);
+            this.domElement.appendChild(this.__closeButton);
+        }
+        dom.bind(this.__closeButton, "click", function() {
+            _this.closed = !_this.closed;
+        });
+    } else {
+        if (params.closed === undefined) params.closed = true;
+        var titleRowName = document.createTextNode(params.name);
+        dom.addClass(titleRowName, "controller-name");
+        titleRow = addRow(_this, titleRowName);
+        var onClickTitle = function onClickTitle(e) {
+            e.preventDefault();
+            _this.closed = !_this.closed;
+            return false;
+        };
+        dom.addClass(this.__ul, GUI.CLASS_CLOSED);
+        dom.addClass(titleRow, "title");
+        dom.bind(titleRow, "click", onClickTitle);
+        if (!params.closed) this.closed = false;
+    }
+    if (params.autoPlace) {
+        if (Common.isUndefined(params.parent)) {
+            if (autoPlaceVirgin) {
+                autoPlaceContainer = document.createElement("div");
+                dom.addClass(autoPlaceContainer, CSS_NAMESPACE);
+                dom.addClass(autoPlaceContainer, GUI.CLASS_AUTO_PLACE_CONTAINER);
+                document.body.appendChild(autoPlaceContainer);
+                autoPlaceVirgin = false;
+            }
+            autoPlaceContainer.appendChild(this.domElement);
+            dom.addClass(this.domElement, GUI.CLASS_AUTO_PLACE);
+        }
+        if (!this.parent) setWidth(_this, params.width);
+    }
+    this.__resizeHandler = function() {
+        _this.onResizeDebounced();
+    };
+    dom.bind(window, "resize", this.__resizeHandler);
+    dom.bind(this.__ul, "webkitTransitionEnd", this.__resizeHandler);
+    dom.bind(this.__ul, "transitionend", this.__resizeHandler);
+    dom.bind(this.__ul, "oTransitionEnd", this.__resizeHandler);
+    this.onResize();
+    if (params.resizable) addResizeHandle(this);
+    saveToLocalStorage = function saveToLocalStorage() {
+        if (SUPPORTS_LOCAL_STORAGE && localStorage.getItem(getLocalStorageHash(_this, "isLocal")) === "true") localStorage.setItem(getLocalStorageHash(_this, "gui"), JSON.stringify(_this.getSaveObject()));
+    };
+    this.saveToLocalStorageIfPossible = saveToLocalStorage;
+    function resetWidth() {
+        var root = _this.getRoot();
+        root.width += 1;
+        Common.defer(function() {
+            root.width -= 1;
+        });
+    }
+    if (!params.parent) resetWidth();
+};
+GUI.toggleHide = function() {
+    hide = !hide;
+    Common.each(hideableGuis, function(gui) {
+        gui.domElement.style.display = hide ? "none" : "";
+    });
+};
+GUI.CLASS_AUTO_PLACE = "a";
+GUI.CLASS_AUTO_PLACE_CONTAINER = "ac";
+GUI.CLASS_MAIN = "main";
+GUI.CLASS_CONTROLLER_ROW = "cr";
+GUI.CLASS_TOO_TALL = "taller-than-window";
+GUI.CLASS_CLOSED = "closed";
+GUI.CLASS_CLOSE_BUTTON = "close-button";
+GUI.CLASS_CLOSE_TOP = "close-top";
+GUI.CLASS_CLOSE_BOTTOM = "close-bottom";
+GUI.CLASS_DRAG = "drag";
+GUI.DEFAULT_WIDTH = 245;
+GUI.TEXT_CLOSED = "Close Controls";
+GUI.TEXT_OPEN = "Open Controls";
+GUI._keydownHandler = function(e) {
+    if (document.activeElement.type !== "text" && (e.which === HIDE_KEY_CODE || e.keyCode === HIDE_KEY_CODE)) GUI.toggleHide();
+};
+dom.bind(window, "keydown", GUI._keydownHandler, false);
+Common.extend(GUI.prototype, {
+    add: function add(object, property) {
+        return _add(this, object, property, {
+            factoryArgs: Array.prototype.slice.call(arguments, 2)
+        });
+    },
+    addColor: function addColor(object, property) {
+        return _add(this, object, property, {
+            color: true
+        });
+    },
+    remove: function remove(controller) {
+        this.__ul.removeChild(controller.__li);
+        this.__controllers.splice(this.__controllers.indexOf(controller), 1);
+        var _this = this;
+        Common.defer(function() {
+            _this.onResize();
+        });
+    },
+    destroy: function destroy() {
+        if (this.parent) throw new Error("Only the root GUI should be removed with .destroy(). For subfolders, use gui.removeFolder(folder) instead.");
+        if (this.autoPlace) autoPlaceContainer.removeChild(this.domElement);
+        var _this = this;
+        Common.each(this.__folders, function(subfolder) {
+            _this.removeFolder(subfolder);
+        });
+        dom.unbind(window, "keydown", GUI._keydownHandler, false);
+        removeListeners(this);
+    },
+    addFolder: function addFolder(name) {
+        if (this.__folders[name] !== undefined) throw new Error('You already have a folder in this GUI by the name "' + name + '"');
+        var newGuiParams = {
+            name: name,
+            parent: this
+        };
+        newGuiParams.autoPlace = this.autoPlace;
+        if (this.load && this.load.folders && this.load.folders[name]) {
+            newGuiParams.closed = this.load.folders[name].closed;
+            newGuiParams.load = this.load.folders[name];
+        }
+        var gui = new GUI(newGuiParams);
+        this.__folders[name] = gui;
+        var li = addRow(this, gui.domElement);
+        dom.addClass(li, "folder");
+        return gui;
+    },
+    removeFolder: function removeFolder(folder) {
+        this.__ul.removeChild(folder.domElement.parentElement);
+        delete this.__folders[folder.name];
+        if (this.load && this.load.folders && this.load.folders[folder.name]) delete this.load.folders[folder.name];
+        removeListeners(folder);
+        var _this = this;
+        Common.each(folder.__folders, function(subfolder) {
+            folder.removeFolder(subfolder);
+        });
+        Common.defer(function() {
+            _this.onResize();
+        });
+    },
+    open: function open() {
+        this.closed = false;
+    },
+    close: function close() {
+        this.closed = true;
+    },
+    hide: function hide() {
+        this.domElement.style.display = "none";
+    },
+    show: function show() {
+        this.domElement.style.display = "";
+    },
+    onResize: function onResize() {
+        var root = this.getRoot();
+        if (root.scrollable) {
+            var top = dom.getOffset(root.__ul).top;
+            var h = 0;
+            Common.each(root.__ul.childNodes, function(node) {
+                if (!(root.autoPlace && node === root.__save_row)) h += dom.getHeight(node);
+            });
+            if (window.innerHeight - top - CLOSE_BUTTON_HEIGHT < h) {
+                dom.addClass(root.domElement, GUI.CLASS_TOO_TALL);
+                root.__ul.style.height = window.innerHeight - top - CLOSE_BUTTON_HEIGHT + "px";
+            } else {
+                dom.removeClass(root.domElement, GUI.CLASS_TOO_TALL);
+                root.__ul.style.height = "auto";
+            }
+        }
+        if (root.__resize_handle) Common.defer(function() {
+            root.__resize_handle.style.height = root.__ul.offsetHeight + "px";
+        });
+        if (root.__closeButton) root.__closeButton.style.width = root.width + "px";
+    },
+    onResizeDebounced: Common.debounce(function() {
+        this.onResize();
+    }, 50),
+    remember: function remember() {
+        if (Common.isUndefined(SAVE_DIALOGUE)) {
+            SAVE_DIALOGUE = new CenteredDiv();
+            SAVE_DIALOGUE.domElement.innerHTML = saveDialogContents;
+        }
+        if (this.parent) throw new Error("You can only call remember on a top level GUI.");
+        var _this = this;
+        Common.each(Array.prototype.slice.call(arguments), function(object) {
+            if (_this.__rememberedObjects.length === 0) addSaveMenu(_this);
+            if (_this.__rememberedObjects.indexOf(object) === -1) _this.__rememberedObjects.push(object);
+        });
+        if (this.autoPlace) setWidth(this, this.width);
+    },
+    getRoot: function getRoot() {
+        var gui = this;
+        while(gui.parent)gui = gui.parent;
+        return gui;
+    },
+    getSaveObject: function getSaveObject() {
+        var toReturn = this.load;
+        toReturn.closed = this.closed;
+        if (this.__rememberedObjects.length > 0) {
+            toReturn.preset = this.preset;
+            if (!toReturn.remembered) toReturn.remembered = {};
+            toReturn.remembered[this.preset] = getCurrentPreset(this);
+        }
+        toReturn.folders = {};
+        Common.each(this.__folders, function(element, key) {
+            toReturn.folders[key] = element.getSaveObject();
+        });
+        return toReturn;
+    },
+    save: function save() {
+        if (!this.load.remembered) this.load.remembered = {};
+        this.load.remembered[this.preset] = getCurrentPreset(this);
+        markPresetModified(this, false);
+        this.saveToLocalStorageIfPossible();
+    },
+    saveAs: function saveAs(presetName) {
+        if (!this.load.remembered) {
+            this.load.remembered = {};
+            this.load.remembered[DEFAULT_DEFAULT_PRESET_NAME] = getCurrentPreset(this, true);
+        }
+        this.load.remembered[presetName] = getCurrentPreset(this);
+        this.preset = presetName;
+        addPresetOption(this, presetName, true);
+        this.saveToLocalStorageIfPossible();
+    },
+    revert: function revert(gui) {
+        Common.each(this.__controllers, function(controller) {
+            if (!this.getRoot().load.remembered) controller.setValue(controller.initialValue);
+            else recallSavedValue(gui || this.getRoot(), controller);
+            if (controller.__onFinishChange) controller.__onFinishChange.call(controller, controller.getValue());
+        }, this);
+        Common.each(this.__folders, function(folder) {
+            folder.revert(folder);
+        });
+        if (!gui) markPresetModified(this.getRoot(), false);
+    },
+    listen: function listen(controller) {
+        var init = this.__listening.length === 0;
+        this.__listening.push(controller);
+        if (init) updateDisplays(this.__listening);
+    },
+    updateDisplay: function updateDisplay() {
+        Common.each(this.__controllers, function(controller) {
+            controller.updateDisplay();
+        });
+        Common.each(this.__folders, function(folder) {
+            folder.updateDisplay();
+        });
+    }
+});
+function addRow(gui, newDom, liBefore) {
+    var li = document.createElement("li");
+    if (newDom) li.appendChild(newDom);
+    if (liBefore) gui.__ul.insertBefore(li, liBefore);
+    else gui.__ul.appendChild(li);
+    gui.onResize();
+    return li;
+}
+function removeListeners(gui) {
+    dom.unbind(window, "resize", gui.__resizeHandler);
+    if (gui.saveToLocalStorageIfPossible) dom.unbind(window, "unload", gui.saveToLocalStorageIfPossible);
+}
+function markPresetModified(gui, modified) {
+    var opt = gui.__preset_select[gui.__preset_select.selectedIndex];
+    if (modified) opt.innerHTML = opt.value + "*";
+    else opt.innerHTML = opt.value;
+}
+function augmentController(gui, li, controller) {
+    controller.__li = li;
+    controller.__gui = gui;
+    Common.extend(controller, {
+        options: function options(_options) {
+            if (arguments.length > 1) {
+                var nextSibling = controller.__li.nextElementSibling;
+                controller.remove();
+                return _add(gui, controller.object, controller.property, {
+                    before: nextSibling,
+                    factoryArgs: [
+                        Common.toArray(arguments)
+                    ]
+                });
+            }
+            if (Common.isArray(_options) || Common.isObject(_options)) {
+                var _nextSibling = controller.__li.nextElementSibling;
+                controller.remove();
+                return _add(gui, controller.object, controller.property, {
+                    before: _nextSibling,
+                    factoryArgs: [
+                        _options
+                    ]
+                });
+            }
+        },
+        name: function name(_name) {
+            controller.__li.firstElementChild.firstElementChild.innerHTML = _name;
+            return controller;
+        },
+        listen: function listen() {
+            controller.__gui.listen(controller);
+            return controller;
+        },
+        remove: function remove() {
+            controller.__gui.remove(controller);
+            return controller;
+        }
+    });
+    if (controller instanceof NumberControllerSlider) {
+        var box = new NumberControllerBox(controller.object, controller.property, {
+            min: controller.__min,
+            max: controller.__max,
+            step: controller.__step
+        });
+        Common.each([
+            "updateDisplay",
+            "onChange",
+            "onFinishChange",
+            "step",
+            "min",
+            "max"
+        ], function(method) {
+            var pc = controller[method];
+            var pb = box[method];
+            controller[method] = box[method] = function() {
+                var args = Array.prototype.slice.call(arguments);
+                pb.apply(box, args);
+                return pc.apply(controller, args);
+            };
+        });
+        dom.addClass(li, "has-slider");
+        controller.domElement.insertBefore(box.domElement, controller.domElement.firstElementChild);
+    } else if (controller instanceof NumberControllerBox) {
+        var r = function r(returned) {
+            if (Common.isNumber(controller.__min) && Common.isNumber(controller.__max)) {
+                var oldName = controller.__li.firstElementChild.firstElementChild.innerHTML;
+                var wasListening = controller.__gui.__listening.indexOf(controller) > -1;
+                controller.remove();
+                var newController = _add(gui, controller.object, controller.property, {
+                    before: controller.__li.nextElementSibling,
+                    factoryArgs: [
+                        controller.__min,
+                        controller.__max,
+                        controller.__step
+                    ]
+                });
+                newController.name(oldName);
+                if (wasListening) newController.listen();
+                return newController;
+            }
+            return returned;
+        };
+        controller.min = Common.compose(r, controller.min);
+        controller.max = Common.compose(r, controller.max);
+    } else if (controller instanceof BooleanController) {
+        dom.bind(li, "click", function() {
+            dom.fakeEvent(controller.__checkbox, "click");
+        });
+        dom.bind(controller.__checkbox, "click", function(e) {
+            e.stopPropagation();
+        });
+    } else if (controller instanceof FunctionController) {
+        dom.bind(li, "click", function() {
+            dom.fakeEvent(controller.__button, "click");
+        });
+        dom.bind(li, "mouseover", function() {
+            dom.addClass(controller.__button, "hover");
+        });
+        dom.bind(li, "mouseout", function() {
+            dom.removeClass(controller.__button, "hover");
+        });
+    } else if (controller instanceof ColorController) {
+        dom.addClass(li, "color");
+        controller.updateDisplay = Common.compose(function(val) {
+            li.style.borderLeftColor = controller.__color.toString();
+            return val;
+        }, controller.updateDisplay);
+        controller.updateDisplay();
+    }
+    controller.setValue = Common.compose(function(val) {
+        if (gui.getRoot().__preset_select && controller.isModified()) markPresetModified(gui.getRoot(), true);
+        return val;
+    }, controller.setValue);
+}
+function recallSavedValue(gui, controller) {
+    var root = gui.getRoot();
+    var matchedIndex = root.__rememberedObjects.indexOf(controller.object);
+    if (matchedIndex !== -1) {
+        var controllerMap = root.__rememberedObjectIndecesToControllers[matchedIndex];
+        if (controllerMap === undefined) {
+            controllerMap = {};
+            root.__rememberedObjectIndecesToControllers[matchedIndex] = controllerMap;
+        }
+        controllerMap[controller.property] = controller;
+        if (root.load && root.load.remembered) {
+            var presetMap = root.load.remembered;
+            var preset = void 0;
+            if (presetMap[gui.preset]) preset = presetMap[gui.preset];
+            else if (presetMap[DEFAULT_DEFAULT_PRESET_NAME]) preset = presetMap[DEFAULT_DEFAULT_PRESET_NAME];
+            else return;
+            if (preset[matchedIndex] && preset[matchedIndex][controller.property] !== undefined) {
+                var value = preset[matchedIndex][controller.property];
+                controller.initialValue = value;
+                controller.setValue(value);
+            }
+        }
+    }
+}
+function _add(gui, object, property, params) {
+    if (object[property] === undefined) throw new Error('Object "' + object + '" has no property "' + property + '"');
+    var controller = void 0;
+    if (params.color) controller = new ColorController(object, property);
+    else {
+        var factoryArgs = [
+            object,
+            property
+        ].concat(params.factoryArgs);
+        controller = ControllerFactory.apply(gui, factoryArgs);
+    }
+    if (params.before instanceof Controller) params.before = params.before.__li;
+    recallSavedValue(gui, controller);
+    dom.addClass(controller.domElement, "c");
+    var name = document.createElement("span");
+    dom.addClass(name, "property-name");
+    name.innerHTML = controller.property;
+    var container = document.createElement("div");
+    container.appendChild(name);
+    container.appendChild(controller.domElement);
+    var li = addRow(gui, container, params.before);
+    dom.addClass(li, GUI.CLASS_CONTROLLER_ROW);
+    if (controller instanceof ColorController) dom.addClass(li, "color");
+    else dom.addClass(li, _typeof(controller.getValue()));
+    augmentController(gui, li, controller);
+    gui.__controllers.push(controller);
+    return controller;
+}
+function getLocalStorageHash(gui, key) {
+    return document.location.href + "." + key;
+}
+function addPresetOption(gui, name, setSelected) {
+    var opt = document.createElement("option");
+    opt.innerHTML = name;
+    opt.value = name;
+    gui.__preset_select.appendChild(opt);
+    if (setSelected) gui.__preset_select.selectedIndex = gui.__preset_select.length - 1;
+}
+function showHideExplain(gui, explain) {
+    explain.style.display = gui.useLocalStorage ? "block" : "none";
+}
+function addSaveMenu(gui) {
+    var div = gui.__save_row = document.createElement("li");
+    dom.addClass(gui.domElement, "has-save");
+    gui.__ul.insertBefore(div, gui.__ul.firstChild);
+    dom.addClass(div, "save-row");
+    var gears = document.createElement("span");
+    gears.innerHTML = "&nbsp;";
+    dom.addClass(gears, "button gears");
+    var button = document.createElement("span");
+    button.innerHTML = "Save";
+    dom.addClass(button, "button");
+    dom.addClass(button, "save");
+    var button2 = document.createElement("span");
+    button2.innerHTML = "New";
+    dom.addClass(button2, "button");
+    dom.addClass(button2, "save-as");
+    var button3 = document.createElement("span");
+    button3.innerHTML = "Revert";
+    dom.addClass(button3, "button");
+    dom.addClass(button3, "revert");
+    var select = gui.__preset_select = document.createElement("select");
+    if (gui.load && gui.load.remembered) Common.each(gui.load.remembered, function(value, key) {
+        addPresetOption(gui, key, key === gui.preset);
+    });
+    else addPresetOption(gui, DEFAULT_DEFAULT_PRESET_NAME, false);
+    dom.bind(select, "change", function() {
+        for(var index = 0; index < gui.__preset_select.length; index++)gui.__preset_select[index].innerHTML = gui.__preset_select[index].value;
+        gui.preset = this.value;
+    });
+    div.appendChild(select);
+    div.appendChild(gears);
+    div.appendChild(button);
+    div.appendChild(button2);
+    div.appendChild(button3);
+    if (SUPPORTS_LOCAL_STORAGE) {
+        var explain = document.getElementById("dg-local-explain");
+        var localStorageCheckBox = document.getElementById("dg-local-storage");
+        var saveLocally = document.getElementById("dg-save-locally");
+        saveLocally.style.display = "block";
+        if (localStorage.getItem(getLocalStorageHash(gui, "isLocal")) === "true") localStorageCheckBox.setAttribute("checked", "checked");
+        showHideExplain(gui, explain);
+        dom.bind(localStorageCheckBox, "change", function() {
+            gui.useLocalStorage = !gui.useLocalStorage;
+            showHideExplain(gui, explain);
+        });
+    }
+    var newConstructorTextArea = document.getElementById("dg-new-constructor");
+    dom.bind(newConstructorTextArea, "keydown", function(e) {
+        if (e.metaKey && (e.which === 67 || e.keyCode === 67)) SAVE_DIALOGUE.hide();
+    });
+    dom.bind(gears, "click", function() {
+        newConstructorTextArea.innerHTML = JSON.stringify(gui.getSaveObject(), undefined, 2);
+        SAVE_DIALOGUE.show();
+        newConstructorTextArea.focus();
+        newConstructorTextArea.select();
+    });
+    dom.bind(button, "click", function() {
+        gui.save();
+    });
+    dom.bind(button2, "click", function() {
+        var presetName = prompt("Enter a new preset name.");
+        if (presetName) gui.saveAs(presetName);
+    });
+    dom.bind(button3, "click", function() {
+        gui.revert();
+    });
+}
+function addResizeHandle(gui) {
+    var pmouseX = void 0;
+    gui.__resize_handle = document.createElement("div");
+    Common.extend(gui.__resize_handle.style, {
+        width: "6px",
+        marginLeft: "-3px",
+        height: "200px",
+        cursor: "ew-resize",
+        position: "absolute"
+    });
+    function drag(e) {
+        e.preventDefault();
+        gui.width += pmouseX - e.clientX;
+        gui.onResize();
+        pmouseX = e.clientX;
+        return false;
+    }
+    function dragStop() {
+        dom.removeClass(gui.__closeButton, GUI.CLASS_DRAG);
+        dom.unbind(window, "mousemove", drag);
+        dom.unbind(window, "mouseup", dragStop);
+    }
+    function dragStart(e) {
+        e.preventDefault();
+        pmouseX = e.clientX;
+        dom.addClass(gui.__closeButton, GUI.CLASS_DRAG);
+        dom.bind(window, "mousemove", drag);
+        dom.bind(window, "mouseup", dragStop);
+        return false;
+    }
+    dom.bind(gui.__resize_handle, "mousedown", dragStart);
+    dom.bind(gui.__closeButton, "mousedown", dragStart);
+    gui.domElement.insertBefore(gui.__resize_handle, gui.domElement.firstElementChild);
+}
+function setWidth(gui, w) {
+    gui.domElement.style.width = w + "px";
+    if (gui.__save_row && gui.autoPlace) gui.__save_row.style.width = w + "px";
+    if (gui.__closeButton) gui.__closeButton.style.width = w + "px";
+}
+function getCurrentPreset(gui, useInitialValues) {
+    var toReturn = {};
+    Common.each(gui.__rememberedObjects, function(val, index) {
+        var savedValues = {};
+        var controllerMap = gui.__rememberedObjectIndecesToControllers[index];
+        Common.each(controllerMap, function(controller, property) {
+            savedValues[property] = useInitialValues ? controller.initialValue : controller.getValue();
+        });
+        toReturn[index] = savedValues;
+    });
+    return toReturn;
+}
+function setPresetSelectIndex(gui) {
+    for(var index = 0; index < gui.__preset_select.length; index++)if (gui.__preset_select[index].value === gui.preset) gui.__preset_select.selectedIndex = index;
+}
+function updateDisplays(controllerArray) {
+    if (controllerArray.length !== 0) requestAnimationFrame$1.call(window, function() {
+        updateDisplays(controllerArray);
+    });
+    Common.each(controllerArray, function(c) {
+        c.updateDisplay();
+    });
+}
+var color = {
+    Color: Color,
+    math: ColorMath,
+    interpret: interpret
+};
+var controllers = {
+    Controller: Controller,
+    BooleanController: BooleanController,
+    OptionController: OptionController,
+    StringController: StringController,
+    NumberController: NumberController,
+    NumberControllerBox: NumberControllerBox,
+    NumberControllerSlider: NumberControllerSlider,
+    FunctionController: FunctionController,
+    ColorController: ColorController
+};
+var dom$1 = {
+    dom: dom
+};
+var gui = {
+    GUI: GUI
+};
+var GUI$1 = GUI;
+var index = {
+    color: color,
+    controllers: controllers,
+    dom: dom$1,
+    gui: gui,
+    GUI: GUI$1
+};
+exports.default = index;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"a9sca":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "pos-x.402dfd23.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lyQqL":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "pos-y.76d9655d.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"aPDGD":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "pos-z.a898c738.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"fpDpr":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "neg-x.7ad18d6c.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"5wZyZ":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "neg-y.3d3de1f3.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"9k2KL":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "neg-z.ea0a9fec.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"6MAhy":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posx.5d60cedc.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"jQrDm":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posy.5f0ee839.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"axQiE":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posz.da75f2c4.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"d4Kua":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negx.d20ed358.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"5tE9m":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negy.5fc82de9.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"10sgW":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negz.2c4b4391.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"191Bf":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "aristoteles1.fe4d0f63.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"inIlM":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "flagofukraine2.a30fc79d.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"8Yuji":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "geodriehoek.617b0683.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"byoCh":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "geodriehoek2.733c44fc.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cTTe4":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "protractorT2.54d56187.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"jTKYD":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -12451,141 +15544,192 @@ const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
+const twglbaseapp = __importStar(require("./twglbaseapp"));
+const animationclock = __importStar(require("./animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class FishAnimation {
+class FishAnimation extends twglbaseapp.twglbaseapp {
     constructor(cgl, capp, dictpar){
+        super(cgl, capp, dictpar);
+        this.fishAnimationParameters = {
+            b: this.baseappParameters,
+            texture: "geotriangle2",
+            sling: 117
+        };
         this.fish = [
-            new fish.FishHTranslated(1.0, 0.03, 0.8, 0.0016, 0.5, 2.25, "zelenskyy"),
-            new fish.FishOneJoint(0.33, 0.03, 3.0, 0.0125, 0.3, 2.25, "gradient", 0.6, [
+            new fish.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fish.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
                 0.0,
-                0.0,
-                1.0
+                1.0,
+                0.0
             ]),
-            new fish.FishHRotated(1.0, 0.03, 0.1, 0.0015, 1.3, 2.25, "gradient"),
-            new fish.FishV(0.2, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fish.FishHTranslated(0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+            new fish.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+            new fish.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new fish.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
         ];
-        this.fishcounts = [
+        this.fishjointcounts = [
+            1,
+            28,
             1,
             1,
-            2,
-            2,
             1
         ];
         this.fishpositions = [
             [
                 [
-                    20.0,
+                    0.0,
                     -20,
                     0.0
                 ]
             ],
             [
                 [
-                    0.0,
-                    0.0,
-                    0.0
+                    -15,
+                    15,
+                    0
                 ]
             ],
             [
                 [
-                    40.0,
+                    20.0,
                     -5,
                     -15
-                ],
-                [
-                    40.0,
-                    -2,
-                    -5
                 ]
             ],
             [
                 [
-                    10.0,
+                    -10,
                     -5,
                     0.0
-                ],
-                [
-                    15.0,
-                    0.0,
-                    -5
                 ]
             ],
             [
                 [
-                    22.0,
+                    0.0,
                     0.0,
                     1.0
                 ]
             ]
         ];
-        this.vnow = new Date();
-        this.tdt = 0;
-        this.cntfr = 0;
-        this.gl = cgl;
-        this.app = capp;
+        this.clock = new animationclock.AnimationClock();
+    }
+    main(gl, dictpar) {
+        super.maininfo(gl, dictpar, boneanimation.vsSkeleton, boneanimation.fsSkeleton);
         twgl.setAttributePrefix("a_");
-        this.programInfo = twgl.createProgramInfo(this.gl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
+        var gl = this.gl;
+        //this.programInfo = this.twglprograminfo![0];// twgl.createProgramInfo(gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
         var nFish = 0;
+        var time0 = 0; // (this.vnow=new Date()).getTime();
         this.fish.forEach((afish)=>{
-            afish.prepareSurfaceTextures(this.gl, afish.surfacetexturefile);
-            afish.mesh = afish.prepareMesh(this.gl, dictpar, afish.size);
-            afish.setNumBones(this.gl);
-            afish.createBoneTexture(this.gl, dictpar);
-            afish.createSurfaceTexture(this.gl);
-            afish.uniforms = afish.prepareUniforms(this.gl, dictpar);
-            afish.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(this.gl, this.programInfo, afish.bufferInfo);
+            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
+            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+            afish.setNumBones(gl);
+            afish.createBoneTexture(gl, time0, dictpar);
+            afish.createSurfaceTexture(gl);
+            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], afish.bufferInfo);
             nFish++;
         });
-        this.cam = camhandler.Camera.createZUpCamera(this.gl, dictpar, 50.0, this.app);
+        this.cam = camhandler.Camera.createZUpCamera(gl, dictpar, 30.0, this.app);
         this.cam.zoominVelocity = 0.5;
-        requestAnimationFrame(()=>this.render((this.vnow = new Date()).getTime()));
+        requestAnimationFrame(()=>this.render(time0));
     }
-    getTime(nfr) {
-        const now = new Date();
-        const ctime = now.getTime();
-        const dt = ctime - this.vnow.getTime();
-        if (this.cntfr % 100 == 0) {
-            console.log("nfr=" + nfr + " tdt=" + this.tdt + " ms, fr=" + 1000.0 / (this.tdt / 100.0));
-            document.getElementById("app").innerHTML = "fr=" + 1000.0 / (this.tdt / 100.0);
-            this.tdt = 0;
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = FishAnimation.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
         }
-        this.tdt += dt;
-        this.vnow = now;
-        return ctime;
+    }
+    initGUI(parameters) {
+        this.fishAnimationParameters = parameters;
+        // The base GUI provides checkboxes for move and move of objects,
+        // a color dialog to choose background, Slider for animation speed
+        var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+        // add a slider for sling
+        gui.add(this.fishAnimationParameters, "sling").min(9).max(120).step(1);
+        gui.updateDisplay();
+        return gui;
     }
     render(time) {
         var gl = this.gl;
-        gl.useProgram(this.programInfo.program);
+        gl.useProgram(this.twglprograminfo[0].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.clearColor(0.1, 0.1, 0.1, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        //gl.clearColor(0.1, 0.1, 0.1, 1.0);       
+        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
         var cam = this.cam;
-        cam.CamHandlingZUp(gl, this.app);
+        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
             gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].computeBone(time);
-            this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2);
-            this.fish[fishtype].uniforms.worldviewprojection = cam.viewProjection;
-            for(var i = 0; i < this.fishcounts[fishtype]; i++){
-                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), this.fishpositions[fishtype][i]); // draw a fish at some position
-                twgl.setUniforms(this.programInfo, this.fish[fishtype].uniforms);
+            this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move ? this.fishAnimationParameters.b.speed : 0.0;
+            if (this.fishjointcounts[fishtype] == 1) {
+                this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
+                twgl.setUniforms(this.twglprograminfo[0], this.fish[fishtype].uniforms);
                 twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+            } else {
+                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
+                var ampl0 = this.fish[fishtype].ampl;
+                var sling = this.fishAnimationParameters.sling;
+                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
+                    var timeoffs = i * sling;
+                    var nx = i / this.fishjointcounts[fishtype];
+                    this.fish[fishtype].ampl = ampl0 * nx;
+                    this.fish[fishtype].computeBone(time - timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
+                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
+                    twgl.setUniforms(this.twglprograminfo[0], this.fish[fishtype].uniforms);
+                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
+                }
+                this.fish[fishtype].ampl = ampl0;
             }
         }
-        requestAnimationFrame(()=>this.render(this.getTime(this.cntfr++)));
+        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
     }
 }
 exports.FishAnimation = FishAnimation;
 
-},{"twgl.js":"3uqAP","./camhandler":"4jukU","./boneanimation":"aOyYs","./fish":"otYB7"}],"llxVM":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./camhandler":"4jukU","./boneanimation":"aOyYs","./fish":"otYB7","./twglbaseapp":"cbghk","./animationclock":"e1QLO"}],"e1QLO":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.AnimationClock = void 0;
+class AnimationClock {
+    constructor(){
+        this.frame = 0;
+        this.vnow = new Date();
+        this.tdt = 0;
+    }
+    getTime(cframe) {
+        const now = new Date();
+        const ctime = now.getTime();
+        const dt = ctime - this.vnow.getTime();
+        if (this.frame % 100 == 0) {
+            var fps = 1000.0 / (this.tdt / 100.0);
+            var s = "cframe=" + cframe + " tdt=" + (this.tdt / 100.0).toPrecision(4) + " ms, fps: " + fps.toPrecision(3);
+            // var s: string = "cframe="+cframe+" tdt="+this.tdt+" ms, fps: "+(1000.0/(this.tdt/100.0)).toPrecision(3).toString();
+            console.log(s);
+            document.getElementById("app").innerHTML = s;
+            this.tdt = 0;
+        }
+        this.tdt += dt;
+        this.vnow = now;
+        this.frame++;
+        return ctime;
+    }
+}
+exports.AnimationClock = AnimationClock;
+
+},{}],"llxVM":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -12629,6 +15773,7 @@ const chroma_js_1 = __importDefault(require("chroma-js"));
 const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
 const twgl_js_1 = require("./../node_modules/twgl.js");
 const camhandler = __importStar(require("./camhandler")); // camera projection
+const datgui = __importStar(require("dat.gui"));
 class Tdrawitem {
     constructor(cdo, cobj){
         this.do = cdo;
@@ -12643,6 +15788,12 @@ class Tdrawitem {
 exports.Tdrawitem = Tdrawitem;
 class ManyTextures {
     constructor(cgl, capp, dictpar){
+        this.manyTexturesParameters = {
+            move: false,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
         // Publics
         this.baseHue = this.rand(300); // color of objects
         this.numObjects = 200; // object count
@@ -12717,14 +15868,64 @@ class ManyTextures {
       gl_FragColor = color;
     }
     `;
+        this.gui = null;
+        ManyTextures.instance = this;
         this.app = capp;
         this.gl = cgl;
+    }
+    main(gl, dictpar) {
         this.Prepare(dictpar);
         twgl.resizeCanvasToDisplaySize(this.gl.canvas);
         var szobj = 25.0;
         this.cam = camhandler.Camera.createYUpCamera(this.gl, dictpar, szobj, this.app);
         this.cam.zoominVelocity = szobj / 40.0;
         requestAnimationFrame(()=>this.render(0));
+        console.log("Animation requested.");
+    }
+    onChangeTextureCombo(value) {
+        var thisinstance = ManyTextures.instance;
+        //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
+        //  thisinstance.currentTexture = value;
+        //  console.log("set currentTexture to ["+value+"]");
+        //  if (value=="clover") thisinstance.ny=8.0; else 
+        //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
+        thisinstance.app.mouse.totaldelta = 0;
+    }
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = ManyTextures.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.manyTexturesParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.manyTexturesParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(this.manyTexturesParameters);
+        // Checkbox for animation on/off
+        gui.add(this.manyTexturesParameters, "move");
+        // Slider for animation speed
+        gui.add(this.manyTexturesParameters, "speed").min(0.02).max(4).step(0.01);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(this.manyTexturesParameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        // Combobox texture from accepted values
+        // var cel2 = gui.add(this.manyTexturesParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+        // cel2.onChange( this.onChangeTextureCombo);
+        gui.updateDisplay();
+        return gui;
     }
     //--------------------------------------------------------------------------------------------------------------------------------------------------
     rand(min, max) {
@@ -13034,14 +16235,16 @@ class ManyTextures {
         // refer camera to Identity world
         var world1 = twgl_js_1.m4.identity();
         //this.cam.invworldmat = m4.inverse(world1);
-        this.cam.CamHandlingYUp(this.gl, this.app);
+        this.cam.CamHandlingYUp(this.gl, this.app, 1.0, 1.0);
         // rotate the objects local worlds
         this.drawItems.forEach((obj)=>{
             const uni = obj.obj.uniforms;
             const world = twgl_js_1.m4.identity(); // local worlds turn
             twgl_js_1.m4.translate(world, obj.obj.translation, world);
-            twgl_js_1.m4.rotateY(world, time * obj.obj.ySpeed, world);
-            twgl_js_1.m4.rotateZ(world, time * obj.obj.zSpeed, world);
+            if (this.manyTexturesParameters.move) {
+                twgl_js_1.m4.rotateY(world, this.manyTexturesParameters.speed * time * obj.obj.ySpeed, world);
+                twgl_js_1.m4.rotateZ(world, this.manyTexturesParameters.speed * time * obj.obj.zSpeed, world);
+            }
             uni.u_world = world; // this object's world     
             uni.u_worldInverseTranspose = twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world1));
             twgl_js_1.m4.multiply(this.cam.viewProjection, world, uni.u_worldViewProjection); // this object's matrix
@@ -13054,7 +16257,7 @@ class ManyTextures {
 }
 exports.ManyTextures = ManyTextures;
 
-},{"chroma-js":"iVrwS","./../node_modules/twgl.js":"3uqAP","./camhandler":"4jukU","./images/yokohama/posx.jpg":"6MAhy","./images/yokohama/negx.jpg":"d4Kua","./images/yokohama/posy.jpg":"jQrDm","./images/yokohama/negy.jpg":"5tE9m","./images/yokohama/posz.jpg":"axQiE","./images/yokohama/negz.jpg":"10sgW","./images/clover.jpg":"iLTuo","./images/hft-icon-16.png":"5NVKv","./images/goldengate.jpg":"Cud2t"}],"iVrwS":[function(require,module,exports) {
+},{"chroma-js":"iVrwS","./../node_modules/twgl.js":"3uqAP","./camhandler":"4jukU","dat.gui":"k3xQk","./images/yokohama/posx.jpg":"6MAhy","./images/yokohama/negx.jpg":"d4Kua","./images/yokohama/posy.jpg":"jQrDm","./images/yokohama/negy.jpg":"5tE9m","./images/yokohama/posz.jpg":"axQiE","./images/yokohama/negz.jpg":"10sgW","./images/clover.jpg":"iLTuo","./images/hft-icon-16.png":"5NVKv","./images/goldengate.jpg":"Cud2t"}],"iVrwS":[function(require,module,exports) {
 /**
  * chroma.js - JavaScript library for color conversions
  *
@@ -16680,31 +19883,817 @@ exports.ManyTextures = ManyTextures;
     return chroma_js;
 });
 
-},{}],"6MAhy":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posx.5d60cedc.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"d4Kua":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negx.d20ed358.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"jQrDm":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posy.5f0ee839.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"5tE9m":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negy.5fc82de9.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"axQiE":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "posz.da75f2c4.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"10sgW":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "negz.2c4b4391.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"5NVKv":[function(require,module,exports) {
+},{}],"5NVKv":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "hft-icon-16.f167c61e.png" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"Cud2t":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "goldengate.1f6cbf46.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"46ggt":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"hcp33":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.drawimagespace = void 0;
+const twgl = __importStar(require("twgl.js")); // Lib: Gregg's work
+const datgui = __importStar(require("dat.gui")); // Lib: dat.gui
+const twglbaseapp_1 = require("./twglbaseapp"); // convenient base class initializing gl2 and program(s)
+const vs = `#version 300 es
+        precision highp float;
+        precision highp int;   
+        void main()
+        {
+          //show smaller, centered triangle gl_Position = vec4(1.f * float(uint(gl_VertexID) % 2u) - 0.5f, 1.f*float(uint(gl_VertexID) / 2u) - 0.5f, 1.0, 1.0);
+          //show half viewport triangle gl_Position = vec4(2.f * float(uint(gl_VertexID) % 2u) - 1.f, 2.f*float(uint(gl_VertexID) / 2u) - 1.f, 1.0, 1.0);
+          //show (the same) half viewport triangle  gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 2.0f, 4.f*float(uint(gl_VertexID) / 2u) - 2.0f, 1.0, 1.0);
+          //show covering right side of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) - 1.0f, 1.0, 1.0);
+          //show covering upper right square of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) + 0.0f, 1.0, 1.0);
+          //show covering  entire viewport
+          gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 1.0f,
+                             4.f * float(uint(gl_VertexID) / 2u) - 1.0f, 
+                             1.0, 1.0);       
+        }`;
+const fs = `#version 300 es
+        precision highp float;
+        precision highp int;
+        uniform sampler2D diffuse;
+        uniform vec2 u_imageSize;
+        uniform int u_teal; 
+        uniform int u_xshift; 
+        uniform int u_yshift; 
+        uniform float u_aspect; 
+        uniform float u_xzoomoffset    ;
+        uniform float u_yzoomoffset    ;
+          out vec4 color;
+        void main()
+        {
+          float px = u_aspect *(gl_FragCoord.x-float(u_xshift));
+          float py = gl_FragCoord.y-float(u_yshift);
+          px-=u_xzoomoffset;
+          py-=u_yzoomoffset;
+          vec2 texoffset1 = vec2(  px, py) / u_imageSize;
+          vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
+
+          vec4 ccolor = texture(diffuse, texcoord1);
+          if ((py<u_imageSize.y && px<u_imageSize.x) || (u_teal ==1))
+            color=ccolor;
+        }`;
+class drawimagespace extends twglbaseapp_1.twglbaseapp {
+    constructor(cgl, capp, dictpar){
+        super(cgl, capp, dictpar);
+        this.imagespaceParameters = {
+            move: false,
+            teal: false,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
+        this.diffuseLocation = 0;
+        this.imageSizeLocation = 0;
+        this.tealLocation = 0;
+        this.xshiftLocation = 0;
+        this.yshiftLocation = 0;
+        this.aspectLocation = 0;
+        this.cxshift = 0; // total hhift texture space (pixels)
+        this.cyshift = 0; // total hhift texture space (pixels)
+        this.cxdshift = 6.0; // moving camera
+        this.cydshift = 4.0; // moving camera
+        this.cxshiftmax = 1000; // moving camera x limit
+        this.cyshiftmax = 400; // moving camera y limit
+        this.xzoomoffset = 0;
+        this.yzoomoffset = 0;
+        this.xzoomoffsetLocation = 0;
+        this.yzoomoffsetLocation = 0;
+        this.currentTexture = "geotriangle2";
+        this.ny = 0.0;
+        this.txtaspect = 1.0;
+        //===================================================================================================
+        this.gui = null;
+    }
+    onChangeTextureCombo(value) {
+        var thisinstance = drawimagespace.instance;
+        console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.imagespaceParameters.speed);
+        thisinstance.currentTexture = value;
+        console.log("set currentTexture to [" + value + "]");
+        if (value == "clover") thisinstance.ny = 8.0;
+        else if (value == "geotriangle2") thisinstance.ny = 2.0;
+        else thisinstance.ny = 4.0;
+        console.log("this.textureaspects=" + thisinstance.textureaspects);
+        if (value == "geotriangle") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle");
+        if (value == "geotriangle2") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle2");
+        if (value == "flagofukraine") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine");
+        if (value == "flagofukraine2") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine2");
+        if (value == "clover") {
+            if (thisinstance.textureaspects.has("clover")) thisinstance.txtaspect = thisinstance.textureaspects.get("clover");
+        }
+        if (value == "aristotle") thisinstance.txtaspect = thisinstance.textureaspects.get("aristotle");
+        if (value == "checker") thisinstance.txtaspect = thisinstance.textureaspects.get("checker");
+        if (value == "zelenskyy") thisinstance.txtaspect = thisinstance.textureaspects.get("zelenskyy");
+        if (value == "protractorT2") thisinstance.txtaspect = thisinstance.textureaspects.get("protractorT2");
+        //alert("txtaspect set at "+thisinstance.txtaspect);
+        thisinstance.app.mouse.totaldelta = 0;
+    }
+    onChangeColorValue(value) {
+        console.log("we are in color=[" + value + "]");
+        var thisinstance = drawimagespace.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.imagespaceParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.imagespaceParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(this.imagespaceParameters);
+        // Checkbox for animation on/off
+        gui.add(this.imagespaceParameters, "move");
+        // Checkbox for tealing texture on/off
+        gui.add(this.imagespaceParameters, "teal");
+        // Slider for animation speed
+        gui.add(this.imagespaceParameters, "speed").min(0.2).max(1).step(0.005);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(this.imagespaceParameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        // Combobox texture from accepted values
+        var cel2 = gui.add(this.imagespaceParameters, "texture", [
+            "geotriangle2",
+            "zelenskyy",
+            "clover",
+            "checker",
+            "aristotle",
+            "protractorT2"
+        ]);
+        cel2.onChange(this.onChangeTextureCombo);
+        gui.updateDisplay();
+        return gui;
+    }
+    //---------------------------------------------------------------------------------------------------------
+    main(gl, dictpar) {
+        super.main(gl, dictpar, vs, fs);
+        if (this.program && this.gl && this.program[0]) {
+            console.log("initprogram program[0] ok.");
+            // this.texture= 
+            this.prepareSurfaceTextures(this.gl, "zelenskyy");
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            this.txtaspect = this.textureaspects.get("geotriangle2");
+            this.ny = 1.0;
+            this.diffuseLocation = gl.getUniformLocation(this.program[0], "diffuse");
+            this.imageSizeLocation = gl.getUniformLocation(this.program[0], "u_imageSize");
+            this.tealLocation = gl.getUniformLocation(this.program[0], "u_teal");
+            this.xshiftLocation = gl.getUniformLocation(this.program[0], "u_xshift");
+            this.yshiftLocation = gl.getUniformLocation(this.program[0], "u_yshift");
+            this.aspectLocation = gl.getUniformLocation(this.program[0], "u_aspect");
+            this.xzoomoffsetLocation = gl.getUniformLocation(this.program[0], "u_xzoomoffset");
+            this.yzoomoffsetLocation = gl.getUniformLocation(this.program[0], "u_yzoomoffset");
+            gl.useProgram(this.program[0]);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            requestAnimationFrame(()=>this.render(0));
+        } else console.log("initprogram program[0] fails.");
+    }
+    readcolor(original) {
+        var s = original[0] == "#" ? original.substring(1) : original;
+        var v1 = parseInt(s.substring(0, 2), 16);
+        var v2 = parseInt(s.substring(2, 4), 16);
+        var v3 = parseInt(s.substring(4, 6), 16);
+        return {
+            r: v1 / 256.0,
+            g: v2 / 256.0,
+            b: v3 / 256.0
+        };
+    }
+    render(time) {
+        var _a;
+        if (this.textures != null) {
+            var gl = this.gl;
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            gl.useProgram(this.program[0]);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            var texture = this.textures[this.currentTexture];
+            if (texture == null || texture == undefined) {
+                console.log("no texture");
+                requestAnimationFrame(()=>this.render(++time));
+                return;
+            }
+            //  gl.bindTexture(gl.TEXTURE_2D, texture);
+            if (this.imagespaceParameters.move) {
+                this.cxshift += this.imagespaceParameters.speed * this.cxdshift;
+                if (this.cxshift > this.cxshiftmax) this.cxdshift = -this.cxdshift;
+                if (this.cxshift < 1) this.cxdshift = -this.cxdshift;
+                this.cyshift += this.imagespaceParameters.speed * this.cydshift;
+                if (this.cyshift > this.cyshiftmax) this.cydshift = -this.cydshift;
+                if (this.cyshift < 1) this.cydshift = -this.cydshift;
+            } else if (this.app.mouse.dragvector && this.app.mouse.dragdistance) {
+                var v = this.app.mouse.dragvector;
+                var d = this.app.mouse.dragpdistance;
+                this.cxshift += 0; //  /gl.canvas.width;
+                this.cyshift += 0; // /gl.canvas.width;
+                this.xzoomoffset = this.app.mouse.px;
+                this.yzoomoffset = this.app.mouse.py;
+            ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)             
+            }
+            // this does not work here, background is div background of canvas
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            // blur the checker
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            if (!this.imagespaceParameters.teal) {
+                // this will show a single instance of the texture image
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); // horizontal
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); // vertical
+            } else {
+                // this will show tealed texture images
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); // horizontal
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT); // vertical    
+            }
+            // The texture is sampled according to cdivx and cdivy.
+            // ny determines how many texture images are shown in vertical direction in tealed mode.
+            // totaldelta is the distance the mouse wheel has moved.
+            // zoomVelocity decides the speed of zoomin/zoomout
+            // the fragment shader will sample the texture using the viewport size and cdiv.
+            var cdivy = this.ny + ((_a = this.app) === null || _a === void 0 ? void 0 : _a.mouse.totaldelta) * drawimagespace.zoomVelocity;
+            var cdivx = cdivy; // keep aspect ratio of image space
+            // set zoomin state (imageSize)
+            gl.uniform2f(this.imageSizeLocation, gl.canvas.width / cdivx, gl.canvas.height / cdivy);
+            // aspect ratio texture dimensions i.r.t. viewport   
+            var daspect = gl.canvas.height / gl.canvas.width;
+            gl.uniform1f(this.aspectLocation, this.txtaspect / daspect);
+            gl.uniform1f(this.xzoomoffsetLocation, this.xzoomoffset);
+            gl.uniform1f(this.yzoomoffsetLocation, this.yzoomoffset);
+            // horizontal and vertical shift
+            gl.uniform1i(this.tealLocation, this.imagespaceParameters.teal ? 1 : 0);
+            gl.uniform1i(this.xshiftLocation, this.cxshift);
+            gl.uniform1i(this.yshiftLocation, this.cyshift);
+            // note vs is not bound to any VertexArray. The vertex shader emits all 
+            // viewport pixel positions to the fragment shader, like ShaderToy does.
+            // gl.bindVertexArray(this.vertexArray!);
+            // ..this results in the
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            document.getElementById("cdiv").innerHTML = "draw " + time + "<br>xshift=" + Math.round(this.cxshift) + "<br>yshift=" + this.cyshift + "<br>" + "<br>xcoom=" + this.xzoomoffset + "<br>yzoom=" + this.yzoomoffset + "<br>" + " c.width=" + gl.canvas.width + " " + " c.height=" + gl.canvas.height + "<br>texture=" + this.currentTexture + " ny=" + this.ny; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
+        } else document.getElementById("cdiv").innerHTML = "Initializing textures, time=" + time; //+ " this.textures.length="+this.textures!.length;
+        requestAnimationFrame(()=>this.render(++time));
+    }
+}
+exports.drawimagespace = drawimagespace;
+drawimagespace.zoomVelocity = 0.075;
+drawimagespace.animationVelocity = 0.25;
+
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./twglbaseapp":"cbghk"}],"1rzDA":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.skybox = void 0;
+const baseapp = __importStar(require("./baseapp"));
+const camhandler = __importStar(require("./camhandler")); // camera projection
+const datgui = __importStar(require("dat.gui"));
+class skybox extends baseapp.baseapp // use m4, v3  from twgl
+ {
+    constructor(cgl, capp, dictpar){
+        super(cgl, capp, dictpar);
+        this.skyboxCubeParameters = {
+            movecube: true,
+            moveenv: true,
+            fieldOfViewDegrees: 0,
+            radiusCam: 0,
+            angVelocityCam: 0,
+            angVelocityCube: 0 // mirror cube rotation velocity
+        };
+    }
+    main(gl, dictpar) {
+        var b = "";
+        b = dictpar.get("movecube");
+        if (b) this.skyboxCubeParameters.movecube = b == "true";
+        b = dictpar.get("moveenv");
+        if (b) this.skyboxCubeParameters.moveenv = b == "true";
+        b = dictpar.get("fov");
+        if (b) this.skyboxCubeParameters.fieldOfViewDegrees = +b;
+        b = dictpar.get("vele");
+        if (b) this.skyboxCubeParameters.angVelocityCam = +b;
+        b = dictpar.get("velc");
+        if (b) this.skyboxCubeParameters.angVelocityCube = +b;
+        // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
+        super.main(gl, dictpar, this.vsEnvironmentMap, this.fsEnvironmentMap);
+        console.log("skybox.main - find getAttribLocations");
+        this.positionLocation = gl.getAttribLocation(this.program[0], "a_position");
+        this.skyboxLocation = gl.getUniformLocation(this.program[0], "u_skybox");
+        this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.program[0], "u_viewDirectionProjectionInverse");
+        console.log("Positionlocation=" + this.positionLocation);
+        console.log("skyboxLocation=" + this.skyboxLocation);
+        console.log("viewDirectionProjectionInverseLocation=" + this.viewDirectionProjectionInverseLocation);
+        this.createEnvironmentMapGeo(gl, this.positionLocation);
+        this.createEnvironmentMapTexture(gl, 0);
+        this.fieldOfViewRadians = 60 * Math.PI / 180;
+        this.cam = camhandler.Camera.createYUpCamera(gl, dictpar, 0.5, this.app);
+        this.cam.zoominVelocity = 0.5;
+        this.cam.setRadius(6.0);
+        this.cam.translateEye([
+            6.0,
+            0,
+            0
+        ]);
+        requestAnimationFrame(()=>this.render(0));
+    }
+    initGUI(parameters) {
+        this.skyboxCubeParameters = parameters;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(this.skyboxCubeParameters);
+        // Checkbox forward move animation on/off
+        //      gui.add(this.skyboxCubeParameters, 'movecube');
+        // Checkbox tail animation on/off
+        gui.add(this.skyboxCubeParameters, "moveenv");
+        // Slider for field of view
+        gui.add(this.skyboxCubeParameters, "fieldOfViewDegrees").min(20.0).max(80.0).step(0.02);
+        // Slider for animation speed
+        //   gui.add(this.skyboxCubeParameters, 'radiusCam').min(0.1).max(20.0).step(0.02);
+        // Slider for animation speed
+        gui.add(this.skyboxCubeParameters, "angVelocityCam").min(0.0001).max(0.01).step(0.0001);
+        // Slider for animation speed of cube
+        //   gui.add(this.skyboxCubeParameters, 'angVelocityCube').min(0.001).max(0.01).step(0.0001);
+        gui.updateDisplay();
+        return gui;
+    }
+    resizeCanvasToDisplaySize(canvas) {
+        // Lookup the size the browser is displaying the canvas in CSS pixels.
+        const displayWidth = canvas.clientWidth;
+        const displayHeight = canvas.clientHeight;
+        // Check if the canvas is not the same size.
+        const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight;
+        if (needResize) {
+            // Make the canvas the same size
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+        }
+        return needResize;
+    }
+    render(mstime) {
+        var _a;
+        var gl = this.gl;
+        this.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.useProgram(this.program[0]);
+        this.cameraPosition = [
+            5 * Math.cos(mstime * .004),
+            0,
+            5 * Math.sin(mstime * .004)
+        ];
+        // field of view angle determines how narrow or wide the camera view is
+        // aperture will be normalized to width of viewport.
+        this.fieldOfViewRadians = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
+        /*     if(this.cam)
+             {
+               var cam: camhandler.Camera = this.cam!;
+               cam.rotationVelocity = this.skyboxCubeParameters.angVelocityCam/(Math.PI/2.0-this.fieldOfViewRadians!);
+               cam.CamHandlingYUp(gl, this.app!, -1.0, 1.0);
+               cam.ReportEye();
+               // override cameraPosition by mouse camera position when moveenv checked off
+               //if (!this.skyboxParameters.moveenv)
+               //this.cameraPosition = this.cam?.Position()!;
+            }
+     */ // find projection, view and direction matrix, invert it for the Cubemap
+        //var viewDirectionProjectionInverseMatrix = m4.inverse(this.computeprojectionmatrices(gl, this.fieldOfViewRadians!));
+        // by default, rotate camera position.
+        this.cameraPosition = this.skyboxCubeParameters.moveenv ? [
+            Math.cos(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam,
+            0,
+            Math.sin(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam
+        ] : [
+            this.skyboxCubeParameters.radiusCam,
+            0.0,
+            0.0
+        ];
+        if (this.cam) {
+            var cam = this.cam;
+            cam.CamHandlingYUp(gl, this.app, -1, -1);
+            cam.ReportEye();
+            // override cameraPosition by mouse camera position when moveenv checked off
+            if (!this.skyboxCubeParameters.moveenv) this.cameraPosition = (_a = this.cam) === null || _a === void 0 ? void 0 : _a.Position();
+        }
+        //   var cameraPosition = [0,0,0];
+        /*   if(this.cam)
+           {
+             var cam: camhandler.Camera = this.cam!;
+             cam.CamHandlingYUp(gl, this.app!);
+            // this.fish[fishtype].uniforms!.worldviewprojection = cam.viewProjection;
+           }
+   */ //  this.cameraPosition = [5*Math.cos(mstime * .004), 0, 5*Math.sin(mstime * .004)];
+        // draw the environment
+        this.renderenvironmentmap(gl, this.fieldOfViewRadians, this.vaoEnvironment, {
+            invproj: this.viewDirectionProjectionInverseLocation,
+            loc: this.skyboxLocation
+        }, mstime);
+        // next frame
+        requestAnimationFrame(()=>this.render(++mstime));
+    }
+}
+exports.skybox = skybox;
+
+},{"./baseapp":"6Sz8u","./camhandler":"4jukU","dat.gui":"k3xQk"}],"5jcfD":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Animation1 = void 0;
+const twglbaseapp = __importStar(require("./twglbaseapp"));
+const animationclock = __importStar(require("./animationclock"));
+const camhandler = __importStar(require("./camhandler")); // camera projection
+class Animation1 extends twglbaseapp.twglbaseapp {
+    constructor(cgl, capp, cscene, dictpar){
+        super(cgl, capp, dictpar);
+        this.animation1Parameters = {
+            b: this.baseappParameters,
+            texture: "geotriangle2",
+            sling: 117
+        };
+        this.clock = new animationclock.AnimationClock();
+        this.scene = cscene;
+    }
+    initGUI(parameters) {
+        console.log("=> animation1 initGUI " + parameters);
+        this.animation1Parameters = parameters;
+        var gui = super.createGUI(this.animation1Parameters.b, this.animation1Parameters);
+        // Slider for sling speed
+        gui.add(this.animation1Parameters, "sling").min(9).max(120).step(1);
+        gui.updateDisplay();
+        return gui;
+    }
+    main(gl, dictpar) {
+        super.maininfo(gl, dictpar, this.scene.vertexShaderSource, this.scene.fragmentShaderSource);
+        console.log("=> animation1 main");
+        var time0 = 0; // (this.vnow=new Date()).getTime();
+        this.cam = camhandler.Camera.createZUpCamera(gl, dictpar, this.scene.scenesize, this.app);
+        this.cam.zoominVelocity = 0.5;
+        this.scene.initScene(gl, this.animation1Parameters, this.twglprograminfo[0]);
+        requestAnimationFrame(()=>this.render(time0));
+        console.log("<= animation1 main");
+    }
+    render(time) {
+        var gl = this.gl;
+        if (this.twglprograminfo[0] != undefined && this.twglprograminfo[0].program != undefined) {
+            gl.useProgram(this.twglprograminfo[0].program);
+            this.scene.animationParameters = this.animation1Parameters;
+            this.scene.resizeCanvas(gl);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.CULL_FACE);
+            var cam = this.cam;
+            cam.CamHandlingZUp(gl, this.app, 1.0, -1);
+            this.scene.drawScene(gl, cam, time);
+        }
+        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
+    }
+}
+exports.Animation1 = Animation1;
+
+},{"./twglbaseapp":"cbghk","./animationclock":"e1QLO","./camhandler":"4jukU"}],"h51mu":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.skyboxcube = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twglbaseapp = __importStar(require("./twglbaseapp"));
+const camhandler = __importStar(require("./camhandler"));
+const datgui = __importStar(require("dat.gui"));
+class skyboxcube extends twglbaseapp.twglbaseapp {
+    constructor(cgl, capp, dictpar){
+        super(cgl, capp, dictpar);
+        //-----------------------------------------------------------------------------------------------------------------
+        this.skyboxCubeParameters = {
+            movecube: true,
+            moveenv: true,
+            fieldOfViewDegrees: 0,
+            radiusCam: 0,
+            angVelocityCam: 0,
+            angVelocityCube: 0 // mirror cube rotation velocity
+        };
+        //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
+        this.vsMirrorCube = `#version 300 es
+    
+    in vec4 a_position;
+    in vec3 a_normal;
+    
+    uniform mat4 u_projection;
+    uniform mat4 u_view;
+    uniform mat4 u_world;
+    
+    out vec3 v_worldPosition;
+    out vec3 v_worldNormal;
+    
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_projection * u_view * u_world * a_position;
+    
+      // send the view position to the fragment shader
+      v_worldPosition = (u_world * a_position).xyz;
+    
+      // orient the normals and pass to the fragment shader
+      v_worldNormal = mat3(u_world) * a_normal;
+    }
+    `;
+        this.fsMirrorCube = `#version 300 es
+    precision highp float;
+    
+    // Passed in from the vertex shader.
+    in vec3 v_worldPosition;
+    in vec3 v_worldNormal;
+    
+    // The texture.
+    uniform samplerCube u_texture;
+    
+    // The position of the camera
+    uniform vec3 u_worldCameraPosition;
+    
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+    
+    void main() {
+      vec3 worldNormal = normalize(v_worldNormal);
+      vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
+      vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+    
+      outColor = texture(u_texture, direction);
+    }
+    `;
+    }
+    //  fieldOfViewRadians : number = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
+    createReflectingCubeGeo(gl) {
+        this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
+        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);
+    }
+    main(gl, dictpar) {
+        // http://127.0.0.1:1234/index.html?skyboxcube&fov=22&movecube=true&moveenv=true
+        var b = "";
+        b = dictpar.get("movecube");
+        if (b) this.skyboxCubeParameters.movecube = b == "true";
+        b = dictpar.get("moveenv");
+        if (b) this.skyboxCubeParameters.moveenv = b == "true";
+        b = dictpar.get("fov");
+        if (b) this.skyboxCubeParameters.fieldOfViewDegrees = +b;
+        b = dictpar.get("vele");
+        if (b) this.skyboxCubeParameters.angVelocityCam = +b;
+        b = dictpar.get("velc");
+        if (b) this.skyboxCubeParameters.angVelocityCube = +b;
+        // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
+        super.maininfos(gl, dictpar, [
+            {
+                vs: this.vsEnvironmentMap,
+                fs: this.fsEnvironmentMap
+            },
+            {
+                vs: this.vsMirrorCube,
+                fs: this.fsMirrorCube
+            }
+        ]);
+        twgl.setAttributePrefix("a_"); // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
+        this.createReflectingCubeGeo(gl);
+        this.createEnvironmentMapGeoTwgl(gl);
+        this.texture = this.createEnvironmentMapTexture(gl, 0);
+        this.cam = camhandler.Camera.createYUpCamera(gl, dictpar, 0.5, this.app);
+        this.cam.zoominVelocity = 0.5;
+        this.cam.setRadius(6.0);
+        this.cam.translateEye([
+            6.0,
+            0,
+            0
+        ]);
+        requestAnimationFrame(()=>this.render(0));
+    }
+    initGUI(parameters) {
+        this.skyboxCubeParameters = parameters;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(this.skyboxCubeParameters);
+        // Checkbox forward move animation on/off
+        gui.add(this.skyboxCubeParameters, "movecube");
+        // Checkbox tail animation on/off
+        gui.add(this.skyboxCubeParameters, "moveenv");
+        // Slider for field of view
+        gui.add(this.skyboxCubeParameters, "fieldOfViewDegrees").min(20.0).max(80.0).step(0.02);
+        // Slider for animation speed
+        gui.add(this.skyboxCubeParameters, "radiusCam").min(0.1).max(20.0).step(0.02);
+        // Slider for animation speed
+        gui.add(this.skyboxCubeParameters, "angVelocityCam").min(0.0001).max(0.01).step(0.0001);
+        // Slider for animation speed of cube
+        gui.add(this.skyboxCubeParameters, "angVelocityCube").min(0.001).max(0.01).step(0.0001);
+        gui.updateDisplay();
+        return gui;
+    }
+    render(mstime) {
+        var _a;
+        var gl = this.gl;
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        // by default, rotate camera position.
+        this.cameraPosition = this.skyboxCubeParameters.moveenv ? [
+            Math.cos(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam,
+            0,
+            Math.sin(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam
+        ] : [
+            this.skyboxCubeParameters.radiusCam,
+            0.0,
+            0.0
+        ];
+        // the projected direction of view is inverted and passed to environment shader as u_viewDirectionProjectionInverse to address the cube map texture
+        // computeprojectionmatrices will find projection, view and direction matrix, invert it for the Cubemap 
+        var fieldOfViewRadians = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
+        // field of view angle determines how narrow or wide the camera view is
+        // aperture will be normalized to width of viewport.
+        if (this.cam) {
+            var cam = this.cam;
+            cam.rotationVelocity = this.skyboxCubeParameters.angVelocityCam / (Math.PI / 2.0 - fieldOfViewRadians);
+            cam.CamHandlingYUp(gl, this.app, -1, -1);
+            cam.ReportEye();
+            // override cameraPosition by mouse camera position when moveenv checked off
+            if (!this.skyboxCubeParameters.moveenv) this.cameraPosition = (_a = this.cam) === null || _a === void 0 ? void 0 : _a.Position();
+        }
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fieldOfViewRadians));
+        // Rotate the cube around the x axis
+        if (this.skyboxCubeParameters.movecube) this.worldMatrix = twgl.m4.axisRotation([
+            1,
+            0,
+            0
+        ], mstime * this.skyboxCubeParameters.angVelocityCube);
+        else this.worldMatrix = twgl.m4.translation([
+            0,
+            0,
+            0
+        ]); // twgl.m4.identity();
+        // draw the environment
+        gl.useProgram(this.twglprograminfo[0].program);
+        gl.bindVertexArray(this.vaoEnvironment);
+        twgl.setUniforms(this.twglprograminfo[0], {
+            u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+            u_skybox: this.texture
+        });
+        twgl.drawBufferInfo(gl, this.environmentBufferInfo);
+        // draw the mirror cube
+        gl.useProgram(this.twglprograminfo[1].program);
+        gl.depthFunc(gl.LESS); // use the default depth test
+        gl.bindVertexArray(this.vaoCube);
+        twgl.setUniforms(this.twglprograminfo[1], {
+            u_world: this.worldMatrix,
+            u_view: this.viewMatrix,
+            u_projection: this.projectionMatrix,
+            u_texture: this.texture,
+            u_worldCameraPosition: this.cameraPosition
+        });
+        twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo);
+        //next frame
+        requestAnimationFrame(()=>this.render(++mstime));
+    }
+}
+exports.skyboxcube = skyboxcube;
+
+},{"twgl.js":"3uqAP","./twglbaseapp":"cbghk","./camhandler":"4jukU","dat.gui":"k3xQk"}],"46ggt":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -16744,8 +20733,15 @@ const twgl_js_1 = require("./../node_modules/twgl.js"); // Greg's work (lib)
 const mobj = __importStar(require("./matobjreader")); // read geometry from .obj / .mtl files (interface)
 const mobjfiles = __importStar(require("./matobjfiles")); // read geometry from .obj / .mtl files (resources)
 const camhandler = __importStar(require("./camhandler")); // camera projection
+const datgui = __importStar(require("dat.gui"));
 class ObjMtlImport {
     constructor(cgl, capp, UrlPars){
+        this.objMtlImportParameters = {
+            move: false,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
         this.time = 0;
         this.dtime = 0.01;
         this.vertexPositionAttribute = 0; // address of positions buffer in shader
@@ -16786,6 +20782,7 @@ class ObjMtlImport {
         this.resolvedtextures = new Map();
         this.imgs = [];
         this.imgsa = [];
+        this.gui = null;
         //--- SHADERS ------------------------------------------------------------------------------------------------------
         this.vs = `#version 300 es
 uniform mat4 u_worldViewProjection;
@@ -16870,10 +20867,16 @@ void main() {
   outColor[3] = 1.0;
   glFragColor = outColor;
  }`;
+        ObjMtlImport.instance = this;
         this.app = capp;
         this.gl = cgl;
         twgl.setAttributePrefix("a_");
+    }
+    main(gl, UrlPars) {
         this.getFiles(UrlPars).then(()=>{
+            var cc = gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = this.objMtlImportParameters.color0;
             if (mobj.mesh) {
                 console.log("=> Constructor - create programInfo");
                 this.programInfo = twgl.createProgramInfo(this.gl, [
@@ -16908,6 +20911,51 @@ void main() {
                 this.Prepare();
             } else console.log("ERROR: obj/mtl no mesh could be created.");
         }); // getfiles then({})
+    }
+    onChangeTextureCombo(value) {
+        var thisinstance = ObjMtlImport.instance;
+        //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
+        //  thisinstance.currentTexture = value;
+        //  console.log("set currentTexture to ["+value+"]");
+        //  if (value=="clover") thisinstance.ny=8.0; else 
+        //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
+        thisinstance.app.mouse.totaldelta = 0;
+    }
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = ObjMtlImport.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.objMtlImportParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.objMtlImportParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(this.objMtlImportParameters);
+        // Checkbox for animation on/off
+        //    gui.add(this.objMtlImportParameters, 'move');
+        // Slider for animation speed
+        //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(this.objMtlImportParameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        // Combobox texture from accepted values
+        //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+        //   cel2.onChange( this.onChangeTextureCombo);
+        gui.updateDisplay();
+        return gui;
     }
     //------------------------------------------------------------------------
     async getFiles(UrlPars) {
@@ -17026,21 +21074,14 @@ void main() {
         var cmaterial = this.mats[i];
         var srep = "";
         if (cmaterial.mapDiffuse == undefined) {
-            srep = "No file, use color texture i=" + i;
-            this.uniforms.u_diffuse = ctexture;
+            srep = "UNDEFINED TEXTURE";
+            console.log(srep);
+        //    this.uniforms.u_diffuse = ctexture; 
         } else if (cmaterial.mapDiffuse.filename.length > 0) {
             var tx = this.resolvedtextures.get(cmaterial.mapDiffuse.filename);
-            if (tx == undefined || tx == null) {
-                this.uniforms.u_diffuse = ctexture;
-                srep = "No resolve, use color texture i=" + i;
-            } else {
-                this.uniforms.u_diffuse = ctexture = tx; // file texture
-                srep = "Resolve, use file texture i=" + i + " " + cmaterial.mapDiffuse.filename;
-            }
-        } else {
-            this.uniforms.u_diffuse = ctexture = this.texs[i]; // diffuse color texture
-            srep = "No filename, use color texture i=" + i;
-        }
+            if (tx == undefined || tx == null) this.uniforms.u_diffuse = ctexture;
+            else this.uniforms.u_diffuse = ctexture = tx; // file texture
+        } else this.uniforms.u_diffuse = ctexture = this.texs[i]; // diffuse color texture
         this.uniforms.u_emissive = [
             cmaterial.emissive[0],
             cmaterial.emissive[1],
@@ -17074,12 +21115,13 @@ void main() {
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
-        this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        this.cam.CamHandlingYUp(this.gl, this.app);
+        // this.gl.clearColor(this.objMtlImportParameters.color0. 0.0, 0.0, 0.0, 1.0);      
+        // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.cam.CamHandlingYUp(this.gl, this.app, 1.0, 1.0);
         this.gl.useProgram(this.programInfo.program);
         for(var i = 0; i < this.texs.length; i++)if (this.mats[i] != undefined) {
             var ctexture = this.prepareMaterial(i);
+            // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
             twgl.setUniforms(this.programInfo, this.uniforms);
             twgl.setUniforms(this.programInfo, {
                 u_viewInverse: this.cam.lookAt,
@@ -17095,7 +21137,7 @@ void main() {
 }
 exports.ObjMtlImport = ObjMtlImport;
 
-},{"./../node_modules/twgl.js":"3uqAP","./matobjreader":"l7kuN","./matobjfiles":"3eVMn","./camhandler":"4jukU"}],"l7kuN":[function(require,module,exports) {
+},{"./../node_modules/twgl.js":"3uqAP","./matobjreader":"l7kuN","./matobjfiles":"3eVMn","./camhandler":"4jukU","dat.gui":"k3xQk"}],"l7kuN":[function(require,module,exports) {
 "use strict";
 // https://www.npmjs.com/package/webgl-obj-loader
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
@@ -17873,6 +21915,1349 @@ module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "chair.
 },{"./helpers/bundle-url":"lgJ39"}],"3kSEq":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("ayEn8") + "chair.a0644976.mtl" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}]},["1pQXO","3CPcP"], "3CPcP", "parcelRequire19e8")
+},{"./helpers/bundle-url":"lgJ39"}],"l3STp":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.RotatingCubeScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class RotatingCubeScene {
+    constructor(){
+        this.matrixLocation = 0;
+        this.textureLocation1 = 0;
+        this.textureLocation2 = 0;
+        this.modelXRotationRadians = 0;
+        this.modelYRotationRadians = 0;
+        this.readimage = new Image();
+        this.ctime = 0;
+        this.scenesize = 40;
+        this.vertexShaderSource = `#version 300 es
+    
+    // an attribute is an input (in) to a vertex shader.
+    // It will receive data from a buffer
+    in vec4 a_position;
+    in vec2 a_texcoord;
+
+    // A matrix to transform the positions by
+    uniform mat4 u_matrix;
+
+    // a varying to pass the texture coordinates to the fragment shader
+    out vec2 v_texcoord;
+
+    // all shaders have a main function
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_matrix * a_position;
+
+      // Pass the texcoord to the fragment shader.
+      v_texcoord = a_texcoord;
+    }
+    `;
+        this.fragmentShaderSource = `#version 300 es
+
+    precision highp float;
+
+    // Passed in from the vertex shader.
+    in vec2 v_texcoord;
+
+    // The texture.
+    uniform sampler2D u_texture1;
+    uniform sampler2D u_texture2;
+
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+
+    void main() {
+      outColor = texture(u_texture1, v_texcoord)/2. + texture(u_texture2, v_texcoord)/2.;
+      //outColor = texture(u_texture2, v_texcoord);
+    }
+    `;
+    }
+    static degToRad(d) {
+        return d * Math.PI / 180;
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    initScene(gl, cap, p) {
+        this.animationParameters = cap;
+        // Define shader syntax for attributes
+        twgl.setAttributePrefix("a_");
+        // Camera: prepare vs-fs transformation
+        this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
+        // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
+        var positionBuffer = gl.createBuffer();
+        var positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
+        this.vao = gl.createVertexArray();
+        gl.bindVertexArray(this.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.enableVertexAttribArray(positionAttributeLocation); // turn on
+        // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 3; // 3 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        // => Put setGeometry() result into position buffer 
+        gl.bufferData(gl.ARRAY_BUFFER, this.setGeometry(gl), gl.STATIC_DRAW);
+        // Create the texcoord buffer, make it the current ARRAY_BUFFER and copy in the texcoord values ---------------
+        var texcoordBuffer1 = gl.createBuffer();
+        var texcoordAttributeLocation = gl.getAttribLocation(p.program, "a_texcoord");
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer1);
+        gl.enableVertexAttribArray(texcoordAttributeLocation); // turn on
+        // => Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
+        var size = 2; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floating point values
+        var normalize = true; // convert from 0-255 to 0.0-1.0
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
+        // => Put setTexCoords() result into texcoord  buffer 
+        gl.bufferData(gl.ARRAY_BUFFER, this.setTexcoords(gl), gl.STATIC_DRAW);
+        // Create textures ----------------------------------------------------------------------------------------------------
+        // => fill texture1 with 3x2 pixels red checkerboard
+        this.texture1 = gl.createTexture();
+        this.textureLocation1 = gl.getUniformLocation(p.program, "u_texture1");
+        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
+        const level = 0;
+        const internalFormat = gl.R8;
+        const width = 3;
+        const height = 2;
+        const border = 0;
+        const format = gl.RED;
+        const ttype = gl.UNSIGNED_BYTE;
+        const data = new Uint8Array([
+            128,
+            64,
+            128,
+            0,
+            192,
+            0
+        ]);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, ttype, data);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // => fill texture2 with clover jpg
+        this.texture2 = gl.createTexture();
+        this.textureLocation2 = gl.getUniformLocation(p.program, "u_texture2");
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
+        console.log("=> Load texture bitmap");
+        var fNameParcel = require("./resources/models/stone/clover.jpg");
+        this.image = undefined;
+        this.readimage = new Image();
+        this.readimage.src = fNameParcel;
+        this.readimage.onload = ()=>{
+            this.image = this.readimage;
+            console.log("finished loading clover texture " + this.image.width + "," + this.image.height);
+            var mipLevel = 0; // the largest mip
+            var internalFormat = gl.RGBA; // format we want in the texture
+            var srcFormat = gl.RGBA; // format of data we are supplying
+            var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+            gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, this.image);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        };
+    }
+    drawScene(gl, cam, time) {
+        // Time elapsed
+        var deltaTime = time - this.ctime;
+        this.ctime = time;
+        // Animate the rotation
+        if (this.animationParameters.b.movetail) {
+            this.modelYRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
+            this.modelXRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
+        }
+        var matrix = twgl_js_1.m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
+        matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
+        gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
+        gl.activeTexture(gl.TEXTURE0 + 0);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
+        gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
+        gl.activeTexture(gl.TEXTURE0 + 1);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
+        gl.uniform1i(this.textureLocation2, 1); // GPU will address unit 1 to find texture2
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(this.vao);
+        // Draw the geometry.
+        var primitiveType = gl.TRIANGLES;
+        var offset = 0;
+        var count = 36;
+        gl.drawArrays(primitiveType, offset, count);
+    }
+    //================================================================================
+    setGeometry(gl) {
+        var positions = new Float32Array([
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0, 
+        ]);
+        return positions;
+    }
+    // Fill the buffer with texture coordinates the cube.
+    setTexcoords(gl) {
+        return new Float32Array([
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1, 
+        ]);
+    }
+}
+exports.RotatingCubeScene = RotatingCubeScene;
+
+},{"twgl.js":"3uqAP","./resources/models/stone/clover.jpg":"hSlfy"}],"1u3YO":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.LightedScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class LightedScene {
+    constructor(){
+        this.vertexShaderSource = `#version 300 es
+    in vec4 a_position;
+    in vec3 a_normal;
+    
+    uniform vec3 u_lightWorldPosition;
+    uniform vec3 u_viewWorldPosition;
+    
+    uniform mat4 u_world;
+    uniform mat4 u_worldViewProjection;
+    uniform mat4 u_worldInverseTranspose;
+    
+    out vec3 v_normal;
+    
+    out vec3 v_surfaceToLight;
+    out vec3 v_surfaceToView;
+    
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position =  u_worldViewProjection * u_world * a_position;
+    
+      // orient the normals and pass to the fragment shader
+      v_normal = mat3(u_worldInverseTranspose) * a_normal;
+    
+      // compute the world position of the surfoace
+      vec3 surfaceWorldPosition = (u_world * a_position).xyz;
+    
+      // compute the vector of the surface to the light
+      // and pass it to the fragment shader
+      v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;
+    
+      // compute the vector of the surface to the view/camera
+      // and pass it to the fragment shader
+      v_surfaceToView = u_viewWorldPosition - surfaceWorldPosition;
+    }
+    `;
+        this.fragmentShaderSource = `#version 300 es
+    precision highp float;
+    
+    // Passed in from the vertex shader.
+    in vec3 v_normal;
+    in vec3 v_surfaceToLight;
+    in vec3 v_surfaceToView;
+    
+    uniform vec4 u_color;
+    uniform float u_shininess;
+    uniform vec3 u_lightDirection;
+    uniform float u_innerLimit;          // in dot space
+    uniform float u_outerLimit;          // in dot space
+    
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+    
+    void main() {
+      // because v_normal is a varying it's interpolated
+      // so it will not be a unit vector. Normalizing it
+      // will make it a unit vector again
+      vec3 normal = normalize(v_normal);
+    
+      vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+      vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+      vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+    
+      float dotFromDirection = dot(surfaceToLightDirection,
+                                   -u_lightDirection);
+      float inLight = smoothstep(u_outerLimit, u_innerLimit, dotFromDirection);
+      float light = inLight * dot(normal, surfaceToLightDirection);
+      float specular = inLight * pow(dot(normal, halfVector), u_shininess);
+    
+      outColor = u_color;
+    
+      // Lets multiply just the color portion (not the alpha)
+      // by the light
+      outColor.rgb *= light;
+    
+      // Just add in the specular
+      outColor.rgb += specular;
+    }
+    `;
+        this.modelXRotationRadians = 0;
+        this.modelYRotationRadians = 0;
+        this.ctime = 0;
+        this.scenesize = 140;
+        function radToDeg(r) {
+            return r * 180 / Math.PI;
+        }
+        function degToRad(d) {
+            return d * Math.PI / 180;
+        }
+        this.fieldOfViewRadians = degToRad(60);
+        this.fRotationRadians = 0;
+        this.shininess = 150;
+        this.lightRotationX = 0;
+        this.lightRotationY = 0;
+        this.lightDirection = [
+            0,
+            0,
+            1
+        ]; // this is computed in updateScene
+        this.innerLimit = degToRad(10);
+        this.outerLimit = degToRad(20);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    initScene(gl, cap, p) {
+        var program = p.program;
+        this.animationParameters = cap;
+        // look up where the vertex data needs to go.
+        var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        var normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
+        // lookup uniforms
+        this.worldViewProjectionLocation = gl.getUniformLocation(program, "u_worldViewProjection");
+        this.worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
+        this.viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
+        this.worldLocation = gl.getUniformLocation(program, "u_world");
+        this.colorLocation = gl.getUniformLocation(program, "u_color");
+        this.shininessLocation = gl.getUniformLocation(program, "u_shininess");
+        this.lightDirectionLocation = gl.getUniformLocation(program, "u_lightDirection");
+        this.innerLimitLocation = gl.getUniformLocation(program, "u_innerLimit");
+        this.outerLimitLocation = gl.getUniformLocation(program, "u_outerLimit");
+        this.lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
+        // Create a vertex array object (attribute state)
+        this.vao = gl.createVertexArray();
+        // and make it the one we're currently working with
+        gl.bindVertexArray(this.vao);
+        // Turn on the attribute
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        // Create a buffer
+        var positionBuffer = gl.createBuffer();
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Set Geometry.
+        this.setGeometry(gl);
+        // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 3; // 3 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        // create the normalr buffer, make it the current ARRAY_BUFFER
+        // and copy in the normal values
+        var normalBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+        this.setNormals(gl);
+        // Turn on the attribute
+        gl.enableVertexAttribArray(normalAttributeLocation);
+        // Tell the attribute how to get data out of colorBuffer (ARRAY_BUFFER)
+        var size = 3; // 3 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(normalAttributeLocation, size, type, normalize, stride, offset);
+    }
+    drawScene(gl, cam, time) {
+        var deltaTime = time - this.ctime;
+        this.ctime = time;
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(this.vao);
+        // Compute the projection matrix
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        var zNear = 1;
+        var zFar = 2000;
+        //var projectionMatrix = m4.perspective(this.fieldOfViewRadians, aspect, zNear, zFar);
+        // Compute the camera's matrix
+        var camera = [
+            100,
+            150,
+            200
+        ];
+        var target = [
+            0,
+            35,
+            0
+        ];
+        var up = [
+            0,
+            1,
+            0
+        ];
+        // var cameraMatrix = m4.lookAt(camera, target, up);
+        // Make a view matrix from the camera matrix.
+        // var viewMatrix = m4.inverse(cameraMatrix);
+        // Compute a view projection matrix
+        // var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+        var matrix = twgl_js_1.m4.identity();
+        if (this.animationParameters.b.movetail) {
+            this.modelYRotationRadians += 0.0 * this.animationParameters.b.speed * deltaTime;
+            this.modelXRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
+        }
+        matrix = twgl_js_1.m4.axisRotation([
+            1,
+            0,
+            0
+        ], this.modelXRotationRadians);
+        matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
+        // Draw a F at the origin
+        var worldMatrix = matrix; // m4.axisRotation([0,1,0],this.fRotationRadians) ;
+        // Multiply the matrices.
+        // var worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
+        var worldInverseMatrix = twgl_js_1.m4.inverse(worldMatrix);
+        var worldInverseTransposeMatrix = twgl_js_1.m4.transpose(worldInverseMatrix);
+        // Set the matrices
+        //  gl.uniformMatrix4fv(this.worldViewProjectionLocation!, false, worldViewProjectionMatrix);
+        gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, cam.viewProjection);
+        gl.uniformMatrix4fv(this.worldInverseTransposeLocation, false, worldInverseTransposeMatrix);
+        gl.uniformMatrix4fv(this.worldLocation, false, worldMatrix);
+        // Set the color to use
+        gl.uniform4fv(this.colorLocation, [
+            0.2,
+            1,
+            0.2,
+            1
+        ]); // green
+        // set the light position
+        const lightPosition = [
+            40,
+            60,
+            120
+        ];
+        gl.uniform3fv(this.lightWorldPositionLocation, lightPosition);
+        // set the camera/view position
+        camera = cam.Position();
+        gl.uniform3fv(this.viewWorldPositionLocation, camera);
+        // set the shininess
+        gl.uniform1f(this.shininessLocation, this.shininess);
+        var lmat = twgl_js_1.m4.lookAt(lightPosition, target, up);
+        lmat = twgl_js_1.m4.multiply(twgl_js_1.m4.axisRotation([
+            1,
+            0,
+            0
+        ], this.lightRotationX), lmat);
+        lmat = twgl_js_1.m4.multiply(twgl_js_1.m4.axisRotation([
+            0,
+            1,
+            0
+        ], this.lightRotationY), lmat);
+        // get the zAxis from the matrix
+        // negate it because lookAt looks down the -Z axis
+        this.lightDirection = [
+            -lmat[8],
+            -lmat[9],
+            -lmat[10]
+        ];
+        gl.uniform3fv(this.lightDirectionLocation, this.lightDirection);
+        gl.uniform1f(this.innerLimitLocation, Math.cos(this.innerLimit));
+        gl.uniform1f(this.outerLimitLocation, Math.cos(this.outerLimit));
+        // Draw the geometry.
+        var primitiveType = gl.TRIANGLES;
+        var offset = 0;
+        var count = 96;
+        gl.drawArrays(primitiveType, offset, count);
+    }
+    //---------------------------------------------------------------------------------------------------
+    // Fill the buffer with the values that define a letter 'F'.
+    setGeometry(gl) {
+        var positions = new Float32Array([
+            // left column front
+            0,
+            0,
+            0,
+            0,
+            150,
+            0,
+            30,
+            0,
+            0,
+            0,
+            150,
+            0,
+            30,
+            150,
+            0,
+            30,
+            0,
+            0,
+            // top rung front
+            30,
+            0,
+            0,
+            30,
+            30,
+            0,
+            100,
+            0,
+            0,
+            30,
+            30,
+            0,
+            100,
+            30,
+            0,
+            100,
+            0,
+            0,
+            // middle rung front
+            30,
+            60,
+            0,
+            30,
+            90,
+            0,
+            67,
+            60,
+            0,
+            30,
+            90,
+            0,
+            67,
+            90,
+            0,
+            67,
+            60,
+            0,
+            // left column back
+            0,
+            0,
+            30,
+            30,
+            0,
+            30,
+            0,
+            150,
+            30,
+            0,
+            150,
+            30,
+            30,
+            0,
+            30,
+            30,
+            150,
+            30,
+            // top rung back
+            30,
+            0,
+            30,
+            100,
+            0,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            100,
+            0,
+            30,
+            100,
+            30,
+            30,
+            // middle rung back
+            30,
+            60,
+            30,
+            67,
+            60,
+            30,
+            30,
+            90,
+            30,
+            30,
+            90,
+            30,
+            67,
+            60,
+            30,
+            67,
+            90,
+            30,
+            // top
+            0,
+            0,
+            0,
+            100,
+            0,
+            0,
+            100,
+            0,
+            30,
+            0,
+            0,
+            0,
+            100,
+            0,
+            30,
+            0,
+            0,
+            30,
+            // top rung right
+            100,
+            0,
+            0,
+            100,
+            30,
+            0,
+            100,
+            30,
+            30,
+            100,
+            0,
+            0,
+            100,
+            30,
+            30,
+            100,
+            0,
+            30,
+            // under top rung
+            30,
+            30,
+            0,
+            30,
+            30,
+            30,
+            100,
+            30,
+            30,
+            30,
+            30,
+            0,
+            100,
+            30,
+            30,
+            100,
+            30,
+            0,
+            // between top rung and middle
+            30,
+            30,
+            0,
+            30,
+            60,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            0,
+            30,
+            60,
+            0,
+            30,
+            60,
+            30,
+            // top of middle rung
+            30,
+            60,
+            0,
+            67,
+            60,
+            30,
+            30,
+            60,
+            30,
+            30,
+            60,
+            0,
+            67,
+            60,
+            0,
+            67,
+            60,
+            30,
+            // right of middle rung
+            67,
+            60,
+            0,
+            67,
+            90,
+            30,
+            67,
+            60,
+            30,
+            67,
+            60,
+            0,
+            67,
+            90,
+            0,
+            67,
+            90,
+            30,
+            // bottom of middle rung.
+            30,
+            90,
+            0,
+            30,
+            90,
+            30,
+            67,
+            90,
+            30,
+            30,
+            90,
+            0,
+            67,
+            90,
+            30,
+            67,
+            90,
+            0,
+            // right of bottom
+            30,
+            90,
+            0,
+            30,
+            150,
+            30,
+            30,
+            90,
+            30,
+            30,
+            90,
+            0,
+            30,
+            150,
+            0,
+            30,
+            150,
+            30,
+            // bottom
+            0,
+            150,
+            0,
+            0,
+            150,
+            30,
+            30,
+            150,
+            30,
+            0,
+            150,
+            0,
+            30,
+            150,
+            30,
+            30,
+            150,
+            0,
+            // left side
+            0,
+            0,
+            0,
+            0,
+            0,
+            30,
+            0,
+            150,
+            30,
+            0,
+            0,
+            0,
+            0,
+            150,
+            30,
+            0,
+            150,
+            0, 
+        ]);
+        // Center the F around the origin and Flip it around. We do this because
+        // we're in 3D now with and +Y is up where as before when we started with 2D
+        // we had +Y as down.
+        // We could do by changing all the values above but I'm lazy.
+        // We could also do it with a matrix at draw time but you should
+        // never do stuff at draw time if you can do it at init time.
+        var matrix = twgl_js_1.m4.axisRotation([
+            1,
+            0,
+            0
+        ], Math.PI);
+        matrix = twgl_js_1.m4.translate(matrix, [
+            -50,
+            -75,
+            -15
+        ]);
+        for(var ii = 0; ii < positions.length; ii += 3){
+            var vector = twgl_js_1.m4.transformPoint(matrix, [
+                positions[ii + 0],
+                positions[ii + 1],
+                positions[ii + 2],
+                1
+            ]);
+            positions[ii + 0] = vector[0];
+            positions[ii + 1] = vector[1];
+            positions[ii + 2] = vector[2];
+        }
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    }
+    setNormals(gl) {
+        var normals = new Float32Array([
+            // left column front
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            // top rung front
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            // middle rung front
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            // left column back
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            // top rung back
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            // middle rung back
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            // top
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            // top rung right
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            // under top rung
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            // between top rung and middle
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            // top of middle rung
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            // right of middle rung
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            // bottom of middle rung.
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            // right of bottom
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            // bottom
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            // left side
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0, 
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+    }
+}
+exports.LightedScene = LightedScene;
+
+},{"twgl.js":"3uqAP"}]},["1pQXO","3CPcP"], "3CPcP", "parcelRequire19e8")
 
 //# sourceMappingURL=index.73eb0017.js.map
