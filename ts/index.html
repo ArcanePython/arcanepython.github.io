@@ -7,19 +7,21 @@
         overflow: hidden
     }
 
+    .gui { position: absolute; top: 2px; left: 7px }
+
 .grid-container {
   display: grid;
-  grid-template-rows: 110px auto 80px;
-  grid-template-columns: auto auto 180px;
-  gap: 2px;
-  padding: 2px;
+  grid-template-rows: 150px auto 80px;
+  grid-template-columns: auto auto 240px;
+  gap: 0px;
+  padding: 0px;
   height: 99%;
 }
 
 .grid-container > div {
   background-color: rgba(255, 255, 255, 0.8);
   text-align: center;
-  padding: 2px 0;
+  padding: 0px 0;
   font-size: 14px;
 }
 
@@ -32,23 +34,88 @@
   grid-column-end: 3;
 }
 
+
+
+.dg.main.taller-than-window .close-button {
+    border-top: 1px solid #ddd;
+}
+
+.dg.main .close-button {
+    background-color: #ccc;
+}
+ 
+.dg.main .close-button:hover {
+    background-color: #ddd;
+}
+
+.dg {
+    color: #555;
+    text-shadow: none !important;
+}
+
+.dg.main::-webkit-scrollbar {
+    background: #fafafa;
+}
+
+.dg.main::-webkit-scrollbar-thumb {
+    background: #bbb;
+}
+ 
+.dg li:not(.folder) {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+}
+ 
+.dg li.save-row .button {
+    text-shadow: none !important;
+}
+
+.dg li.title {
+    background: #e8e8e8 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
+}
+
+.dg .cr.function:hover,.dg .cr.boolean:hover {
+    background: #fff;
+}
+ 
+.dg .c input[type=text] {
+    background: #e9e9e9;
+}
+ 
+.dg .c input[type=text]:hover {
+    background: #eee;
+}
+ 
+.dg .c input[type=text]:focus {
+    background: #eee;
+    color: #555;
+}
+ 
+.dg .c .slider {
+    background: #e9e9e9;
+}
+
+.dg .c .slider:hover {
+    background: #eee;
+
+}
+
 </style>
 <meta name="viewport" content="width=device-width">
 </head>
  
     <body>
         <div class="grid-container">
-        <div class="item1" id="cdiv" style="-webkit-text-fill-color:rgb(44, 44, 226); background-color:azure">
-                 xyz
-        </div>
-        <div class="item2" id="projection" style="background-color:cornsilk">  </div>
+        <div class="item1" id="cdiv" style="-webkit-text-fill-color:rgb(44, 44, 226); background-color:azure; text-align:left"></div>
+        <div class="item2" id="projection" style="background-color:cornsilk"></div>
         <div class="item3" id="canvasdiv" style="display:block;background-color:rgb(170, 56, 56)" >
             <canvas id="c" style="width:100%" style="height:100%" tabindex="1"></canvas>
         </div>
         <div id="linksdiv" style="background-color:azure" class="item5">
         </div>
         <div id="app" style="background-color:cornsilk">Title</div>
-        <div id="eye">Fill</div>  
+        <div id="eye"></div>  
+        <div id="comment"></div>  
     </div>
 
     <!------------------------------------------------------------------------------------------------------------------------->
@@ -56,8 +123,18 @@
         var canvasdiv = document.getElementById("canvasdiv");
         var canvas = document.getElementById("c");
         var linksdiv = document.getElementById("linksdiv");
+        var projdiv = document.getElementById("projection");
+        var cdivdiv = document.getElementById("cdiv");
+        var appdiv = document.getElementById("app");
+        var eyediv = document.getElementById("eye");
+        
         function lnk(appendlink, appenddescrip)
         { return '<a href="'+appendlink+'">'+appenddescrip+'</a></br>'; }
+
+        cdivdiv.innerHTML = "";
+        appdiv.innerHTML = "";
+        eyediv.innerHTML = "";
+        projdiv.innerHTML = "";
         var str = `
         <br><br>Stills based on .OBJ<br>
         <p>`;
@@ -87,16 +164,32 @@
         Animations (others)<br>
         </p>
         `;
+        str+=lnk(commonhtml+"?animation1&radius0=80&hx=20&hy=10","Mixed texture");
+        str+=lnk(commonhtml+"?animation2&radius0=360&hx=20&hy=-20","Gregg's spotlight F");
         str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
-        linksdiv.innerHTML =  str;
-  
-        var sym = "MSFT";
-        document.addEventListener('DOMContentLoaded', () => {
-        document.head.appendChild(document.createElement('script'))
-             .src = subdir + "/" + commonjsparcel;
-        });
+        str+=lnk(commonhtml+"?skyboxcube","Gregg's skycube");
+        str+=lnk(commonhtml+"?skybox","Environment camera");
+          str+=`
+        </p><p>
+        Texture experiments<br>
+        </p>
+        `;
+        str+=lnk("?drawimagespace","draw image space");
+        linksdiv.innerHTML =  str + "<br><br> ";
+
+        // (neat way to do it on a server, but Parcel dvp Server won't run this..)
+        //document.addEventListener('DOMContentLoaded', () => {
+        //document.head.appendChild(document.createElement('script'))
+        //     .src = subdir + "/" + commonjsparcel;
+        //});
         
-</script>                
-     </body>
+</script>       
+<!-- use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
+<script src="src/indexcube.js" type="module"></script>
+
+<!-- when above event listener is not used, deploy from /dist directly. Update below link on each release -->
+<!-- script src="dist/index.73eb0017.js"></script -->
+         
+</body>
 </html>
       
