@@ -1,0 +1,102 @@
+<html>
+<head>
+<style>
+    html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden
+    }
+
+.grid-container {
+  display: grid;
+  grid-template-rows: 110px auto 80px;
+  grid-template-columns: auto auto 180px;
+  gap: 2px;
+  padding: 2px;
+  height: 99%;
+}
+
+.grid-container > div {
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  padding: 2px 0;
+  font-size: 14px;
+}
+
+.item1 {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+.item3 {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
+</style>
+<meta name="viewport" content="width=device-width">
+</head>
+ 
+    <body>
+        <div class="grid-container">
+        <div class="item1" id="cdiv" style="-webkit-text-fill-color:rgb(44, 44, 226); background-color:azure">
+                 xyz
+        </div>
+        <div class="item2" id="projection" style="background-color:cornsilk">  </div>
+        <div class="item3" id="canvasdiv" style="display:block;background-color:rgb(170, 56, 56)" >
+            <canvas id="c" style="width:100%" style="height:100%" tabindex="1"></canvas>
+        </div>
+        <div id="linksdiv" style="background-color:azure" class="item5">
+        </div>
+        <div id="app" style="background-color:cornsilk">Title</div>
+        <div id="eye">Fill</div>  
+    </div>
+
+    <!------------------------------------------------------------------------------------------------------------------------->
+    <script language="Javascript">
+        var canvasdiv = document.getElementById("canvasdiv");
+        var canvas = document.getElementById("c");
+        var linksdiv = document.getElementById("linksdiv");
+        function lnk(appendlink, appenddescrip)
+        { return '<a href="'+appendlink+'">'+appenddescrip+'</a></br>'; }
+        var str = `
+        <br><br>Stills based on .OBJ<br>
+        <p>`;
+        var subdir = "dist";                      // current parcel dist
+        var commonjsparcel = "index.73eb0017.js"; // current parcel js
+        var commonhtml =  "index.html";           // this html (do not use dist\ parcel's)
+        str+=lnk(commonhtml+"?cube&radius0=9&hx=-0.8&hy=0.43","Textured cubes");
+        str+=lnk(commonhtml+"?koenigsegg&radius0=65&hx=0.8&hy=0.43","Koenigsegg");
+        str+=lnk(commonhtml+"?rubik&radius0=15&hx=0.8&hy=0.8","Blue Rubik");
+        str+=lnk(commonhtml+"?building&radius0=45&hx=-0.68&hy=0.47&hxl=-0.61&difflight=1&speclight=0","Building");
+        str+=lnk(commonhtml+"?chair&radius0=20&hx=0.8&hy=0.8","Chair");
+        str+=lnk(commonhtml+"?chair2&radius0=138&hx=0.7&hy=0.4","Chair 2");
+        str+=lnk(commonhtml+"?cat&radius0=137&hx=-1.4&hy=-0.77&hxl=-1.4&hyl=-0.77&difflight=0.8","Cat");
+        str+=lnk(commonhtml+"?stone&radius0=4&hx=0.8&hy=0.5","Stone");
+        str+=lnk(commonhtml+"?plane&radius0=25&hx=0.8&hy=0.5","Plane");
+        str+=lnk(commonhtml+"?greenhouse","Greenhouse");
+        str+=`
+        </p><p>
+        Animations (bone model)<br>
+        </p><p>
+        `;
+        str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
+        str+=lnk(commonhtml+"?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39","Zelenski whales");
+        str+=lnk(commonhtml+"?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Ukrainian Fish");
+        str+=`
+        </p><p>
+        Animations (others)<br>
+        </p>
+        `;
+        str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
+        linksdiv.innerHTML =  str;
+  
+        var sym = "MSFT";
+        document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(document.createElement('script'))
+             .src = subdir + "/" + commonjsparcel;
+        });
+        
+</script>                
+     </body>
+</html>
+      
