@@ -17,8 +17,11 @@ export class MouseState
   dragging: boolean;
   dragx0: number;
   dragy0: number;
+  dragpx0: number;
+  dragpy0: number;
   dragvector: number[] | undefined;
   dragdistance: number;
+  dragpdistance: number;
   delta: number;
   totaldelta: number;
   changewheel:boolean;
@@ -32,8 +35,10 @@ export class MouseState
     this.delta=0.0;
     this.sx = this.sy= "0.5";
     this.x=this.y=0.5;
+    this.dragpx0=this.dragpy0=0.0;
     this.dragx0=this.dragy0=0;
     this.dragdistance=10;  
+    this.dragpdistance=0;  
   }
 }
 
@@ -78,6 +83,9 @@ export class MouseListener {
     canvas.onmousedown = (e) => {
       this.mouse.button = e.button;
       this.mouse.down = true;
+      this.mouse.dragpx0=e.x; 
+     this.mouse.dragpy0=canvas.height-e.y;
+
       if (this.OnMouseDown!=undefined)
         this.OnMouseDown(this.mouse.sx+" "+this.mouse.sy);  
       this.mouse.dragx0 = this.mouse.x;
@@ -101,8 +109,8 @@ export class MouseListener {
     canvas.onmousemove = (e) => {
       var canvas =  (document.getElementById('c') as HTMLCanvasElement);
       let rect = canvas.getBoundingClientRect();
-      this.mouse.px = this.mouse.x;
-      this.mouse.py = this.mouse.y;
+      this.mouse.px =e.x; 
+      this.mouse.py = canvas.height-e.y;
       this.mouse.x = (e.x - rect.left) / canvas.width;
       this.mouse.x = (this.mouse.x * 2.0) - 1.0;
       this.mouse.y = (canvas.height - (e.y - rect.top)) / canvas.height;
@@ -112,11 +120,15 @@ export class MouseListener {
       this.state.count +=1;
       if (this.mouse.dragging)
       {
+        var dpx = this.mouse.px-this.mouse.dragpx0;
+        var dpy = this.mouse.py-this.mouse.dragpy0;
         var dx = this.mouse.x-this.mouse.dragx0;
         var dy = this.mouse.y-this.mouse.dragy0;
         var d = Math.sqrt(dx*dx+dy*dy);
+        var dp = Math.sqrt(dpx*dpx+dpy*dpy);
         this.mouse.dragvector = [dx/d,dy/d];
         this.mouse.dragdistance = d;
+        this.mouse.dragpdistance = dp;
       }
       if (this.OnMouseMove!=undefined)
           this.OnMouseMove(this.mouse.sx+" "+this.mouse.sy);

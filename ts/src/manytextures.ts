@@ -6,6 +6,9 @@ import { m4 } from "./../node_modules/twgl.js";
 import * as mtls from "./mouselistener";
 import * as camhandler from "./camhandler" // camera projection
 
+import  * as datgui from "dat.gui";
+   
+
 type Tuniforms = { 
   u_diffuseMult?: [number,Number, number, number], 
   u_texture?:WebGLTexture, 
@@ -25,6 +28,8 @@ type Tobject = {
 
 export class Tdrawitem 
 {
+ 
+  
   do: twgl.DrawObject;
   obj: Tobject;
 
@@ -44,6 +49,15 @@ export class Tdrawitem
 
 export class ManyTextures
 {
+    manyTexturesParameters = {
+      move: false,
+      speed: 0.4,
+      texture: 'geotriangle2',
+      color0: "#00A000",
+    };
+    
+    static instance:ManyTextures|undefined;
+
     // Publics
     baseHue = this.rand(300);            // color of objects
     numObjects = 200;                    // object count
@@ -53,7 +67,7 @@ export class ManyTextures
     // Set in constructor
     private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
     private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
-    private cam: camhandler.Camera;               // create a camera in the constructor of this object
+    private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
 
     // Local
     private drawItems: Tdrawitem[] = [];                           // resource
@@ -131,17 +145,86 @@ export class ManyTextures
     `;
 
     
-constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
-{ 
-  this.app = capp;
-  this.gl = cgl;
-  this.Prepare(dictpar);
-  twgl.resizeCanvasToDisplaySize(this.gl.canvas);   
-  var szobj=25.0;
-  this.cam=camhandler.Camera.createYUpCamera(this.gl,dictpar,szobj, this.app!);
-  this.cam.zoominVelocity = szobj/40.0;
-  requestAnimationFrame(() => this.render(0));  
-}
+    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+    { 
+      ManyTextures.instance = this;
+      this.app = capp;
+      this.gl = cgl;      
+    }
+
+    main(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
+    {
+      this.Prepare(dictpar);
+      twgl.resizeCanvasToDisplaySize((this.gl.canvas as HTMLCanvasElement));   
+      var szobj=25.0;
+      this.cam=camhandler.Camera.createYUpCamera(this.gl,dictpar,szobj, this.app!);
+      this.cam.zoominVelocity = szobj/40.0;
+      requestAnimationFrame(() => this.render(0));
+      console.log("Animation requested.");
+    }
+
+
+    gui: datgui.GUI|null=null;
+
+    onChangeTextureCombo(value? : any)
+    {
+      var thisinstance = ManyTextures.instance!;
+      //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
+    //  thisinstance.currentTexture = value;
+    //  console.log("set currentTexture to ["+value+"]");
+    //  if (value=="clover") thisinstance.ny=8.0; else 
+    //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
+      thisinstance.app!.mouse.totaldelta = 0;
+    }
+ 
+    onChangeColorValue(value? : any)
+    {
+      //console.log("we are in color=["+value+"]");
+      var thisinstance = ManyTextures.instance!;
+      if (thisinstance.gl!=null)
+      {
+        var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+        var ccd= (cc as HTMLDivElement);
+        ccd.style.backgroundColor =  value;
+      }
+    }
+
+    public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
+    {
+        this.manyTexturesParameters=parameters;
+
+        var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
+        var ccd= (cc as HTMLDivElement);
+        ccd.style.backgroundColor =  this.manyTexturesParameters.color0;;
+   
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI( { autoPlace: false } );
+        gui.domElement.id = 'gui_drawimagespace';
+        document.getElementById("linksdiv")!.append( gui.domElement);
+        gui.close();
+
+        // connect viewmodel
+        gui.remember(this.manyTexturesParameters);
+      
+        // Checkbox for animation on/off
+        gui.add(this.manyTexturesParameters, 'move');
+       
+        // Slider for animation speed
+        gui.add(this.manyTexturesParameters, 'speed').min(0.02).max(4).step(0.01);
+     
+        // Color dialog sets background color
+        var cel3 = gui.addColor(this.manyTexturesParameters, 'color0');
+        cel3.onChange( this.onChangeColorValue);
+       
+        // Combobox texture from accepted values
+       // var cel2 = gui.add(this.manyTexturesParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+       // cel2.onChange( this.onChangeTextureCombo);
+           
+        gui.updateDisplay();
+        return gui;
+      }
+     
+ 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -443,18 +526,21 @@ public Prepare(dictpar:Map<string,string>)
     // refer camera to Identity world
     var world1 = m4.identity();
     //this.cam.invworldmat = m4.inverse(world1);
-    this.cam.CamHandlingYUp(this.gl, this.app!);
+    this.cam!.CamHandlingYUp(this.gl, this.app!, 1.0, 1.0);
   
     // rotate the objects local worlds
     this.drawItems.forEach((obj) => {
        const uni = obj.obj.uniforms;
        const world = m4.identity(); // local worlds turn
        m4.translate(world, obj.obj.translation, world);
-       m4.rotateY(world, time * obj.obj.ySpeed, world);
-       m4.rotateZ(world, time * obj.obj.zSpeed, world);
+       if (this.manyTexturesParameters.move)
+       {
+         m4.rotateY(world, this.manyTexturesParameters.speed* time * obj.obj.ySpeed, world);
+         m4.rotateZ(world, this.manyTexturesParameters.speed*time * obj.obj.zSpeed, world);
+       }
        uni.u_world= world; // this object's world     
        uni.u_worldInverseTranspose = m4.transpose(m4.inverse(world1)); 
-       m4.multiply(this.cam.viewProjection, world, uni.u_worldViewProjection);  // this object's matrix
+       m4.multiply(this.cam!.viewProjection, world, uni.u_worldViewProjection);  // this object's matrix
     });
 
     // let twgl draw each drawObject

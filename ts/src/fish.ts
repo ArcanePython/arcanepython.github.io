@@ -1,14 +1,17 @@
+
+import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 import { m4 } from "./../node_modules/twgl.js";
 
 import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 import * as boneanimation from "./boneanimation"
+import { mat4tools } from "./mat4tools.js";
 
-interface FishInterface 
+export interface FishInterface 
   {
-    computeBone( time: number): void;
-    prepareUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>): boneanimation.Tuniforms;
+    computeBone( time: number, domove: boolean, domovetail: boolean): void;
+    createUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>): boneanimation.Tuniforms;
     prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number,typeFish: number): stridedmesh0.StridedMesh0;
   }
 
@@ -19,17 +22,44 @@ interface FishInterface
   
 export abstract class Fish extends boneanimation.BoneAnimation implements FishInterface
   {
+    EndOfBoneTrans: m4.Mat4 = m4.identity();
+
     public abstract prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0; // called from constructors
     protected abstract computeBoneMatrices(bones: m4.Mat4[], di:number): void; //, damp: number, arange: number) :void;                          // called from renderer
   
-    constructor (public size: number, public forwardspeed: number, public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string) 
+    constructor (public size: number,public r1: number,public r2: number, public forwardspeed: number, public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string) 
     { super(); }
   
-    computeBone( time: number)
+    computeBone( time: number, domove: boolean, domovetail: boolean)
     {
-      const aphase = this.mesh!.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase);
+      const aphase = domovetail ? (this.mesh!.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)):0;
       this.computeBoneMatrices(this.bones,aphase + this.phase0); //, this.ampl, this.arange);     
     }
+
+    prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
+   {
+       var gradientname = require("./resources/models/stone/circlegradient.png");
+       var clovername = require("./images/clover.jpg");
+       var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+       var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+       var textures = twgl.createTextures(gl, { 
+        checker: {
+          mag: gl.NEAREST,
+          min: gl.LINEAR,
+          src: [255, 255, 255, 255,  192, 192, 192, 255,
+                92, 92, 92, 255, 255, 255, 255, 255, ],},
+        clover: { src: clovername },
+        zelenskyy: { src: zelenskyyname },
+        gradient: { src: gradientname },
+        flagofukraine: { src: flagofukrainname },
+       });
+      if (selectedSurface=="clover") this.surfaceTexture = textures.clover;
+      if (selectedSurface=="zelenskyy") this.surfaceTexture = textures.zelenskyy;
+      if (selectedSurface=="checker") this.surfaceTexture = textures.checker;
+      if (selectedSurface=="gradient") this.surfaceTexture = textures.gradient;
+      if (selectedSurface=="flagofukraine") this.surfaceTexture = textures.flagofukraine;
+      return textures;
+   } 
 
     createSurfaceTexture(gl:WebGL2RenderingContext)
     {
@@ -37,22 +67,23 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
         gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture!);  
     }
 
-    createBoneTexture(gl:WebGL2RenderingContext, dictpar:Map<string,string>)
+    createBoneTexture(gl:WebGL2RenderingContext, time:number, dictpar:Map<string,string>)
     {
         gl.activeTexture(gl.TEXTURE0);            
-        this.prepareBoneMatrices(gl, dictpar);           // see derived class
-        this.computeBone(0);
+        this.prepareBoneMatrices(gl, dictpar);
+        this.computeBone(time, false, false);
         this.bindPose=this.bones;
-        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);         
+        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);    
+        this.EndOfBoneTrans = m4.identity();     
     }
 
-    prepareUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>)
+    createUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>)
     // called from constructors
     {
         return  {
           world: m4.identity(),
           projection: m4.identity(),
-          worldviewprojection: m4.identity(),
+          viewprojection: m4.identity(),
           view: m4.translation([0.0, 0.0, 0.0]),
           surfaceTexture: this.surfaceTexture!,
           boneMatrixTexture: this.boneMatrixTexture!,
@@ -127,7 +158,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
          this.pz+=0.00000;
          amp+=this.size*damp;       
       }  
-      this.px+=-this.forwardspeed; // * bones.length;    
+//      this.px+=-this.forwardspeed; // * bones.length;    
     }
   }
 
@@ -174,7 +205,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
         amp+=this.scale*damp;
         
      }  
-     this.px+=-this.forwardspeed; // * bones.length;      
+  //   this.px+=-this.forwardspeed; // * bones.length;      
     } 
   }  
 
@@ -195,7 +226,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
        if (cmeshtype=="strip")
         {
           var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-          tsmesh.arrays.position = tsmesh.getFishPPositions()
+          tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2)
           tsmesh.type = gl.TRIANGLE_STRIP;  
           console.log("created triangle strip mesh. phase="+this.phase0);
           return tsmesh;
@@ -214,23 +245,23 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
       var amp=0.0;
       var damp=this.ampl/bones.length;
       var arad=di*Math.PI/180.0;
-      var asin=this.ampl * di; //Math.sin( this.phase0+12.0*arad)*this.arange;
-      var arange=this.arange;
-      var cay = -180.0; 
-      var posay=0.0;
+      var asin=(this.ampl * di)*Math.PI*2.0; //Math.sin( this.phase0+12.0*arad)*this.arange;
+     // var arange=this.arange;
+     // var cay = -180.0; 
+      var ay=0.0;
       var bonesize= this.mesh!.nsegments*this.mesh!.segmentsize;
-      var jointpos = 0.1;
+      var jointpos = 0.5;
       var jointpos2 = 0.3;
       for (var i = 0; i < bones.length; i++)
       {          
         var nnormx = i /bones.length;   
-        var nnormxal = 0.5 + 0.5*Math.sin( 7.0*nnormx*asin*Math.PI*2.0);      
+        var nnormxal = 0.5 + 0.5*Math.sin( this.arange*nnormx*asin);      
     //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
-        posay = asin * nnormx;
+        ay = asin * nnormxal;
         var  m = m4.identity();
-        m = m4.translate(m,[jointpos*bonesize+this.px,0,0]);
-        m = m4.rotateY(m, posay );
-        m = m4.translate(m,[-(jointpos*bonesize+this.px),0,0,0]);
+        m = m4.translate(m,[jointpos*bonesize/2+this.px,0,0]);
+        m = m4.rotateY(m, ay );
+        m = m4.translate(m,[-(jointpos*bonesize/2+this.px),0,0,0]);
         m = m4.translate(m,[this.px,0,0,0]);
     
       //  m = m4.translate(m,[jointpos*bonesize,0,0]);
@@ -241,7 +272,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
       //  this.pz+=0.00000;
        // amp+=this.size*damp;       
       }  
-      this.px+=-this.forwardspeed; // * bones.length;    
+  //    this.px+=-this.forwardspeed; // * bones.length;    
     }
   }
   
@@ -250,16 +281,11 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
  export class FishOneJoint extends Fish
  // Fish with horizontal tail, using a joint
  {       
-  constructor (public size: number, public forwardspeed: number, public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string, public jointpos: number, public vaxis:number[]) 
-  { super(size, forwardspeed, phase0, deltaphase,arange,ampl, surfacetexturefile); }
-/*
-   computeBone( time: number)
-   {
-     var aphase = this.mesh!.bonediv * 0.01 * time;
-     aphase=aphase%360;
-     this.computeBoneMatrices(this.bones,aphase );     
-   }
-*/
+  constructor (public size: number,public r1: number,public r2: number, public forwardspeed: number, public phase0: number, public deltaphase: number, 
+    public arange: number, public ampl: number, 
+    public surfacetexturefile: string, public jointpos: number, public vaxis:number[]) 
+  { super(size, r1,r2, forwardspeed, phase0, deltaphase,arange,ampl, surfacetexturefile); }
+
    prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0
    // create mesh positions for a fish with tail in horizontal pose, moving up/down.
    // produce a position item ready for stridedmesh0.Tarray
@@ -271,7 +297,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
       if (cmeshtype=="strip")
        {
          var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-         tsmesh.arrays.position = tsmesh.getFishVPositions()
+         tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
          tsmesh.type = gl.TRIANGLE_STRIP;  
          console.log("created triangle strip mesh. phase="+this.phase0);
          return tsmesh;
@@ -284,35 +310,27 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
        }
    }
  
-   protected computeBoneMatrices(bones: m4.Mat4[], di:number) 
-   // move bone up-down, called from rendering
+   protected computeBoneMatrices(bones: m4.Mat4[], di:number ) 
+   // Rotate a straight tail starting at a single joint which is placed jointpos times length from start, in the X-direction.
+   // jointpos is a value between 0 and 1, di is current time
+   // Called from rendering
    { 
-     var amp=0.0;
-     var damp=this.ampl/bones.length;
-     var arad=di*Math.PI/180.0;
-     var asin=di * this.ampl; //  Math.sin(this.phase0 + this.deltaphase*arad)*this.arange;
-     var arange=this.arange;
-     var cay = -180.0; 
-     var posay=0.0;
-     var bonesize= this.mesh!.nsegments*this.mesh!.segmentsize;
-     //var jointpos = 0.6;
-     //var jointpos2 = 0.3;
+     var bonesize= this.mesh!.nsegments * this.mesh!.segmentsize;   // length in x direction
+     var len: number=this.jointpos*bonesize;                        // len is distance from 0 to joint
+     var mtrans1 = m4.translation([len,0,0]);                       // joint serves as a rotation point (trans to)
+     var mtrans2 = m4.translation([-len,0,0]);                      // joint serves as a rotation point (trans back)
+     var ii=bones.length*this.jointpos;                             // ii is index where joint starts
+     var mrot = m4.axisRotate(mtrans1,this.vaxis, di * this.ampl ); // rotation used beyond joint
      for (var i = 0; i < bones.length; i++)
-     {          
-       var nnormx = i /bones.length;         
-       if (nnormx>this.jointpos) posay = asin; else posay=0;
-       var  m = m4.identity();
-       m = m4.translate(m,[this.jointpos*bonesize+this.px,0,0]);
-       m = m4.axisRotate(m,this.vaxis, posay );
-       m = m4.translate(m,[-(this.jointpos*bonesize+this.px),0,0,0]);
-       m = m4.translate(m,[this.px,0,0,0]);
-       
-       bones[i] = m;
-       this.py+=0.0;
-       this.pz+=0.00000;
-       amp+=this.size*damp;       
+     {               
+       var m = (i>ii)?mrot:mtrans1;          // before joint, use trans1 matrix. After joint, use rotated trans1
+       bones[i] =  m4.multiply(m, mtrans2);  // bone matrix consists of local m translated back to origin
      }  
-     this.px+=-this.forwardspeed; // * bones.length;    
-    }
+     this.EndOfBoneTrans = m4.translate(mrot,[bonesize-len-0.1,0,0,0]);  // the end of the bone      
+   }
+
+   
+
+
  }
  

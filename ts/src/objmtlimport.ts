@@ -8,6 +8,9 @@ import * as mobjfiles from "./matobjfiles"   // read geometry from .obj / .mtl f
 import * as mtls from "./mouselistener";     // connect events for buttons and wheel
 import * as camhandler from "./camhandler"   // camera projection
 
+import  * as datgui from "dat.gui";
+
+
 type Tuniforms = {
     u_lightWorldPos: number[]
     u_ambient: number[],
@@ -22,6 +25,16 @@ type Tuniforms = {
 
 export class ObjMtlImport
 { 
+  
+  objMtlImportParameters = {
+    move: false,
+    speed: 0.4,
+    texture: 'geotriangle2',
+    color0: "#00A000",
+  };
+  
+    static instance: ObjMtlImport|undefined;
+
     time: number = 0;
     dtime: number = 0.01;
        
@@ -57,12 +70,21 @@ export class ObjMtlImport
     
   constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , UrlPars:Map<string,string>)
   {
+    ObjMtlImport.instance = this;
     this.app = capp;
     this.gl = cgl;     
     twgl.setAttributePrefix("a_");
+  }
 
+  main(gl:WebGL2RenderingContext,UrlPars:Map<string,string>)
+  {
+    
     this.getFiles(UrlPars).then(() =>  // Fetch obj/mtl content
     { 
+      var cc = gl.canvas.parentNode;
+      var ccd= (cc as HTMLDivElement);
+      ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
+   
       if (mobj.mesh)
       {
         console.log("=> Constructor - create programInfo");
@@ -95,10 +117,73 @@ export class ObjMtlImport
        
         // Fetch file texture content, start rendering when all textures read
         this.Prepare();   
+
+       
       }
       else console.log("ERROR: obj/mtl no mesh could be created.");  
     }); // getfiles then({})
-  } // constructor
+  }
+
+      
+
+  gui: datgui.GUI|null=null;
+
+  onChangeTextureCombo(value? : any)
+  {
+    var thisinstance = ObjMtlImport.instance!;
+    //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
+  //  thisinstance.currentTexture = value;
+  //  console.log("set currentTexture to ["+value+"]");
+  //  if (value=="clover") thisinstance.ny=8.0; else 
+  //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
+    thisinstance.app!.mouse.totaldelta = 0;
+  }
+
+  onChangeColorValue(value? : any)
+  {
+    //console.log("we are in color=["+value+"]");
+    var thisinstance = ObjMtlImport.instance!;
+    if (thisinstance.gl!=null)
+    {
+      var cc = thisinstance.gl!.canvas.parentNode;
+      var ccd= (cc as HTMLDivElement);
+      ccd.style.backgroundColor =  value;
+    }
+  }
+
+  public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
+  {
+    this.objMtlImportParameters=parameters;
+    var cc = this.gl.canvas.parentNode;
+    var ccd= (cc as HTMLDivElement);
+    ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
+
+      // park the dat.gui box in the linksdiv below the links, in closed state
+      var gui = new datgui.GUI( { autoPlace: false } );
+      gui.domElement.id = 'gui_drawimagespace';
+      document.getElementById("linksdiv")!.append( gui.domElement);
+      gui.close();
+
+      // connect viewmodel
+      gui.remember(this.objMtlImportParameters);
+    
+      // Checkbox for animation on/off
+  //    gui.add(this.objMtlImportParameters, 'move');
+     
+      // Slider for animation speed
+   //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
+   
+      // Color dialog sets background color
+      var cel3 = gui.addColor(this.objMtlImportParameters, 'color0');
+      cel3.onChange( this.onChangeColorValue);
+     
+      // Combobox texture from accepted values
+   //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+   //   cel2.onChange( this.onChangeTextureCombo);
+         
+      gui.updateDisplay();
+      return gui;
+    }
 
 //------------------------------------------------------------------------
 
@@ -244,27 +329,28 @@ export class ObjMtlImport
       var cmaterial = this.mats![i];
       var srep = "";
       if (cmaterial.mapDiffuse == undefined) {  
-          srep = "No file, use color texture i="+i;
-          this.uniforms.u_diffuse = ctexture; 
+          srep = "UNDEFINED TEXTURE";
+          console.log(srep);
+      //    this.uniforms.u_diffuse = ctexture; 
       }
       else
-      if (  cmaterial.mapDiffuse!.filename.length>0)
+      if (  cmaterial.mapDiffuse.filename.length>0)
       {
         var tx = this.resolvedtextures.get(cmaterial.mapDiffuse.filename);
         if (tx==undefined || tx==null)
           {
               this.uniforms.u_diffuse = ctexture ;
-            srep = "No resolve, use color texture i="+i;
+        //    srep = "No resolve, use color texture i="+i;
           } else
           {     
               this.uniforms.u_diffuse = ctexture = tx; // file texture
-              srep = "Resolve, use file texture i="+i+" "+cmaterial.mapDiffuse!.filename;       
+           //   srep = "Resolve, use file texture i="+i+" "+cmaterial.mapDiffuse!.filename;       
           }
       }
        else
        {  
           this.uniforms.u_diffuse = ctexture = this.texs[i]; // diffuse color texture
-          srep="No filename, use color texture i="+i;
+      //    srep="No filename, use color texture i="+i;
        }
       this.uniforms.u_emissive= [cmaterial.emissive[0],cmaterial.emissive[1],cmaterial.emissive[2],1]; 
       this.uniforms.u_ambient= [cmaterial.ambient[0],cmaterial.ambient[1],cmaterial.ambient[2],1]; 
@@ -286,15 +372,17 @@ export class ObjMtlImport
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
     this.gl.enable(this.gl.DEPTH_TEST);
     this.gl.enable(this.gl.CULL_FACE);
-    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);      
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    this.cam.CamHandlingYUp(this.gl, this.app!);   
+
+   // this.gl.clearColor(this.objMtlImportParameters.color0. 0.0, 0.0, 0.0, 1.0);      
+   // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    this.cam.CamHandlingYUp(this.gl, this.app!, 1.0, 1.0);   
     this.gl.useProgram(this.programInfo.program);
     for (var i=0; i<this.texs.length; i++)
     {     
       if (this.mats![i]!=undefined)
       {
         var ctexture = this.prepareMaterial(i);
+       // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
         twgl.setUniforms(this.programInfo, this.uniforms);
         twgl.setUniforms(this.programInfo, {
           u_viewInverse: this.cam.lookAt,

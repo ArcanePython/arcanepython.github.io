@@ -7,100 +7,147 @@ import * as camhandler from "./camhandler"   // camera projection
 import * as boneanimation from "./boneanimation"
 import * as fish from "./fish"
 
+import  * as datgui from "dat.gui";
+import * as baseapp from "./baseapp";
+import * as twglbaseapp from "./twglbaseapp";
+import * as animationclock from "./animationclock";
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-export class FishAnimation  
-{                          
-    fish: fish.Fish[] = [ // SIZE FWSP  PH0  DELTAP  AR   AMPL  TEX          JOINT JOINTAX
-    new fish.FishHTranslated(1.0, 0.03, 0.8, 0.0016, 0.5, 2.25, "zelenskyy"),
-    new fish.FishOneJoint   (0.33, 0.03, 3.0, 0.0125, 0.3, 2.25, "gradient", 0.6, [0.0,0.0,1.0]),
-    new fish.FishHRotated   (1.0, 0.03, 0.1, 0.0015, 1.3, 2.25, "gradient"),
-    new fish.FishV(          0.2, 0.03, 1.0,  0.0150, 0.5, 5.00, "flagofukraine"),
-    new fish.FishHTranslated(0.3, 0.03, 0.8,  0.0085, 0.5, 2.50, "zelenskyy")];  
+export class FishAnimation extends twglbaseapp.twglbaseapp
+{          
+    fishAnimationParameters = {
+      b: this.baseappParameters,
+      texture: 'geotriangle2',
+      sling: 117,
+    };          
+
+    fish: fish.Fish[] = [ // SIZE R1 R2 FWSP  PH0  DELTAP  AR   AMPL  TEX          JOINT JOINTAX
+    new fish.FishHTranslated(1.0,2.0,0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+    new fish.FishOneJoint   (0.06, 40.0,24.0,0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0,1.0,0.0]),
+    new fish.FishHRotated   (0.5,16.0,22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+    new fish.FishV(          0.2,0.2,0.3, 0.03, 1.0,  0.0150, 0.5, 5.00, "flagofukraine"),
+    new fish.FishHTranslated(0.3,0.2,0.3, 0.03, 0.8,  0.0085, 0.5, 2.50, "zelenskyy")];  
   
-    fishcounts: number[] = [1, 1, 2, 2, 1];    
+    fishjointcounts: number[] = [1, 28, 1, 1, 1];  
+
     fishpositions = [
-    [[20.0, -20.0, 0.0]], 
-    [[0.0, 0.0, 0.0]],
-    [[40.0, -5.0, -15.0], [40.0, -2.0, -5.0]],
-    [[10.0, -5.0, 0.0], [15.0, 0.0, -5]],
-    [[22.0, 0.0, 1.0]]];
+    [[0.0, -20.0, 0.0]], 
+    [[-15,15,0]],
+    [[20.0, -5.0, -15.0]],
+    [[-10.0, -5.0, 0.0]],
+    [[0.0, 0.0, 1.0]]];
   
+    cam: camhandler.Camera|undefined;
+    
+    clock: animationclock.AnimationClock = new animationclock.AnimationClock();
 
-    private  gl: WebGL2RenderingContext;
-    private app: mtls.MouseListener;   
-    private cam: camhandler.Camera;
-    private programInfo: twgl.ProgramInfo;
-    private vnow: Date = new Date();
-
-    private tdt: number=0;
-    private cntfr: number=0;
-   
-    getTime(nfr: number): number
-    {
-      const now = new Date();
-      const ctime = now.getTime();
-      const dt = ctime-this.vnow.getTime();
-      if ((this.cntfr % 100)==0) 
-      { 
-        console.log("nfr="+nfr+" tdt="+this.tdt+" ms, fr="+1000.0/(this.tdt/100.0)); 
-        (document.getElementById('app') as HTMLDivElement).innerHTML = "fr="+1000.0/(this.tdt/100.0);
-        this.tdt=0; 
-      }
-      this.tdt+=dt; 
-      this.vnow = now; 
-      return  ctime;
-    }
-     
     constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
     {       
-      this.gl = cgl;
-      this.app = capp!;
+      super(cgl, capp, dictpar);
+    }
+
+    main(gl:WebGL2RenderingContext, dictpar:Map<string,string>)
+    {
+      super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
       twgl.setAttributePrefix("a_");
-      this.programInfo = twgl.createProgramInfo(this.gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
+      var gl = this.gl!;
+      //this.programInfo = this.twglprograminfo![0];// twgl.createProgramInfo(gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
       var nFish: number = 0;
+      var time0: number = 0; // (this.vnow=new Date()).getTime();
       this.fish.forEach((afish)=>{
-        afish.prepareSurfaceTextures(this.gl,afish.surfacetexturefile);
-        afish.mesh = afish.prepareMesh(this.gl, dictpar, afish.size);
-        afish.setNumBones(this.gl);
-        afish.createBoneTexture(this.gl, dictpar);
-        afish.createSurfaceTexture(this.gl);
-        afish.uniforms= afish.prepareUniforms(this.gl, dictpar);
-        afish.bufferInfo = twgl.createBufferInfoFromArrays(this.gl, afish.mesh!.arrays);
-        afish.skinVAO = twgl.createVAOFromBufferInfo(this.gl, this.programInfo, afish.bufferInfo);
+        afish.prepareSurfaceTextures(gl,afish.surfacetexturefile);
+        afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+        afish.setNumBones(gl);
+        afish.createBoneTexture(gl, time0, dictpar);
+        afish.createSurfaceTexture(gl);
+        afish.uniforms= afish.createUniforms(gl, dictpar);
+        afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh!.arrays);
+        afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![0], afish.bufferInfo);
         nFish++;
       });   
-      this.cam=camhandler.Camera.createZUpCamera(this.gl,dictpar,50.0, this.app);
+      this.cam=camhandler.Camera.createZUpCamera(gl,dictpar,30.0, this.app!);
       this.cam.zoominVelocity = 0.5;
-      requestAnimationFrame(() => this.render((this.vnow=new Date()).getTime()));    
+      requestAnimationFrame(() => this.render(time0));    
+    }
+
+    onChangeColorValue(value? : any)
+    {
+      //console.log("we are in color=["+value+"]");
+      var thisinstance = FishAnimation.instance!;
+      if (thisinstance.gl!=null)
+      {
+        var cc = (thisinstance.gl!.canvas  as HTMLCanvasElement).parentNode;
+        var ccd= (cc as HTMLDivElement);
+        ccd.style.backgroundColor =  value;
+      }
+    }
+
+    public initGUI(parameters: { b: {color0: string, move: boolean, movetail:boolean, speed: number}, texture:string,  sling:number}): datgui.GUI      
+    {
+      this.fishAnimationParameters= parameters;
+    
+      // The base GUI provides checkboxes for move and move of objects,
+      // a color dialog to choose background, Slider for animation speed
+      var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+      
+      // add a slider for sling
+      gui.add(this.fishAnimationParameters, 'sling').min(9).max(120).step(1);
+   
+      gui.updateDisplay();
+      return gui;
     }
   
     render(time: number) 
     {
-        var gl = this.gl;
-        gl.useProgram(this.programInfo!.program);
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        var gl = this.gl!;
+        gl.useProgram(this.twglprograminfo![0].program);
+        twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
         
-        gl.clearColor(0.1, 0.1, 0.1, 1.0);       
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
-        var cam: camhandler.Camera = this.cam;
-        cam.CamHandlingZUp(gl, this.app);     
+        //gl.clearColor(0.1, 0.1, 0.1, 1.0);       
+        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
+
+        var cam: camhandler.Camera = this.cam!;
+        cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);     
         for (var fishtype=0; fishtype<this.fish.length; fishtype++)
-        {         
+          this.fish[fishtype].uniforms!.viewprojection = cam.viewProjection; 
+
+        for (var fishtype=0; fishtype<this.fish.length; fishtype++)
+        {                   
           gl.bindVertexArray(this.fish[fishtype].skinVAO);
-          this.fish[fishtype].computeBone(time);
-          this.fish[fishtype].prepareBoneTexture(gl,this.fish[fishtype].bindPoseInv2);
-          this.fish[fishtype].uniforms!.worldviewprojection = cam.viewProjection;        
-          for (var i=0; i<this.fishcounts[fishtype]; i++)                                                            // instances of this type
+          this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move?this.fishAnimationParameters.b.speed:0.0;
+            
+          if (this.fishjointcounts[fishtype]==1) // single joint fish
           {
-            this.fish[fishtype].uniforms!.world = m4.translate(m4.identity(), this.fishpositions[fishtype][i]);      // draw a fish at some position
-            twgl.setUniforms(this.programInfo!, this.fish[fishtype].uniforms!)
-            twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo!, this.fish[fishtype].mesh!.type);     
+            this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+            this.fish[fishtype].prepareBoneTexture(gl,this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+            this.fish[fishtype].uniforms!.world = m4.translation(this.fishpositions[fishtype][0]);      // draw a fish at some position
+            twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)
+            twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo!, this.fish[fishtype].mesh.type);              
+          }
+          else  // multiple joint segments
+          {
+            var localmatrix = m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
+            var ampl0 = this.fish[fishtype].ampl;
+            var sling = this.fishAnimationParameters.sling;
+            for (var i=0; i<this.fishjointcounts[fishtype]; i++)  // there are fishjointcounts joints for this fish type
+            {
+              var timeoffs = i*sling;
+              var nx = i/this.fishjointcounts[fishtype];
+              this.fish[fishtype].ampl = ampl0 * nx;
+              this.fish[fishtype].computeBone(time-timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+              this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
+              this.fish[fishtype].uniforms!.world = localmatrix; // transformation for joint part depends on previous joint
+              twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)
+              twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo!, this.fish[fishtype].mesh.type);     
+              localmatrix = m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans);  // stack the end-transformation of this segment into matrix cm         
+            }
+            this.fish[fishtype].ampl = ampl0;
           }
         }         
-        requestAnimationFrame(() => this.render(this.getTime(this.cntfr++)));   
+        requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));   
     }   
 }

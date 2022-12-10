@@ -79,7 +79,7 @@
     {
        var cam: Camera = new Camera(dictpar!);
        cam.zoominVelocity = szobj/20.0;
-       if (cam.radius0==0) { cam.radius0 = 2.0*szobj; console.log("set cam.radius0 to 2*object size = "+cam.radius0); }
+       if (cam.radius0==0) { cam.radius0 = 3.0*szobj; console.log("set cam.radius0 to 2*object size = "+cam.radius0); }
        cam.target = [0,0,0];
        cam.near = szobj/10.0;
        cam.far = 10.0*szobj;
@@ -117,13 +117,16 @@
         "<br>r0="+this.radius0.toPrecision(4)+", r="+this.radius.toPrecision(4)+"<br>eye:["+sEye+"]<br>target: ["+sTarget+"]<br>light: "+sLightPos; 
     }
 
+    public Position(): number[]
+    {  return this.eye; }
+
     //===================================================================================================================
 
     
     public setYUpPerspective(gl: WebGL2RenderingContext, app: mtls.MouseListener | undefined)
     {
       const afov =  (this.fov * Math.PI) / 180;
-      const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+      const aspect = (gl.canvas  as HTMLCanvasElement).clientWidth / (gl.canvas  as HTMLCanvasElement).clientHeight;
       const zNear = this.near;
       const zFar = this.far;
       this.up = [0, 1, 0];
@@ -133,9 +136,9 @@
     public setZUpPerspective(gl: WebGL2RenderingContext, app: mtls.MouseListener | undefined)
     {
       const afov =  (this.fov * Math.PI) / 180;
-      const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-      const zNear = 0.1;
-      const zFar = 180;
+      const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+      const zNear = this.near;
+      const zFar = this.far;
       this.up = [0, 0, 1];
       this.projection = m4.perspective(afov, aspect, zNear, zFar);  
     }
@@ -179,7 +182,8 @@
     public setRadius(r: number)
     { this.radius=this.radius0=r; }
 
-    public CamHandlingYUp(gl:WebGL2RenderingContext, app: mtls.MouseListener | undefined)
+
+    public CamHandlingYUp(gl:WebGL2RenderingContext, app: mtls.MouseListener | undefined, camsignX: number, camsignY: number )
     {          
     
       if (app?.mouse.dragvector!=undefined && app?.mouse.dragdistance>1e-2 )
@@ -187,10 +191,10 @@
         const ctrldown = app?.controlkeydown;
         if (!ctrldown)
         {
-          this.ahoriz = this.ahoriz-app.mouse.dragvector[0]*this.rotationVelocity;
-          this.avert = this.avert-app.mouse.dragvector[1]*this.rotationVelocity;
-          if (this.avert<(-Math.PI/2.0)) this.avert =-Math.PI/2.0 + 1e-3;
-          if (this.avert>(Math.PI/2.0)) this.avert =Math.PI/2.0 - 1e-3;
+          this.ahoriz = this.ahoriz - camsignX*(app.mouse.dragvector[0]*this.rotationVelocity);
+          this.avert =  this.avert - camsignY*(app.mouse.dragvector[1]*this.rotationVelocity);
+          if (this.avert<(-Math.PI/2.0)) this.avert = (-Math.PI/2.0 + 1e-3);
+          if (this.avert>(Math.PI/2.0)) this.avert =(Math.PI/2.0 - 1e-3);
           this.changeeye = true;
         } else
         {
@@ -226,14 +230,14 @@
 
     // Camera with Z-AXIS up
 
-    public CamHandlingZUp(gl:WebGL2RenderingContext, app: mtls.MouseListener)
+    public CamHandlingZUp(gl:WebGL2RenderingContext, app: mtls.MouseListener, camsignX: number, camsignY: number)
     {      
       this.setZUpPerspective(gl,app);
    //   var change = false;
       if (app?.mouse.dragvector!=undefined && app?.mouse.dragdistance>1e-2 )
       {
-        this.ahoriz = this.ahoriz-app.mouse.dragvector[0]*this.rotationVelocity;
-        this.avert = this.avert+app.mouse.dragvector[1]*this.rotationVelocity;
+        this.ahoriz = this.ahoriz-(camsignX*app.mouse.dragvector[0]*this.rotationVelocity);
+        this.avert = this.avert-(camsignY*app.mouse.dragvector[1]*this.rotationVelocity);
         if (this.avert<(-Math.PI/2.0)) this.avert =-Math.PI/2.0 + 1e-3;
         if (this.avert>(Math.PI/2.0)) this.avert =Math.PI/2.0 - 1e-3;
         this.changeeye = true;

@@ -2,16 +2,13 @@ import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 import { m4 } from "./../node_modules/twgl.js";
 
 import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-
-//import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
-//import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
-//import * as mtls from "./mouselistener";     // connect events for buttons and wheel
+import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 
 // -- vertex shader --
 export const vsSkeleton = `#version 300 es
 
 // camera
-uniform mat4 worldviewprojection;
+uniform mat4 viewprojection;
 uniform vec3 lightWorldPos;
 uniform mat4 world;
 uniform mat4 viewInverse;
@@ -46,7 +43,7 @@ mat4 getBoneMatrix(uint boneNdx) {
 void main() {
   v_texCoord = a_texcoord;
   vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
-  gl_Position = worldviewprojection * world * bonemovedskinpos;
+  gl_Position = viewprojection * world * bonemovedskinpos;
  }
 `;
 
@@ -67,7 +64,7 @@ void main () {
 export type Tuniforms = {
     world: m4.Mat4,
     projection: m4.Mat4,
-    worldviewprojection: m4.Mat4;
+    viewprojection: m4.Mat4;
     view: m4.Mat4,
     surfaceTexture: WebGLTexture,
     boneMatrixTexture: WebGLTexture,
@@ -79,12 +76,13 @@ export class BoneAnimation
     bindPose: m4.Mat4[] = [];    
    
     bones: m4.Mat4[] = []; 
-    boneMatrixTexture: WebGLTexture | null = null;
     boneMatrices: m4.Mat4[] = [] ;
+
     numBones: number | undefined;
     boneArray: Float32Array | undefined;
    
-    surfaceTexture: WebGLTexture | null = null;
+    boneMatrixTexture: WebGLTexture |undefined;
+    surfaceTexture: WebGLTexture| undefined;
    
     // animation state
     px: number =0.0;
@@ -92,17 +90,19 @@ export class BoneAnimation
     pz: number =0.0;
     scale: number = 1.0;
       
-   // bindPoseInv0: m4.Mat4[] = [] ;
     bindPoseInv2: m4.Mat4[] = [] ;
  
     phase0: number= 0;
-    mesh: stridedmesh0.StridedMesh0 | null = null;   
+    mesh: stridedmesh0.StridedMesh0 = new stridedmesh.StridedMesh(1,1,1); // | null = null;   
+    uniforms: Tuniforms = { world: [], projection: [], viewprojection:[], view:[],surfaceTexture: {}, boneMatrixTexture:{}, color:[] };  
+
     bufferInfo: twgl.BufferInfo | null = null;
     skinVAO: WebGLVertexArrayObject | null = null;
-    uniforms: Tuniforms | null = null;  
-
+    
     constructor( )
     {
+   //   this.boneMatrixTexture = new WebGLTexture();
+   //   this.surfaceTexture = new WebGLTexture();
     }
 
     setNumBones(gl: WebGL2RenderingContext)
@@ -136,6 +136,7 @@ export class BoneAnimation
          }); 
     }
     
+  /*  
     prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
     {
         var gradientname = require("./resources/models/stone/circlegradient.png");
@@ -160,7 +161,8 @@ export class BoneAnimation
        if (selectedSurface=="flagofukraine") this.surfaceTexture = textures.flagofukraine;
        return textures;
     } 
-
+  */
+ 
     prepareBoneMatrices(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
     {
        if (this.numBones==undefined) return;
@@ -169,7 +171,7 @@ export class BoneAnimation
       this.boneArray = new Float32Array(this.numBones! * 16);
     
       // prepare the texture for bone matrices
-      this.boneMatrixTexture = gl.createTexture();
+      this.boneMatrixTexture = gl.createTexture()!;
 
       gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
 
@@ -184,13 +186,15 @@ export class BoneAnimation
        }
     }
 
-    prepareBoneTexture(gl:WebGL2RenderingContext, bindPosInv:m4.Mat4[])
-    {          
-      // multiply each by its bindPoseInverse
-      this.bones.forEach((bone, ndx) => { m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]); });
-
+    prepareBoneTexture(gl:WebGL2RenderingContext, bindPosInv:m4.Mat4[]|null)
+    {   
+       if (bindPosInv==null) // when a reset of the bone transformation is not needed, copy bone matrix to GPU
+        this.bones.forEach((bone, ndx) => { m4.multiply(bone, m4.identity(), this.boneMatrices[ndx]); });
+       else                  // else multiply each by its initial inverse tansformation before copy bone matrix to GPU
+        this.bones.forEach((bone, ndx) => { m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]); });
+     
       // update the texture with the current matrices
-      gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
+      gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture!);
       gl.texImage2D(
           gl.TEXTURE_2D,
           0,           // level
