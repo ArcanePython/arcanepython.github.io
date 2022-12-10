@@ -177,15 +177,17 @@
         str+=lnk("?drawimagespace","draw image space");
         linksdiv.innerHTML =  str + "<br><br> ";
 
-        // (neat way to do it on a server, but Parcel dvp Server won't run this..)
-        //document.addEventListener('DOMContentLoaded', () => {
-        //document.head.appendChild(document.createElement('script'))
-        //     .src = subdir + "/" + commonjsparcel;
-        //});
+        var sym = "MSFT";
+            
+        // (neat way to do it on a server like github pages, but Parcel development Server won't run this..)
+        document.addEventListener('DOMContentLoaded', () => {
+        document.head.appendChild(document.createElement('script'))
+             .src = subdir + "/" + commonjsparcel;
+        });
         
 </script>       
 <!-- use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
-<script src="src/indexcube.js" type="module"></script>
+<!-- script src="src/indexcube.js" type="module"></script -->
 
 <!-- when above event listener is not used, deploy from /dist directly. Update below link on each release -->
 <!-- script src="dist/index.73eb0017.js"></script -->
