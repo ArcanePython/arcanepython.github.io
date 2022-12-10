@@ -12,4 +12,4 @@
 
 - [Tutorial 04 - Textures](Tutorial4%20-%20Textures/)
 
-- [TypeScript WbGL2 experiments repository](ts) 
+- [TypeScript WbGL2 experiments index](ts/index.html) 
