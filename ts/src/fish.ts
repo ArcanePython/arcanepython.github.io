@@ -15,10 +15,10 @@ export interface FishInterface
     prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number,typeFish: number): stridedmesh0.StridedMesh0;
   }
 
-  type Meshproducer = (numrows: number, stride: number, scale: number) => {
-    numComponents: number;
-    data: Float32Array;
-   };
+ // type Meshproducer = (numrows: number, stride: number, scale: number) => {
+ //   numComponents: number;
+ //   data: Float32Array;
+ //  };
   
 export abstract class Fish extends boneanimation.BoneAnimation implements FishInterface
   {
@@ -281,9 +281,18 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
  export class FishOneJoint extends Fish
  // Fish with horizontal tail, using a joint
  {       
-  constructor (public size: number,public r1: number,public r2: number, public forwardspeed: number, public phase0: number, public deltaphase: number, 
-    public arange: number, public ampl: number, 
-    public surfacetexturefile: string, public jointpos: number, public vaxis:number[]) 
+  constructor (
+    public size: number,
+    public r1: number,
+    public r2: number, 
+    public forwardspeed: number, 
+    public phase0: number, 
+    public deltaphase: number, 
+    public arange: number, 
+    public ampl: number, 
+    public surfacetexturefile: string,
+    public jointpos: number, 
+    public vaxis:number[]) 
   { super(size, r1,r2, forwardspeed, phase0, deltaphase,arange,ampl, surfacetexturefile); }
 
    prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0

@@ -53,7 +53,7 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
       twgl.setAttributePrefix("a_");  // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
       this.createReflectingCubeGeo(gl);         
       this.createEnvironmentMapGeoTwgl(gl);         
-      this.texture =  this.createEnvironmentMapTexture(gl, 0)!;
+      this.texture =  this.createEnvironmentMapTexture(gl, 1)!;
       
       this.cam=camhandler.Camera.createYUpCamera(gl,dictpar,0.5, this.app!);
       this.cam.zoominVelocity = 0.5;
@@ -98,7 +98,7 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
       private render( mstime: number) {
       
         var gl = this.gl!;
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);       
         gl.enable(gl.CULL_FACE);
         gl.enable(gl.DEPTH_TEST);     

@@ -81,7 +81,7 @@ export class ObjMtlImport
     
     this.getFiles(UrlPars).then(() =>  // Fetch obj/mtl content
     { 
-      var cc = gl.canvas.parentNode;
+      var cc = (gl.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
       ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
    
@@ -145,7 +145,7 @@ export class ObjMtlImport
     var thisinstance = ObjMtlImport.instance!;
     if (thisinstance.gl!=null)
     {
-      var cc = thisinstance.gl!.canvas.parentNode;
+      var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
       ccd.style.backgroundColor =  value;
     }
@@ -154,7 +154,7 @@ export class ObjMtlImport
   public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
   {
     this.objMtlImportParameters=parameters;
-    var cc = this.gl.canvas.parentNode;
+    var cc = (this.gl.canvas as HTMLCanvasElement).parentNode;
     var ccd= (cc as HTMLDivElement);
     ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
 
@@ -307,7 +307,7 @@ export class ObjMtlImport
         console.log("Prepare - finish, there are "+istr+" file textures");   
             
          this.time = 0; 
-        twgl.resizeCanvasToDisplaySize(this.gl.canvas);   
+        twgl.resizeCanvasToDisplaySize(this.gl.canvas as HTMLCanvasElement);   
         requestAnimationFrame(() => this.render(0));  
   
     });  // return from LoadImages()       
@@ -315,7 +315,7 @@ export class ObjMtlImport
   {
       console.log("Prepare - no textures, > requestAnimationFrame()");
       this.time = 0; 
-      twgl.resizeCanvasToDisplaySize(this.gl.canvas);   
+      twgl.resizeCanvasToDisplaySize(this.gl.canvas as HTMLCanvasElement);   
       requestAnimationFrame(() => this.render(0));      
   }
   console.log("Prepare - return");

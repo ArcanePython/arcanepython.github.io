@@ -7,17 +7,15 @@ import  * as datgui from "dat.gui";
 export type TbaseappParameters = {
     color0: string;
     move: boolean,
-    movetail: boolean,
     speed: number
 }
 
 export class baseapp
 {
     baseappParameters: TbaseappParameters = {
-        color0: "#00A000",
         move: false,
-        movetail: true,
         speed: 0.04,
+        color0: "#00A000"
       };  
 
     public gl: WebGL2RenderingContext|null=null;
@@ -70,7 +68,7 @@ export class baseapp
       }
     }
 
-    public createGUI(parameters:  {color0: string, move: boolean, movetail:boolean, speed: number}, instanceParameters: {}): datgui.GUI
+    public createGUI(parameters:  {color0: string, move: boolean, speed: number}, instanceParameters: {}): datgui.GUI
     {
       console.log("=> animation1 initGUI "+parameters);
       this.baseappParameters= parameters ;
@@ -89,11 +87,9 @@ export class baseapp
      
         // Checkbox forward move animation on/off
         gui.add(parameters, 'move');
-        // Checkbox tail animation on/off
-        gui.add(parameters, 'movetail');
-       
+        
         // Slider for animation speed
-        gui.add(parameters, 'speed').min(0.002).max(0.02).step(0.002);
+        gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
         
         // Color dialog sets background color
         var cel3 = gui.addColor(parameters, 'color0');
@@ -186,7 +182,8 @@ export class baseapp
             console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
         }
     }
-
+    
+/*
     protected mains(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
     {
         if (this.initprograms(gl,"cdiv",shaders) && this.program && this.gl)
@@ -195,7 +192,7 @@ export class baseapp
             console.log("baseapp mains ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
         }
     }
-
+*/
 
     //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
 
@@ -240,12 +237,8 @@ export class baseapp
         // Put the positions in the buffer
         var positions = new Float32Array(
             [
-            -1, -1,
-                1, -1,
-            -1,  1,
-            -1,  1,
-                1, -1,
-                1,  1,
+            -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
+            -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
             ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         
@@ -266,95 +259,94 @@ export class baseapp
 
     protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number): WebGLTexture|null
     {        
-     /*   if (scene==-1)
-        {
-            // external CubeMap texture hosted by Gregg's webgl2fundamentals
-            var texture = twgl.createTexture(gl, {
-                target: gl.TEXTURE_CUBE_MAP,
-                src: [
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',  
-                ],
-                min: gl.LINEAR_MIPMAP_LINEAR,
-            });
-            return texture;
-        } else
-      */  {
-            // local CubeMap texture hosted in parcel dist\images
-            var mytexture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
-            var pos_x_name="",pos_y_name="",pos_z_name = "";
-            var neg_x_name="",neg_y_name="",neg_z_name = "";
-            var p=scene;
-            switch (p) {
-                case 0: {
-                    pos_x_name= require("./images/chmuseum/pos-x.jpg");
-                    pos_y_name= require("./images/chmuseum/pos-y.jpg");
-                    pos_z_name= require("./images/chmuseum/pos-z.jpg");
-                    neg_x_name= require("./images/chmuseum/neg-x.jpg");
-                    neg_y_name= require("./images/chmuseum/neg-y.jpg");
-                    neg_z_name= require("./images/chmuseum/neg-z.jpg");
-                    break;
-                }
-                case 1: {
-                    pos_x_name= require("./images/yokohama/posx.jpg");
-                    pos_y_name= require("./images/yokohama/posy.jpg");
-                    pos_z_name= require("./images/yokohama/posz.jpg");
-                    neg_x_name= require("./images/yokohama/negx.jpg");
-                    neg_y_name= require("./images/yokohama/negy.jpg");
-                    neg_z_name= require("./images/yokohama/negz.jpg");
-                    break;
-                }
+        var mytexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+        var pos_x_name="",pos_y_name="",pos_z_name = "";
+        var neg_x_name="",neg_y_name="",neg_z_name = "";
+        var p=scene;
+        switch (p) {
+            case 0: {
+                pos_x_name= require("./images/chmuseum/pos-x.jpg");
+                pos_y_name= require("./images/chmuseum/pos-y.jpg");
+                pos_z_name= require("./images/chmuseum/pos-z.jpg");
+                neg_x_name= require("./images/chmuseum/neg-x.jpg");
+                neg_y_name= require("./images/chmuseum/neg-y.jpg");
+                neg_z_name= require("./images/chmuseum/neg-z.jpg");
+                break;
             }
-            const faceInfos = [
-                {target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,url: pos_x_name,},
-                {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,url: neg_x_name,},
-                {target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,url: pos_y_name,},
-                {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,url: neg_y_name,},
-                {target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,url: pos_z_name,},
-                {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,url: neg_z_name,},
-            ];
-            var nImage = 0;
-            faceInfos.forEach((faceInfo) => {
-                const {target, url} = faceInfo;
-            
-                // Upload the canvas to the cubemap face.
-                const level = 0;
-                const internalFormat = gl.RGBA;
-                const width = 256;
-                const height = 256;
-                const format = gl.RGBA;
-                const type = gl.UNSIGNED_BYTE;
-            
-                // setup each face so it's immediately renderable
-                gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
-            
-                // Asynchronously load an image
-                const image = new Image();
-                this.requestCORSIfNotSameOrigin(image, url)
-                image.src = url;
-                image.addEventListener('load', function() {
-                        // Now that the image has loaded make copy it to the texture.
-                            gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
-                            gl.texImage2D(target, level, internalFormat, format, type, image);
-                            // lx note: this is too early! console yields a warning..  
-                            // gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                            console.log("nImage="+nImage+"/"+faceInfos.length+" loaded: "+image.src);
-                            // instead.. initialize mipmap when all face textures are read
-                            if (++nImage==faceInfos.length)
-                            {
-                                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);           
-                            }
-                        });
-            });
-            return mytexture;
+            case 1: {
+           /*     pos_x_name= require("./images/yokohama/posx.jpg");
+                pos_y_name= require("./images/yokohama/posy.jpg");
+                pos_z_name= require("./images/yokohama/posz.jpg");
+                neg_x_name= require("./images/yokohama/negx.jpg");
+                neg_y_name= require("./images/yokohama/negy.jpg");
+                neg_z_name= require("./images/yokohama/negz.jpg");
+           */
+                pos_x_name= require("./images/yokohama/posx.jpg");
+                pos_y_name= require("./images/yokohama/posy.jpg");
+                pos_z_name= require("./images/yokohama/posz.jpg");
+                neg_x_name= require("./images/yokohama/negx.jpg");
+                neg_y_name= require("./images/yokohama/negy.jpg");
+                neg_z_name= require("./images/yokohama/negz.jpg");
+                break;
+            }
+            case 2: {
+                pos_x_name= require("./images/gamlastan/posx.jpg");
+                pos_y_name= require("./images/gamlastan/posy.jpg");
+                pos_z_name= require("./images/gamlastan/posz.jpg");
+                neg_x_name= require("./images/gamlastan/negx.jpg");
+                neg_y_name= require("./images/gamlastan/negy.jpg");
+                neg_z_name= require("./images/gamlastan/negz.jpg");
+                break;
+            }
         }
-        return null;
+        const faceInfos = [
+            {target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,url: pos_x_name,},
+            {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,url: neg_x_name,},
+            {target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,url: pos_y_name,},
+            {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,url: neg_y_name,},
+            {target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,url: pos_z_name,},
+            {target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,url: neg_z_name,},
+        ];
+        var nImage = 0;
+        faceInfos.forEach((faceInfo) => {
+            const {target, url} = faceInfo;
+        
+            // Upload the canvas to the cubemap face.
+            const level = 0;
+            const internalFormat = gl.RGBA;
+            const width = 256;
+            const height = 256;
+            const format = gl.RGBA;
+            const type = gl.UNSIGNED_BYTE;
+        
+            // setup each face so it's immediately renderable
+            gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
+        
+            // Asynchronously load an image
+            const image = new Image();
+            if ((new URL(url, window.location.href)).origin !== window.location.origin) {
+                image.crossOrigin = "";
+                }
+         
+           // this.requestCORSIfNotSameOrigin(image, url)
+            image.src = url;
+            image.addEventListener('load', function() {
+                    // Now that the image has loaded make copy it to the texture.
+                        gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+                        gl.texImage2D(target, level, internalFormat, format, type, image);
+                        // lx note: this is too early! console yields a warning..  
+                        // gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                        console.log("nImage="+nImage+"/"+faceInfos.length+" loaded: "+image.src);
+                        // instead.. initialize mipmap when all face textures are read
+                        if (++nImage==faceInfos.length)
+                        {
+                            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);           
+                        }
+                    });
+        });
+        return mytexture;
     }
 
     private requestCORSIfNotSameOrigin(img: HTMLImageElement, url: string) {
@@ -364,6 +356,7 @@ export class baseapp
     }
 
     public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
+    // env map
     {
         // Build a projection matrix.
         var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;

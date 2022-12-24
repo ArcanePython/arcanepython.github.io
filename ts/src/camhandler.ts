@@ -96,7 +96,7 @@
       this.eye=m4.transformPoint(t, this.eye) as number[]; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
-      console.log("translate eye "+this.eye);
+     // console.log("translate eye "+this.eye);
     }
 
     public translateTarget(v: number[])
@@ -104,7 +104,7 @@
       var t=m4.translation(v);
       this.target=m4.transformPoint(t, this.target) as number[]; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
-      console.log("translate target "+this.target);
+      //console.log("translate target "+this.target);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
     }
 

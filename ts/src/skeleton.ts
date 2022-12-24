@@ -83,7 +83,7 @@ export class Skeleton extends twglbaseapp.twglbaseapp
       var thisinstance = Skeleton.instance!;
       if (thisinstance.gl!=null)
       {
-        var cc = thisinstance.gl!.canvas.parentNode;
+        var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
         var ccd= (cc as HTMLDivElement);
         ccd.style.backgroundColor =  value;
       }
@@ -93,7 +93,7 @@ export class Skeleton extends twglbaseapp.twglbaseapp
     {
       this.skeletonParameters = parameters;
 
-      var cc = this.gl!.canvas.parentNode;
+      var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
       ccd.style.backgroundColor =  this.skeletonParameters.color0;
   
@@ -129,7 +129,7 @@ export class Skeleton extends twglbaseapp.twglbaseapp
     {       
         var gl = this.gl!;
         gl.useProgram(this.twglprograminfo![0].program);
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);

@@ -18,6 +18,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
 {          
     fishAnimationParameters = {
       b: this.baseappParameters,
+      movetail: true,
       texture: 'geotriangle2',
       sling: 117,
     };          
@@ -83,7 +84,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
       }
     }
 
-    public initGUI(parameters: { b: {color0: string, move: boolean, movetail:boolean, speed: number}, texture:string,  sling:number}): datgui.GUI      
+    public initGUI(parameters: { b: {color0: string, move: boolean,  speed: number}, movetail:boolean, texture:string,  sling:number}): datgui.GUI      
     {
       this.fishAnimationParameters= parameters;
     
@@ -122,7 +123,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
             
           if (this.fishjointcounts[fishtype]==1) // single joint fish
           {
-            this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+            this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
             this.fish[fishtype].prepareBoneTexture(gl,this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
             this.fish[fishtype].uniforms!.world = m4.translation(this.fishpositions[fishtype][0]);      // draw a fish at some position
             twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)
@@ -138,7 +139,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
               var timeoffs = i*sling;
               var nx = i/this.fishjointcounts[fishtype];
               this.fish[fishtype].ampl = ampl0 * nx;
-              this.fish[fishtype].computeBone(time-timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.b.movetail);
+              this.fish[fishtype].computeBone(time-timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
               this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
               this.fish[fishtype].uniforms!.world = localmatrix; // transformation for joint part depends on previous joint
               twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)

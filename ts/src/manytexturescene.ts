@@ -1,13 +1,14 @@
 import chroma from "chroma-js";
 
-import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-import { m4 } from "./../node_modules/twgl.js";
+import * as twgl from "twgl.js"   // Greg's work
+import { m4 } from "twgl.js"
 
-import * as mtls from "./mouselistener";
-import * as camhandler from "./camhandler" // camera projection
+import * as datgui from "dat.gui"
 
-import  * as datgui from "dat.gui";
-   
+import * as camhandler from "./camhandler" // camera projection   
+import * as scene from "./scene"
+
+import { TAnimation1Parameters }  from "./scene"
 
 type Tuniforms = { 
   u_diffuseMult?: [number,Number, number, number], 
@@ -28,8 +29,6 @@ type Tobject = {
 
 export class Tdrawitem 
 {
- 
-  
   do: twgl.DrawObject;
   obj: Tobject;
 
@@ -47,43 +46,41 @@ export class Tdrawitem
   }
 }
 
-export class ManyTextures
+export class ManyTexturesScene implements scene.SceneInterface
 {
-    manyTexturesParameters = {
-      move: false,
-      speed: 0.4,
-      texture: 'geotriangle2',
-      color0: "#00A000",
-    };
-    
-    static instance:ManyTextures|undefined;
+  // Interface
+  animationParameters: TAnimation1Parameters | undefined;
+  scenesize: number = 40;
 
-    // Publics
-    baseHue = this.rand(300);            // color of objects
-    numObjects = 200;                    // object count
-    spreadRadius = this.numObjects/10.0; // random placement range for objects
-    dtime = 0.02;                        // animation timer interval
+  sceneenv:number = -1;
+  positionLocation: number | undefined; // WebGLUniformLocation | undefined;
+      
 
-    // Set in constructor
-    private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
-    private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
-    private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
+  vertexShaderSource = ``;
+  fragmentShaderSource = ``;
+  twglprograminfo: twgl.ProgramInfo[]|null=null;  // there are 2 sets of shaders defined here.
+  cameraPosition: [number,number,number] | undefined
 
-    // Local
-    private drawItems: Tdrawitem[] = [];                           // resource
-    private textures: {[key: string]: WebGLTexture} | null = null; // resource
+  // Local
+  baseHue = this.rand(300);            // color of objects
+  numObjects = 200;                    // object count
+  spreadRadius = this.numObjects/10.0; // random placement range for objects
+  dtime = 0.02;                        // animation timer interval
+  
+  private drawItems: Tdrawitem[] = [];                           // resource
+  private textures: {[key: string]: WebGLTexture} | null = null; // resource
 
-    private ctx2D: CanvasRenderingContext2D | null = null;  // a 2D canvas to draw things on (used for dynamic circle texture)
- 
+  private ctx2D: CanvasRenderingContext2D | null = null;  // a 2D canvas to draw things on (used for dynamic circle texture)
+
     // Shaders
-    private one_point_vs = `    
+    private one_point_vs = `#version 300 es
+        
     uniform mat4 u_worldViewProjection;
 
-    attribute vec4 a_position;
-    attribute vec2 a_texcoord;
+    in vec4 a_position;
+    in vec2 a_texcoord;
 
-    varying vec4 v_position;
-    varying vec2 v_texCoord;
+    out vec2 v_texCoord;
 
     void main() {
       v_texCoord = a_texcoord;
@@ -91,35 +88,37 @@ export class ManyTextures
     }
     `;
 
-    private one_point_fs = `
-    precision mediump float;
+    private one_point_fs = `#version 300 es
+    precision highp float;
 
-    varying vec4 v_position;
-    varying vec2 v_texCoord;
+    in vec2 v_texCoord;
 
     uniform vec4 u_diffuseMult;
     uniform sampler2D u_diffuse;
 
+    out vec4 outColor;
+
     void main() {
-      vec4 diffuseColor = texture2D(u_diffuse, v_texCoord) * u_diffuseMult;
+      vec4 diffuseColor = texture(u_diffuse, v_texCoord) * u_diffuseMult;
       if (diffuseColor.a < 0.1) {
         discard;
       }
-      gl_FragColor = diffuseColor;
+      outColor = diffuseColor;
     }
     `;
 
-    private env_map_vs = `
+    private env_map_vs = `#version 300 es
+
     uniform mat4 u_viewInverse;
     uniform mat4 u_world;
     uniform mat4 u_worldViewProjection;
     uniform mat4 u_worldInverseTranspose;
 
-    attribute vec4 a_position;
-    attribute vec3 a_normal;
+    in vec4 a_position;
+    in vec3 a_normal;
 
-    varying vec3 v_normal;
-    varying vec3 v_surfaceToView;
+    out vec3 v_normal;
+    out vec3 v_surfaceToView;
 
     void main() {
       v_normal = (u_worldInverseTranspose * vec4(a_normal, 0)).xyz;
@@ -128,105 +127,44 @@ export class ManyTextures
     }
     `;
 
-    private env_map_fs = `
+    private env_map_fs = `#version 300 es
     precision mediump float;
 
     uniform samplerCube u_texture;
 
-    varying vec3 v_surfaceToView;
-    varying vec3 v_normal;
+    in vec3 v_surfaceToView;
+    in vec3 v_normal;
+
+    out vec4 outColor;
 
     void main() {
       vec3 normal = normalize(v_normal);
       vec3 surfaceToView = normalize(v_surfaceToView);
-      vec4 color = textureCube(u_texture, -reflect(surfaceToView, normal));
-      gl_FragColor = color;
+      vec4 color = texture(u_texture, -reflect(surfaceToView, normal));
+      outColor = color;
     }
     `;
-
+  
     
-    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
-    { 
-      ManyTextures.instance = this;
-      this.app = capp;
-      this.gl = cgl;      
-    }
+constructor(gl: WebGL2RenderingContext)
+{
+  if (this.twglprograminfo==null || this.twglprograminfo==undefined) this.twglprograminfo=new Array(2);
+    
+  this.twglprograminfo![0] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
+  this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
+}
 
-    main(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
-    {
-      this.Prepare(dictpar);
-      twgl.resizeCanvasToDisplaySize((this.gl.canvas as HTMLCanvasElement));   
-      var szobj=25.0;
-      this.cam=camhandler.Camera.createYUpCamera(this.gl,dictpar,szobj, this.app!);
-      this.cam.zoominVelocity = szobj/40.0;
-      requestAnimationFrame(() => this.render(0));
-      console.log("Animation requested.");
-    }
-
-
-    gui: datgui.GUI|null=null;
-
-    onChangeTextureCombo(value? : any)
-    {
-      var thisinstance = ManyTextures.instance!;
-      //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
-    //  thisinstance.currentTexture = value;
-    //  console.log("set currentTexture to ["+value+"]");
-    //  if (value=="clover") thisinstance.ny=8.0; else 
-    //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
-      thisinstance.app!.mouse.totaldelta = 0;
-    }
- 
-    onChangeColorValue(value? : any)
-    {
-      //console.log("we are in color=["+value+"]");
-      var thisinstance = ManyTextures.instance!;
-      if (thisinstance.gl!=null)
-      {
-        var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
-        var ccd= (cc as HTMLDivElement);
-        ccd.style.backgroundColor =  value;
-      }
-    }
-
-    public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
-    {
-        this.manyTexturesParameters=parameters;
-
-        var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
-        var ccd= (cc as HTMLDivElement);
-        ccd.style.backgroundColor =  this.manyTexturesParameters.color0;;
-   
-        // park the dat.gui box in the linksdiv below the links, in closed state
-        var gui = new datgui.GUI( { autoPlace: false } );
-        gui.domElement.id = 'gui_drawimagespace';
-        document.getElementById("linksdiv")!.append( gui.domElement);
-        gui.close();
-
-        // connect viewmodel
-        gui.remember(this.manyTexturesParameters);
-      
-        // Checkbox for animation on/off
-        gui.add(this.manyTexturesParameters, 'move');
-       
-        // Slider for animation speed
-        gui.add(this.manyTexturesParameters, 'speed').min(0.02).max(4).step(0.01);
-     
-        // Color dialog sets background color
-        var cel3 = gui.addColor(this.manyTexturesParameters, 'color0');
-        cel3.onChange( this.onChangeColorValue);
-       
-        // Combobox texture from accepted values
-       // var cel2 = gui.add(this.manyTexturesParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
-       // cel2.onChange( this.onChangeTextureCombo);
-           
-        gui.updateDisplay();
-        return gui;
-      }
-     
- 
-
-//--------------------------------------------------------------------------------------------------------------------------------------------------
+public extendGUI(gui: datgui.GUI)
+{
+// Slider for sling speed
+// Checkbox forward move animation on/off
+console.log("Manytextures scene extends GUI with movetail"+this.animationParameters!);
+ gui.add(this.animationParameters!, 'movetail');
+ //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
+ // Slider for shininess
+ //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+ gui.updateDisplay();
+}
 
 rand(min:number, max?: number) 
 {
@@ -347,18 +285,20 @@ public    CreateAllTextures(gl: WebGLRenderingContext, ctx: CanvasRenderingConte
 
 //=====================================================================================================================
 
-public Prepare(dictpar:Map<string,string>)
+public resizeCanvas(gl: WebGL2RenderingContext)
+{
+    twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+}  
+
+public Prepare(gl: WebGL2RenderingContext)
 {
     twgl.setDefaults({attribPrefix: "a_"});
   
-    const onePointProgramInfo = twgl.createProgramInfo(this.gl, [this.one_point_vs, this.one_point_fs]);
-    const envMapProgramInfo = twgl.createProgramInfo(this.gl, [this.env_map_vs, this.env_map_fs]);
-     
-      const shapes = [
-        twgl.primitives.createSphereBufferInfo(this.gl, 1, 24, 12),
-        twgl.primitives.createCubeBufferInfo(this.gl, 2),
-        twgl.primitives.createPlaneBufferInfo(this.gl, 2, 2),
-        twgl.primitives.createTruncatedConeBufferInfo(this.gl, 1, 0, 2, 24, 1),
+    const shapes = [
+        twgl.primitives.createSphereBufferInfo(gl, 1, 24, 12),
+        twgl.primitives.createCubeBufferInfo(gl, 2),
+        twgl.primitives.createPlaneBufferInfo(gl, 2, 2),
+        twgl.primitives.createTruncatedConeBufferInfo(gl, 1, 0, 2, 24, 1),
       ];
 
     // A circle on a canvas
@@ -412,9 +352,9 @@ public Prepare(dictpar:Map<string,string>)
         cubeFaceCanvases.push(canvas);
       }
     }    
-    if (this.gl && this.ctx2D && cubemapCtx) 
+    if (gl && this.ctx2D && cubemapCtx) 
     {
-        this.textures = this.CreateAllTextures(this.gl, this.ctx2D!, cubemapCtx, cubeFaceCanvases);    
+        this.textures = this.CreateAllTextures(gl, this.ctx2D!, cubemapCtx, cubeFaceCanvases);    
         console.log("All textures created."); 
     }
 
@@ -446,7 +386,7 @@ public Prepare(dictpar:Map<string,string>)
          switch (renderType) {
          case 0:  // checker
            shape = shapes[ii % shapes.length];
-           programInfo = onePointProgramInfo;
+           programInfo = this.twglprograminfo![0];
            uniforms = {
              u_diffuseMult: chroma.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
              u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
@@ -458,7 +398,7 @@ public Prepare(dictpar:Map<string,string>)
            break;
          case 1:  // yokohama
            shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
-           programInfo = envMapProgramInfo;
+           programInfo = this.twglprograminfo![1];
            uniforms = {
              u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
              u_viewInverse:m4.identity(), // this.camera,
@@ -485,50 +425,40 @@ public Prepare(dictpar:Map<string,string>)
         } // for
       } // if textures!=null
 
-  } // Prepare
 
-  //===========================================================================================================
-
-  render(time: number) {
-    
-    if (this.gl==null || this.textures==null || this.ctx2D==null) return;
-
-    // prepare window
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.enable(this.gl.BLEND);
-    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    
-    // update the dynamic texture canvas (grow circle)
-    this.drawCircle2D( time);
-    twgl.setTextureFromElement(this.gl, this.textures.fromCanvas, this.ctx2D.canvas);
-
-    // refer camera to Identity world
-    var world1 = m4.identity();
-    //this.cam.invworldmat = m4.inverse(world1);
-    this.cam!.CamHandlingYUp(this.gl, this.app!, 1.0, 1.0);
-  
-    // rotate the objects local worlds
-    this.drawItems.forEach((obj) => {
-       const uni = obj.obj.uniforms;
-       const world = m4.identity(); // local worlds turn
-       m4.translate(world, obj.obj.translation, world);
-       if (this.manyTexturesParameters.move)
-       {
-         m4.rotateY(world, this.manyTexturesParameters.speed* time * obj.obj.ySpeed, world);
-         m4.rotateZ(world, this.manyTexturesParameters.speed*time * obj.obj.zSpeed, world);
-       }
-       uni.u_world= world; // this object's world     
-       uni.u_worldInverseTranspose = m4.transpose(m4.inverse(world1)); 
-       m4.multiply(this.cam!.viewProjection, world, uni.u_worldViewProjection);  // this object's matrix
-    });
-
-    // let twgl draw each drawObject
-    twgl.drawObjectList(this.gl, Tdrawitem.getTwglDrawObjects( this.drawItems));
-
-    // .. next
-    requestAnimationFrame(() => this.render(time+this.dtime));
   }
+    
+  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo)
+    { 
+      this.Prepare(gl);
+    }
 
+  public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
+  { 
+        // update the dynamic texture canvas (shrink and grow circle)
+        if (this.animationParameters!.movetail) this.drawCircle2D( time * 0.01); else this.drawCircle2D( 1.0);
+        twgl.setTextureFromElement(gl, this.textures!.fromCanvas, this.ctx2D!.canvas);
+    
+        // refer camera to Identity world
+        var world1 = m4.identity();
+       
+        // rotate the objects local worlds
+        this.drawItems.forEach((obj) => {
+           const uni = obj.obj.uniforms;
+           const world = m4.identity(); // local worlds turn
+           m4.translate(world, obj.obj.translation, world);
+           if (this.animationParameters!=null)
+           if (this.animationParameters.b.move)
+           {
+             m4.rotateY(world,this.animationParameters.b.speed* time * 0.05 * obj.obj.ySpeed, world);
+             m4.rotateZ(world, this.animationParameters.b.speed*time * 0.05 * obj.obj.zSpeed, world);
+           }
+           uni.u_world= world; // this object's world     
+           uni.u_worldInverseTranspose = m4.transpose(m4.inverse(world1)); 
+           m4.multiply(cam.viewProjection, world, uni.u_worldViewProjection);  // this object's matrix
+        });
+    
+        // let twgl draw each drawObject
+        twgl.drawObjectList(gl, Tdrawitem.getTwglDrawObjects( this.drawItems));    
+  }
 }

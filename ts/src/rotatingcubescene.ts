@@ -1,15 +1,23 @@
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
+import * as datgui from "dat.gui";
+
 import * as camhandler from "./camhandler"   // camera projection
 import * as scene from "./scene"
 
-import { TAnimation1Parameters }  from "./animation1"
+import { TAnimation1Parameters }  from "./scene"
 
 export class RotatingCubeScene implements scene.SceneInterface
 {
     animationParameters: TAnimation1Parameters | undefined;
+    twglprograminfo: twgl.ProgramInfo[]|null=null;  // (not used in this animation)
 
+    sceneenv:number = 2;
+    positionLocation: number | undefined; // WebGLUniformLocation | undefined;
+    cameraPosition: [number,number,number] | undefined
+
+ 
     matrixLocation:WebGLUniformLocation =0;
     textureLocation1:WebGLUniformLocation =0;
     textureLocation2:WebGLUniformLocation =0;
@@ -67,6 +75,18 @@ export class RotatingCubeScene implements scene.SceneInterface
       //outColor = texture(u_texture2, v_texcoord);
     }
     `;
+
+    public extendGUI(gui: datgui.GUI)
+    {
+    // Slider for sling speed
+    gui.add(this.animationParameters!, 'movetail');
+
+     gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
+     // Slider for shininess
+     //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+     gui.updateDisplay();
+    }
+
 
     static degToRad(d: number) 
     {
@@ -176,10 +196,10 @@ export class RotatingCubeScene implements scene.SceneInterface
       this.ctime = time;
 
       // Animate the rotation
-      if (this.animationParameters!.b.movetail)
+      if (this.animationParameters!.movetail)
       {
         this.modelYRotationRadians += 0.1* this.animationParameters!.b.speed * deltaTime;
-        this.modelXRotationRadians += 0.1* this.animationParameters!.b.speed * deltaTime;   
+        this.modelXRotationRadians += 0.005* this.animationParameters!.b.speed * this.animationParameters!.sling * deltaTime;   
       }  
       var matrix = m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
       matrix = m4.rotateY(matrix, this.modelYRotationRadians);            

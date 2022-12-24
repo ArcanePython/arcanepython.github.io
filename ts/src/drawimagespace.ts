@@ -123,7 +123,7 @@ export class drawimagespace extends twglbaseapp
         var thisinstance = drawimagespace.instance!;
         if (thisinstance.gl!=null)
         {
-          var cc = thisinstance.gl!.canvas.parentNode;
+          var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
           var ccd= (cc as HTMLDivElement);
           ccd.style.backgroundColor =  value;
         }
@@ -133,7 +133,7 @@ export class drawimagespace extends twglbaseapp
       {
         this.imagespaceParameters=parameters;
         
-        var cc = this.gl!.canvas.parentNode;
+        var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
         var ccd= (cc as HTMLDivElement);
         ccd.style.backgroundColor =  this.imagespaceParameters.color0;
   
@@ -217,7 +217,7 @@ export class drawimagespace extends twglbaseapp
         if (this.textures!=null)
         {       
             var gl: WebGL2RenderingContext = this.gl!;
-            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
     
             gl.useProgram(this.program![0]);
             gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 

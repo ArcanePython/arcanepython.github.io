@@ -5,7 +5,8 @@ import * as baseapp from "./baseapp";
 export class twglbaseapp extends baseapp.baseapp
 {
     public twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
-    public twglprogram: twgl.ProgramInfo[]|null=null;  // there can be several
+   
+    //public twglprogram: twgl.ProgramInfo[]|null=null;  // there can be several
   
     public environmentBufferInfo:twgl.BufferInfo | undefined;
  
@@ -21,37 +22,53 @@ export class twglbaseapp extends baseapp.baseapp
         else
         if (scene==-1)
         {
-            // external CubeMap texture hosted by Gregg's webgl2fundamentals
-            var texture = twgl.createTexture(gl, {
-                target: gl.TEXTURE_CUBE_MAP,
-                src: [
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',  
-                'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',  
-                ],
-                min: gl.LINEAR_MIPMAP_LINEAR,
-            });
-            return texture;
+          // external CubeMap texture hosted by Gregg's webgl2fundamentals
+          var posxname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg'
+          var negxname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg'
+          var posyname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg'
+          var negyname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg'
+          var poszname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg'
+          var negzname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg'
+       
+           // local CubeMap texture copied from Gregg's webgl2fundamentals
+          posxname = require("./images/yokohama/posx.jpg")
+          negxname = require("./images/yokohama/negx.jpg")
+          posyname = require("./images/yokohama/posy.jpg")
+          negyname = require("./images/yokohama/negy.jpg")
+          poszname = require("./images/yokohama/posz.jpg")
+          negzname = require("./images/yokohama/negz.jpg")
+      
+          // local CubeMap texture copied from Gregg's webgl2fundamentals
+          posxname = require("./images/yokohama/posx.jpg")
+          negxname = require("./images/yokohama/negx.jpg")
+          posyname = require("./images/yokohama/posy.jpg")
+          negyname = require("./images/yokohama/negy.jpg")
+          poszname = require("./images/yokohama/posz.jpg")
+          negzname = require("./images/yokohama/negz.jpg")
+      
+          var texture = twgl.createTexture(gl, {
+              target: gl.TEXTURE_CUBE_MAP,
+              src: [posxname,negxname,posyname,negyname,poszname,negzname],
+              min: gl.LINEAR_MIPMAP_LINEAR,
+          });
+          return texture;
         } 
         return null;
     }
-
-
-    
+   
     private initprograminfos(gl: WebGL2RenderingContext, reportdiv:string, shaders: {vs:string,fs:string}[])
     {
         if (this.twglprograminfo==null || this.twglprograminfo==undefined) this.twglprograminfo=new Array(shaders.length);
         var i = 0;
         shaders.forEach((val) => {
-          var p = twgl.createProgramInfo(gl,[val.vs,val.fs]);       
+          var p = (val.vs=='' || val.fs=='')?null: twgl.createProgramInfo(gl,[val.vs,val.fs]);       
           if (p!=null)
           {
             console.log("Init program#"+i+" with shaders["+i+"]\nvs:["+shaders[i].vs+"\nfs:["+shaders[i].fs+"]");
-            this.twglprograminfo![i++]=p;         
-          } else document.getElementById(reportdiv)!.innerHTML ="gl.createProgram #1 fails.";
+            this.twglprograminfo![i]=p;         
+          } else if ((val.vs=='' || val.fs=='')) console.log("gl.createProgram #"+i+" shaders empty.");
+                   else document.getElementById(reportdiv)!.innerHTML ="gl.createProgram #1 fails.";
+          i++;
         });
         return false;
     }     
@@ -60,11 +77,10 @@ export class twglbaseapp extends baseapp.baseapp
 
     protected maininfo(gl: WebGL2RenderingContext, dictpar:Map<string,string>, vs: string, fs: string)
     {
-        if (this.initprograminfos(gl,"cdiv",[{vs,fs}]) && this.twglprograminfo && this.gl)  
-        {
-            twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-            console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-        }
+        if (vs.length>0 && fs.length>0)
+          if (this.initprograminfos(gl,"cdiv",[{vs,fs}]) && this.twglprograminfo && this.gl) {}        
+        twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+        console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);        
     }
 
     protected maininfos(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
