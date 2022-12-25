@@ -96,6 +96,9 @@
 }
 
 </style>
+<!-- link rel="stylesheet" href="https://arcanepython.github.io/assets/css/style.css?v=310b88372171c8ac49d89425753ada27e9196b5e" -->
+<link rel="stylesheet" href="/index.1303bb05.css">
+
 <meta name="viewport" content="width=device-width">
 </head>
  
@@ -106,7 +109,7 @@
         <div class="item3" id="canvasdiv" style="background-color: #aa3838; display: block">
             <canvas id="c" style="width: 100%" tabindex="1"></canvas>
         </div>
-        <div id="linksdiv" style="background-color: azure" class="item5">
+        <div id="linksdiv" style="text-align: left; background-color: azure; padding-left: 20px" class="item5">
         </div>
         <div id="app" style="background-color: #fff8dc">Title</div>
         <div id="eye"></div>  
@@ -122,15 +125,16 @@ var cdivdiv = document.getElementById("cdiv");
 var appdiv = document.getElementById("app");
 var eyediv = document.getElementById("eye");
 function lnk(appendlink, appenddescrip) {
-    return '<a href="' + appendlink + '">' + appenddescrip + "</a></br>";
+    return '<a href="' + appendlink + '">' + appenddescrip + "</a><br/>";
 }
 cdivdiv.innerHTML = "";
 appdiv.innerHTML = "";
 eyediv.innerHTML = "";
 projdiv.innerHTML = "";
 var str = `
-        <br><br>Stills based on .OBJ<br>
-        <p>`;
+        <p>
+        Stills based on .OBJ<br>
+        `;
 var subdir = "dist"; // current parcel dist
 var commonjsparcel = "index.73eb0017.js"; // current parcel js
 var commonhtml = "index.html"; // this html (do not use dist\ parcel's)
@@ -145,42 +149,47 @@ str += lnk(commonhtml + "?stone&radius0=4&hx=0.8&hy=0.5", "Stone");
 str += lnk(commonhtml + "?plane&radius0=25&hx=0.8&hy=0.5", "Plane");
 str += lnk(commonhtml + "?greenhouse", "Greenhouse");
 str += `
-        </p><p>
+        <p>
         Animations (bone model)<br>
-        </p><p>
         `;
-str += lnk(commonhtml + "?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6", "Triangle mesh");
+// str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
 str += lnk(commonhtml + "?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39", "Zelenski whales");
 str += lnk(commonhtml + "?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1", "Ukrainian Fish");
 str += `
-        </p><p>
-        Animations (others)<br>
-        </p>
+        <p>
+        Animations (based on some of Gregg's examples)<br>
         `;
-str += lnk(commonhtml + "?animation1&radius0=80&hx=20&hy=10", "Mixed texture");
-str += lnk(commonhtml + "?animation2&radius0=360&hx=20&hy=-20", "Gregg's spotlight F");
-str += lnk(commonhtml + "?textures&radius0=50", "Gregg's Textures");
-str += lnk(commonhtml + "?skyboxcube", "Gregg's skycube");
-str += lnk(commonhtml + "?skybox", "Environment camera");
+str += lnk(commonhtml + "?animation1&radius0=80&hx=20&hy=10", "Mixed Texture Scene");
+str += lnk(commonhtml + "?animation5&radius0=50", "Many Textures Scene");
+str += lnk(commonhtml + "?animation2a&radius0=250&hx=180&hy=0", "Directedlight Scene");
+str += lnk(commonhtml + "?animation2b&radius0=250&hx=0&hy=0", "Pointlight Scene");
+str += lnk(commonhtml + "?animation2c&radius0=250&hx=0&hy=0", "Spotlight Scene");
+//str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
+str += lnk(commonhtml + "?animation4&radius0=60&hx=0&hy=0", "Skybox Scene");
+str += lnk(commonhtml + "?animation6&radius0=60&hx=80&hy=0", "ObjectList Scene");
+str += lnk(commonhtml + "?animation7&radius0=60&hx=80&hy=0", "Instanced Scene");
+//str+=lnk(commonhtml+"?skybox","Skybox");
+//str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
 str += `
-        </p><p>
-        Texture experiments<br>
-        </p>
+        <p>
+        Twxture experiments<br>
         `;
-str += lnk("?drawimagespace", "draw image space");
-linksdiv.innerHTML = str + "<br><br> "; // (neat way to do it on a server, but Parcel dvp Server won't run this..)
- //document.addEventListener('DOMContentLoaded', () => {
- //document.head.appendChild(document.createElement('script'))
- //     .src = subdir + "/" + commonjsparcel;
- //});
+str += lnk(commonhtml + "?skyboxcube", "Gregg's Skycube");
+str += lnk(commonhtml + "?drawinstanced&radius0=60&hx=0&hy=0", "Gregg's Instanced");
+str += lnk("?drawimagespace", "Image space");
+linksdiv.innerHTML = str + "<p>"; // (neat way to do it on a server, but Parcel dvp Server won't run this..)
+ //  document.addEventListener('DOMContentLoaded', () => {
+ //  document.head.appendChild(document.createElement('script'))
+ //       .src = subdir + "/" + commonjsparcel;
+ //  });
 
 </script>       
 <!-- use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
-<script src="/index.73eb0017.js" defer=""></script>
+<script src="/index.5710aea2.js" defer=""></script>
 
 <!-- when above event listener is not used, deploy from /dist directly. Update below link on each release -->
-<!-- script src="dist/index.73eb0017.js"></script -->
-         
+<!--- script src="dist/index.73eb0017.js"></script -->
+<!--- script src="dist/index.7ece9f8d.js"></script -->        
 </body>
 </html>
       
