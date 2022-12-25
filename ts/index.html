@@ -163,22 +163,26 @@
         str+=lnk(commonhtml+"?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Ukrainian Fish");
         str+=`
         </p><p>
-        Animations (others)<br>
-        </p>
+        Animations (based on some of Gregg's examples)<br>
         `;
-        str+=lnk(commonhtml+"?animation1&radius0=80&hx=20&hy=10","Mixed texture");
-        str+=lnk(commonhtml+"?animation2&radius0=360&hx=20&hy=-20","Gregg's spotlight F");
-        str+=lnk(commonhtml+"?animation6&radius0=60&hx=80&hy=0","ObjectList Scene1");
-      
-        str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
-        str+=lnk(commonhtml+"?skyboxcube","Gregg's skycube");
-        str+=lnk(commonhtml+"?skybox","Environment camera");
-          str+=`
-        </p><p>
+        str+=lnk(commonhtml+"?animation1&radius0=80&hx=20&hy=10","Mixed Texture Scene");
+        str+=lnk(commonhtml+"?animation5&radius0=50","Many Textures Scene");
+        str+=lnk(commonhtml+"?animation2a&radius0=250&hx=180&hy=0","Directedlight Scene");
+        str+=lnk(commonhtml+"?animation2b&radius0=250&hx=0&hy=0","Pointlight Scene");
+        str+=lnk(commonhtml+"?animation2c&radius0=250&hx=0&hy=0","Spotlight Scene");
+        //str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
+        str+=lnk(commonhtml+"?animation4&radius0=60&hx=0&hy=0","Skybox Scene");
+        str+=lnk(commonhtml+"?animation6&radius0=60&hx=80&hy=0","ObjectList Scene");
+        str+=lnk(commonhtml+"?animation7&radius0=60&hx=80&hy=0","Instanced Scene");
+        //str+=lnk(commonhtml+"?skybox","Skybox");
+        //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
+        str+=`
+        <p>
         Texture experiments<br>
-        </p>
         `;
-        str+=lnk("?drawimagespace","draw image space");
+        str+=lnk(commonhtml+"?skyboxcube","Gregg's Skycube");
+        str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
+        str+=lnk("?drawimagespace","Image space");
         linksdiv.innerHTML =  str + "<br><br> ";
 
         var sym = "MSFT";
