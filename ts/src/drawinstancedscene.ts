@@ -66,7 +66,15 @@ matrices: Float32Array[] = [];
 matrixBuffer: WebGLBuffer | undefined;
 matrixData: Float32Array| undefined;
 
-  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters,  p: twgl.ProgramInfo) 
+public constructor(gl: WebGL2RenderingContext)
+{
+  this.twglprograminfo=new Array(2);   
+  console.log("=> scene constructor instanced")
+  this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+  console.log("<= scene constructor instanced")
+}
+
+  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo) 
   {
     twgl.setAttributePrefix("a_");
   

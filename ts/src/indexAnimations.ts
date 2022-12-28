@@ -16,9 +16,12 @@ import * as rotatingcubescene from "./rotatingcubescene";
 import * as spotlightscene from "./spotlightscene";
 import * as pointlightscene from "./pointlightscene";
 import * as directedlightscene from "./directedlightscene";
+import * as lightscene from "./lightscene";
 import * as objectlist from "./objectlist";
 import * as objectlistscene from "./objectlistscene";
 import * as drawinstanced from "./drawinstanced";
+import * as canvas3dtexture from "./canvas3dtexture";
+import * as canvas3dtexturescene from "./canvas3dtexturescene";
 import * as drawinstancedscene from "./drawinstancedscene";
 
 import * as skyboxscene from "./skyboxscene";
@@ -34,6 +37,8 @@ const ShowSkyBox     = 4;
 const ShowAnimation1 = 5; 
 
 var selectedShow    = ShowAnimation1;
+
+var cdiv = 'c';  // name of canvas accessed by gl
 
 //=== DISPATCH TASKS =================================================================================================================
 
@@ -94,116 +99,113 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
 {
   // Default parameters for all Animation1 scenes
   var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
-  var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117,  shininess:11.0 };
+  var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0 };
  
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
   if (dictPars?.get("animation1")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new rotatingcubescene.RotatingCubeScene(), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new rotatingcubescene.RotatingCubeScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
-  } 
-  else if (dictPars?.get("animation2a")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new directedlightscene.DirectedLightScene(), dictPars);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  }  
+  }
   else if (dictPars?.get("animation2b")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new pointlightscene.PointLightScene(), dictPars);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  } 
-  else if (dictPars?.get("animation2c")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new spotlightscene.SpotLightScene(), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new lightscene.LightScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   } 
   else if (dictPars?.get("animation4")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   } 
   else if (dictPars?.get("animation5")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new manytexturescene.ManyTexturesScene(gl), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new manytexturescene.ManyTexturesScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   }  
   else
   if (dictPars?.get("animation6")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new objectlistscene.ObjectListScene(), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new objectlistscene.ObjectListScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   } 
-  else
-  if (dictPars?.get("animation7")!=undefined)
+  else if (dictPars?.get("animation7")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new drawinstancedscene.DrawInstancedScene(), dictPars);
+    var mta1 = new animation1.Animation1(gl, app, new drawinstancedscene.DrawInstancedScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
-  } 
-
-  //--- Animations with a specific parameter set ----------------------------------------------------------------------------------------------------------------------------------
-  
-  else
-  if (dictPars?.get("objectlist")!=undefined)
+  }  
+  else if (dictPars?.get("animation8")!=undefined)
   {
-    var mtao = new objectlist.ObjectList();
-    mtao.main(gl);
-  } 
-  else
-  if (dictPars?.get("drawinstanced")!=undefined)
+    var mta1 = new animation1.Animation1(gl, app, new canvas3dtexturescene.Canvas3dTextureScene(gl), dictPars, cdiv);
+    mta1.main(gl, dictPars);
+    mta1.initGUI(defaultParameters);
+  }  
+  //--- Animations with a specific parameter set based on twglbaseapp ------------------------------------------------------------------------------------------------------------------
+  else 
+  if (dictPars?.get("drawimagespace")!=undefined)
   {
-    var mtai = new drawinstanced.DrawInstanced();
-    mtai.main(gl);
-  } 
-  else
-   if (dictPars?.get("drawimagespace")!=undefined)
-  {
-    var ims = new drawimagespace.drawimagespace(gl,app,dictPars); 
+    var ims = new drawimagespace.drawimagespace(gl,app,dictPars,cdiv); 
     console.log("imscreated.");
     ims.main(gl,dictPars);
     console.log("ins.main done.");
     ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2',color0: "#D0A010"  }); 
   } 
-  else if (dictPars?.get("textures")!=undefined)
-  {
-    var mt = new manytextures.ManyTextures(gl, app, dictPars);
-    mt.main(gl, dictPars);
-    mt.initGUI({ move: true,speed: 0.4,texture: 'geotriangle2', color0: "#A0A0A0",});
-  } 
   else  if (dictPars?.get("skeleton")!=undefined)
   {
-    var sk = new skeleton.Skeleton(gl, app, dictPars!);
+    var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
     var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
     sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
     sk.main(gl, dictPars);
   } 
   else if (dictPars?.get("fish")!=undefined)
   {  
-    var fa = new fish.FishAnimation(gl, app, dictPars!);
+    var fa = new fish.FishAnimation(gl, app, dictPars!, cdiv);
     var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
     fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
     fa.main(gl, dictPars);
   } 
   else if (dictPars?.get("skyboxcube")!=undefined)
   {  
-    var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars); 
+    var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
     sbc.main(gl, dictPars);
     sbc.initGUI({movecube:true, moveenv:true, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
   } 
   else if (dictPars?.get("skybox")!=undefined)
   {  
-    var sb  = new skybox.skybox(gl,app,dictPars); 
+    var sb  = new skybox.skybox(gl,app,dictPars, cdiv); 
     sb.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
     sb.main(gl,dictPars);
   } 
+   //--- Animations with a specific parameter set ----------------------------------------------------------------------------------------------------------------------------------
+   else
+   if(dictPars?.get("canvas3dtexture")!=undefined)
+   {
+     var mtat = new canvas3dtexture.Canvas3dTexture();
+     mtat.main(gl);
+   }
+   else if (dictPars?.get("objectlist")!=undefined)
+   {
+     var mtao = new objectlist.ObjectList();
+     mtao.main(gl);
+   } 
+   else if (dictPars?.get("drawinstanced")!=undefined)
+   {
+     var mtai = new drawinstanced.DrawInstanced();
+     mtai.main(gl);
+   } 
+   else if (dictPars?.get("textures")!=undefined)
+   {
+     var mt = new manytextures.ManyTextures(gl, app, dictPars);
+     mt.main(gl, dictPars);
+     mt.initGUI({ move: true,speed: 0.4,texture: 'geotriangle2', color0: "#A0A0A0",});
+   } 
+  
   else  // any other, take first argument as OBJ/MTL to show
   {
     var oi = new objmtlimport.ObjMtlImport(gl, app, dictPars!);
@@ -216,9 +218,9 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
 
 function main() 
 {   
+ // var canvas: HTMLCanvasElement = document.querySelector("#c")!;
   var canvas: HTMLCanvasElement = document.querySelector("#c")!;
- // const gl = someCanvas.getContext('webgl', {powerPreference: 'high-performance'});
-  var gl: WebGL2RenderingContext|null = canvas.getContext("webgl2"); //,{ premultipliedAlpha: false, powerPreference: 'high-performance' } );
+  var gl: WebGL2RenderingContext|null = canvas.getContext("webgl2", {premultipliedAlpha: false}); // { preserveDrawingBuffer: true }); //,{ premultipliedAlpha: false, powerPreference: 'high-performance' } );
   if (canvas && gl)
   {
     var app: mtls.MouseListener | undefined; 

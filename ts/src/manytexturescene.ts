@@ -52,7 +52,7 @@ export class ManyTexturesScene implements scene.SceneInterface
   animationParameters: TAnimation1Parameters | undefined;
   scenesize: number = 40;
 
-  sceneenv:number = -1;
+  sceneenv:number = 2;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
       
 
@@ -148,10 +148,9 @@ export class ManyTexturesScene implements scene.SceneInterface
     
 constructor(gl: WebGL2RenderingContext)
 {
-  if (this.twglprograminfo==null || this.twglprograminfo==undefined) this.twglprograminfo=new Array(2);
-    
-  this.twglprograminfo![0] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
-  this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
+  this.twglprograminfo=new Array(3);   
+  this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
+  this.twglprograminfo![2] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
 }
 
 public extendGUI(gui: datgui.GUI)
@@ -285,10 +284,7 @@ public    CreateAllTextures(gl: WebGLRenderingContext, ctx: CanvasRenderingConte
 
 //=====================================================================================================================
 
-public resizeCanvas(gl: WebGL2RenderingContext)
-{
-    twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-}  
+public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }  
 
 public Prepare(gl: WebGL2RenderingContext)
 {
@@ -386,7 +382,7 @@ public Prepare(gl: WebGL2RenderingContext)
          switch (renderType) {
          case 0:  // checker
            shape = shapes[ii % shapes.length];
-           programInfo = this.twglprograminfo![0];
+           programInfo = this.twglprograminfo![1];
            uniforms = {
              u_diffuseMult: chroma.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
              u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
@@ -398,7 +394,7 @@ public Prepare(gl: WebGL2RenderingContext)
            break;
          case 1:  // yokohama
            shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
-           programInfo = this.twglprograminfo![1];
+           programInfo = this.twglprograminfo![2];
            uniforms = {
              u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
              u_viewInverse:m4.identity(), // this.camera,
@@ -428,13 +424,19 @@ public Prepare(gl: WebGL2RenderingContext)
 
   }
     
-  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo)
+  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo)
     { 
       this.Prepare(gl);
     }
 
   public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
   { 
+  //  this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
+  //    Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] : [4.0,0.0,0.0];
+  //  if (!this.animationParameters?.b.move)
+  //    this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
+
+
         // update the dynamic texture canvas (shrink and grow circle)
         if (this.animationParameters!.movetail) this.drawCircle2D( time * 0.01); else this.drawCircle2D( 1.0);
         twgl.setTextureFromElement(gl, this.textures!.fromCanvas, this.ctx2D!.canvas);

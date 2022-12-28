@@ -10,8 +10,11 @@ export type TbaseappParameters = {
     speed: number
 }
 
-export class baseapp
-{
+export var instance: BaseApp|null=null;
+
+export class BaseApp
+{    
+ 
     baseappParameters: TbaseappParameters = {
         move: false,
         speed: 0.04,
@@ -20,8 +23,6 @@ export class baseapp
 
     public gl: WebGL2RenderingContext|null=null;
     public app:mtls.MouseListener|null=null;
-
-    public program: WebGLProgram[]|null=null;  // there can be several
 
     // textures repository
     public textureaspects:Map<string,number> = new Map<string,number>();
@@ -34,12 +35,11 @@ export class baseapp
  
     // environment skybox
     public vaoEnvironment: WebGLVertexArrayObject | undefined;
-  
-    public static instance: baseapp|null=null;
+    viewDirectionProjectionMatrix: m4.Mat4 | undefined;
 
-    protected constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+    protected constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, divname: string)
     {
-        baseapp.instance = this;
+        instance = this;
         this.cameraTarget = [0,0.5,0];
         this.cameraPosition = [4,0,0];
         document.getElementById('cdiv')!.innerHTML = "finding webgl2...";
@@ -59,12 +59,12 @@ export class baseapp
     
     onChangeColorValue(value? : any)
     {
-      var thisinstance = baseapp.instance!;
+      var thisinstance = instance!;
       if (thisinstance.gl!=null)
       {
         var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
         var ccd= (cc as HTMLDivElement);
-        ccd.style.backgroundColor =  value;        
+      //  ccd.style.backgroundColor =  value;        
       }
     }
 
@@ -97,7 +97,8 @@ export class baseapp
         cel3.onChange( this.onChangeColorValue);
         return gui;
     }
-    
+
+ /*   
     private compileandconnectshaders(gl: WebGL2RenderingContext, program: WebGLProgram, vs: string, fs: string, reportdiv: string)
     {
         var serr:string="";
@@ -157,8 +158,8 @@ export class baseapp
         });
         return false;
     }     
-
-    
+*/
+  /*  
   resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) 
   {
     // Lookup the size the browser is displaying the canvas in CSS pixels.
@@ -174,16 +175,15 @@ export class baseapp
     return needResize;
   }
 
-    protected main(gl: WebGL2RenderingContext, dictpar:Map<string,string>, vs: string, fs: string)
+  protected main(gl: WebGL2RenderingContext, dictpar:Map<string,string>, vs: string, fs: string)
     {
         if (this.initprograms(gl,"cdiv", [{vs, fs}]) && this.program && this.gl)
         {
             this.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
             console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-        }
+        } 
     }
-    
-/*
+
     protected mains(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
     {
         if (this.initprograms(gl,"cdiv",shaders) && this.program && this.gl)
@@ -257,7 +257,7 @@ export class baseapp
         gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
     }
 
-    protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number): WebGLTexture|null
+    protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number, textureReadyCallback: (a:any, t:WebGLTexture)=>void | undefined ): WebGLTexture|null
     {        
         var mytexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
@@ -331,8 +331,9 @@ export class baseapp
          
            // this.requestCORSIfNotSameOrigin(image, url)
             image.src = url;
-            image.addEventListener('load', function() {
-                    // Now that the image has loaded make copy it to the texture.
+            image.addEventListener('load', () => {
+                        //gl.useProgram(this.program![0]);
+                        // Now that the image has loaded make copy it to the texture.
                         gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
                         gl.texImage2D(target, level, internalFormat, format, type, image);
                         // lx note: this is too early! console yields a warning..  
@@ -342,19 +343,25 @@ export class baseapp
                         if (++nImage==faceInfos.length)
                         {
                             gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);           
+                            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);      
+                            if (textureReadyCallback != undefined)    
+                            {
+                                textureReadyCallback(0, mytexture!);
+                            } 
                         }
                     });
         });
         return mytexture;
     }
 
+    /*
     private requestCORSIfNotSameOrigin(img: HTMLImageElement, url: string) {
         if ((new URL(url, window.location.href)).origin !== window.location.origin) {
         img.crossOrigin = "";
         }
     }
-
+    */
+/*
     public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
     // env map
     {
@@ -378,16 +385,35 @@ export class baseapp
         return this.viewDirectionProjectionMatrix;
         //
     }
+*/
+    public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
+    // env map
+    {
+        // Build a projection matrix.
+        var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+        var projectionMatrix = m4.perspective(fov, aspect, 1, 2000);
+      
+        // Build a view matrix.
+        var up = [0, 1, 0];
+        var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        var viewMatrix = m4.inverse(cameraMatrix);
+       
+        // viewDirectionMatrix is viewMatrix without translation (direction only)
+        var viewDirectionMatrix = m4.copy(viewMatrix);
+        viewDirectionMatrix[12] = 0;
+        viewDirectionMatrix[13] = 0;
+        viewDirectionMatrix[14] = 0;
+        //
+        this.viewDirectionProjectionMatrix =  m4.multiply( projectionMatrix!, viewDirectionMatrix!);
 
-    worldMatrix: m4.Mat4 | undefined;
-    viewMatrix: m4.Mat4 | undefined;
-    projectionMatrix: m4.Mat4 | undefined;
-    viewDirectionMatrix: m4.Mat4 | undefined;
-    viewDirectionProjectionMatrix: m4.Mat4 | undefined;
-
+        return this.viewDirectionProjectionMatrix;
+        //
+    }
+ 
     public renderenvironmentmap(gl: WebGL2RenderingContext, fov:number, vao: WebGLVertexArrayObject, uniformlocs: {invproj: WebGLUniformLocation ,loc:WebGLUniformLocation }, time: number)
     {          
-        gl.bindVertexArray(vao);
+       // gl.bindVertexArray(vao);
+       gl.bindVertexArray(this.vaoEnvironment!);
         this.computeprojectionmatrices(gl,   fov);
         gl.depthFunc(gl.LESS);  // use the default depth test
        // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);

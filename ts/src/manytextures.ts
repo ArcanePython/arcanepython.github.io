@@ -157,7 +157,7 @@ export class ManyTextures
       this.Prepare(dictpar);
       twgl.resizeCanvasToDisplaySize((this.gl.canvas as HTMLCanvasElement));   
       var szobj=25.0;
-      this.cam=camhandler.Camera.createYUpCamera(this.gl,dictpar,szobj, this.app!);
+      this.cam=camhandler.Camera.createCamera(this.gl,dictpar, camhandler.Camera.CamYUp, szobj, this.app!);
       this.cam.zoominVelocity = szobj/40.0;
       requestAnimationFrame(() => this.render(0));
       console.log("Animation requested.");

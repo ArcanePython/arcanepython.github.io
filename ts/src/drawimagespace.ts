@@ -2,52 +2,10 @@ import * as twgl from "twgl.js";          // Lib: Gregg's work
 import * as datgui from "dat.gui";        // Lib: dat.gui
 import * as mtls from "./mouselistener";  // connect events for mouse movement, buttons and wheel
 
-import { baseapp } from "./baseapp";      // convenient base class initializing gl2 and program(s)
+import { BaseApp } from "./baseapp";      // convenient base class initializing gl2 and program(s)
 import { twglbaseapp } from "./twglbaseapp";      // convenient base class initializing gl2 and program(s)
 
-const vs = `#version 300 es
-        precision highp float;
-        precision highp int;   
-        void main()
-        {
-          //show smaller, centered triangle gl_Position = vec4(1.f * float(uint(gl_VertexID) % 2u) - 0.5f, 1.f*float(uint(gl_VertexID) / 2u) - 0.5f, 1.0, 1.0);
-          //show half viewport triangle gl_Position = vec4(2.f * float(uint(gl_VertexID) % 2u) - 1.f, 2.f*float(uint(gl_VertexID) / 2u) - 1.f, 1.0, 1.0);
-          //show (the same) half viewport triangle  gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 2.0f, 4.f*float(uint(gl_VertexID) / 2u) - 2.0f, 1.0, 1.0);
-          //show covering right side of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) - 1.0f, 1.0, 1.0);
-          //show covering upper right square of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) + 0.0f, 1.0, 1.0);
-          //show covering  entire viewport
-          gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 1.0f,
-                             4.f * float(uint(gl_VertexID) / 2u) - 1.0f, 
-                             1.0, 1.0);       
-        }`;
 
-        const fs = `#version 300 es
-        precision highp float;
-        precision highp int;
-        uniform sampler2D diffuse;
-        uniform vec2 u_imageSize;
-        uniform int u_teal; 
-        uniform int u_xshift; 
-        uniform int u_yshift; 
-        uniform float u_aspect; 
-        uniform float u_xzoomoffset    ;
-        uniform float u_yzoomoffset    ;
-          out vec4 color;
-        void main()
-        {
-          float px = u_aspect *(gl_FragCoord.x-float(u_xshift));
-          float py = gl_FragCoord.y-float(u_yshift);
-          px-=u_xzoomoffset;
-          py-=u_yzoomoffset;
-          vec2 texoffset1 = vec2(  px, py) / u_imageSize;
-          vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
-
-          vec4 ccolor = texture(diffuse, texcoord1);
-          if ((py<u_imageSize.y && px<u_imageSize.x) || (u_teal ==1))
-            color=ccolor;
-        }`;
-      
-      
 export class drawimagespace extends twglbaseapp
 {
       imagespaceParameters = {
@@ -84,18 +42,66 @@ export class drawimagespace extends twglbaseapp
       static zoomVelocity = 0.075;
       static animationVelocity=0.25;
 
-      public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
-      {
-        super(cgl, capp, dictpar);
-      }
+      static instance: drawimagespace;
+   
+     vs = `#version 300 es
+        precision highp float;
+        precision highp int;   
+        void main()
+        {
+          //show smaller, centered triangle gl_Position = vec4(1.f * float(uint(gl_VertexID) % 2u) - 0.5f, 1.f*float(uint(gl_VertexID) / 2u) - 0.5f, 1.0, 1.0);
+          //show half viewport triangle gl_Position = vec4(2.f * float(uint(gl_VertexID) % 2u) - 1.f, 2.f*float(uint(gl_VertexID) / 2u) - 1.f, 1.0, 1.0);
+          //show (the same) half viewport triangle  gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 2.0f, 4.f*float(uint(gl_VertexID) / 2u) - 2.0f, 1.0, 1.0);
+          //show covering right side of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) - 1.0f, 1.0, 1.0);
+          //show covering upper right square of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) + 0.0f, 1.0, 1.0);
+          //show covering  entire viewport
+          gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 1.0f,
+                             4.f * float(uint(gl_VertexID) / 2u) - 1.0f, 
+                             1.0, 1.0);       
+        }`;
 
+         fs = `#version 300 es
+        precision highp float;
+        precision highp int;
+        uniform sampler2D diffuse;
+        uniform vec2 u_imageSize;
+        uniform int u_teal; 
+        uniform int u_xshift; 
+        uniform int u_yshift; 
+        uniform float u_aspect; 
+        uniform float u_xzoomoffset    ;
+        uniform float u_yzoomoffset    ;
+          out vec4 color;
+        void main()
+        {
+          float px = u_aspect *(gl_FragCoord.x-float(u_xshift));
+          float py = gl_FragCoord.y-float(u_yshift);
+          px-=u_xzoomoffset;
+          py-=u_yzoomoffset;
+          vec2 texoffset1 = vec2(  px, py) / u_imageSize;
+          vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
+
+          vec4 ccolor = texture(diffuse, texcoord1);
+          if ((py<u_imageSize.y && px<u_imageSize.x) || (u_teal ==1))
+            color=ccolor;
+        }`;
+      
+      
+        public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv: string)
+        {
+          super(cgl, capp, dictpar, cdiv);
+          drawimagespace.instance = this;
+          this.twglprograminfo=new Array(2);
+          this.twglprograminfo![1] = twgl.createProgramInfo(cgl!, [this.vs, this.fs]);  
+        }
+  
   //===================================================================================================
 
       gui: datgui.GUI|null=null;
 
       onChangeTextureCombo(value? : any)
       {
-        var thisinstance = drawimagespace.instance! as drawimagespace;
+        var thisinstance = drawimagespace.instance; //! as drawimagespace;
         console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
         thisinstance.currentTexture = value;
         console.log("set currentTexture to ["+value+"]");
@@ -171,32 +177,35 @@ export class drawimagespace extends twglbaseapp
   
       public main(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
       { 
-        super.main(gl, dictpar,vs,fs);
-        if (this.program && this.gl && this.program[0])
+      //  super.main(gl, dictpar,"","");
+      //  if (this.program && this.gl && this.program[0])
         {
-          console.log("initprogram program[0] ok.");
-         // this.texture= 
-          this.prepareSurfaceTextures(this.gl, "zelenskyy")!;
+          this.prepareSurfaceTextures(gl, "zelenskyy")!;
           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
           this.txtaspect = this.textureaspects.get("geotriangle2")!;
           this.ny=1.0;
 
-          this.diffuseLocation = gl.getUniformLocation(this.program[0], 'diffuse')!;
-          this.imageSizeLocation = gl.getUniformLocation(this.program[0], 'u_imageSize')!;
-          this.tealLocation = gl.getUniformLocation(this.program[0], 'u_teal')!;
-          this.xshiftLocation = gl.getUniformLocation(this.program[0], 'u_xshift')!;
-          this.yshiftLocation = gl.getUniformLocation(this.program[0], 'u_yshift')!;
-          this.aspectLocation = gl.getUniformLocation(this.program[0], 'u_aspect')!;  
-          this.xzoomoffsetLocation = gl.getUniformLocation(this.program[0], 'u_xzoomoffset')!;
-          this.yzoomoffsetLocation = gl.getUniformLocation(this.program[0], 'u_yzoomoffset')!;
+          console.log("this.twglprograminfo.length="+this.twglprograminfo?.length);
+
+          var program = this.twglprograminfo![1].program;
+          console.log("<assigned program");
+
+          this.diffuseLocation = gl.getUniformLocation(program, 'diffuse')!;
+          this.imageSizeLocation = gl.getUniformLocation(program, 'u_imageSize')!;
+          this.tealLocation = gl.getUniformLocation(program, 'u_teal')!;
+          this.xshiftLocation = gl.getUniformLocation(program, 'u_xshift')!;
+          this.yshiftLocation = gl.getUniformLocation(program, 'u_yshift')!;
+          this.aspectLocation = gl.getUniformLocation(program, 'u_aspect')!;  
+          this.xzoomoffsetLocation = gl.getUniformLocation(program, 'u_xzoomoffset')!;
+          this.yzoomoffsetLocation = gl.getUniformLocation(program, 'u_yzoomoffset')!;
       
-          gl.useProgram(this.program[0]);
-          gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
+         // gl.useProgram(this.twglprograminfo![0].program);
+         // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
           requestAnimationFrame(() => this.render(0)); 
-        } else
-        console.log("initprogram program[0] fails.");
+        } //else
+        //console.log("initprogram program[0] fails.");
       }
       
       readcolor(original: string) 
@@ -219,7 +228,7 @@ export class drawimagespace extends twglbaseapp
             var gl: WebGL2RenderingContext = this.gl!;
             twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
     
-            gl.useProgram(this.program![0]);
+            gl.useProgram(this.twglprograminfo![1].program);
             gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
             var texture = this.textures[this.currentTexture];

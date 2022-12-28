@@ -9,7 +9,7 @@ import * as scene from "./scene"
 import { TAnimation1Parameters }  from "./scene"
 import { twglbasescene } from "./twglbasescene";
 
-export class SpotLightScene extends twglbasescene implements scene.SceneInterface
+export class LightScene extends twglbasescene implements scene.SceneInterface
 {
     vertexShaderSource: string;   // =vertexShaderSourceSpotLight
     fragmentShaderSource: string; // =fragmentShaderSourceSpotLight
@@ -18,7 +18,7 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
     // interface
-    sceneenv:number = -1;
+    sceneenv:number = 1;
     positionLocation: number | undefined;
     cameraPosition: [number,number,number] | undefined
     ctime: number = 0;
@@ -49,15 +49,20 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
 
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
 
-    public static instance : SpotLightScene;
+    public static instance : LightScene;
 
-    public constructor()
+    public constructor(gl: WebGL2RenderingContext)
     {
       super();
-      SpotLightScene.instance=this;
+      LightScene.instance=this;
       this.typelight = 1;
       this.vertexShaderSource = this.vertexShaderSourceSpotLight;
       this.fragmentShaderSource = this.fragmentShaderSourceSpotLight;
+    //  constructor(gl: WebGL2RenderingContext)
+
+      this.twglprograminfo=new Array(3);   
+      this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
+
       this.fieldOfViewRadians = 60* Math.PI / 180;
       this.fRotationRadians = 0;
       this.lightRotationX = 0;
@@ -82,13 +87,13 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
       console.log("change "+value);
       var s = value! as string;
       console.log("onChange ["+s+"]");
-      if (s=="directed light") SpotLightScene.instance.typelight=0; // gl.uniform1i(this.typelightLocation!,0);
-      else if (s=="point light") SpotLightScene.instance.typelight=1; // gl.uniform1i(this.typelightLocation!,1);
-      else if (s=="spot light") SpotLightScene.instance.typelight=2; //gl.uniform1i(this.typelightLocation!,2);
+      if (s=="directed light") LightScene.instance.typelight=0; // gl.uniform1i(this.typelightLocation!,0);
+      else if (s=="point light") LightScene.instance.typelight=1; // gl.uniform1i(this.typelightLocation!,1);
+      else if (s=="spot light") LightScene.instance.typelight=2; //gl.uniform1i(this.typelightLocation!,2);
     }
 
 
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo)
     {
         var program = p.program;
         this.animationParameters = cap;
@@ -110,6 +115,13 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
+//      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
+//        Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
+//: [4.0,0.0,0.0];
+//if (!this.animationParameters?.b.move)
+//this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
+
+
         var deltaTime = time - this.ctime;
         this.ctime = time;
 
@@ -162,8 +174,7 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
         gl.drawArrays(primitiveType, offset, count);
       }  
   
-    //---------------------------------------------------------------------------------------------------
-    //---------------------------------------------------------------------------------------------------
+  //=========================================================================================================================================
 
     // Fill the buffer with the values that define a letter 'F'.
     setGeometry(gl: WebGL2RenderingContext):void {
@@ -316,6 +327,8 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
   
     gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
   }
+
+  //=========================================================================================================================================
 
   setNormals(gl: WebGL2RenderingContext): void {
     var normals = new Float32Array([

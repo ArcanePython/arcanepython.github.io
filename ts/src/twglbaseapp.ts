@@ -1,8 +1,9 @@
 
 import * as twgl from "twgl.js";          // Greg's work, this twglbaseapp provides all tools like programInfo
 import * as baseapp from "./baseapp";
+import * as mtls from "./mouselistener"; 
 
-export class twglbaseapp extends baseapp.baseapp
+export class twglbaseapp extends baseapp.BaseApp
 {
     public twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
    
@@ -10,19 +11,26 @@ export class twglbaseapp extends baseapp.baseapp
   
     public environmentBufferInfo:twgl.BufferInfo | undefined;
  
+    constructor(cgl: WebGL2RenderingContext | null | undefined, capp: mtls.MouseListener | undefined, dictpar: Map<string, string>, cdiv: string)
+    {
+      super(cgl, capp, dictpar, cdiv);
+      this.twglprograminfo = new Array(1);
+      this.twglprograminfo![0] = twgl.createProgramInfo(cgl!,[this.vsEnvironmentMap,this.fsEnvironmentMap]); 
+    }
+
     protected createEnvironmentMapGeoTwgl(gl: WebGL2RenderingContext)
     {
       this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl); 
       this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo![0], this.environmentBufferInfo)!;
     }
 
-    protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number): WebGLTexture|null
+    protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number, textureReadyCallback: (a:any, t:WebGLTexture)=>void | undefined): WebGLTexture|null
     {
-        if (scene>=0) return super.createEnvironmentMapTexture(gl, scene); 
+        if (scene>=0) return super.createEnvironmentMapTexture(gl, scene,(textureReadyCallback==undefined)?this.straightTextureCallback:textureReadyCallback); 
         else
         if (scene==-1)
         {
-          // external CubeMap texture hosted by Gregg's webgl2fundamentals
+      /*    // external CubeMap texture hosted by Gregg's webgl2fundamentals
           var posxname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg'
           var negxname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg'
           var posyname = 'https://webgl2fundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg'
@@ -46,16 +54,35 @@ export class twglbaseapp extends baseapp.baseapp
           poszname = require("./images/yokohama/posz.jpg")
           negzname = require("./images/yokohama/negz.jpg")
       
-          var texture = twgl.createTexture(gl, {
+          var textureOptions = {
+            
               target: gl.TEXTURE_CUBE_MAP,
               src: [posxname,negxname,posyname,negyname,poszname,negzname],
               min: gl.LINEAR_MIPMAP_LINEAR,
-          });
+          
+          }
+          console.log("=>createEnvironmentMapTexture assigns TextureReadyCallback");
+          var cb:  twgl.TextureReadyCallback = (textureReadyCallback == undefined)?this.defaultTextureReadyCallback:textureReadyCallback;
+          var texture = twgl.createTexture(gl, textureOptions, cb  );
+          console.log("<=createEnvironmentMapTexture");
           return texture;
+        */   
         } 
         return null;
     }
+
+    defaultTextureReadyCallback(err: any, texture: WebGLTexture, source: twgl.TextureSrc): void
+    { 
+      console.log("Environment textureA isready.");
+    }
+
+    straightTextureCallback(err: any, texture: WebGLTexture)
+    {
+      console.log("Environment textureB isready.");
+    }
    
+
+    /*
     private initprograminfos(gl: WebGL2RenderingContext, reportdiv:string, shaders: {vs:string,fs:string}[])
     {
         if (this.twglprograminfo==null || this.twglprograminfo==undefined) this.twglprograminfo=new Array(shaders.length);
@@ -65,7 +92,8 @@ export class twglbaseapp extends baseapp.baseapp
           if (p!=null)
           {
             console.log("Init program#"+i+" with shaders["+i+"]\nvs:["+shaders[i].vs+"\nfs:["+shaders[i].fs+"]");
-            this.twglprograminfo![i]=p;         
+            this.twglprograminfo![i]=p;  
+            this.program![i] = p.program;       
           } else if ((val.vs=='' || val.fs=='')) console.log("gl.createProgram #"+i+" shaders empty.");
                    else document.getElementById(reportdiv)!.innerHTML ="gl.createProgram #1 fails.";
           i++;
@@ -84,6 +112,7 @@ export class twglbaseapp extends baseapp.baseapp
     }
 
     protected maininfos(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
+    // 
     {
         if (this.initprograminfos(gl,"cdiv",shaders) && this.program && this.gl)
         {
@@ -91,6 +120,7 @@ export class twglbaseapp extends baseapp.baseapp
             console.log("baseapp maininfos ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
         }
     }
+    */ 
 
     // -------------------------------------------------------------------------------------
 

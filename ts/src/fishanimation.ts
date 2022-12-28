@@ -43,14 +43,19 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
     
     clock: animationclock.AnimationClock = new animationclock.AnimationClock();
 
-    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+    static instance: FishAnimation;
+
+    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>,cdiv: string)
     {       
-      super(cgl, capp, dictpar);
+      super(cgl, capp, dictpar, cdiv);
+      FishAnimation.instance=this;
+      this.twglprograminfo = new Array(2);
+      this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
 
     main(gl:WebGL2RenderingContext, dictpar:Map<string,string>)
     {
-      super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
+    //  super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
       twgl.setAttributePrefix("a_");
       var gl = this.gl!;
       //this.programInfo = this.twglprograminfo![0];// twgl.createProgramInfo(gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
@@ -64,10 +69,10 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
         afish.createSurfaceTexture(gl);
         afish.uniforms= afish.createUniforms(gl, dictpar);
         afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh!.arrays);
-        afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![0], afish.bufferInfo);
+        afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![1], afish.bufferInfo);
         nFish++;
       });   
-      this.cam=camhandler.Camera.createZUpCamera(gl,dictpar,30.0, this.app!);
+      this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamZUp, 30.0, this.app!);
       this.cam.zoominVelocity = 0.5;
       requestAnimationFrame(() => this.render(time0));    
     }
@@ -102,7 +107,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
     render(time: number) 
     {
         var gl = this.gl!;
-        gl.useProgram(this.twglprograminfo![0].program);
+        gl.useProgram(this.twglprograminfo![1].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
         gl.enable(gl.DEPTH_TEST);
@@ -126,7 +131,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
             this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
             this.fish[fishtype].prepareBoneTexture(gl,this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
             this.fish[fishtype].uniforms!.world = m4.translation(this.fishpositions[fishtype][0]);      // draw a fish at some position
-            twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)
+            twgl.setUniforms(this.twglprograminfo![1], this.fish[fishtype].uniforms)
             twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo!, this.fish[fishtype].mesh.type);              
           }
           else  // multiple joint segments
@@ -142,7 +147,7 @@ export class FishAnimation extends twglbaseapp.twglbaseapp
               this.fish[fishtype].computeBone(time-timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
               this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
               this.fish[fishtype].uniforms!.world = localmatrix; // transformation for joint part depends on previous joint
-              twgl.setUniforms(this.twglprograminfo![0], this.fish[fishtype].uniforms)
+              twgl.setUniforms(this.twglprograminfo![1], this.fish[fishtype].uniforms)
               twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo!, this.fish[fishtype].mesh.type);     
               localmatrix = m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans);  // stack the end-transformation of this segment into matrix cm         
             }

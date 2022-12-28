@@ -13,7 +13,7 @@ export class PointLightScene implements scene.SceneInterface
 {
   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
-  sceneenv:number = -1;
+  sceneenv:number = 1;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
   cameraPosition: [number,number,number] | undefined
 
@@ -165,7 +165,7 @@ export class PointLightScene implements scene.SceneInterface
      gui.updateDisplay();
     }
 
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo)
     {
         var program = p.program;
         this.animationParameters = cap;

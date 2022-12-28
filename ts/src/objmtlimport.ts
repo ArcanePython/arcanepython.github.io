@@ -103,7 +103,7 @@ export class ObjMtlImport
         var szy=mobj.meshMinMax.maxy-mobj.meshMinMax.miny;
         var szz=mobj.meshMinMax.maxz-mobj.meshMinMax.minz;
         var szobj = Math.sqrt(szx*szx+szy*szy+szz*szz);
-        this.cam = camhandler.Camera.createYUpCamera(this.gl,UrlPars!,szobj*2, this.app!);
+        this.cam = camhandler.Camera.createCamera(this.gl,UrlPars!,camhandler.Camera.CamYUp, szobj*2, this.app!);
         this.cam.translateTarget( [(mobj.meshMinMax.maxx+mobj.meshMinMax.minx)/2,
         (mobj.meshMinMax.maxy+mobj.meshMinMax.miny)/2, 
         (mobj.meshMinMax.maxz+mobj.meshMinMax.minz)/2]);

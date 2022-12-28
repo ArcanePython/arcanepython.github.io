@@ -18,15 +18,15 @@ interface NodeJson {
 export class ObjectListScene  implements scene.SceneInterface
 {
   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-  scenesize=15;
-  sceneenv=-1;
+  scenesize=60;
+  sceneenv=2;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
   cameraPosition: [number,number,number] | undefined
   animationParameters: TAnimation1Parameters | undefined;
   public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
   public extendGUI(gui: datgui.GUI) {}
 
-  scene:objectnode.Node |undefined;
+  scenetree:objectnode.Node |undefined;
   gl: WebGL2RenderingContext | undefined;
   fieldOfViewRadians: number  | undefined;
   
@@ -69,7 +69,6 @@ export class ObjectListScene  implements scene.SceneInterface
   objectsToDraw: twgl.DrawObject[] = [];
   objects : objectnode.Node[] = [];
 
- // programInfo: twgl.ProgramInfo | undefined;
 
   // state
   cx: number=0;
@@ -77,7 +76,13 @@ export class ObjectListScene  implements scene.SceneInterface
   cz: number=0;
   vx: number=0;
   vy: number=0;
-  vz: number=-0.05;
+  vz: number=0.05;
+
+  public constructor(gl: WebGL2RenderingContext)
+  {
+    this.twglprograminfo=new Array(2);   
+    this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+  }
 
   async FetchText(cparcelname: string){
     const res = await fetch(cparcelname);
@@ -86,32 +91,31 @@ export class ObjectListScene  implements scene.SceneInterface
     return enc.decode(b);
   }
 
-  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters,  p: twgl.ProgramInfo) 
+  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo) 
   {  
     this.gl = gl;
     this.fieldOfViewRadians = (60.0* Math.PI / 180);
-    // setup geometry
-    // avoid Gregg's flattenedPrimitives for now - cant get it to compile in TS
-    // var arrays: { [key:string]:twgl.primitives.TypedArray }= twgl.primitives.createCubeVertices(1); 
-    // var cubeBufferInfo: twgl.BufferInfo = this.createFlattenedVertices(gl, arrays, 6)!;
-    // cubes
     var cubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0);  // create the cube
     // spheres
     // var cubeBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
-    // VAO (not needed)
-    // var cubeBufferInfo: twgl.BufferInfo = twgl.primitives.createCubeVertices(1); // this.flattenedPrimitives.createCubeBufferInfo(gl, 1)!; // lx leave out , 1);
-    // var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
     this.nodeInfosByName = undefined;
     var nodefact = new objectnode.NodesProducer(p,cubeBufferInfo);
     var parcls=require('./resources/blockguy.json');
-    var mydata= this.FetchText(parcls).then ((s: string)=> {
+  /*  var mydata= this.FetchText(parcls).then ((s: string)=> {
           console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
-          this.scene = nodefact.makeNode(nodedescriptions);
+          this.scenetree = nodefact.makeNode(nodedescriptions);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
           this.nodeInfosByName= nodefact.nodeInfosByName;
         });
+    */
+        
+        var nodedescriptions: NodeJson = JSON.parse(this.sjson);
+          this.scenetree = nodefact.makeNode(nodedescriptions);
+          this.objects = nodefact.objects;
+          this.objectsToDraw = nodefact.objectsToDraw;
+          this.nodeInfosByName= nodefact.nodeInfosByName;
   }
 
   drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
@@ -134,6 +138,13 @@ export class ObjectListScene  implements scene.SceneInterface
     var viewMatrix = m4.inverse(cameraMatrix);
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
   */
+/*
+    this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
+      Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
+: [4.0,0.0,0.0];
+if (!this.animationParameters?.b.move)
+this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
+*/
 
    // setup a mouse-controlled camhandler camera
    var speed = 3;
@@ -151,7 +162,7 @@ export class ObjectListScene  implements scene.SceneInterface
    var viewMatrix = m4.inverse(cameraMatrix);
    // create a viewProjection matrix. This will both apply perspective
    // AND move the world so that the camera is effectively the origin
-   var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+   var viewProjectionMatrix = cam.viewProjection;// m4.multiply(projectionMatrix, viewMatrix);
 
 
     // Animation
@@ -198,7 +209,7 @@ export class ObjectListScene  implements scene.SceneInterface
 
     // Update all world matrices in the scene graph
     var currentTranslation: m4.Mat4 = m4.translation([this.cx,this.cy,this.cz]);
-    this.scene!.updateWorldMatrix(currentTranslation);
+    this.scenetree!.updateWorldMatrix(currentTranslation);
     this.cx+=this.vx*speed/4.0;
     this.cy+=this.vy*speed/4.0;
     this.cz+=this.vz*speed/4.0;
@@ -211,4 +222,120 @@ export class ObjectListScene  implements scene.SceneInterface
     // Draw the objects
     twgl.drawObjectList(gl, this.objectsToDraw);
   }
+
+ sjson = `{
+  "draw": false,
+  "name": "point between feet",
+  "translation":[0,0,0],
+  "children": [
+    {
+       "draw": true,
+       "name": "waist",
+       "translation": [0, 0, 0],
+       "children": [
+         {
+           "draw": true,
+           "name": "torso",
+           "translation": [0, 2, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "neck",
+               "translation": [0, 1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "head",
+                   "translation": [0, 1, 0],
+                   "children": []
+                 }
+               ]
+             },
+             {
+               "draw": true,
+               "name": "left-arm",
+               "translation": [-1, 0, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "left-forearm",
+                   "translation": [-1, 0, 0],
+                   "children": [
+                     {
+                       "draw": true,
+                       "name": "left-hand",
+                       "translation": [-1, 0, 0],
+                       "children":[]
+                     }
+                   ]
+                 }
+               ]
+             },
+             {
+               "draw": true,
+               "name": "right-arm",
+               "translation": [1, 0, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "right-forearm",
+                   "translation": [1, 0, 0],
+                   "children": [
+                     {
+                       "draw": true,
+                       "name": "right-hand",
+                       "translation": [1, 0, 0],
+                       "children":[]
+                     }
+                   ]
+                 }
+               ]
+             }
+           ]
+         },
+         {
+           "draw": true,
+           "name": "left-leg",
+           "translation": [-1, -1, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "left-calf",
+               "translation": [0, -1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "left-foot",
+                   "translation": [0, -1, 0],
+                   "children": []
+                 }
+               ]
+             }
+           ]
+         },
+         {
+           "draw": true,
+           "name": "right-leg",
+           "translation": [1, -1, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "right-calf",
+               "translation": [0, -1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "right-foot",
+                   "translation": [0, -1, 0],
+                   "children": []
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+    }
+  ]
+}`;
+
 }

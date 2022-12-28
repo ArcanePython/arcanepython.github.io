@@ -103,13 +103,13 @@ export class NodesProducer
     trs.translation = nodeDescription.translation || trs.translation;
     if (nodeDescription.draw !== false) {
         cnode.drawInfo = {
-        uniforms: {
-            u_colorOffset: [0, 0, 0.6, 0],
-            u_colorMult: [0.4, 0.4, 0.4, 1],
-            u_matrix: undefined
-        },
-        programInfo: this.programInfo!,
-        bufferInfo: this.cubeBufferInfo!,
+            uniforms: {
+                u_colorOffset: [0, 0, 0.6, 0],
+                u_colorMult: [0.4, 0.4, 0.4, 1],
+                u_matrix: undefined
+            },
+            programInfo: this.programInfo!,
+            bufferInfo: this.cubeBufferInfo!,
         };
         this.objectsToDraw.push(cnode.drawInfo!);
         this.objects.push(cnode);

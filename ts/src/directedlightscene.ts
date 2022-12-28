@@ -13,7 +13,7 @@ export class DirectedLightScene implements scene.SceneInterface
 {
   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
-  sceneenv:number = -1;
+  sceneenv:number = 1;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
   cameraPosition: [number,number,number] | undefined
 
@@ -173,7 +173,7 @@ export class DirectedLightScene implements scene.SceneInterface
      gui.updateDisplay();
     }
 
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo)
     {
         console.log("=> directedLightScene initScene");
         var program = p.program;
@@ -290,7 +290,7 @@ export class DirectedLightScene implements scene.SceneInterface
         // Set the color to use
         gl.uniform4fv(this.colorLocation!, [0.2, 1, 0.2, 1]); // green
         // light set shininess
-        gl.uniform1f(this.shininessLocation!, this.animationParameters!.shininess / 10.0);
+        gl.uniform1f(this.shininessLocation!, this.animationParameters!.shininess /3.0);
 
         // --- directed light properties
         // set the light direction (directed light)

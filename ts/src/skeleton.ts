@@ -42,16 +42,23 @@ export class Skeleton extends twglbaseapp.twglbaseapp
     phase0: number=0.0; //2.0; // 143 degrees 
     afish: fish.FishHTranslated | undefined;
    
-    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+
+    static instance: Skeleton;
+
+    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv:string)
     { 
-      super(cgl, capp, dictpar);
-      
+      super(cgl, capp, dictpar, cdiv);
+      Skeleton.instance = this;
+      this.twglprograminfo = new Array(2);
+      this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+  
     }
 
     main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
     {
       var time0: number=0;
-      super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
+    
+     // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
    
       var spar:string|undefined;
       if ((spar=dictpar.get("phase2"))!=undefined) this.phase0= +spar!;
@@ -67,8 +74,8 @@ export class Skeleton extends twglbaseapp.twglbaseapp
       this.uniforms= this.afish.createUniforms(gl, dictpar); // this.phase0);
       this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh!.arrays);
 
-      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![0], this.bufferInfo!);
-      this.cam=camhandler.Camera.createYUpCamera(gl,dictpar,50.0, this.app!);
+      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![1], this.bufferInfo!);
+      this.cam=camhandler.Camera.createCamera(gl,dictpar, camhandler.Camera.CamYUp, 50.0, this.app!);
       this.cam.zoominVelocity = 0.5;
       requestAnimationFrame(() => this.render(time0));   
     }
@@ -128,7 +135,7 @@ export class Skeleton extends twglbaseapp.twglbaseapp
     render(time: number) 
     {       
         var gl = this.gl!;
-        gl.useProgram(this.twglprograminfo![0].program);
+        gl.useProgram(this.twglprograminfo![1].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
         gl.enable(gl.DEPTH_TEST);
@@ -146,22 +153,22 @@ export class Skeleton extends twglbaseapp.twglbaseapp
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2); 
        
         uniforms.world = m4.translate(m4.identity(), [20.0, -20.0, 0.0]);  // draw a fish
-        twgl.setUniforms(this.twglprograminfo![0], uniforms)
+        twgl.setUniforms(this.twglprograminfo![1], uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
        
         uniforms.world = m4.translate(m4.identity(), [0.0, 0.0, 0.0]);     // draw a fish
-        twgl.setUniforms(this.twglprograminfo![0], uniforms)
+        twgl.setUniforms(this.twglprograminfo![1], uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
   
         this.afish!.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2);
 
         uniforms.world = m4.translate(m4.identity(), [50.0, -20.0, 10.0]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo![0], uniforms)
+        twgl.setUniforms(this.twglprograminfo![1], uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
 
         uniforms.world = m4.translate(m4.identity(), [-10.0, 5.0, -10.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo![0], uniforms)
+        twgl.setUniforms(this.twglprograminfo![1], uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
        
         requestAnimationFrame(() => this.render(++time));       

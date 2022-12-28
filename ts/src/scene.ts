@@ -13,6 +13,7 @@ export type TAnimation1Parameters =
     texture: string,
     sling: number,
     shininess: number,
+    typelight: string;
     b: TbaseappParameters,
       // Checkbox tail animation on/off
      
@@ -35,7 +36,7 @@ export interface SceneInterface
   fragmentShaderSource: string;
  
   resizeCanvas(gl: WebGL2RenderingContext): void;
-  initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo): void;
+  initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters, dictpar:Map<string,string>,  p: twgl.ProgramInfo): void;
   drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void;
   extendGUI(datgui: datgui.GUI): void;
  

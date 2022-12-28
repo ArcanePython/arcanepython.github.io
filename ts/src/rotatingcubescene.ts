@@ -76,6 +76,12 @@ export class RotatingCubeScene implements scene.SceneInterface
     }
     `;
 
+    constructor(gl: WebGL2RenderingContext)
+    {
+      this.twglprograminfo=new Array(2);
+      this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+    }
+
     public extendGUI(gui: datgui.GUI)
     {
     // Slider for sling speed
@@ -93,12 +99,9 @@ export class RotatingCubeScene implements scene.SceneInterface
         return d * Math.PI / 180;
     }
 
-    public resizeCanvas(gl: WebGL2RenderingContext)
-    {
-        twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-    }
+    public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
         
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,  p: twgl.ProgramInfo)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo)
     {
       this.animationParameters = cap;
       // Define shader syntax for attributes

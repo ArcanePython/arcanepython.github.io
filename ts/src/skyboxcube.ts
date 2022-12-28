@@ -8,9 +8,13 @@ import  * as datgui from "dat.gui";
 
 export class skyboxcube extends twglbaseapp.twglbaseapp
 {
-    public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+    public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv: string)
     {
-        super(cgl, capp, dictpar);
+        super(cgl, capp, dictpar, cdiv);
+        var pi = this.twglprograminfo![0];
+        this.twglprograminfo=new Array(2);
+        this.twglprograminfo[0] = pi;
+        this.twglprograminfo![1] = twgl.createProgramInfo(cgl!, [this.vsMirrorCube, this.fsMirrorCube]);  
     }
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -28,7 +32,11 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
     reflectingCubeBufferInfo: twgl.BufferInfo | undefined;
     texture: WebGLTexture| undefined;
 
-  
+    worldMatrix: twgl.m4.Mat4 | undefined;
+    viewMatrix: twgl.m4.Mat4 | undefined;
+    projectionMatrix: twgl.m4.Mat4 | undefined;
+    viewDirectionMatrix: twgl.m4.Mat4 | undefined;
+
   //  fieldOfViewRadians : number = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
    
     protected createReflectingCubeGeo(gl: WebGL2RenderingContext)
@@ -49,19 +57,27 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
       b=dictpar.get("velc"); if(b)  this.skyboxCubeParameters.angVelocityCube=+b!;
 
       // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
-      super.maininfos(gl, dictpar, [ {vs:this.vsEnvironmentMap, fs:this.fsEnvironmentMap}, {vs:this.vsMirrorCube,fs:this.fsMirrorCube}]);
+
+ 
+      // super.maininfos(gl, dictpar, [ {vs:this.vsEnvironmentMap, fs:this.fsEnvironmentMap}, {vs:this.vsMirrorCube,fs:this.fsMirrorCube}]);
       twgl.setAttributePrefix("a_");  // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
       this.createReflectingCubeGeo(gl);         
       this.createEnvironmentMapGeoTwgl(gl);         
-      this.texture =  this.createEnvironmentMapTexture(gl, 1)!;
+      this.texture =  this.createEnvironmentMapTexture(gl, 1,this.textureReadyCallback)!;
       
-      this.cam=camhandler.Camera.createYUpCamera(gl,dictpar,0.5, this.app!);
+      this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp, 0.5, this.app!);
       this.cam.zoominVelocity = 0.5;
       this.cam.setRadius(6.0);
       this.cam.translateEye([6.0,0,0]);
 
       requestAnimationFrame(() => this.render(0));           
     }
+
+    textureReadyCallback(err: any, texture: WebGLTexture): void
+    { 
+      console.log("SkyboxCube Environment texture isready.");
+    }
+ 
 
     public initGUI(parameters: {movecube:boolean, moveenv:boolean,fieldOfViewDegrees:number,radiusCam:number,angVelocityCam:number,angVelocityCube: number})
     {
@@ -143,7 +159,19 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
         });
         twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
 
+           
+        // Build a view matrix for the mirror cube.
+        var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+        this.projectionMatrix = twgl.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+        // Build a view matrix.
+        var up = [0, 1, 0];
+        var cameraMatrix = twgl.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        this.viewMatrix = twgl.m4.inverse(cameraMatrix);
+     
+
         // draw the mirror cube
+        if (this.viewMatrix==undefined)this.viewMatrix=twgl.m4.identity();
+        if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
         gl.useProgram(this.twglprograminfo![1].program);      
         gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube!);  

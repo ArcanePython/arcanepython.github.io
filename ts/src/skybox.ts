@@ -1,5 +1,5 @@
 import * as mtls from "./mouselistener";     // connect events for buttons and wheel
-import * as baseapp from "./baseapp";
+import * as twglbaseapp from "./twglbaseapp";
 import * as camhandler from "./camhandler"   // camera projection
 
 import { m4, v3 }  from "twgl.js";    // Greg's work, this baseapp  only imports geometry matrix/vector tools
@@ -7,11 +7,11 @@ import { m4, v3 }  from "twgl.js";    // Greg's work, this baseapp  only imports
 import  * as datgui from "dat.gui";
 
 
-export class skybox extends baseapp.baseapp  // use m4, v3  from twgl
+export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
 {
-    public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>)
+    public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv:string)
     {
-        super(cgl, capp, dictpar);
+        super(cgl, capp, dictpar, cdiv);
     }
 
     skyboxCubeParameters = {
@@ -75,29 +75,35 @@ export class skybox extends baseapp.baseapp  // use m4, v3  from twgl
           b=dictpar.get("velc"); if(b)  this.skyboxCubeParameters.angVelocityCube=+b!;
   
           // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
-          super.main(gl, dictpar, this.vsEnvironmentMap, this.fsEnvironmentMap);
+          //super.main(gl, dictpar, this.vsEnvironmentMap, this.fsEnvironmentMap);
           console.log("skybox.main - find getAttribLocations");
-          this.positionLocation = gl.getAttribLocation(this.program![0], "a_position");
-          this.skyboxLocation = gl.getUniformLocation(this.program![0], "u_skybox")!;
-          this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.program![0], "u_viewDirectionProjectionInverse")!;
+          this.positionLocation = gl.getAttribLocation(this.twglprograminfo![0].program, "a_position");
+          this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;
+          this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_viewDirectionProjectionInverse")!;
           console.log("Positionlocation="+this.positionLocation);
           console.log("skyboxLocation="+this.skyboxLocation);
           console.log("viewDirectionProjectionInverseLocation="+this.viewDirectionProjectionInverseLocation); 
           
           this.fieldOfViewRadians = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;    
           
-          this.cam=camhandler.Camera.createYUpCamera(gl,dictpar,0.5, this.app!);
+          this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp, 0.5, this.app!);
           this.cam.zoominVelocity = 0.5;
           this.cam.setRadius(6.0);
           this.cam.translateEye([6.0,0,0]); 
   
           this.createEnvironmentMapGeo(gl, this.positionLocation!);
-          this.createEnvironmentMapTexture(gl, 2);
+          this.createEnvironmentMapTexture(gl, 2, this.textureReadyCallback);
           console.log("<- "+"skybox main");
 
           requestAnimationFrame(() => this.render(0));         
       }
   
+      
+      textureReadyCallback(err: any, texture: WebGLTexture): void
+      { 
+        console.log("Skybox Environment texture isready.");
+      }
+    
       resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) 
       {
         // Lookup the size the browser is displaying the canvas in CSS pixels.
@@ -120,7 +126,7 @@ export class skybox extends baseapp.baseapp  // use m4, v3  from twgl
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);    
         gl.enable(gl.CULL_FACE);
         gl.enable(gl.DEPTH_TEST);
-        gl.useProgram(this.program![0]);
+        gl.useProgram(this.twglprograminfo![0].program);
 
         //this.cameraPosition = [5*Math.cos(mstime * .004), 0, 5*Math.sin(mstime * .004)];
        
