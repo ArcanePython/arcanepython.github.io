@@ -1,0 +1,23 @@
+# Blender MTL File: 'None'
+# Material Count: 11
+
+newmtl Material
+Ns 323.999994
+Ka 0.200000 1.000000 1.000000
+map_Kd zelenskyycube.jpg
+Kd 0.500000 0.500000 1.000000
+Ks 0.000000 0.000000 1.000000
+Ke 0.0 0.0 0.8
+Ni 1.000000
+d 1.000000
+illum 10
+
+newmtl Material2
+map_Kd stone12021_01.png
+Ka 0.0000 0.0000 0.0000
+Kd 0.0000 0.0000 0.0000
+Ks 0.0000 0.0000 0.0000
+Tf 1.0000 1.0000 1.0000
+Ns 200
+Ni 1.2000
+illum 6
