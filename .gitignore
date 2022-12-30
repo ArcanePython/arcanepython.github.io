@@ -1,0 +1,16 @@
+*.
+*.gyp
+*.gypi
+*.flow
+*.h
+*.c
+*.node
+*.js
+*.mjs
+*.map
+*.cmd
+*.ps1
+*.md
+*.hh
+*.cc
+

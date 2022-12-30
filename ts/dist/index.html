@@ -150,14 +150,14 @@ str += lnk(commonhtml + "?plane&radius0=25&hx=0.8&hy=0.5", "Plane");
 str += lnk(commonhtml + "?greenhouse", "Greenhouse");
 str += `
         <p>
-        Animations bone model<br>
+        Animations (bone model)<br>
         `;
-//str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
+// str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
 str += lnk(commonhtml + "?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39", "Zelenski whales");
 str += lnk(commonhtml + "?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1", "Ukrainian Fish");
 str += `
         <p>
-        Gregg's examples<br>
+         Gregg's examples<br>
         `;
 str += lnk(commonhtml + "?animation4&radius0=60&hx=0&hy=0", "Skybox Scene");
 str += lnk(commonhtml + "?animation2b&radius0=250&hx=0&hy=0", "Lights Scene");
@@ -183,13 +183,13 @@ linksdiv.innerHTML = str + "<p>"; // (neat way to do it on a server, but Parcel 
  //       .src = subdir + "/" + commonjsparcel;
  //  });
 
-</script>       
-<!-- use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
-<script src="/index.5710aea2.js" defer=""></script>
+</script>    
+<!-- Use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
+<!-- script src="src/indexcube.js" type="module"></script -->
 
-<!-- when above event listener is not used, deploy from /dist directly. Update below link on each release -->
-<!--- script src="dist/index.73eb0017.js"></script -->
-<!--- script src="dist/index.7ece9f8d.js"></script -->        
-</body>
+<!-- Use this for GitHib. Update below link on each release -->
+<!-- script src="dist/index.73eb0017.js"></script -->
+<script src="/index.0df9a80e.js"></script>  
+<script src="/ts.3464ddca.js"></script></body>
 </html>
       
