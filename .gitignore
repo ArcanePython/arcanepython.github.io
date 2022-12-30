@@ -7,7 +7,6 @@
 *.node
 *.html
 *.mjs
-*.map
 *.cmd
 *.ps1
 *.md
