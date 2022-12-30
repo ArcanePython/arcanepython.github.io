@@ -109,7 +109,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   }
-  else if (dictPars?.get("animation2b")!=undefined)
+  else if (dictPars?.get("animation3")!=undefined)
   {
     var mta1 = new animation1.Animation1(gl, app, new lightscene.LightScene(gl), dictPars, cdiv);
     mta1.main(gl, dictPars);

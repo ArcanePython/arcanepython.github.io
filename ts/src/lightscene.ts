@@ -18,7 +18,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
     // interface
-    sceneenv:number = 1;
+    sceneenv:number = 2;
     positionLocation: number | undefined;
     cameraPosition: [number,number,number] | undefined
     ctime: number = 0;
@@ -63,7 +63,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
       this.twglprograminfo=new Array(3);   
       this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
 
-      this.fieldOfViewRadians = 60* Math.PI / 180;
+      this.fieldOfViewRadians = 120* Math.PI / 180;
       this.fRotationRadians = 0;
       this.lightRotationX = 0;
       this.lightRotationY = 0;
@@ -121,7 +121,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
 //if (!this.animationParameters?.b.move)
 //this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
 
-
+//return;
         var deltaTime = time - this.ctime;
         this.ctime = time;
 
@@ -129,7 +129,8 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
 
         // Set the color to use for any light
-        gl.uniform4fv(this.colorLocation!, [0.2, 1, 0.2, 1]); // green
+        // gl.uniform4fv(this.colorLocation!, [0.9, 0, 0.8, 1]); // green
+        gl.uniform4fv(this.colorLocation!, [0.2, 1.0, 0.3, 1]); // green
     
         // Set the shininess for any light. 
         // directional light it is intensity

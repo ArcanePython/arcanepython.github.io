@@ -653,7 +653,7 @@ function show(gl, app, dictPars) {
         var mta1 = new animation1.Animation1(gl, app, new rotatingcubescene.RotatingCubeScene(gl), dictPars, cdiv);
         mta1.main(gl, dictPars);
         mta1.initGUI(defaultParameters);
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2b")) != undefined) {
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) {
         var mta1 = new animation1.Animation1(gl, app, new lightscene.LightScene(gl), dictPars, cdiv);
         mta1.main(gl, dictPars);
         mta1.initGUI(defaultParameters);
@@ -20095,7 +20095,7 @@ class ManyTexturesScene {
         this.twglprograminfo = null; // there are 2 sets of shaders defined here.
         // Local
         this.baseHue = this.rand(300); // color of objects
-        this.numObjects = 200; // object count
+        this.numObjects = 1; // object count
         this.spreadRadius = this.numObjects / 10.0; // random placement range for objects
         this.dtime = 0.02; // animation timer interval
         this.drawItems = []; // resource
@@ -23057,7 +23057,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
         // shaders to merge (here: none)
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         // interface
-        this.sceneenv = 1;
+        this.sceneenv = 2;
         this.ctime = 0;
         this.scenesize = 60;
         this.vertexShaderSourceSpotLight = `#version 300 es
@@ -23195,7 +23195,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
             this.vertexShaderSourceSpotLight,
             this.fragmentShaderSourceSpotLight
         ]);
-        this.fieldOfViewRadians = 60 * Math.PI / 180;
+        this.fieldOfViewRadians = 120 * Math.PI / 180;
         this.fRotationRadians = 0;
         this.lightRotationX = 0;
         this.lightRotationY = 0;
@@ -23250,15 +23250,17 @@ class LightScene extends twglbasescene_1.twglbasescene {
         //: [4.0,0.0,0.0];
         //if (!this.animationParameters?.b.move)
         //this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
+        //return;
         var deltaTime = time - this.ctime;
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
         // Set the color to use for any light
+        // gl.uniform4fv(this.colorLocation!, [0.9, 0, 0.8, 1]); // green
         gl.uniform4fv(this.colorLocation, [
             0.2,
-            1,
-            0.2,
+            1.0,
+            0.3,
             1
         ]); // green
         // Set the shininess for any light. 
@@ -24284,7 +24286,7 @@ class ObjectList {
 }
 exports.ObjectList = ObjectList;
 
-},{"./../node_modules/twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"2rYWp"}],"54gzf":[function(require,module,exports) {
+},{"./../node_modules/twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"kyrPs"}],"54gzf":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -24424,10 +24426,10 @@ class NodesProducer {
 }
 exports.NodesProducer = NodesProducer;
 
-},{"./../node_modules/twgl.js":"3uqAP"}],"2rYWp":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "blockguy.ba5581b9.json" + "?" + Date.now();
+},{"./../node_modules/twgl.js":"3uqAP"}],"kyrPs":[function(require,module,exports) {
+module.exports = JSON.parse('{"draw":false,"name":"point between feet","translation":[0,0,0],"children":[{"draw":true,"name":"waist","translation":[0,0,0],"children":[{"draw":true,"name":"torso","translation":[0,2,0],"children":[{"draw":true,"name":"neck","translation":[0,1,0],"children":[{"draw":true,"name":"head","translation":[0,1,0],"children":[]}]},{"draw":true,"name":"left-arm","translation":[-1,0,0],"children":[{"draw":true,"name":"left-forearm","translation":[-1,0,0],"children":[{"draw":true,"name":"left-hand","translation":[-1,0,0],"children":[]}]}]},{"draw":true,"name":"right-arm","translation":[1,0,0],"children":[{"draw":true,"name":"right-forearm","translation":[1,0,0],"children":[{"draw":true,"name":"right-hand","translation":[1,0,0],"children":[]}]}]}]},{"draw":true,"name":"left-leg","translation":[-1,-1,0],"children":[{"draw":true,"name":"left-calf","translation":[0,-1,0],"children":[{"draw":true,"name":"left-foot","translation":[0,-1,0],"children":[]}]}]},{"draw":true,"name":"right-leg","translation":[1,-1,0],"children":[{"draw":true,"name":"right-calf","translation":[0,-1,0],"children":[{"draw":true,"name":"right-foot","translation":[0,-1,0],"children":[]}]}]}]}]}');
 
-},{"./helpers/bundle-url":"lgJ39"}],"8iTky":[function(require,module,exports) {
+},{}],"8iTky":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -24760,7 +24762,7 @@ class ObjectListScene {
 }
 exports.ObjectListScene = ObjectListScene;
 
-},{"twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"2rYWp"}],"7UK0I":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"kyrPs"}],"7UK0I":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

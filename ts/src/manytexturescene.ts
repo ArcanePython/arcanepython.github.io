@@ -63,7 +63,7 @@ export class ManyTexturesScene implements scene.SceneInterface
 
   // Local
   baseHue = this.rand(300);            // color of objects
-  numObjects = 200;                    // object count
+  numObjects = 1;                    // object count
   spreadRadius = this.numObjects/10.0; // random placement range for objects
   dtime = 0.02;                        // animation timer interval
   

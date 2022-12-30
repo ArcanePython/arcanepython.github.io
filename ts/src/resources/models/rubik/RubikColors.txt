@@ -1,0 +1,7 @@
+1 plastic
+3 orange
+4 blue
+5 red
+6 yellow
+7 green
+8 white

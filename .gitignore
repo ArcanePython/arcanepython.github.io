@@ -5,7 +5,7 @@
 *.h
 *.c
 *.node
-*.js
+*.html
 *.mjs
 *.map
 *.cmd
