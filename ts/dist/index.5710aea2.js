@@ -23256,13 +23256,13 @@ class LightScene extends twglbasescene_1.twglbasescene {
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
         // Set the color to use for any light
-        // gl.uniform4fv(this.colorLocation!, [0.9, 0, 0.8, 1]); // green
         gl.uniform4fv(this.colorLocation, [
-            0.2,
-            1.0,
-            0.3,
+            0.9,
+            0,
+            0.8,
             1
         ]); // green
+        // gl.uniform4fv(this.colorLocation!, [0.2, 1.0, 0.3, 1]); // green
         // Set the shininess for any light. 
         // directional light it is intensity
         // for point light and spot light it is concentration of the light
