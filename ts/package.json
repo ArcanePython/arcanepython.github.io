@@ -9,11 +9,13 @@
   "dependencies": {
     "@types/chroma-js": "^2.1.4",
     "chroma-js": "^2.4.2",
+    "dat.gui": "^0.7.9",
     "parcel": "^2.0.0",
     "twgl.js": "^4.24.0",
     "webgl-obj-loader": "^2.0.8"
   },
   "devDependencies": {
+    "@types/dat.gui": "^0.7.7",
     "@types/node": "^18.7.16",
     "cssnano": "^5.1.13",
     "postcss": "^8.4.16",

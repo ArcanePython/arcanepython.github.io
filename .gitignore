@@ -1,11 +1,13 @@
-*.
+*.pipo
+ts/dist
+ts/node_modules
+ts/.parcel-cache
 *.gyp
 *.gypi
 *.flow
 *.h
 *.c
 *.node
-*.html
 *.mjs
 *.cmd
 *.ps1
