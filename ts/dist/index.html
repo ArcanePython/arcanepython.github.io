@@ -157,9 +157,9 @@ str += lnk(commonhtml + "?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=18
 str += lnk(commonhtml + "?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1", "Ukrainian Fish");
 str += `
         <p>
-         Gregg's examples<br>
+        Gregg's examples<br>
         `;
-str += lnk(commonhtml + "?animation4&radius0=60&hx=0&hy=0", "Sky2box Scene");
+str += lnk(commonhtml + "?animation4&radius0=60&hx=0&hy=0", "Skycube Scene");
 str += lnk(commonhtml + "?animation3&radius0=250&hx=0&hy=0", "Lights Scene");
 str += lnk(commonhtml + "?animation8&radius0=3&hx=80&hy=0", "Tex3d on tex Scene");
 str += lnk(commonhtml + "?animation1&radius0=80&hx=20&hy=10", "Mixed Texture Scene");
@@ -170,8 +170,9 @@ str += lnk(commonhtml + "?animation7&radius0=60&hx=80&hy=0", "Instanced Scene");
 //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
 str += `
         <p>
-        Texture experiments<br>
+        Experiments<br>
         `;
+str += lnk(commonhtml + "?animation0&radius0=60&hx=0&hy=0", "Skybox zoom");
 str += lnk(commonhtml + "?skyboxcube", "Gregg's Skycube");
 //    str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
 //   str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","Tex3d on tex");
@@ -185,11 +186,11 @@ linksdiv.innerHTML = str + "<p>"; // (neat way to do it on a server, but Parcel 
 
 </script>    
 <!-- Use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
-<script src="/index.5710aea2.js" defer=""></script>
+<!-- script src="src/indexAnimations.js" type="module"></script -->
 
 <!-- Use this for GitHib. Update below link on each release -->
-<!-- script src="dist/index.0df9a80e.js"></script -->
+<script src="/index.c9fad2c4.js"></script>
   
-</body>
+<script src="/ts.3464ddca.js"></script></body>
 </html>
       

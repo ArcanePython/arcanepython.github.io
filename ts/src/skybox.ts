@@ -30,6 +30,7 @@ export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     fieldOfViewRadians: number | undefined;
     
+    cam: camhandler.Camera | undefined;
  
     
     public initGUI(parameters: {movecube:boolean, moveenv:boolean,fieldOfViewDegrees:number,radiusCam:number,angVelocityCam:number,angVelocityCube: number})
@@ -91,7 +92,7 @@ export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
           this.cam.setRadius(6.0);
           this.cam.translateEye([6.0,0,0]); 
   
-          this.createEnvironmentMapGeo(gl, this.positionLocation!);
+          this.createEnvironmentMapGeo(gl); //, this.positionLocation!);
           this.createEnvironmentMapTexture(gl, 2, this.textureReadyCallback);
           console.log("<- "+"skybox main");
 
@@ -151,7 +152,7 @@ export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
         //  this.cameraPosition = [5*Math.cos(mstime * .004), 0, 5*Math.sin(mstime * .004)];
   
         // draw the environment
-        this.renderenvironmentmap(gl, this.fieldOfViewRadians!,this.vaoEnvironment!, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation!}, mstime);
+        this.renderenvironmentmap(gl, this.fieldOfViewRadians!, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation!}, mstime);
         
         // next frame
         requestAnimationFrame(() => this.render(++mstime));
