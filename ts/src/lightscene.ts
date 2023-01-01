@@ -1,3 +1,4 @@
+// local, invalid shading
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
@@ -7,9 +8,9 @@ import * as camhandler from "./camhandler"   // camera projection
 import * as scene from "./scene"
 
 import { TAnimation1Parameters }  from "./scene"
-import { twglbasescene } from "./twglbasescene";
+import { basescene } from "./basescene";
 
-export class LightScene extends twglbasescene implements scene.SceneInterface
+export class LightScene extends basescene implements scene.SceneInterface
 {
     vertexShaderSource: string;   // =vertexShaderSourceSpotLight
     fragmentShaderSource: string; // =fragmentShaderSourceSpotLight
@@ -18,21 +19,21 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
     // interface
-    sceneenv:number = 2;
+    sceneenv:number = 1;
     positionLocation: number | undefined;
     cameraPosition: [number,number,number] | undefined
     ctime: number = 0;
     scenesize: number = 60;
 
-    typelightLocation: WebGLUniformLocation | undefined ; 
-    viewWorldPositionLocation: WebGLUniformLocation | undefined ;
-    colorLocation: WebGLUniformLocation | undefined ;
-    shininessLocation: WebGLUniformLocation | undefined ;
+    typelightLocation: WebGLUniformLocation | undefined ;           // directional light (0)  point light (1) or spot light (2)
+    viewWorldPositionLocation: WebGLUniformLocation | undefined ;   // camera position passed to shader for point light and spot light
+    lightWorldPositionLocation: WebGLUniformLocation | undefined ;  // light position passed to shader
+    colorLocation: WebGLUniformLocation | undefined ;               // color light
+    shininessLocation: WebGLUniformLocation | undefined ;           // for directional light, intensity. for point light ans spot light, focus
     lightDirectionLocation: WebGLUniformLocation | undefined ;
     innerLimitLocation: WebGLUniformLocation | undefined ;
     outerLimitLocation: WebGLUniformLocation | undefined ;
-    lightWorldPositionLocation: WebGLUniformLocation | undefined ;
-    reverseLightDirectionLocation: WebGLUniformLocation | undefined ;
+    reverseLightDirectionLocation: WebGLUniformLocation | undefined;
 
     // rendering parameters 
     fieldOfViewRadians : number;
@@ -63,7 +64,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
       this.twglprograminfo=new Array(3);   
       this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
 
-      this.fieldOfViewRadians = 120* Math.PI / 180;
+      this.fieldOfViewRadians = 60* Math.PI / 180;
       this.fRotationRadians = 0;
       this.lightRotationX = 0;
       this.lightRotationY = 0;
@@ -93,7 +94,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
     }
 
 
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
     {
         var program = p.program;
         this.animationParameters = cap;
@@ -110,7 +111,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
         this.reverseLightDirectionLocation =  gl.getUniformLocation(program, "u_reverseLightDirection")!; // directional
 
         this.initMatrixUniforms(gl,program);
-        this.initSingleObject(gl, program, this.setGeometry, this.setNormals);
+        this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
@@ -120,8 +121,9 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
 //: [4.0,0.0,0.0];
 //if (!this.animationParameters?.b.move)
 //this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
+//gl.enable(gl.CULL_FACE);
+//gl.enable(gl.DEPTH_TEST);
 
-//return;
         var deltaTime = time - this.ctime;
         this.ctime = time;
 
@@ -129,8 +131,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
 
         // Set the color to use for any light
-        gl.uniform4fv(this.colorLocation!, [0.9, 0, 0.8, 1]); // green
-       // gl.uniform4fv(this.colorLocation!, [0.2, 1.0, 0.3, 1]); // green
+        gl.uniform4fv(this.colorLocation!, [0.2, 1, 0.2, 1]); // green
     
         // Set the shininess for any light. 
         // directional light it is intensity
@@ -164,7 +165,7 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
         // get the zAxis from the matrix
         // negate it because lookAt looks down the -Z axis
         this.lightDirection = [-lmat[8], -lmat[9], -lmat[10]];    
-        gl.uniform3fv(this.lightDirectionLocation!, this.lightDirection);
+        gl.uniform3fv(this.lightDirectionLocation!, this.lightDirection); // spot light
         gl.uniform1f(this.innerLimitLocation!, Math.cos(this.innerLimit));
         gl.uniform1f(this.outerLimitLocation!, Math.cos(this.outerLimit));
 
@@ -213,9 +214,9 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
              30, 150,  30,
   
             // top rung back
-             30,   0,  30,
+            30,   0,  30, 
             100,   0,  30,
-             30,  30,  30,
+            30,  30,  30,
              30,  30,  30,
             100,   0,  30,
             100,  30,  30,
@@ -527,7 +528,11 @@ export class LightScene extends twglbasescene implements scene.SceneInterface
    
   // we need to declare an output for the fragment shader
   out vec4 outColor;
-  
+
+  void maingreen() {
+    outColor = vec4(0.0,1.0,0.0,1.0);
+  }
+
   void main() {
     // because v_normal is a varying it's interpolated
     // so it will not be a uint vector. Normalizing it

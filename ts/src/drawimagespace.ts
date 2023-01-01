@@ -2,11 +2,9 @@ import * as twgl from "twgl.js";          // Lib: Gregg's work
 import * as datgui from "dat.gui";        // Lib: dat.gui
 import * as mtls from "./mouselistener";  // connect events for mouse movement, buttons and wheel
 
-import { BaseApp } from "./baseapp";      // convenient base class initializing gl2 and program(s)
-import { twglbaseapp } from "./twglbaseapp";      // convenient base class initializing gl2 and program(s)
+import * as baseapp from "./baseapp";      // convenient base class initializing gl2 and program(s)
 
-
-export class drawimagespace extends twglbaseapp
+export class drawimagespace extends baseapp.BaseApp
 {
       imagespaceParameters = {
         move: false,

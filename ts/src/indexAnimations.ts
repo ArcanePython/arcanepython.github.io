@@ -7,15 +7,10 @@ import * as fish from "./fishanimation"            // task: bone model (flock)
 import * as manytextures from "./manytextures"     // task: camera projection
 import * as manytexturescene from "./manytexturescene"     // task: camera projection
 import * as drawimagespace from "./drawimagespace" // task: image space texture
-import * as skybox from "./skybox" // task: image space texture
 import * as animation1 from "./animation1" // task: image space texture
-//import * as animation2 from "./animation2" // task: image space texture
 import * as skyboxcube from "./skyboxcube"         // task: show reflecting box
 import * as objmtlimport from "./objmtlimport.js"; // task: obj/mtl file imports
-import * as rotatingcubescene from "./rotatingcubescene";
-import * as spotlightscene from "./spotlightscene";
-import * as pointlightscene from "./pointlightscene";
-import * as directedlightscene from "./directedlightscene";
+import * as rotatingcubescene from "./mixedtexturescene";
 import * as lightscene from "./lightscene";
 import * as objectlist from "./objectlist";
 import * as objectlistscene from "./objectlistscene";
@@ -29,6 +24,7 @@ import * as skyboxscene from "./skyboxscene";
 import * as scene from "./scene";
 
 import { SkyBoxScene } from "./skyboxscene";
+import * as skyboxcubescene from "./skyboxcubescene";
 
 const ShowOBJMTL     = 1;
 const ShowTextures   = 2;
@@ -95,30 +91,36 @@ function preparedefaultparameters(dictPars: Map<string,string>)
   }
 }
 
+var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
+var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0 };
+ 
+function initScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface )
+{
+  var mta1 = new animation1.Animation1(gl, app, scene, dictPars!, cdiv);
+  mta1.main(gl, dictPars!);
+  mta1.initGUI(defaultParameters);
+}
+
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
 {
   // Default parameters for all Animation1 scenes
-  var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
-  var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0 };
  
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
-  if (dictPars?.get("animation1")!=undefined)
+  if (dictPars?.get("animation1")!=undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
+  else if (dictPars?.get("animation3")!=undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl)); 
+  else if (dictPars?.get("animation0")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new rotatingcubescene.RotatingCubeScene(gl), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  }
-  else if (dictPars?.get("animation3")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new lightscene.LightScene(gl), dictPars, cdiv);
+    var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
   } 
   else if (dictPars?.get("animation4")!=undefined)
   {
-    var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars, cdiv);
+    var mta1 = new animation1.Animation1(gl, app, new skyboxcubescene.SkyBoxCubeScene(gl), dictPars, cdiv);
+    //var sbs = mta1.scene as skyboxcubescene.SkyBoxCubeScene;
     mta1.main(gl, dictPars);
+    (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.texture!;
     mta1.initGUI(defaultParameters);
   } 
   else if (dictPars?.get("animation5")!=undefined)
@@ -176,12 +178,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
     sbc.main(gl, dictPars);
     sbc.initGUI({movecube:true, moveenv:true, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
   } 
-  else if (dictPars?.get("skybox")!=undefined)
-  {  
-    var sb  = new skybox.skybox(gl,app,dictPars, cdiv); 
-    sb.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
-    sb.main(gl,dictPars);
-  } 
+ 
    //--- Animations with a specific parameter set ----------------------------------------------------------------------------------------------------------------------------------
    else
    if(dictPars?.get("canvas3dtexture")!=undefined)
@@ -220,7 +217,7 @@ function main()
 {   
  // var canvas: HTMLCanvasElement = document.querySelector("#c")!;
   var canvas: HTMLCanvasElement = document.querySelector("#c")!;
-  var gl: WebGL2RenderingContext|null = canvas.getContext("webgl2", {premultipliedAlpha: false}); // { preserveDrawingBuffer: true }); //,{ premultipliedAlpha: false, powerPreference: 'high-performance' } );
+  var gl: WebGL2RenderingContext|null = canvas.getContext("webgl2", {premultipliedAlpha: false });//, preserveDrawingBuffer: true}); // { preserveDrawingBuffer: true }); //,{ premultipliedAlpha: false, powerPreference: 'high-performance' } );
   if (canvas && gl)
   {
     var app: mtls.MouseListener | undefined; 

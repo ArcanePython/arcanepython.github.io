@@ -1,9 +1,9 @@
+//local version animaton1 invalid culling
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
 import * as mtls from "./mouselistener"; 
 import * as baseapp from "./baseapp";
-import * as twglbaseapp from "./twglbaseapp";
 import * as animationclock from "./animationclock";
 import * as datgui from "dat.gui";
 import * as camhandler from "./camhandler"   // camera projection
@@ -11,7 +11,7 @@ import * as camhandler from "./camhandler"   // camera projection
 
 import * as scene from "./scene"
 
-export class Animation1 extends twglbaseapp.twglbaseapp 
+export class Animation1 extends baseapp.BaseApp
 {
   
     animation1Parameters: scene.TAnimation1Parameters = {
@@ -26,14 +26,21 @@ export class Animation1 extends twglbaseapp.twglbaseapp
     //parameters for the skybox shader
     skyboxLocation: WebGLUniformLocation | undefined;
     viewDirectionProjectionInverseLocation: WebGLUniformLocation | undefined;
-
+   
+    ctime: number = new Date().getTime();
     scene: scene.SceneInterface;                                                     
-    clock: animationclock.AnimationClock = new animationclock.AnimationClock();
+    clock: animationclock.AnimationClock;
+    cam: camhandler.Camera|undefined;
+
+    doclear: boolean = false;
+    doTwglEnv: boolean = true;
 
     constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , cscene: scene.SceneInterface, dictpar:Map<string,string>, cdiv: string)
     {       
         super(cgl, capp, dictpar,cdiv);
         this.scene = cscene;
+        this.clock = new animationclock.AnimationClock();
+        
         console.log("<= animation1 constructor");
     }
     
@@ -107,67 +114,108 @@ export class Animation1 extends twglbaseapp.twglbaseapp
             console.log("init1 skybox"+this.scene.sceneenv+" this.scene.positionLocation="+this.scene.positionLocation);
             this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;
             this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_viewDirectionProjectionInverse")!;
-            this.createEnvironmentMapGeo(gl, this.scene.positionLocation!);
+            gl.useProgram(this.twglprograminfo![0].program);
+            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); //, this.scene.positionLocation!);
+            else this.createEnvironmentMapGeo(gl);  //, this.scene.positionLocation!);
             console.log("init2 skybox"+this.scene.sceneenv);
-            this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureReadyCallback);
-            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo![1]);
-     
+            this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureReadyCallback)!;
+      
         }  else 
-        {
-
-        
-   
-   
-        
-        this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo![1]);
-        requestAnimationFrame(() => this.render(0)); 
+        {       
+            console.log("initial this.clock.frame="+this.clock.frame+" gettime=>"+this.clock.getTime(this.clock.frame));
+            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo![1], this.sceneReadyCallback);
+         // this.scene.resizeCanvas(gl);  
+       //   requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame))); 
         }
             
         console.log("<= animation1 main");
         
     }
 
+    sceneReadyCallback(err: any): void
+    { 
+        var thisinstance = baseapp.instance!;
+        var ainstance = thisinstance as Animation1;
+        console.log("=>Animation1 event sceneReadyCallback");
+        ainstance.scene.resizeCanvas(ainstance.gl!); 
+        console.log("<=Animation1event request first frame.");
+        requestAnimationFrame(() => ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
+        console.log("<=Animation1event sceneReadyCallback ready, first frame requested.");
+    }
+
     textureReadyCallback(err: any, texture: WebGLTexture): void
     { 
         var thisinstance = baseapp.instance!;
         var ainstance = thisinstance as Animation1;
-        console.log("=>Animation1 Environment texture isready.");
-        requestAnimationFrame(() => ainstance.render(0)); 
-        console.log("<=Animation1 Environment texture isready.");
+        //ainstance.scene.resizeCanvas(ainstance.gl!); 
+        console.log("=>Animation1 event textureReadyCallback: ainstance.scene.initScene");
+        ainstance.scene.initScene(ainstance.gl!, ainstance.animation1Parameters, undefined, ainstance.twglprograminfo![1], ainstance.sceneReadyCallback);   
+        //requestAnimationFrame(() => ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
+        console.log("<=Animation1 return from initScene()");
     }
-    
+
     render(time: number) 
     {
         var gl = this.gl!;
+        if (this.doclear)
+        { 
+          //gl.enable(gl.BLEND);
+          //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          gl.clear(gl.DEPTH_BUFFER_BIT);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
+     //   gl.enable(gl.CULL_FACE);
+     //   gl.enable(gl.DEPTH_TEST);     
+      //        
+    
         this.scene.animationParameters = this.animation1Parameters;
-        this.scene.resizeCanvas(gl);  
+       // this.scene.resizeCanvas(gl);  
+    //    if(this.clock.frame==0) 
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        var cam: camhandler.Camera = this.cam!;
+         var cam: camhandler.Camera = this.cam!;
         cam.CamHandlingYUp(gl, this.app!, 1.0, -1.0);   
+       // if ((this.clock.frame%2)==0)
         if (this.scene.sceneenv>0)
         {
-            gl.useProgram(this.twglprograminfo![0].program);
-            var vtime = (this.scene.animationParameters.b.move)?time:0.0;
-
-             if (!this.scene.animationParameters?.b.move) this.cameraPosition = cam?.Position() as [number,number,number];
-             else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.01 * this.scene.animationParameters.b.speed), 0, 
-                                                                                     Math.sin(time * 0.01 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
-       
+         
+            if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
+              else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.01 * this.scene.animationParameters.b.speed), 0, 
+                                                                                      Math.sin(time * 0.01 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
+              
 
 
             //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
             var  fieldOfViewRadians = 60 * Math.PI / 180; 
-            this.renderenvironmentmap(gl, fieldOfViewRadians,this.vaoEnvironment!, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
-           // console.log("render env "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
+            //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
+            //gl.disable(gl.DEPTH_TEST);     
+            gl.useProgram(this.twglprograminfo![0].program);
+            gl.depthFunc(gl.LEQUAL);  
+             if (this.doTwglEnv) 
+              this.renderenvironmentmapTwgl(gl, fieldOfViewRadians,  this.texture!);
+              else
+              { 
+                 gl.disable(gl.CULL_FACE);  
+                this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
+              } // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }
-        if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )         
-          gl.useProgram(this.twglprograminfo![1].program);
-           
-
-        this.scene.drawScene(gl, cam, time);
-
-        requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
+     //   if ((this.clock.frame%2)==1)
+        if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )       
+        {  
+            gl.useProgram(this.twglprograminfo![1].program);
+            gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
+          gl.enable(gl.CULL_FACE);  // only show left-turned triangles
+   
+      //    gl.enable(gl.BLEND);
+      //    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+         // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      
+        //   if (this.clock.frame>60)
+          this.scene.drawScene(gl, cam, time);
+        }
+        gl.flush();
+     //   console.log("frame="+this.clock.frame+" "+time);
+     //   if (this.clock.frame<1)
+      //  if (time<(this.ctime+300)) 
+         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
     } 
 }

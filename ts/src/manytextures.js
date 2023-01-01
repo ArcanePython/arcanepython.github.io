@@ -24,8 +24,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ManyTextures = exports.Tdrawitem = void 0;
 const chroma_js_1 = __importDefault(require("chroma-js"));
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./camhandler")); // camera projection
 const datgui = __importStar(require("dat.gui"));
 class Tdrawitem {

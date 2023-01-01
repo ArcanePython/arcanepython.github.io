@@ -1,5 +1,8 @@
-import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-import { m4 } from "./../node_modules/twgl.js";
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+
+import * as twgl from "twgl.js";    // Greg's work
+import { m4 } from "twgl.js";
 
 import * as mtls from "./mouselistener";     // connect events for buttons and wheel
 import * as camhandler from "./camhandler"   // camera projection
@@ -7,7 +10,7 @@ import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 
 import * as boneanimation from "./boneanimation"
 import * as fish from "./fish"
-import * as twglbaseapp from "./twglbaseapp";
+import * as baseapp from "./baseapp";
 
 import  * as datgui from "dat.gui";
 
@@ -25,7 +28,7 @@ type Tuniforms = {
     color: number[]
   };
 
-export class Skeleton extends twglbaseapp.twglbaseapp
+export class Skeleton extends baseapp.BaseApp
 {
   skeletonParameters = {
     move: false,

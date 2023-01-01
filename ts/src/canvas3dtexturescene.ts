@@ -86,15 +86,16 @@ public constructor(gl: WebGL2RenderingContext)
   console.log("<= scene constructor 3dtexture")
 }
 
-initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo) 
+initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
 {  // Get A WebGL context
   /** @type {HTMLCanvasElement} */
   var canvas = gl.canvas; // document.querySelector("#canvas");
   //var gl = canvas.getContext("webgl2");
   if (!gl) {
+    console.log("ERROR: gl found null in canvas3dtexturescene.initScene()")
     return;
   }
-
+  console.log("=> canvas3dtexturescene.initScene()");
   // Use our boilerplate utils to compile the shaders and link into a program
   this.program = p.program;
   // twgl.createProgramFromSources(gl,
@@ -257,6 +258,10 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
 
   this.gl = gl;
   this.ctime = 0.0;
+
+  console.log("<= canvas3dtexturescene.initScene()");
+
+  sceneReadyCallback(-1);
 //  requestAnimationFrame((time)=>this.drawScene(time));
 //  requestAnimationFrame(drawScene);
 
@@ -340,7 +345,7 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
   modelXRotationRadians: number=0;
   modelYRotationRadians: number=0;
   // Draw the scene.
-  drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
+  public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
  {
  
     // convert to seconds
@@ -355,9 +360,6 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
     this.modelXRotationRadians += -0.4 * deltaTime;
 
   //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-
-  //  gl.enable(gl.CULL_FACE);
-  //  gl.enable(gl.DEPTH_TEST);
 
     {
       // render to our targetTexture by binding the framebuffer

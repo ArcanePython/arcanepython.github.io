@@ -27,6 +27,8 @@ type Tobject = {
   uniforms:Tuniforms 
 };
 
+
+
 export class Tdrawitem 
 {
   do: twgl.DrawObject;
@@ -52,9 +54,11 @@ export class ManyTexturesScene implements scene.SceneInterface
   animationParameters: TAnimation1Parameters | undefined;
   scenesize: number = 40;
 
-  sceneenv:number = 2;
+  sceneenv:number = 1;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
       
+  
+  public static instance: ManyTexturesScene | undefined;
 
   vertexShaderSource = ``;
   fragmentShaderSource = ``;
@@ -63,7 +67,7 @@ export class ManyTexturesScene implements scene.SceneInterface
 
   // Local
   baseHue = this.rand(300);            // color of objects
-  numObjects = 1;                    // object count
+  numObjects = 200;                    // object count
   spreadRadius = this.numObjects/10.0; // random placement range for objects
   dtime = 0.02;                        // animation timer interval
   
@@ -148,6 +152,7 @@ export class ManyTexturesScene implements scene.SceneInterface
     
 constructor(gl: WebGL2RenderingContext)
 {
+  ManyTexturesScene.instance = this;
   this.twglprograminfo=new Array(3);   
   this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
   this.twglprograminfo![2] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
@@ -157,12 +162,13 @@ public extendGUI(gui: datgui.GUI)
 {
 // Slider for sling speed
 // Checkbox forward move animation on/off
-console.log("Manytextures scene extends GUI with movetail"+this.animationParameters!);
+console.log("=> manyTextures extendGUI movetail"+this.animationParameters!);
  gui.add(this.animationParameters!, 'movetail');
  //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
  // Slider for shininess
  //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
  gui.updateDisplay();
+ console.log("<= manyTextures extendGUI");
 }
 
 rand(min:number, max?: number) 
@@ -191,7 +197,7 @@ drawCircle2D(  time: number)
 }
 
 public    CreateAllTextures(gl: WebGLRenderingContext, ctx: CanvasRenderingContext2D, cubemapCtx: CanvasRenderingContext2D, 
-  cubeFaceCvs: HTMLCanvasElement[] | null): {[key: string]: WebGLTexture} | null
+  cubeFaceCvs: HTMLCanvasElement[] | null, cb: twgl.TexturesReadyCallback | undefined): {[key: string]: WebGLTexture} | null
 {
   var posxname = require("./images/yokohama/small/posx.jpg")
   var negxname = require("./images/yokohama/small/negx.jpg")
@@ -278,16 +284,18 @@ public    CreateAllTextures(gl: WebGLRenderingContext, ctx: CanvasRenderingConte
   cubemapFromCanvas: { target: gl.TEXTURE_CUBE_MAP, src: cubemapCtx?.canvas }, 
   //cubemapFrom6Canvases:  { target: gl.TEXTURE_CUBE_MAP, src: cubemapCtx?.canvas }, 
   cubemapFrom6Canvases: { target: gl.TEXTURE_CUBE_MAP, src: cubeFaceCvs! }, // "twgl-full.js:5068 Uncaught unsupported src type" */
-  });
+  }, cb); 
   return textures;
 }
 
 //=====================================================================================================================
+//sceneReadyCallback: (a:any)=>void = this.defaultCallback;
 
 public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }  
 
-public Prepare(gl: WebGL2RenderingContext)
+public Prepare(gl: WebGL2RenderingContext, sceneReadyCallback: (a:any)=>void | undefined)
 {
+   // this.sceneReadyCallback = sceneReadyCallback;
     twgl.setDefaults({attribPrefix: "a_"});
   
     const shapes = [
@@ -350,84 +358,93 @@ public Prepare(gl: WebGL2RenderingContext)
     }    
     if (gl && this.ctx2D && cubemapCtx) 
     {
-        this.textures = this.CreateAllTextures(gl, this.ctx2D!, cubemapCtx, cubeFaceCanvases);    
-        console.log("All textures created."); 
-    }
+      this.textures = this.CreateAllTextures(gl, this.ctx2D!, cubemapCtx, cubeFaceCanvases, //this.texturesReadyCallback);   
+      (err: any, textures: {
+        [key: string]: WebGLTexture;
+      }, sources: {
+        [key: string]: any;
+      }) => {
+          console.log("All textures created. scenesize="+this.scenesize); 
+         
+    
 
-    if (this.textures != null && this.textures != undefined)
-    {
+        if (this.textures != null && this.textures != undefined)
+        {
 
-      // This is soley to make it easy to pick textures at random
-      const twoDTextures = [
-        this.textures.checker,
-        this.textures.stripe,
-        this.textures.hftIcon,
-        this.textures.clover,
-        this.textures.fromCanvas,
-      ];
+          // This is soley to make it easy to pick textures at random
+          const twoDTextures = [
+            this.textures.checker,
+            this.textures.stripe,
+            this.textures.hftIcon,
+            this.textures.clover,
+            this.textures.fromCanvas,
+          ];
 
-      const cubeTextures = [
-        this.textures.yokohama,
-        this.textures.goldengate,
-        this.textures.cubemapFromCanvas,
-        this.textures.cubemapFrom6Canvases,
-        this.textures.cubemapFromArray,
-      ];
+          const cubeTextures = [
+            this.textures.yokohama,
+            this.textures.goldengate,
+            this.textures.cubemapFromCanvas,
+            this.textures.cubemapFrom6Canvases,
+            this.textures.cubemapFromArray,
+          ];
 
-      for (let ii = 0; ii < this.numObjects; ++ii) {
-         let uniforms: Tuniforms;
-         let programInfo;
-         let shape;
-         const renderType = this.rand(0, 2) | 0;
-         switch (renderType) {
-         case 0:  // checker
-           shape = shapes[ii % shapes.length];
-           programInfo = this.twglprograminfo![1];
-           uniforms = {
-             u_diffuseMult: chroma.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
-             u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
-             u_viewInverse: m4.identity(),// this.camera,
-             u_world: m4.identity(),
-             u_worldInverseTranspose: m4.identity(),
-             u_worldViewProjection: m4.identity(),
-           };
-           break;
-         case 1:  // yokohama
-           shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
-           programInfo = this.twglprograminfo![2];
-           uniforms = {
-             u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
-             u_viewInverse:m4.identity(), // this.camera,
-             u_world: m4.identity(),
-             u_worldInverseTranspose: m4.identity(),
-             u_worldViewProjection: m4.identity(),
-           };
-           break;
-           default: throw "wAT!";
-          }   
-          this.drawItems.push( new Tdrawitem({ // Tdrawobject
-            programInfo: programInfo,
-            bufferInfo: shape,
-            uniforms: uniforms
-            },
-            { // Tobject
-              translation: [this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius)],
-              ySpeed: this.rand(1, 3),
-              zSpeed: this.rand(1, 3),
-              uniforms: uniforms,
-            } 
-            ));
+          for (let ii = 0; ii < this.numObjects; ++ii) {
+            let uniforms: Tuniforms;
+            let programInfo;
+            let shape;
+            const renderType = this.rand(0, 2) | 0;
+            switch (renderType) {
+            case 0:  // checker
+              shape = shapes[ii % shapes.length];
+              programInfo = this.twglprograminfo![1];
+              uniforms = {
+                u_diffuseMult: chroma.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
+                u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
+                u_viewInverse: m4.identity(),// this.camera,
+                u_world: m4.identity(),
+                u_worldInverseTranspose: m4.identity(),
+                u_worldViewProjection: m4.identity(),
+              };
+              break;
+            case 1:  // yokohama
+              shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
+              programInfo = this.twglprograminfo![2];
+              uniforms = {
+                u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
+                u_viewInverse:m4.identity(), // this.camera,
+                u_world: m4.identity(),
+                u_worldInverseTranspose: m4.identity(),
+                u_worldViewProjection: m4.identity(),
+              };
+              break;
+              default: throw "wAT!";
+              }   
+              this.drawItems.push( new Tdrawitem({ // Tdrawobject
+                programInfo: programInfo,
+                bufferInfo: shape,
+                uniforms: uniforms
+                },
+                { // Tobject
+                  translation: [this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius)],
+                  ySpeed: this.rand(1, 3),
+                  zSpeed: this.rand(1, 3),
+                  uniforms: uniforms,
+                } 
+                ));
 
-        } // for
-      } // if textures!=null
-
-
+            } // for
+          } // if textures!=null 
+          sceneReadyCallback(0);
+      }); // read callback for textures
+      console.log("<= createAllTextures");
+    } // return in main thread (earlier)
   }
     
-  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo)
+  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
     { 
-      this.Prepare(gl);
+      this.Prepare(gl, sceneReadyCallback);
     }
+
 
   public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
   { 
@@ -436,12 +453,13 @@ public Prepare(gl: WebGL2RenderingContext)
   //  if (!this.animationParameters?.b.move)
   //    this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
 
+  
 
         // update the dynamic texture canvas (shrink and grow circle)
         if (this.animationParameters!.movetail) this.drawCircle2D( time * 0.01); else this.drawCircle2D( 1.0);
         twgl.setTextureFromElement(gl, this.textures!.fromCanvas, this.ctx2D!.canvas);
     
-        // refer camera to Identity world
+        // use Identity world
         var world1 = m4.identity();
        
         // rotate the objects local worlds

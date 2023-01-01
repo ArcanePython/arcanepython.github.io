@@ -1,5 +1,4 @@
 *.pipo
-ts/dist
 ts/node_modules
 ts/.parcel-cache
 *.gyp

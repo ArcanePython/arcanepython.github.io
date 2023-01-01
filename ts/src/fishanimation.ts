@@ -9,12 +9,11 @@ import * as fish from "./fish"
 
 import  * as datgui from "dat.gui";
 import * as baseapp from "./baseapp";
-import * as twglbaseapp from "./twglbaseapp";
 import * as animationclock from "./animationclock";
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-export class FishAnimation extends twglbaseapp.twglbaseapp
+export class FishAnimation extends baseapp.BaseApp
 {          
     fishAnimationParameters = {
       b: this.baseappParameters,

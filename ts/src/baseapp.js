@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseApp = exports.instance = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work, this twglbaseapp provides all tools like programInfo
 const twgl_js_1 = require("twgl.js"); // Greg's work, this baseapp  only imports geometry matrix/vector tools
 const datgui = __importStar(require("dat.gui"));
 exports.instance = null;
@@ -35,101 +36,7 @@ class BaseApp {
         // textures repository
         this.textureaspects = new Map();
         this.textures = null;
-        /*
-           private compileandconnectshaders(gl: WebGL2RenderingContext, program: WebGLProgram, vs: string, fs: string, reportdiv: string)
-           {
-               var serr:string="";
-       
-                   var vsshader = gl.createShader( gl.VERTEX_SHADER);
-                   if (vsshader!=null)
-                   {
-                       gl.shaderSource(vsshader, vs);
-                       gl.compileShader(vsshader);
-                   } else serr+= "vertex shader create issue";
-                   var fshader = gl.createShader( gl.FRAGMENT_SHADER);
-                   if (fshader!=null)
-                   {
-                       gl.shaderSource(fshader, fs);
-                       gl.compileShader(fshader);
-                       
-                   } else serr+= "fragment shader create issue";
-                   if(serr.length>0) document.getElementById(reportdiv)!.innerHTML = serr;
-                   else
-                       {
-                           serr="";
-                           gl.attachShader(program, vsshader!);
-                           gl.deleteShader(vsshader!);
-                           gl.attachShader(program, fshader!);
-                           gl.deleteShader(fshader!);
-                           gl.linkProgram(program);
-                           if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                               serr+=(`Link failed: ${gl.getProgramInfoLog(program)}`);
-                               var logvertexshader = gl.getShaderInfoLog(vsshader!);
-                               if (logvertexshader) serr+=(`${logvertexshader}`);
-                               var logfragmentshader = gl.getShaderInfoLog(fshader!);
-                               if (logfragmentshader) serr+=(`${logfragmentshader}`);
-                               var re = /(\r\n|\r|\n)/gi;
-                               var str = serr.replace(re, "<br>");
-                               document.getElementById(reportdiv)!.innerHTML ="shader issue.."+"<br>"+str;
-                           } else
-                           {
-                               return true;
-                           }
-                           }
-           
-           }
-       
-           //--- base class main() tasks set up WebGL2 program(s) ---------------------------------------------------------------------------
-       
-           private initprograms(gl: WebGL2RenderingContext, reportdiv:string, shaders: {vs:string,fs:string}[])
-           {
-               if (this.program==null || this.program==undefined) this.program=new Array(shaders.length);
-               var i = 0;
-               shaders.forEach((val) => {
-                 var p = gl.createProgram();
-                 if (p!=null)
-                 {
-                   this.compileandconnectshaders(gl,p, val.vs, val.fs, reportdiv);
-                   this.program![i++]=p;
-                 } else document.getElementById(reportdiv)!.innerHTML ="gl.createProgram #1 fails.";
-               });
-               return false;
-           }
-       */
-        /*
-        resizeCanvasToDisplaySize(canvas: HTMLCanvasElement)
-        {
-          // Lookup the size the browser is displaying the canvas in CSS pixels.
-          const displayWidth  = canvas.clientWidth;
-          const displayHeight = canvas.clientHeight;
-          // Check if the canvas is not the same size.
-          const needResize = canvas.width  !== displayWidth ||  canvas.height !== displayHeight;
-          if (needResize) {
-            // Make the canvas the same size
-            canvas.width  = displayWidth;
-            canvas.height = displayHeight;
-          }
-          return needResize;
-        }
-      
-        protected main(gl: WebGL2RenderingContext, dictpar:Map<string,string>, vs: string, fs: string)
-          {
-              if (this.initprograms(gl,"cdiv", [{vs, fs}]) && this.program && this.gl)
-              {
-                  this.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-                  console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-              }
-          }
-      
-          protected mains(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
-          {
-              if (this.initprograms(gl,"cdiv",shaders) && this.program && this.gl)
-              {
-                  this.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-                  console.log("baseapp mains ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-              }
-          }
-      */
+        this.twglprograminfo = null; // there can be several
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
         in vec4 a_position;
@@ -168,6 +75,9 @@ class BaseApp {
             document.getElementById('cdiv').innerHTML = "webgl2 found";
             this.gl = cgl;
             this.app = capp;
+            this.twglprograminfo = new Array(1);
+            this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [this.vsEnvironmentMap, this.fsEnvironmentMap]);
+            document.getElementById('cdiv').innerHTML = "environment shaders initialized";
         }
     }
     onChangeColorValue(value) {
@@ -175,11 +85,11 @@ class BaseApp {
         if (thisinstance.gl != null) {
             var cc = thisinstance.gl.canvas.parentNode;
             var ccd = cc;
-            //  ccd.style.backgroundColor =  value;        
+            ccd.style.backgroundColor = value;
         }
     }
     createGUI(parameters, instanceParameters) {
-        console.log("=> animation1 initGUI " + parameters);
+        console.log("=> baseApp initGUI " + parameters);
         this.baseappParameters = parameters;
         var cc = this.gl.canvas.parentNode;
         var ccd = cc;
@@ -198,22 +108,140 @@ class BaseApp {
         // Color dialog sets background color
         var cel3 = gui.addColor(parameters, 'color0');
         cel3.onChange(this.onChangeColorValue);
+        console.log("<= baseApp initGUI");
         return gui;
     }
-    createEnvironmentMapGeo(gl, positionLocation) {
+    //======================================================================================================
+    defaultTextureReadyCallback(err, texture, source) {
+        console.log("Environment textureA isready.");
+    }
+    straightTextureCallback(err, texture) {
+        console.log("Environment textureB isready.");
+    }
+    //--- used in drawimagespace, reads the texture repository maps textures[] and texureaspects[] ----------------------
+    prepareSurfaceTextures(gl, selectedSurface) {
+        this.textureaspects.set("checker", 1.0);
+        this.textureaspects.set("clover", 1.0);
+        this.textureaspects.set("zelenskyy", 1.0);
+        this.textureaspects.set("aristotle", (512.0 / 512.0));
+        this.textureaspects.set("flagofukraine", (856.0 / 1288.0));
+        this.textureaspects.set("flagofukraine2", (1288.0 / 856.0));
+        this.textureaspects.set("geotriangle", (258.0 / 424.0));
+        this.textureaspects.set("geotriangle2", (212.0 / 424.0));
+        this.textureaspects.set("geotriangle2", (212.0 / 424.0));
+        this.textureaspects.set("protractorT2", (395.0 / 747.0));
+        var gradientname = require("./resources/models/stone/circlegradient.png");
+        var aristotlename = require("./resources/models/stone/aristoteles1.png");
+        var clovername = require("./images/clover.jpg");
+        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+        var flagofukrainname2 = require("./resources/models/stone/flagofukraine2.png");
+        var trianglename = require("./resources/models/stone/geodriehoek.png");
+        var trianglename2 = require("./resources/models/stone/geodriehoek2.png");
+        var protractorT2name = require("./resources/models/stone/protractorT2.png");
+        console.log("setting textures");
+        this.textures = twgl.createTextures(gl, {
+            checker: { mag: gl.NEAREST, min: gl.LINEAR, src: [255, 255, 255, 255, 192, 192, 192, 0, 92, 92, 92, 255, 255, 255, 255, 255,], },
+            clover: { src: clovername },
+            zelenskyy: { src: zelenskyyname },
+            gradient: { src: gradientname },
+            flagofukraine: { src: flagofukrainname },
+            flagofukraine2: { src: flagofukrainname2 },
+            geotriangle: { src: trianglename },
+            geotriangle2: { src: trianglename2 },
+            aristotle: { src: aristotlename },
+            protractorT2: { src: protractorT2name }
+        });
+        console.log("reading textures");
+        if (selectedSurface == "checker")
+            return this.textures.checker;
+        if (selectedSurface == "clover")
+            return this.textures.clover;
+        if (selectedSurface == "zelenskyy")
+            return this.textures.zelenskyy;
+        if (selectedSurface == "gradient")
+            return this.textures.gradient;
+        if (selectedSurface == "flagofukraine")
+            return this.textures.flagofukraine;
+        if (selectedSurface == "flagofukraine2")
+            return this.textures.flagofukraine2;
+        if (selectedSurface == "geotriangle")
+            return this.textures.geotriangle;
+        if (selectedSurface == "geotriangle2")
+            return this.textures.geotriangle2;
+        if (selectedSurface == "aristotle")
+            return this.textures.geotriangle2;
+        if (selectedSurface == "protractorT2")
+            return this.textures.protractorT2;
+    }
+    compileandconnectshaders(gl, program, vs, fs, reportdiv) {
+        var serr = "";
+        var vsshader = gl.createShader(gl.VERTEX_SHADER);
+        if (vsshader != null) {
+            gl.shaderSource(vsshader, vs);
+            gl.compileShader(vsshader);
+        }
+        else
+            serr += "vertex shader create issue";
+        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
+        if (fshader != null) {
+            gl.shaderSource(fshader, fs);
+            gl.compileShader(fshader);
+        }
+        else
+            serr += "fragment shader create issue";
+        if (serr.length > 0)
+            document.getElementById(reportdiv).innerHTML = serr;
+        else {
+            serr = "";
+            gl.attachShader(program, vsshader);
+            gl.deleteShader(vsshader);
+            gl.attachShader(program, fshader);
+            gl.deleteShader(fshader);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                serr += (`Link failed: ${gl.getProgramInfoLog(program)}`);
+                var logvertexshader = gl.getShaderInfoLog(vsshader);
+                if (logvertexshader)
+                    serr += (`${logvertexshader}`);
+                var logfragmentshader = gl.getShaderInfoLog(fshader);
+                if (logfragmentshader)
+                    serr += (`${logfragmentshader}`);
+                var re = /(\r\n|\r|\n)/gi;
+                var str = serr.replace(re, "<br>");
+                document.getElementById(reportdiv).innerHTML = "shader issue.." + "<br>" + str;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+    createEnvironmentMapGeoTwgl(gl) {
+        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+        gl.bindVertexArray(this.vaoEnvironment);
+    }
+    createEnvironmentMapGeo(gl) {
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray();
         gl.bindVertexArray(this.vaoEnvironment);
+        var positionLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
         // Create a buffer for positions
         var positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         // Put the positions in the buffer
         var positions = new Float32Array([
-            -1, -1, 1, -1, -1, 1,
-            -1, 1, 1, -1, 1, 1, // triangle NW-SE-NE
+            1, -1, -1, -1, -1, 1,
+            1, -1, -1, 1, 1, 1, // triangle NW-SE-NE
         ]);
+        //     var positions = new Float32Array(
+        //         [
+        //         -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
+        //         -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
+        //         ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        console.log("createEnvironmentMapGeo - positionLocation=" + positionLocation);
         // Turn on the position attribute
         gl.enableVertexAttribArray(positionLocation);
         // Bind the position buffer.
@@ -313,6 +341,7 @@ class BaseApp {
                 }
             });
         });
+        this.texture = mytexture;
         return mytexture;
     }
     /*
@@ -361,21 +390,40 @@ class BaseApp {
         viewDirectionMatrix[13] = 0;
         viewDirectionMatrix[14] = 0;
         //
-        this.viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewDirectionMatrix);
-        return this.viewDirectionProjectionMatrix;
+        var viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewDirectionMatrix);
+        return viewDirectionProjectionMatrix;
         //
     }
-    renderenvironmentmap(gl, fov, vao, uniformlocs, time) {
+    renderenvironmentmap(gl, fov, uniformlocs, time) {
         // gl.bindVertexArray(vao);
         gl.bindVertexArray(this.vaoEnvironment);
-        this.computeprojectionmatrices(gl, fov);
-        gl.depthFunc(gl.LESS); // use the default depth test
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
+        //    gl.depthFunc(gl.LESS);  // use the default depth test
         // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);
-        // var viewDirectionProjectionInverseMatrix = m4.inverse(this.viewDirectionProjectionMatrix!);
-        gl.uniformMatrix4fv(uniformlocs.invproj, false, twgl_js_1.m4.inverse(this.viewDirectionProjectionMatrix));
+        var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
+        gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(uniformlocs.loc, 0);
-        gl.depthFunc(gl.LEQUAL);
+        //    gl.depthFunc(gl.LEQUAL);
         gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
+        gl.flush();
+        // console.log("<=renderenvironmentmap");
+    }
+    renderenvironmentmapTwgl(gl, fov, texture) {
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+        // Rotate the cube around the x axis
+        //   if (this.skyboxCubeParameters.movecube)
+        //     this.worldMatrix = twgl.m4.axisRotation( [1,0,0] as twgl.v3.Vec3 , mstime * this.skyboxCubeParameters.angVelocityCube);
+        //   else 
+        //     this.worldMatrix = twgl.m4.translation([0,0,0]); // twgl.m4.identity();
+        // draw the environment
+        //     gl.useProgram(this.twglprograminfo![0].program);
+        gl.bindVertexArray(this.vaoEnvironment);
+        twgl.setUniforms(this.twglprograminfo[0], {
+            u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+            u_skybox: texture,
+        });
+        twgl.drawBufferInfo(gl, this.environmentBufferInfo);
+        gl.flush();
     }
 }
 exports.BaseApp = BaseApp;

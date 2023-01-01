@@ -74,7 +74,7 @@ public constructor(gl: WebGL2RenderingContext)
   console.log("<= scene constructor instanced")
 }
 
-  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo) 
+  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
   {
     twgl.setAttributePrefix("a_");
   
@@ -185,9 +185,11 @@ public constructor(gl: WebGL2RenderingContext)
     // this line says this attribute only changes for each 1 instance
     gl.vertexAttribDivisor(colorLoc, 1);
 
+    sceneReadyCallback(0);
+
   }
 
-  drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
+  public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
   {
 
     var gl = this.gl!;

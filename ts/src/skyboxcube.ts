@@ -1,12 +1,11 @@
 import * as twgl from "twgl.js";          // Greg's work
 import * as mtls from "./mouselistener";  // connect events for buttons and wheel
 import * as baseapp from "./baseapp";
-import * as twglbaseapp from "./twglbaseapp";
 import * as camhandler from "./camhandler";  
 
 import  * as datgui from "dat.gui";
 
-export class skyboxcube extends twglbaseapp.twglbaseapp
+export class skyboxcube extends baseapp.BaseApp
 {
     public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv: string)
     {
@@ -30,7 +29,9 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
 
     vaoCube: WebGLVertexArrayObject | undefined;
     reflectingCubeBufferInfo: twgl.BufferInfo | undefined;
-    texture: WebGLTexture| undefined;
+   // texture: WebGLTexture| undefined;
+    cam: camhandler.Camera|undefined;
+
 
     worldMatrix: twgl.m4.Mat4 | undefined;
     viewMatrix: twgl.m4.Mat4 | undefined;
@@ -117,8 +118,8 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
         twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);       
         gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);     
-        gl.depthFunc(gl.LEQUAL);        
+       // gl.enable(gl.DEPTH_TEST);     
+       // gl.depthFunc(gl.LEQUAL);        
     
         // by default, rotate camera position.
         this.cameraPosition = (this.skyboxCubeParameters.moveenv)? [Math.cos(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam, 0, 
@@ -173,7 +174,7 @@ export class skyboxcube extends twglbaseapp.twglbaseapp
         if (this.viewMatrix==undefined)this.viewMatrix=twgl.m4.identity();
         if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
         gl.useProgram(this.twglprograminfo![1].program);      
-        gl.depthFunc(gl.LESS);  // use the default depth test
+      //  gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube!);  
         twgl.setUniforms(this.twglprograminfo![1]!, {
           u_world: this.worldMatrix,

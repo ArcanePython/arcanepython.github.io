@@ -21,10 +21,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skyboxcube = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-const twglbaseapp = __importStar(require("./twglbaseapp"));
+const baseapp = __importStar(require("./baseapp"));
 const camhandler = __importStar(require("./camhandler"));
 const datgui = __importStar(require("dat.gui"));
-class skyboxcube extends twglbaseapp.twglbaseapp {
+class skyboxcube extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
         //-----------------------------------------------------------------------------------------------------------------
@@ -157,8 +157,8 @@ class skyboxcube extends twglbaseapp.twglbaseapp {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
+        // gl.enable(gl.DEPTH_TEST);     
+        // gl.depthFunc(gl.LEQUAL);        
         // by default, rotate camera position.
         this.cameraPosition = (this.skyboxCubeParameters.moveenv) ? [Math.cos(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam, 0,
             Math.sin(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam] : [this.skyboxCubeParameters.radiusCam, 0.0, 0.0];
@@ -203,7 +203,7 @@ class skyboxcube extends twglbaseapp.twglbaseapp {
         if (this.projectionMatrix == undefined)
             this.projectionMatrix = twgl.m4.identity();
         gl.useProgram(this.twglprograminfo[1].program);
-        gl.depthFunc(gl.LESS); // use the default depth test
+        //  gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube);
         twgl.setUniforms(this.twglprograminfo[1], {
             u_world: this.worldMatrix,

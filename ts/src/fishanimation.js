@@ -25,10 +25,10 @@ const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
-const twglbaseapp = __importStar(require("./twglbaseapp"));
+const baseapp = __importStar(require("./baseapp"));
 const animationclock = __importStar(require("./animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class FishAnimation extends twglbaseapp.twglbaseapp {
+class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
         this.fishAnimationParameters = {

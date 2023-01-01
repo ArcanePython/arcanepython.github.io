@@ -1,7 +1,10 @@
 import chroma from "chroma-js";
 
-import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-import { m4 } from "./../node_modules/twgl.js";
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+
+import * as twgl from "twgl.js";    // Greg's work
+import { m4 } from "twgl.js";
 
 import * as mtls from "./mouselistener";
 import * as camhandler from "./camhandler" // camera projection

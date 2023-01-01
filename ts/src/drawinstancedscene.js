@@ -66,7 +66,7 @@ void main() {
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) { }
-    initScene(gl, cap, dictpar, p) {
+    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         twgl.setAttributePrefix("a_");
         this.gl = gl;
         this.program = p.program;
@@ -152,6 +152,7 @@ void main() {
         gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
         // this line says this attribute only changes for each 1 instance
         gl.vertexAttribDivisor(colorLoc, 1);
+        sceneReadyCallback(0);
     }
     drawScene(gl, cam, time) {
         var gl = this.gl;

@@ -20,16 +20,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LightScene = void 0;
+// local, invalid shading
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const twglbasescene_1 = require("./twglbasescene");
-class LightScene extends twglbasescene_1.twglbasescene {
+const basescene_1 = require("./basescene");
+class LightScene extends basescene_1.basescene {
     constructor(gl) {
         super();
         // shaders to merge (here: none)
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         // interface
-        this.sceneenv = 2;
+        this.sceneenv = 1;
         this.ctime = 0;
         this.scenesize = 60;
         this.vertexShaderSourceSpotLight = `#version 300 es
@@ -94,7 +95,11 @@ class LightScene extends twglbasescene_1.twglbasescene {
    
   // we need to declare an output for the fragment shader
   out vec4 outColor;
-  
+
+  void maingreen() {
+    outColor = vec4(0.0,1.0,0.0,1.0);
+  }
+
   void main() {
     // because v_normal is a varying it's interpolated
     // so it will not be a uint vector. Normalizing it
@@ -164,7 +169,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
         //  constructor(gl: WebGL2RenderingContext)
         this.twglprograminfo = new Array(3);
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
-        this.fieldOfViewRadians = 120 * Math.PI / 180;
+        this.fieldOfViewRadians = 60 * Math.PI / 180;
         this.fRotationRadians = 0;
         this.lightRotationX = 0;
         this.lightRotationY = 0;
@@ -191,7 +196,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
         else if (s == "spot light")
             LightScene.instance.typelight = 2; //gl.uniform1i(this.typelightLocation!,2);
     }
-    initScene(gl, cap, dictpar, p) {
+    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         var program = p.program;
         this.animationParameters = cap;
         this.viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
@@ -204,7 +209,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
         this.lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
         this.reverseLightDirectionLocation = gl.getUniformLocation(program, "u_reverseLightDirection"); // directional
         this.initMatrixUniforms(gl, program);
-        this.initSingleObject(gl, program, this.setGeometry, this.setNormals);
+        this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
     drawScene(gl, cam, time) {
         //      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
@@ -212,14 +217,14 @@ class LightScene extends twglbasescene_1.twglbasescene {
         //: [4.0,0.0,0.0];
         //if (!this.animationParameters?.b.move)
         //this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
-        //return;
+        //gl.enable(gl.CULL_FACE);
+        //gl.enable(gl.DEPTH_TEST);
         var deltaTime = time - this.ctime;
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
         // Set the color to use for any light
-        gl.uniform4fv(this.colorLocation, [0.9, 0, 0.8, 1]); // green
-        // gl.uniform4fv(this.colorLocation!, [0.2, 1.0, 0.3, 1]); // green
+        gl.uniform4fv(this.colorLocation, [0.2, 1, 0.2, 1]); // green
         // Set the shininess for any light. 
         // directional light it is intensity
         // for point light and spot light it is concentration of the light
@@ -247,7 +252,7 @@ class LightScene extends twglbasescene_1.twglbasescene {
         // get the zAxis from the matrix
         // negate it because lookAt looks down the -Z axis
         this.lightDirection = [-lmat[8], -lmat[9], -lmat[10]];
-        gl.uniform3fv(this.lightDirectionLocation, this.lightDirection);
+        gl.uniform3fv(this.lightDirectionLocation, this.lightDirection); // spot light
         gl.uniform1f(this.innerLimitLocation, Math.cos(this.innerLimit));
         gl.uniform1f(this.outerLimitLocation, Math.cos(this.outerLimit));
         // --- Draw the geometry.

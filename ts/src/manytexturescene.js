@@ -41,13 +41,13 @@ exports.Tdrawitem = Tdrawitem;
 class ManyTexturesScene {
     constructor(gl) {
         this.scenesize = 40;
-        this.sceneenv = 2;
+        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null; // there are 2 sets of shaders defined here.
         // Local
         this.baseHue = this.rand(300); // color of objects
-        this.numObjects = 1; // object count
+        this.numObjects = 200; // object count
         this.spreadRadius = this.numObjects / 10.0; // random placement range for objects
         this.dtime = 0.02; // animation timer interval
         this.drawItems = []; // resource
@@ -122,6 +122,7 @@ class ManyTexturesScene {
       outColor = color;
     }
     `;
+        ManyTexturesScene.instance = this;
         this.twglprograminfo = new Array(3);
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
         this.twglprograminfo[2] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
@@ -129,12 +130,13 @@ class ManyTexturesScene {
     extendGUI(gui) {
         // Slider for sling speed
         // Checkbox forward move animation on/off
-        console.log("Manytextures scene extends GUI with movetail" + this.animationParameters);
+        console.log("=> manyTextures extendGUI movetail" + this.animationParameters);
         gui.add(this.animationParameters, 'movetail');
         //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
         // Slider for shininess
         //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
         gui.updateDisplay();
+        console.log("<= manyTextures extendGUI");
     }
     rand(min, max) {
         if (max === undefined) {
@@ -154,7 +156,7 @@ class ManyTexturesScene {
             this.ctx2D.stroke();
         }
     }
-    CreateAllTextures(gl, ctx, cubemapCtx, cubeFaceCvs) {
+    CreateAllTextures(gl, ctx, cubemapCtx, cubeFaceCvs, cb) {
         var posxname = require("./images/yokohama/small/posx.jpg");
         var negxname = require("./images/yokohama/small/negx.jpg");
         var posyname = require("./images/yokohama/small/posy.jpg");
@@ -233,12 +235,14 @@ class ManyTexturesScene {
             cubemapFromCanvas: { target: gl.TEXTURE_CUBE_MAP, src: cubemapCtx === null || cubemapCtx === void 0 ? void 0 : cubemapCtx.canvas },
             //cubemapFrom6Canvases:  { target: gl.TEXTURE_CUBE_MAP, src: cubemapCtx?.canvas }, 
             cubemapFrom6Canvases: { target: gl.TEXTURE_CUBE_MAP, src: cubeFaceCvs }, // "twgl-full.js:5068 Uncaught unsupported src type" */
-        });
+        }, cb);
         return textures;
     }
     //=====================================================================================================================
+    //sceneReadyCallback: (a:any)=>void = this.defaultCallback;
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    Prepare(gl) {
+    Prepare(gl, sceneReadyCallback) {
+        // this.sceneReadyCallback = sceneReadyCallback;
         twgl.setDefaults({ attribPrefix: "a_" });
         const shapes = [
             twgl.primitives.createSphereBufferInfo(gl, 1, 24, 12),
@@ -292,71 +296,75 @@ class ManyTexturesScene {
             }
         }
         if (gl && this.ctx2D && cubemapCtx) {
-            this.textures = this.CreateAllTextures(gl, this.ctx2D, cubemapCtx, cubeFaceCanvases);
-            console.log("All textures created.");
-        }
-        if (this.textures != null && this.textures != undefined) {
-            // This is soley to make it easy to pick textures at random
-            const twoDTextures = [
-                this.textures.checker,
-                this.textures.stripe,
-                this.textures.hftIcon,
-                this.textures.clover,
-                this.textures.fromCanvas,
-            ];
-            const cubeTextures = [
-                this.textures.yokohama,
-                this.textures.goldengate,
-                this.textures.cubemapFromCanvas,
-                this.textures.cubemapFrom6Canvases,
-                this.textures.cubemapFromArray,
-            ];
-            for (let ii = 0; ii < this.numObjects; ++ii) {
-                let uniforms;
-                let programInfo;
-                let shape;
-                const renderType = this.rand(0, 2) | 0;
-                switch (renderType) {
-                    case 0: // checker
-                        shape = shapes[ii % shapes.length];
-                        programInfo = this.twglprograminfo[1];
-                        uniforms = {
-                            u_diffuseMult: chroma_js_1.default.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
-                            u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
-                            u_viewInverse: twgl_js_1.m4.identity(),
-                            u_world: twgl_js_1.m4.identity(),
-                            u_worldInverseTranspose: twgl_js_1.m4.identity(),
-                            u_worldViewProjection: twgl_js_1.m4.identity(),
-                        };
-                        break;
-                    case 1: // yokohama
-                        shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
-                        programInfo = this.twglprograminfo[2];
-                        uniforms = {
-                            u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
-                            u_viewInverse: twgl_js_1.m4.identity(),
-                            u_world: twgl_js_1.m4.identity(),
-                            u_worldInverseTranspose: twgl_js_1.m4.identity(),
-                            u_worldViewProjection: twgl_js_1.m4.identity(),
-                        };
-                        break;
-                    default: throw "wAT!";
-                }
-                this.drawItems.push(new Tdrawitem({
-                    programInfo: programInfo,
-                    bufferInfo: shape,
-                    uniforms: uniforms
-                }, {
-                    translation: [this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius)],
-                    ySpeed: this.rand(1, 3),
-                    zSpeed: this.rand(1, 3),
-                    uniforms: uniforms,
-                }));
-            } // for
-        } // if textures!=null
+            this.textures = this.CreateAllTextures(gl, this.ctx2D, cubemapCtx, cubeFaceCanvases, //this.texturesReadyCallback);   
+            (err, textures, sources) => {
+                console.log("All textures created. scenesize=" + this.scenesize);
+                if (this.textures != null && this.textures != undefined) {
+                    // This is soley to make it easy to pick textures at random
+                    const twoDTextures = [
+                        this.textures.checker,
+                        this.textures.stripe,
+                        this.textures.hftIcon,
+                        this.textures.clover,
+                        this.textures.fromCanvas,
+                    ];
+                    const cubeTextures = [
+                        this.textures.yokohama,
+                        this.textures.goldengate,
+                        this.textures.cubemapFromCanvas,
+                        this.textures.cubemapFrom6Canvases,
+                        this.textures.cubemapFromArray,
+                    ];
+                    for (let ii = 0; ii < this.numObjects; ++ii) {
+                        let uniforms;
+                        let programInfo;
+                        let shape;
+                        const renderType = this.rand(0, 2) | 0;
+                        switch (renderType) {
+                            case 0: // checker
+                                shape = shapes[ii % shapes.length];
+                                programInfo = this.twglprograminfo[1];
+                                uniforms = {
+                                    u_diffuseMult: chroma_js_1.default.hsv((this.baseHue + this.rand(0, 60)) % 360, 0.4, 0.8).gl(),
+                                    u_diffuse: twoDTextures[this.rand(0, twoDTextures.length) | 0],
+                                    u_viewInverse: twgl_js_1.m4.identity(),
+                                    u_world: twgl_js_1.m4.identity(),
+                                    u_worldInverseTranspose: twgl_js_1.m4.identity(),
+                                    u_worldViewProjection: twgl_js_1.m4.identity(),
+                                };
+                                break;
+                            case 1: // yokohama
+                                shape = this.rand(0, 2) < 1 ? shapes[1] : shapes[3];
+                                programInfo = this.twglprograminfo[2];
+                                uniforms = {
+                                    u_texture: cubeTextures[this.rand(0, cubeTextures.length) | 0],
+                                    u_viewInverse: twgl_js_1.m4.identity(),
+                                    u_world: twgl_js_1.m4.identity(),
+                                    u_worldInverseTranspose: twgl_js_1.m4.identity(),
+                                    u_worldViewProjection: twgl_js_1.m4.identity(),
+                                };
+                                break;
+                            default: throw "wAT!";
+                        }
+                        this.drawItems.push(new Tdrawitem({
+                            programInfo: programInfo,
+                            bufferInfo: shape,
+                            uniforms: uniforms
+                        }, {
+                            translation: [this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius), this.rand(-this.spreadRadius, this.spreadRadius)],
+                            ySpeed: this.rand(1, 3),
+                            zSpeed: this.rand(1, 3),
+                            uniforms: uniforms,
+                        }));
+                    } // for
+                } // if textures!=null 
+                sceneReadyCallback(0);
+            }); // read callback for textures
+            console.log("<= createAllTextures");
+        } // return in main thread (earlier)
     }
-    initScene(gl, cap, dictpar, p) {
-        this.Prepare(gl);
+    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+        this.Prepare(gl, sceneReadyCallback);
     }
     drawScene(gl, cam, time) {
         //  this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
@@ -369,7 +377,7 @@ class ManyTexturesScene {
         else
             this.drawCircle2D(1.0);
         twgl.setTextureFromElement(gl, this.textures.fromCanvas, this.ctx2D.canvas);
-        // refer camera to Identity world
+        // use Identity world
         var world1 = twgl_js_1.m4.identity();
         // rotate the objects local worlds
         this.drawItems.forEach((obj) => {

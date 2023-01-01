@@ -1,8 +1,10 @@
+
+import * as twgl from "twgl.js";          // Greg's work, this twglbaseapp provides all tools like programInfo
 import { m4, v3 }  from "twgl.js";    // Greg's work, this baseapp  only imports geometry matrix/vector tools
 
 import * as mtls from "./mouselistener";  
-import * as camhandler from "./camhandler";  
 import  * as datgui from "dat.gui";
+
 
 export type TbaseappParameters = {
     color0: string;
@@ -14,7 +16,6 @@ export var instance: BaseApp|null=null;
 
 export class BaseApp
 {    
- 
     baseappParameters: TbaseappParameters = {
         move: false,
         speed: 0.04,
@@ -27,16 +28,21 @@ export class BaseApp
     // textures repository
     public textureaspects:Map<string,number> = new Map<string,number>();
     public textures: {[key: string]: WebGLTexture} | null =null;
+    public texture: WebGLTexture | undefined;
 
     // camera
-    cameraTarget: number[];
-    cameraPosition: number[];
-    cam: camhandler.Camera|undefined;
- 
+    public cameraTarget: number[];
+    public cameraPosition: number[];
+   
     // environment skybox
     public vaoEnvironment: WebGLVertexArrayObject | undefined;
-    viewDirectionProjectionMatrix: m4.Mat4 | undefined;
 
+    public twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
+   
+    //public twglprogram: twgl.ProgramInfo[]|null=null;  // there can be several
+  
+    public environmentBufferInfo:twgl.BufferInfo | undefined;
+ 
     protected constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, divname: string)
     {
         instance = this;
@@ -52,30 +58,32 @@ export class BaseApp
         {
             document.getElementById('cdiv')!.innerHTML = "webgl2 found";      
             this.gl=cgl!;  
-            this.app=capp!;    
+            this.app=capp!;  
+            this.twglprograminfo = new Array(1);
+            this.twglprograminfo![0] = twgl.createProgramInfo(cgl!,[this.vsEnvironmentMap,this.fsEnvironmentMap]);         
+            document.getElementById('cdiv')!.innerHTML = "environment shaders initialized";      
         }
     }
-
-    
+   
     onChangeColorValue(value? : any)
     {
-      var thisinstance = instance!;
-      if (thisinstance.gl!=null)
-      {
-        var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
-        var ccd= (cc as HTMLDivElement);
-      //  ccd.style.backgroundColor =  value;        
-      }
+        var thisinstance = instance!;
+        if (thisinstance.gl!=null)
+        {
+            var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+            var ccd= (cc as HTMLDivElement);
+            ccd.style.backgroundColor =  value;        
+        }
     }
 
     public createGUI(parameters:  {color0: string, move: boolean, speed: number}, instanceParameters: {}): datgui.GUI
     {
-      console.log("=> animation1 initGUI "+parameters);
-      this.baseappParameters= parameters ;
-      var cc = (this.gl!.canvas  as HTMLCanvasElement).parentNode;
-      var ccd= (cc as HTMLDivElement);
-      ccd.style.backgroundColor =  this.baseappParameters.color0;
- 
+        console.log("=> baseApp initGUI "+parameters);
+        this.baseappParameters= parameters ;
+        var cc = (this.gl!.canvas  as HTMLCanvasElement).parentNode;
+        var ccd= (cc as HTMLDivElement);
+        ccd.style.backgroundColor =  this.baseappParameters.color0;
+    
         // park the dat.gui box in the linksdiv below the links, in closed state
         var gui = new datgui.GUI( { autoPlace: false } );
         gui.domElement.id = 'gui_drawimagespace';
@@ -95,11 +103,73 @@ export class BaseApp
         var cel3 = gui.addColor(parameters, 'color0');
 
         cel3.onChange( this.onChangeColorValue);
+        console.log("<= baseApp initGUI");
         return gui;
     }
 
- /*   
-    private compileandconnectshaders(gl: WebGL2RenderingContext, program: WebGLProgram, vs: string, fs: string, reportdiv: string)
+    //======================================================================================================
+
+     
+    defaultTextureReadyCallback(err: any, texture: WebGLTexture, source: twgl.TextureSrc): void
+    { 
+      console.log("Environment textureA isready.");
+    }
+
+    straightTextureCallback(err: any, texture: WebGLTexture)
+    {
+      console.log("Environment textureB isready.");
+    }
+   
+        //--- used in drawimagespace, reads the texture repository maps textures[] and texureaspects[] ----------------------
+
+        public prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
+        {
+          this.textureaspects.set("checker", 1.0);
+          this.textureaspects.set("clover", 1.0);
+          this.textureaspects.set("zelenskyy", 1.0);
+          this.textureaspects.set("aristotle", (512.0/512.0));
+          this.textureaspects.set("flagofukraine", (856.0/1288.0));
+          this.textureaspects.set("flagofukraine2", (1288.0/856.0));
+          this.textureaspects.set("geotriangle", (258.0/424.0));
+          this.textureaspects.set("geotriangle2", (212.0/424.0));
+          this.textureaspects.set("geotriangle2", (212.0/424.0));
+          this.textureaspects.set("protractorT2", (395.0/747.0));
+          var gradientname = require("./resources/models/stone/circlegradient.png");
+          var aristotlename = require("./resources/models/stone/aristoteles1.png");
+          var clovername = require("./images/clover.jpg");
+          var zelenskyyname = require("./resources/models/stone/zelenskii.png");
+          var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+          var flagofukrainname2 = require("./resources/models/stone/flagofukraine2.png");
+          var trianglename = require("./resources/models/stone/geodriehoek.png");
+          var trianglename2 = require("./resources/models/stone/geodriehoek2.png");
+          var protractorT2name = require("./resources/models/stone/protractorT2.png");
+          console.log("setting textures");
+          this.textures = twgl.createTextures(gl, { 
+              checker: {mag: gl.NEAREST, min: gl.LINEAR,src: [255, 255, 255, 255,  192, 192, 192, 0,   92, 92, 92, 255, 255, 255, 255, 255, ],},
+              clover: { src: clovername },
+              zelenskyy: { src: zelenskyyname },
+              gradient: { src: gradientname },
+              flagofukraine: { src: flagofukrainname },
+              flagofukraine2: { src: flagofukrainname2 },
+              geotriangle: { src: trianglename },
+              geotriangle2: { src: trianglename2 },
+              aristotle: { src: aristotlename },
+              protractorT2: { src: protractorT2name }
+            });
+          console.log("reading textures");
+          if (selectedSurface=="checker") return this.textures.checker;
+          if (selectedSurface=="clover") return this.textures.clover;
+          if (selectedSurface=="zelenskyy") return this.textures.zelenskyy;
+          if (selectedSurface=="gradient") return this.textures.gradient;
+          if (selectedSurface=="flagofukraine") return this.textures.flagofukraine;                       
+          if (selectedSurface=="flagofukraine2") return this.textures.flagofukraine2;                       
+          if (selectedSurface=="geotriangle") return this.textures.geotriangle;                       
+          if (selectedSurface=="geotriangle2") return this.textures.geotriangle2;                       
+          if (selectedSurface=="aristotle") return this.textures.geotriangle2;                       
+          if (selectedSurface=="protractorT2") return this.textures.protractorT2;                       
+        } 
+
+    public compileandconnectshaders(gl: WebGL2RenderingContext, program: WebGLProgram, vs: string, fs: string, reportdiv: string)
     {
         var serr:string="";
 
@@ -139,60 +209,7 @@ export class BaseApp
                         return true;
                     }
                     }
-    
     }
-
-    //--- base class main() tasks set up WebGL2 program(s) ---------------------------------------------------------------------------
-
-    private initprograms(gl: WebGL2RenderingContext, reportdiv:string, shaders: {vs:string,fs:string}[])
-    {
-        if (this.program==null || this.program==undefined) this.program=new Array(shaders.length);
-        var i = 0;
-        shaders.forEach((val) => {
-          var p = gl.createProgram();
-          if (p!=null)
-          {
-            this.compileandconnectshaders(gl,p, val.vs, val.fs, reportdiv);
-            this.program![i++]=p;         
-          } else document.getElementById(reportdiv)!.innerHTML ="gl.createProgram #1 fails.";
-        });
-        return false;
-    }     
-*/
-  /*  
-  resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) 
-  {
-    // Lookup the size the browser is displaying the canvas in CSS pixels.
-    const displayWidth  = canvas.clientWidth;
-    const displayHeight = canvas.clientHeight;
-    // Check if the canvas is not the same size.
-    const needResize = canvas.width  !== displayWidth ||  canvas.height !== displayHeight;
-    if (needResize) {
-      // Make the canvas the same size
-      canvas.width  = displayWidth;
-      canvas.height = displayHeight;
-    }
-    return needResize;
-  }
-
-  protected main(gl: WebGL2RenderingContext, dictpar:Map<string,string>, vs: string, fs: string)
-    {
-        if (this.initprograms(gl,"cdiv", [{vs, fs}]) && this.program && this.gl)
-        {
-            this.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-            console.log("baseapp main ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-        } 
-    }
-
-    protected mains(gl: WebGL2RenderingContext, dictpar:Map<string,string>, shaders: {vs:string,fs:string}[])
-    {
-        if (this.initprograms(gl,"cdiv",shaders) && this.program && this.gl)
-        {
-            this.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-            console.log("baseapp mains ok, viewport "+gl.canvas.width+" x "+gl.canvas.height);
-        }
-    }
-*/
 
     //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
 
@@ -223,13 +240,22 @@ export class BaseApp
         }
         `;
 
+        
+    protected createEnvironmentMapGeoTwgl(gl: WebGL2RenderingContext)
+    {
+      this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl,300); 
+      this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo![0], this.environmentBufferInfo)!;
+      gl.bindVertexArray(this.vaoEnvironment);
+    }
     
-    protected createEnvironmentMapGeo(gl: WebGL2RenderingContext, positionLocation: number)
+    protected createEnvironmentMapGeo(gl: WebGL2RenderingContext)
     {
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray()!;
         gl.bindVertexArray(this.vaoEnvironment);
-        
+       
+        var positionLocation = gl.getAttribLocation(this.twglprograminfo![0].program, "a_position");
+      
         // Create a buffer for positions
         var positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
@@ -237,11 +263,17 @@ export class BaseApp
         // Put the positions in the buffer
         var positions = new Float32Array(
             [
-            -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
-            -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
+               1, -1,   -1,-1, -1, 1, // triangle SW-SE-NW
+               1, -1,   -1, 1, 1, 1, // triangle NW-SE-NE
             ]);
+       //     var positions = new Float32Array(
+       //         [
+       //         -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
+       //         -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
+       //         ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         
+        console.log("createEnvironmentMapGeo - positionLocation="+positionLocation);
         // Turn on the position attribute
         gl.enableVertexAttribArray(positionLocation!);
         
@@ -351,6 +383,7 @@ export class BaseApp
                         }
                     });
         });
+        this.texture= mytexture!;
         return mytexture;
     }
 
@@ -404,24 +437,50 @@ export class BaseApp
         viewDirectionMatrix[13] = 0;
         viewDirectionMatrix[14] = 0;
         //
-        this.viewDirectionProjectionMatrix =  m4.multiply( projectionMatrix!, viewDirectionMatrix!);
+        var viewDirectionProjectionMatrix =  m4.multiply( projectionMatrix!, viewDirectionMatrix!);
 
-        return this.viewDirectionProjectionMatrix;
+        return viewDirectionProjectionMatrix;
         //
     }
  
-    public renderenvironmentmap(gl: WebGL2RenderingContext, fov:number, vao: WebGLVertexArrayObject, uniformlocs: {invproj: WebGLUniformLocation ,loc:WebGLUniformLocation }, time: number)
+    public renderenvironmentmap(gl: WebGL2RenderingContext, fov:number,  uniformlocs: {invproj: WebGLUniformLocation ,loc:WebGLUniformLocation }, time: number)
     {          
+        
+   
        // gl.bindVertexArray(vao);
        gl.bindVertexArray(this.vaoEnvironment!);
-        this.computeprojectionmatrices(gl,   fov);
-        gl.depthFunc(gl.LESS);  // use the default depth test
+       var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl,   fov);
+    //    gl.depthFunc(gl.LESS);  // use the default depth test
        // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);
-       // var viewDirectionProjectionInverseMatrix = m4.inverse(this.viewDirectionProjectionMatrix!);
-        gl.uniformMatrix4fv(uniformlocs.invproj, false, m4.inverse(this.viewDirectionProjectionMatrix!));
+        var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix!);
+        gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(uniformlocs.loc, 0);
-        gl.depthFunc(gl.LEQUAL);
+    //    gl.depthFunc(gl.LEQUAL);
         gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
+        gl.flush();
+       // console.log("<=renderenvironmentmap");
+    }
+
+    public renderenvironmentmapTwgl(gl: WebGL2RenderingContext, fov:number, texture: WebGLTexture)
+    {
+         
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+      
+        // Rotate the cube around the x axis
+     //   if (this.skyboxCubeParameters.movecube)
+     //     this.worldMatrix = twgl.m4.axisRotation( [1,0,0] as twgl.v3.Vec3 , mstime * this.skyboxCubeParameters.angVelocityCube);
+     //   else 
+     //     this.worldMatrix = twgl.m4.translation([0,0,0]); // twgl.m4.identity();
+
+        // draw the environment
+   //     gl.useProgram(this.twglprograminfo![0].program);
+        gl.bindVertexArray(this.vaoEnvironment!);
+        twgl.setUniforms( this.twglprograminfo![0], { 
+          u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+          u_skybox: texture,
+        });
+        twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
+        gl.flush();
     }
 
 }

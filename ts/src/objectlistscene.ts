@@ -61,6 +61,8 @@ export class ObjectListScene  implements scene.SceneInterface
   
   void main() {
       outColor = v_color * u_colorMult + u_colorOffset;
+      
+      //outColor=vec4(1.0,0.0,0.0,1.0);
   }
   `;
 
@@ -76,7 +78,7 @@ export class ObjectListScene  implements scene.SceneInterface
   cz: number=0;
   vx: number=0;
   vy: number=0;
-  vz: number=0.05;
+  vz: number=0; //0.05;
 
   public constructor(gl: WebGL2RenderingContext)
   {
@@ -91,7 +93,7 @@ export class ObjectListScene  implements scene.SceneInterface
     return enc.decode(b);
   }
 
-  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo) 
+  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
   {  
     this.gl = gl;
     this.fieldOfViewRadians = (60.0* Math.PI / 180);
@@ -101,31 +103,36 @@ export class ObjectListScene  implements scene.SceneInterface
     this.nodeInfosByName = undefined;
     var nodefact = new objectnode.NodesProducer(p,cubeBufferInfo);
     var parcls=require('./resources/blockguy.json');
-  /*  var mydata= this.FetchText(parcls).then ((s: string)=> {
-          console.log("mydata="+mydata +  " s="+s);
+    var mydata= this.FetchText(parcls).then ((s: string)=> {
+       //   console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
           this.scenetree = nodefact.makeNode(nodedescriptions);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
           this.nodeInfosByName= nodefact.nodeInfosByName;
+          sceneReadyCallback(0);
         });
-    */
+    
         
-        var nodedescriptions: NodeJson = JSON.parse(this.sjson);
+ /*       var nodedescriptions: NodeJson = JSON.parse(this.sjson);
           this.scenetree = nodefact.makeNode(nodedescriptions);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
-          this.nodeInfosByName= nodefact.nodeInfosByName;
+          this.nodeInfosByName= nodefact.nodeInfosByName; */
   }
 
-  drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
+  public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
   {
+ //   gl.enable(gl.BLEND);
+ //   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+   // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   
     // check if JSon read and converted
-    if (!this.nodeInfosByName) return; 
+   // if (!this.nodeInfosByName) return; 
     
+  /*  
     var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
   
-  /*  
     // setup a fixed camera's projection matrix (Gregg's code)
     var projectionMatrix =
         m4.perspective(this.fieldOfViewRadians!, aspect, 1, 200);
@@ -148,7 +155,7 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
 
    // setup a mouse-controlled camhandler camera
    var speed = 3;
-    
+ /*   
    //cam.target = [this.cx, this.cy, this.cz];
    //cam.translateEye([this.vx*speed/4.0,this.vy*speed/4.0,this.vz*speed/4.0])
    var zNear = 1;
@@ -160,7 +167,7 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
    var cameraMatrix = cam.lookAt; // Lx delegate task elsewhere m4.lookAt(camera, target, up);
    // Make a view matrix from the camera matrix.
    var viewMatrix = m4.inverse(cameraMatrix);
-   // create a viewProjection matrix. This will both apply perspective
+ */  // create a viewProjection matrix. This will both apply perspective
    // AND move the world so that the camera is effectively the origin
    var viewProjectionMatrix = cam.viewProjection;// m4.multiply(projectionMatrix, viewMatrix);
 

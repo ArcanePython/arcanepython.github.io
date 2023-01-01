@@ -25,13 +25,13 @@ class SkyBoxScene {
     constructor() {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = 2;
+        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    initScene(gl, cap, dictpar, progenv) { }
+    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) { sceneReadyCallback(0); }
     extendGUI(gui) { }
     drawScene(gl, cam, time) { }
 }
