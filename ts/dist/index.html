@@ -153,7 +153,7 @@ str += `
         Animations (bone model)<br>
         `;
 // str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
-str += lnk(commonhtml + "?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39", "Zelenski whales");
+str += lnk(commonhtml + "?skeleton&radius0=60&hx=1.0&hy=0.2&mesh=strip&stride=180&numrows=39", "Zelensky whales");
 str += lnk(commonhtml + "?fish&radius0=60&hx=1.6&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1", "Ukrainian Fish");
 str += `
         <p>
@@ -185,14 +185,24 @@ linksdiv.innerHTML = str + "<p>"; // (neat way to do it on a server, but Parcel 
  //  });
 
 </script>    
-<!-- Use this to accomodate local debug, using VS, tsconfig and the current Parcel context -->
-<!-- script src="src/indexAnimations.js" type="module"></script -->
+<!--Use this while debugging, and before a Parcel fresh build -->
+<script src="/index.5710aea2.js" defer=""></script>
 
-<!-- Use this for GitHib. Update below link on each release -->
-<script src="/index.0df9a80e.js"></script>
-        
-<!--script src="dist/index.0df9a80e.js"></script -->
+<!-- For  a fresh build, clear \Dist locally and invoke Parcel build.
+     the result (with current Parcel.mdb) is: dist/index.5710aea2.js  -->
 
-<script src="/ts.3464ddca.js"></script></body>
+<!--Use this for index.html on GitHib -->
+<!--script src="dist/index.5710aea2.js"></script -->
+
+<!--Or this.. -->
+<script language="Javascript">var commonjsparcel = "index.5710aea2.js";
+document.addEventListener("DOMContentLoaded", ()=>{
+    document.head.appendChild(document.createElement("script")).src = "dist/" + commonjsparcel;
+});
+
+</script>
+
+
+</body>
 </html>
       
