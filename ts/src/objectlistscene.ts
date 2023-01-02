@@ -103,7 +103,7 @@ export class ObjectListScene  implements scene.SceneInterface
     this.nodeInfosByName = undefined;
     var nodefact = new objectnode.NodesProducer(p,cubeBufferInfo);
     var parcls=require('./resources/blockguy.json');
-    var mydata= this.FetchText(parcls).then ((s: string)=> {
+   /* var mydata= this.FetchText(parcls).then ((s: string)=> {
        //   console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
           this.scenetree = nodefact.makeNode(nodedescriptions);
@@ -112,13 +112,15 @@ export class ObjectListScene  implements scene.SceneInterface
           this.nodeInfosByName= nodefact.nodeInfosByName;
           sceneReadyCallback(0);
         });
-    
+    */
         
- /*       var nodedescriptions: NodeJson = JSON.parse(this.sjson);
+        var nodedescriptions: NodeJson = JSON.parse(this.sjson);
           this.scenetree = nodefact.makeNode(nodedescriptions);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
-          this.nodeInfosByName= nodefact.nodeInfosByName; */
+          this.nodeInfosByName= nodefact.nodeInfosByName; 
+          sceneReadyCallback(0);
+   
   }
 
   public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
