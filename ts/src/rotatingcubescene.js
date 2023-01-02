@@ -174,8 +174,8 @@ class RotatingCubeScene {
         this.ctime = time;
         // Animate the rotation
         if (this.animationParameters.movetail) {
-            this.modelYRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
-            this.modelXRotationRadians += 0.005 * this.animationParameters.b.speed * this.animationParameters.sling * deltaTime;
+            this.modelYRotationRadians += 0.025 * this.animationParameters.b.speed * deltaTime;
+            this.modelXRotationRadians += 0.001 * this.animationParameters.b.speed * this.animationParameters.sling * deltaTime;
         }
         var matrix = twgl_js_1.m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
         matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
