@@ -131,7 +131,7 @@ export class LightScene extends basescene implements scene.SceneInterface
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
 
         // Set the color to use for any light
-        gl.uniform4fv(this.colorLocation!, [0.2, 1, 0.2, 1]); // green
+        gl.uniform4fv(this.colorLocation!, [1.0, 0, 0.2, 1]); // red
     
         // Set the shininess for any light. 
         // directional light it is intensity

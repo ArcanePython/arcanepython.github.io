@@ -201,8 +201,8 @@ export class RotatingCubeScene implements scene.SceneInterface
       // Animate the rotation
       if (this.animationParameters!.movetail)
       {
-        this.modelYRotationRadians += 0.025* this.animationParameters!.b.speed * deltaTime;
-        this.modelXRotationRadians += 0.001* this.animationParameters!.b.speed * this.animationParameters!.sling * deltaTime;   
+        this.modelYRotationRadians += 0.0025* this.animationParameters!.b.speed * deltaTime;
+        this.modelXRotationRadians += 0.0001* this.animationParameters!.b.speed * this.animationParameters!.sling * deltaTime;   
       }  
       var matrix = m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
       matrix = m4.rotateY(matrix, this.modelYRotationRadians);            
@@ -222,7 +222,7 @@ export class RotatingCubeScene implements scene.SceneInterface
       // Draw the geometry.
       var primitiveType = gl.TRIANGLES;
       var offset = 0;
-      var count = 6 * 6;
+      var count = 5 * 6;
       gl.drawArrays(primitiveType, offset, count);
     }
 
