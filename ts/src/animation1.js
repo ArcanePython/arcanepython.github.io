@@ -36,7 +36,7 @@ class Animation1 extends baseapp.BaseApp {
         };
         this.ctime = new Date().getTime();
         this.doclear = false;
-        this.doTwglEnv = true;
+        this.doTwglEnv = false;
         this.scene = cscene;
         this.clock = new animationclock.AnimationClock();
         console.log("<= animation1 constructor");

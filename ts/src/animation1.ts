@@ -33,7 +33,7 @@ export class Animation1 extends baseapp.BaseApp
     cam: camhandler.Camera|undefined;
 
     doclear: boolean = false;
-    doTwglEnv: boolean = true;
+    doTwglEnv: boolean = false;
 
     constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , cscene: scene.SceneInterface, dictpar:Map<string,string>, cdiv: string)
     {       
