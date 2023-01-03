@@ -20842,6 +20842,7 @@ class Animation1 extends baseapp.BaseApp {
         console.log("<=Animation1 return from initScene()");
     }
     render(time) {
+        var _a, _b;
         var gl = this.gl;
         if (this.doclear) {
             //gl.enable(gl.BLEND);
@@ -20860,10 +20861,21 @@ class Animation1 extends baseapp.BaseApp {
         cam.CamHandlingYUp(gl, this.app, 1.0, -1);
         // if ((this.clock.frame%2)==0)
         if (this.scene.sceneenv > 0) {
-            /*    if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
-                  else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.01 * this.scene.animationParameters.b.speed), 0,
-                                                                                          Math.sin(time * 0.01 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
-              */ //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
+            if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
+                cam === null || cam === void 0 ? void 0 : cam.Position()[0],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[1],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[2]
+            ];
+            else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.b.move) ? [
+                Math.cos(time * 0.01 * this.scene.animationParameters.b.speed),
+                0,
+                Math.sin(time * 0.01 * this.scene.animationParameters.b.speed)
+            ] : [
+                1.0,
+                0.0,
+                0.0
+            ];
+            //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
             var fieldOfViewRadians = 60 * Math.PI / 180;
             //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
             //gl.disable(gl.DEPTH_TEST);     
