@@ -27,7 +27,7 @@ export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
     skyboxLocation: WebGLUniformLocation | undefined;
     viewDirectionProjectionInverseLocation: WebGLUniformLocation | undefined;
  
-    positionLocation: number | undefined; // WebGLUniformLocation | undefined;
+    positionAttributeLocation: number | undefined; // WebGLUniformLocation | undefined;
     fieldOfViewRadians: number | undefined;
     
     cam: camhandler.Camera | undefined;
@@ -78,10 +78,10 @@ export class skybox extends twglbaseapp.twglbaseapp  // use m4, v3  from twgl
           // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
           //super.main(gl, dictpar, this.vsEnvironmentMap, this.fsEnvironmentMap);
           console.log("skybox.main - find getAttribLocations");
-          this.positionLocation = gl.getAttribLocation(this.twglprograminfo![0].program, "a_position");
+          this.positionAttributeLocation = gl.getAttribLocation(this.twglprograminfo![0].program, "a_position");
           this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;
           this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_viewDirectionProjectionInverse")!;
-          console.log("Positionlocation="+this.positionLocation);
+          console.log("Positionlocation="+this.positionAttributeLocation);
           console.log("skyboxLocation="+this.skyboxLocation);
           console.log("viewDirectionProjectionInverseLocation="+this.viewDirectionProjectionInverseLocation); 
           

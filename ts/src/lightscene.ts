@@ -114,8 +114,28 @@ export class LightScene extends basescene implements scene.SceneInterface
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
 
+    public restoreContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+    {
+      // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
+    }
+ 
+
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
+   
+
 //      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
 //        Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
 //: [4.0,0.0,0.0];
@@ -129,7 +149,8 @@ export class LightScene extends basescene implements scene.SceneInterface
 
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
-
+        this.restoreContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
+ 
         // Set the color to use for any light
         gl.uniform4fv(this.colorLocation!, [1.0, 0, 0.2, 1]); // red
     

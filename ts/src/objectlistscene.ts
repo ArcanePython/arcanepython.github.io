@@ -1,19 +1,22 @@
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
-import * as objectnode from "./objectnode";
+import * as objectnode from "./objectnode"; 
 import * as scene from "./scene"
 import * as datgui from "dat.gui";
 import * as camhandler from "./camhandler"   // camera projection
 
 import { TAnimation1Parameters }  from "./scene"
 
+/*
 interface NodeJson {
   draw: boolean;
   name: string;
+  scaling:number[];
   translation: number[];
   children: NodeJson[];
 }
+*/
 
 export class ObjectListScene  implements scene.SceneInterface
 {
@@ -32,38 +35,36 @@ export class ObjectListScene  implements scene.SceneInterface
   
   vertexShaderSource = `#version 300 es
 
-  in vec4 a_position;
-  in vec4 a_color;
-  
-  uniform mat4 u_matrix;
-  
-  out vec4 v_color;
-  
-  void main() {
-    // Multiply the position by the matrix.
-    gl_Position = u_matrix * a_position;
-  
-    // Pass the color to the fragment shader.
-    v_color = a_color;
-  }
+    in vec4 a_position;
+    in vec4 a_color;
+    
+    uniform mat4 u_matrix;
+    
+    out vec4 v_color;
+    
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_matrix * a_position;
+    
+      // Pass the color to the fragment shader.
+      v_color = a_color;
+    }
   `;
   
-    fragmentShaderSource = `#version 300 es
-  precision highp float;
-  
-  // Passed in from the vertex shader.
-  in vec4 v_color;
-  
-  uniform vec4 u_colorMult;
-  uniform vec4 u_colorOffset;
-  
-  out vec4 outColor;
-  
-  void main() {
-      outColor = v_color * u_colorMult + u_colorOffset;
-      
-      //outColor=vec4(1.0,0.0,0.0,1.0);
-  }
+  fragmentShaderSource = `#version 300 es
+    precision highp float;
+    
+    // Passed in from the vertex shader.
+    in vec4 v_color;
+    
+    uniform vec4 u_colorMult;
+    uniform vec4 u_colorOffset;
+    
+    out vec4 outColor;
+    
+    void main() {
+        outColor = v_color * u_colorMult + u_colorOffset;
+    }
   `;
 
   // initialized in main() used in drawScene()
@@ -71,14 +72,13 @@ export class ObjectListScene  implements scene.SceneInterface
   objectsToDraw: twgl.DrawObject[] = [];
   objects : objectnode.Node[] = [];
 
-
   // state
   cx: number=0;
   cy: number=0;
-  cz: number=0;
-  vx: number=0;
+  cz: number=10;
+  vx: number=0.0;
   vy: number=0;
-  vz: number=0; //0.05;
+  vz: number=0.0;
 
   public constructor(gl: WebGL2RenderingContext)
   {
@@ -98,12 +98,22 @@ export class ObjectListScene  implements scene.SceneInterface
     this.gl = gl;
     this.fieldOfViewRadians = (60.0* Math.PI / 180);
     var cubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0);  // create the cube
+    var sphereBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0);  // create the cube
     // spheres
     // var cubeBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
     this.nodeInfosByName = undefined;
     var nodefact = new objectnode.NodesProducer(p,cubeBufferInfo);
     var parcls=require('./resources/blockguy.json');
-   /* var mydata= this.FetchText(parcls).then ((s: string)=> {
+
+    var nodedescriptions: objectnode.NodeJson = JSON.parse(this.sjson);
+    this.scenetree = nodefact.makeNode(nodedescriptions,undefined);// -Math.PI/4.0);
+    this.objects = nodefact.objects;
+    this.objectsToDraw = nodefact.objectsToDraw;
+    this.nodeInfosByName= nodefact.nodeInfosByName;
+    sceneReadyCallback(0);
+
+    /*
+    var mydata= this.FetchText(parcls).then ((s: string)=> {
        //   console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
           this.scenetree = nodefact.makeNode(nodedescriptions);
@@ -112,15 +122,12 @@ export class ObjectListScene  implements scene.SceneInterface
           this.nodeInfosByName= nodefact.nodeInfosByName;
           sceneReadyCallback(0);
         });
-    */
-        
-        var nodedescriptions: NodeJson = JSON.parse(this.sjson);
-          this.scenetree = nodefact.makeNode(nodedescriptions);
-          this.objects = nodefact.objects;
-          this.objectsToDraw = nodefact.objectsToDraw;
-          this.nodeInfosByName= nodefact.nodeInfosByName; 
-          sceneReadyCallback(0);
-   
+        */
+  }
+
+  public setRotationAdjust(ni: {[key: string]: objectnode.NodeInfoByName},name: string, axis: number, adjust: number)
+  {
+    if (ni[name]!=undefined) ni[name].trs.rotation[axis] =  adjust;
   }
 
   public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
@@ -156,7 +163,7 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
 */
 
    // setup a mouse-controlled camhandler camera
-   var speed = 3;
+   var speed = 1;
  /*   
    //cam.target = [this.cx, this.cy, this.cz];
    //cam.translateEye([this.vx*speed/4.0,this.vy*speed/4.0,this.vz*speed/4.0])
@@ -176,45 +183,43 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
 
     // Animation
     var adjust;
-    var c = time * 0.001 * speed;
+    var c = time * 0.003 * speed;
     adjust = Math.abs(Math.sin(c));
 
     var nodeInfosByName= this.nodeInfosByName!;
     nodeInfosByName["point between feet"].trs.translation[1] = adjust;
+
+    this.setRotationAdjust(nodeInfosByName,"point between feet",1,0.0); //Math.atan2(this.vx, this.vz));
     adjust = Math.sin(c);
-    nodeInfosByName["left-leg" ].trs.rotation[0] =  adjust;
-    nodeInfosByName["right-leg"].trs.rotation[0] = -adjust;
+    this.setRotationAdjust(nodeInfosByName,"left-leg",0,adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-leg",0,-adjust);
     adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-calf" ].trs.rotation[0] = -adjust;
-    nodeInfosByName["right-calf"].trs.rotation[0] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"left-calf",0,-adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-calf",0,adjust);
     adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-foot" ].trs.rotation[0] = -adjust;
-    nodeInfosByName["right-foot"].trs.rotation[0] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"left-foot",0,-adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-foot",0,adjust);
 
     adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["left-arm" ].trs.rotation[0] =  adjust;
-    nodeInfosByName["left-arm" ].trs.rotation[1] =  adjust;
-    nodeInfosByName["right-arm"].trs.rotation[2] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"left-arm",2,adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-arm",2,adjust);
     adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-forearm" ].trs.rotation[0] =  adjust;
-    nodeInfosByName["left-forearm" ].trs.rotation[1] =  adjust;
-    nodeInfosByName["right-forearm"].trs.rotation[2] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"left-forearm",2,adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-forearm",2,adjust);
     adjust = Math.sin(c - 0.1) * 0.4;
-    nodeInfosByName["left-hand" ].trs.rotation[2] =  adjust;
-    nodeInfosByName["right-hand"].trs.rotation[2] =  adjust;
-    nodeInfosByName["left-hand" ].trs.rotation[1] =  adjust;
-    nodeInfosByName["right-hand"].trs.rotation[1] =  adjust;
-
+    this.setRotationAdjust(nodeInfosByName,"left-hand",2,adjust);
+    this.setRotationAdjust(nodeInfosByName,"right-hand",2,adjust);
+   
     adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["waist"].trs.rotation[1] =  adjust;
-    adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["torso"].trs.rotation[1] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"waist",1,adjust);
+    adjust = Math.sin(c) * 0.2;
+    this.setRotationAdjust(nodeInfosByName,"torso",1,adjust);
     adjust = Math.sin(c + 0.25) * 0.4;
-    nodeInfosByName["neck"].trs.rotation[1] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"neck",1,adjust);
     adjust = Math.sin(c + 0.5) * 0.4;
-    nodeInfosByName["head"].trs.rotation[1] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"head",1,adjust);
     adjust = Math.cos(c * 2) * 0.4;
-    nodeInfosByName["head"].trs.rotation[0] =  adjust;
+    this.setRotationAdjust(nodeInfosByName,"head",0,adjust);
 
     // Update all world matrices in the scene graph
     var currentTranslation: m4.Mat4 = m4.translation([this.cx,this.cy,this.cz]);
@@ -228,33 +233,80 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
         object.drawInfo!.uniforms.u_matrix = m4.multiply(viewProjectionMatrix, object.worldMatrix);
     });
 
-    // Draw the objects
-    twgl.drawObjectList(gl, this.objectsToDraw);
-  }
+     // Draw the objects using Gregg's drawObjectList (this will clear the background)
+    //  twgl.drawObjectList(gl, this.objectsToDraw);
+ 
+    var init=false;
+    // ->drawObjectList replacement..
+    // draw each object using drawBufferInfo()
+    //  this.objectsToDraw.forEach(d => {  
+    //    .. best construct, but I need a break, so..
+    for (var i:number=0; i<this.objectsToDraw.length; i++) {
+        var d = this.objectsToDraw[i];
+        // gl.useProgram(d.programInfo.program); // no effect
+        twgl.setUniforms(d.programInfo,d.uniforms); // ok
 
+        // needed, but inserting this one will clear the background!
+        twgl.setBuffersAndAttributes(gl, d.programInfo, d.bufferInfo!);  
+      /*
+        // -> "setBuffersAndAttributes" replace
+        // (marked obsolete, not published) twgl.setAttributes(programInfo.attribSetters || programInfo, buffers.attribs);
+        // setAttributes written out..
+        // leaving this out.. will not clear the background, but draw faulty geometry!
+        if (init) 
+          for (var name in d.bufferInfo!.attribs) {
+            var setter = d.programInfo.attribSetters[name]; 
+            if (setter) 
+            { // a_position
+              //console.log("set  "+name +"="+d.bufferInfo!.attribs[name]); 
+              setter!(d.bufferInfo!.attribs[name]); // even if called once, inserting this will clear the background!
+            }
+          }
+        init=false;
+
+        // ok, needed
+        if (d.bufferInfo?.indices) {
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, d.bufferInfo?.indices);
+        }
+        */
+
+        // <- "setBuffersAndAttributes"
+        //break; // doesn't matter! background is cleared on the second draw
+        twgl.drawBufferInfo(gl,d.bufferInfo!,gl.TRIANGLES,d.bufferInfo?.numElements,0,undefined); 
+        //break
+      };
+
+    }
+
+  
  sjson = `{
   "draw": false,
   "name": "point between feet",
+  "scaling": [1,1,1],
   "translation":[0,0,0],
   "children": [
     {
        "draw": true,
        "name": "waist",
+       "scaling": [1,1,1],
        "translation": [0, 0, 0],
        "children": [
          {
            "draw": true,
            "name": "torso",
+           "scaling": [1,1,1],
            "translation": [0, 2, 0],
            "children": [
              {
                "draw": true,
                "name": "neck",
+               "scaling": [1,1,1],
                "translation": [0, 1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "head",
+                   "scaling": [1,1,1],
                    "translation": [0, 1, 0],
                    "children": []
                  }
@@ -263,16 +315,19 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
              {
                "draw": true,
                "name": "left-arm",
+               "scaling": [1,1,1],
                "translation": [-1, 0, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "left-forearm",
+                   "scaling": [1,1,1],
                    "translation": [-1, 0, 0],
                    "children": [
                      {
                        "draw": true,
                        "name": "left-hand",
+                       "scaling": [1,1,1],
                        "translation": [-1, 0, 0],
                        "children":[]
                      }
@@ -283,16 +338,19 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
              {
                "draw": true,
                "name": "right-arm",
+               "scaling": [1,1,1],
                "translation": [1, 0, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "right-forearm",
+                   "scaling": [1,1,1],
                    "translation": [1, 0, 0],
                    "children": [
                      {
                        "draw": true,
                        "name": "right-hand",
+                       "scaling": [1,1,1],
                        "translation": [1, 0, 0],
                        "children":[]
                      }
@@ -310,11 +368,13 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
              {
                "draw": true,
                "name": "left-calf",
+               "scaling": [1,1,1],
                "translation": [0, -1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "left-foot",
+                   "scaling": [1,1,1],
                    "translation": [0, -1, 0],
                    "children": []
                  }
@@ -325,16 +385,19 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
          {
            "draw": true,
            "name": "right-leg",
+           "scaling": [1,1,1],
            "translation": [1, -1, 0],
            "children": [
              {
                "draw": true,
                "name": "right-calf",
+               "scaling": [1,1,1],
                "translation": [0, -1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "right-foot",
+                   "scaling": [1,1,1],
                    "translation": [0, -1, 0],
                    "children": []
                  }
@@ -346,5 +409,6 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
     }
   ]
 }`;
+
 
 }

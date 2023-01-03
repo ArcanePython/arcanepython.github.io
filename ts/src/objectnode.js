@@ -79,13 +79,16 @@ class NodesProducer {
         this.nodeInfosByName = {};
         this.objectsToDraw = [];
         this.objects = [];
-        this.makeNode = (nodeDescription) => {
+        this.makeNode = (nodeDescription, orientationAnglexz) => {
             var trs = new NodeTransforms();
             var cnode = new Node(trs);
             this.nodeInfosByName[nodeDescription.name] = {
                 trs: trs,
                 node: cnode,
             };
+            trs.rotation = [0, 0, 0];
+            // if (orientationAnglexz!=undefined) trs.rotation = [0,orientationAnglexz,0]; // Lx initial rotation of the model
+            trs.scale = nodeDescription.scaling || trs.scale;
             trs.translation = nodeDescription.translation || trs.translation;
             if (nodeDescription.draw !== false) {
                 cnode.drawInfo = {

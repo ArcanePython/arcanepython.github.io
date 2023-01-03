@@ -12711,6 +12711,7 @@ class BaseApp {
         // textures repository
         this.textureaspects = new Map();
         this.textures = null;
+        // programs
         this.twglprograminfo = null; // there can be several
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
@@ -12921,20 +12922,15 @@ class BaseApp {
             } else return true;
         }
     }
-    createEnvironmentMapGeoTwgl(gl) {
-        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
-        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
-        gl.bindVertexArray(this.vaoEnvironment);
-    }
     createEnvironmentMapGeo(gl) {
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray();
         gl.bindVertexArray(this.vaoEnvironment);
-        var positionLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
         // Create a buffer for positions
-        var positionBuffer = gl.createBuffer();
+        this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         // Put the positions in the buffer
         var positions = new Float32Array([
             1,
@@ -12950,24 +12946,19 @@ class BaseApp {
             1,
             1
         ]);
-        //     var positions = new Float32Array(
-        //         [
-        //         -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
-        //         -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
-        //         ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-        console.log("createEnvironmentMapGeo - positionLocation=" + positionLocation);
+        //console.log("createEnvironmentMapGeo - positionLocation="+positionLocation);
         // Turn on the position attribute
-        gl.enableVertexAttribArray(positionLocation);
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
         // Bind the position buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
         var size = 2; // 2 components per iteration
         var type = gl.FLOAT; // the data is 32bit floats
         var normalize = false; // don't normalize the data
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
+        gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
     }
     createEnvironmentMapTexture(gl, scene, textureReadyCallback) {
         var mytexture = gl.createTexture();
@@ -13121,22 +13112,52 @@ class BaseApp {
         return viewDirectionProjectionMatrix;
     //
     }
-    renderenvironmentmap(gl, fov, uniformlocs, time) {
-        // gl.bindVertexArray(vao);
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = size; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    renderenvironmentmap(gl, fov, uniformlocs, texture) {
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
+        // previous code
         gl.bindVertexArray(this.vaoEnvironment);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
         var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
-        //    gl.depthFunc(gl.LESS);  // use the default depth test
-        // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(uniformlocs.loc, 0);
-        //    gl.depthFunc(gl.LEQUAL);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        gl.flush();
-    // console.log("<=renderenvironmentmap");
+    }
+    createEnvironmentMapGeoTwgl(gl) {
+        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+        gl.bindVertexArray(this.vaoEnvironment);
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+        /*  // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer!);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(this.positionAttributeLocation!, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(this.positionAttributeLocation!);
+        // <==
+        */ var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
         // Rotate the cube around the x axis
         //   if (this.skyboxCubeParameters.movecube)
         //     this.worldMatrix = twgl.m4.axisRotation( [1,0,0] as twgl.v3.Vec3 , mstime * this.skyboxCubeParameters.angVelocityCube);
@@ -13145,6 +13166,7 @@ class BaseApp {
         // draw the environment
         //     gl.useProgram(this.twglprograminfo![0].program);
         gl.bindVertexArray(this.vaoEnvironment);
+        //  this.restoreContext(gl,this.positionBuffer!,this.positionAttributeLocation!, 2);
         twgl.setUniforms(this.twglprograminfo[0], {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
             u_skybox: texture
@@ -20788,7 +20810,7 @@ class Animation1 extends baseapp.BaseApp {
             console.log("init1 skybox" + this.scene.sceneenv + " this.scene.positionLocation=" + this.scene.positionLocation);
             this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo[0].program, "u_skybox");
             this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo[0].program, "u_viewDirectionProjectionInverse");
-            gl.useProgram(this.twglprograminfo[0].program);
+            // gl.useProgram(this.twglprograminfo![0].program);
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); //, this.scene.positionLocation!);
             else this.createEnvironmentMapGeo(gl); //, this.scene.positionLocation!);
             console.log("init2 skybox" + this.scene.sceneenv);
@@ -20820,7 +20842,6 @@ class Animation1 extends baseapp.BaseApp {
         console.log("<=Animation1 return from initScene()");
     }
     render(time) {
-        var _a, _b;
         var gl = this.gl;
         if (this.doclear) {
             //gl.enable(gl.BLEND);
@@ -20839,49 +20860,47 @@ class Animation1 extends baseapp.BaseApp {
         cam.CamHandlingYUp(gl, this.app, 1.0, -1);
         // if ((this.clock.frame%2)==0)
         if (this.scene.sceneenv > 0) {
-            if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
-                cam === null || cam === void 0 ? void 0 : cam.Position()[0],
-                cam === null || cam === void 0 ? void 0 : cam.Position()[1],
-                cam === null || cam === void 0 ? void 0 : cam.Position()[2]
-            ];
-            else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.b.move) ? [
-                Math.cos(time * 0.01 * this.scene.animationParameters.b.speed),
-                0,
-                Math.sin(time * 0.01 * this.scene.animationParameters.b.speed)
-            ] : [
-                1.0,
-                0.0,
-                0.0
-            ];
-            //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
+            /*    if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
+                  else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.01 * this.scene.animationParameters.b.speed), 0,
+                                                                                          Math.sin(time * 0.01 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
+              */ //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
             var fieldOfViewRadians = 60 * Math.PI / 180;
             //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
             //gl.disable(gl.DEPTH_TEST);     
             gl.useProgram(this.twglprograminfo[0].program);
-            gl.depthFunc(gl.LEQUAL);
+            //     gl.depthFunc(gl.LEQUAL); 
+            // if ((this.clock.frame %8)==0) 
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.texture);
             else {
                 gl.disable(gl.CULL_FACE);
+                gl.disable(gl.DEPTH_TEST);
                 this.renderenvironmentmap(gl, fieldOfViewRadians, {
                     invproj: this.viewDirectionProjectionInverseLocation,
                     loc: this.skyboxLocation
-                }, time);
+                }, this.texture);
             } // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }
+        // if ((this.clock.frame)>0)
+        //  {
+        //  gl.flush();
+        //    requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
+        //    return;
+        //  }
         //   if ((this.clock.frame%2)==1)
         if (this.twglprograminfo[1] != undefined && this.twglprograminfo[1] != null) {
             gl.useProgram(this.twglprograminfo[1].program);
             gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
             gl.enable(gl.CULL_FACE); // only show left-turned triangles
+            //      this.scene.restoreContext();
             //    gl.enable(gl.BLEND);
             //    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             //   if (this.clock.frame>60)
             this.scene.drawScene(gl, cam, time);
         }
-        gl.flush();
+        //   gl.flush();
         //   console.log("frame="+this.clock.frame+" "+time);
-        //   if (this.clock.frame<1)
+        //  if (this.clock.frame<0)
         //  if (time<(this.ctime+300)) 
         requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
     }
@@ -22471,6 +22490,21 @@ class MixedTextureScene {
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.animationParameters = cap;
         // Define shader syntax for attributes
@@ -22478,20 +22512,21 @@ class MixedTextureScene {
         // Camera: prepare vs-fs transformation
         this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
         // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
-        var positionBuffer = gl.createBuffer();
-        var positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
+        this.positionBuffer = gl.createBuffer();
+        this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.enableVertexAttribArray(positionAttributeLocation); // turn on
-        // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = 3; // 3 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
-        // => Put setGeometry() result into position buffer 
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+          gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
+          // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+          var size = 3;          // 3 components per iteration
+          var type = gl.FLOAT;   // the data is 32bit floats
+          var normalize = false; // don't normalize the data
+          var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+          var offset = 0;        // start at the beginning of the buffer
+          gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
+    */ // => Put setGeometry() result into position buffer 
         gl.bufferData(gl.ARRAY_BUFFER, this.setGeometry(gl), gl.STATIC_DRAW);
         // Create the texcoord buffer, make it the current ARRAY_BUFFER and copy in the texcoord values ---------------
         var texcoordBuffer1 = gl.createBuffer();
@@ -22558,6 +22593,9 @@ class MixedTextureScene {
         };
     }
     drawScene(gl, cam, time) {
+        gl.bindVertexArray(this.vao); //this always comes first !
+        // 2023-01-03 prevent clear issues
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         gl.activeTexture(gl.TEXTURE0 + 0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture1);
         gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
@@ -22577,7 +22615,7 @@ class MixedTextureScene {
         // Set projection matrix
         gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
         // Bind the attribute/buffer set we want.
-        gl.bindVertexArray(this.vao);
+        //gl.bindVertexArray(this.vao!);              
         // Draw the geometry.
         var primitiveType = gl.TRIANGLES;
         var offset = 0;
@@ -23014,6 +23052,21 @@ class LightScene extends basescene_1.basescene {
         this.initMatrixUniforms(gl, program);
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
     drawScene(gl, cam, time) {
         //      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
         //        Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
@@ -23026,6 +23079,7 @@ class LightScene extends basescene_1.basescene {
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         // Set the color to use for any light
         gl.uniform4fv(this.colorLocation, [
             1.0,
@@ -23772,14 +23826,14 @@ class basescene {
         // and make it the one we're currently working with
         gl.bindVertexArray(this.vaoSingleObject);
         // look up where the vertex data needs to go.
-        var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(program, "a_position");
         var normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
         // Turn on the attribute
-        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
         // Create a buffer
-        var positionBuffer = gl.createBuffer();
+        this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         // Set Geometry.
         setGeometry(gl);
         // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -23788,7 +23842,7 @@ class basescene {
         var normalize = false; // don't normalize the data
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
         // create the normalr buffer, make it the current ARRAY_BUFFER
         // and copy in the normal values
         var normalBuffer = gl.createBuffer();
@@ -23952,7 +24006,7 @@ class ObjectList {
         var mydata = this.FetchText(parcls).then((s)=>{
             console.log("mydata=" + mydata + " s=" + s);
             var nodedescriptions = JSON.parse(s);
-            this.scene = nodefact.makeNode(nodedescriptions);
+            this.scene = nodefact.makeNode(nodedescriptions, 0.0);
             this.objects = nodefact.objects;
             this.objectsToDraw = nodefact.objectsToDraw;
             this.nodeInfosByName = nodefact.nodeInfosByName;
@@ -24057,7 +24111,7 @@ class ObjectList {
 }
 exports.ObjectList = ObjectList;
 
-},{"./../node_modules/twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"kyrPs"}],"54gzf":[function(require,module,exports) {
+},{"./../node_modules/twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"2rYWp"}],"54gzf":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -24154,13 +24208,20 @@ class NodesProducer {
         this.nodeInfosByName = {};
         this.objectsToDraw = [];
         this.objects = [];
-        this.makeNode = (nodeDescription)=>{
+        this.makeNode = (nodeDescription, orientationAnglexz)=>{
             var trs = new NodeTransforms();
             var cnode = new Node(trs);
             this.nodeInfosByName[nodeDescription.name] = {
                 trs: trs,
                 node: cnode
             };
+            trs.rotation = [
+                0,
+                0,
+                0
+            ];
+            // if (orientationAnglexz!=undefined) trs.rotation = [0,orientationAnglexz,0]; // Lx initial rotation of the model
+            trs.scale = nodeDescription.scaling || trs.scale;
             trs.translation = nodeDescription.translation || trs.translation;
             if (nodeDescription.draw !== false) {
                 cnode.drawInfo = {
@@ -24197,10 +24258,10 @@ class NodesProducer {
 }
 exports.NodesProducer = NodesProducer;
 
-},{"./../node_modules/twgl.js":"3uqAP"}],"kyrPs":[function(require,module,exports) {
-module.exports = JSON.parse('{"draw":false,"name":"point between feet","translation":[0,0,0],"children":[{"draw":true,"name":"waist","translation":[0,0,0],"children":[{"draw":true,"name":"torso","translation":[0,2,0],"children":[{"draw":true,"name":"neck","translation":[0,1,0],"children":[{"draw":true,"name":"head","translation":[0,1,0],"children":[]}]},{"draw":true,"name":"left-arm","translation":[-1,0,0],"children":[{"draw":true,"name":"left-forearm","translation":[-1,0,0],"children":[{"draw":true,"name":"left-hand","translation":[-1,0,0],"children":[]}]}]},{"draw":true,"name":"right-arm","translation":[1,0,0],"children":[{"draw":true,"name":"right-forearm","translation":[1,0,0],"children":[{"draw":true,"name":"right-hand","translation":[1,0,0],"children":[]}]}]}]},{"draw":true,"name":"left-leg","translation":[-1,-1,0],"children":[{"draw":true,"name":"left-calf","translation":[0,-1,0],"children":[{"draw":true,"name":"left-foot","translation":[0,-1,0],"children":[]}]}]},{"draw":true,"name":"right-leg","translation":[1,-1,0],"children":[{"draw":true,"name":"right-calf","translation":[0,-1,0],"children":[{"draw":true,"name":"right-foot","translation":[0,-1,0],"children":[]}]}]}]}]}');
+},{"./../node_modules/twgl.js":"3uqAP"}],"2rYWp":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "blockguy.ba5581b9.json" + "?" + Date.now();
 
-},{}],"8iTky":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"8iTky":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -24238,77 +24299,88 @@ exports.ObjectListScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const objectnode = __importStar(require("./objectnode"));
-class ObjectListScene {
+/*
+interface NodeJson {
+  draw: boolean;
+  name: string;
+  scaling:number[];
+  translation: number[];
+  children: NodeJson[];
+}
+*/ class ObjectListScene {
     constructor(gl){
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 60;
         this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
 
-  in vec4 a_position;
-  in vec4 a_color;
-  
-  uniform mat4 u_matrix;
-  
-  out vec4 v_color;
-  
-  void main() {
-    // Multiply the position by the matrix.
-    gl_Position = u_matrix * a_position;
-  
-    // Pass the color to the fragment shader.
-    v_color = a_color;
-  }
+    in vec4 a_position;
+    in vec4 a_color;
+    
+    uniform mat4 u_matrix;
+    
+    out vec4 v_color;
+    
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_matrix * a_position;
+    
+      // Pass the color to the fragment shader.
+      v_color = a_color;
+    }
   `;
         this.fragmentShaderSource = `#version 300 es
-  precision highp float;
-  
-  // Passed in from the vertex shader.
-  in vec4 v_color;
-  
-  uniform vec4 u_colorMult;
-  uniform vec4 u_colorOffset;
-  
-  out vec4 outColor;
-  
-  void main() {
-      outColor = v_color * u_colorMult + u_colorOffset;
-      
-      //outColor=vec4(1.0,0.0,0.0,1.0);
-  }
+    precision highp float;
+    
+    // Passed in from the vertex shader.
+    in vec4 v_color;
+    
+    uniform vec4 u_colorMult;
+    uniform vec4 u_colorOffset;
+    
+    out vec4 outColor;
+    
+    void main() {
+        outColor = v_color * u_colorMult + u_colorOffset;
+    }
   `;
         this.objectsToDraw = [];
         this.objects = [];
         // state
         this.cx = 0;
         this.cy = 0;
-        this.cz = 0;
-        this.vx = 0;
+        this.cz = 10;
+        this.vx = 0.0;
         this.vy = 0;
-        this.vz = 0; //0.05;
+        this.vz = 0.0;
         this.sjson = `{
   "draw": false,
   "name": "point between feet",
+  "scaling": [1,1,1],
   "translation":[0,0,0],
   "children": [
     {
        "draw": true,
        "name": "waist",
+       "scaling": [1,1,1],
        "translation": [0, 0, 0],
        "children": [
          {
            "draw": true,
            "name": "torso",
+           "scaling": [1,1,1],
            "translation": [0, 2, 0],
            "children": [
              {
                "draw": true,
                "name": "neck",
+               "scaling": [1,1,1],
                "translation": [0, 1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "head",
+                   "scaling": [1,1,1],
                    "translation": [0, 1, 0],
                    "children": []
                  }
@@ -24317,16 +24389,19 @@ class ObjectListScene {
              {
                "draw": true,
                "name": "left-arm",
+               "scaling": [1,1,1],
                "translation": [-1, 0, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "left-forearm",
+                   "scaling": [1,1,1],
                    "translation": [-1, 0, 0],
                    "children": [
                      {
                        "draw": true,
                        "name": "left-hand",
+                       "scaling": [1,1,1],
                        "translation": [-1, 0, 0],
                        "children":[]
                      }
@@ -24337,16 +24412,19 @@ class ObjectListScene {
              {
                "draw": true,
                "name": "right-arm",
+               "scaling": [1,1,1],
                "translation": [1, 0, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "right-forearm",
+                   "scaling": [1,1,1],
                    "translation": [1, 0, 0],
                    "children": [
                      {
                        "draw": true,
                        "name": "right-hand",
+                       "scaling": [1,1,1],
                        "translation": [1, 0, 0],
                        "children":[]
                      }
@@ -24364,11 +24442,13 @@ class ObjectListScene {
              {
                "draw": true,
                "name": "left-calf",
+               "scaling": [1,1,1],
                "translation": [0, -1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "left-foot",
+                   "scaling": [1,1,1],
                    "translation": [0, -1, 0],
                    "children": []
                  }
@@ -24379,16 +24459,19 @@ class ObjectListScene {
          {
            "draw": true,
            "name": "right-leg",
+           "scaling": [1,1,1],
            "translation": [1, -1, 0],
            "children": [
              {
                "draw": true,
                "name": "right-calf",
+               "scaling": [1,1,1],
                "translation": [0, -1, 0],
                "children": [
                  {
                    "draw": true,
                    "name": "right-foot",
+                   "scaling": [1,1,1],
                    "translation": [0, -1, 0],
                    "children": []
                  }
@@ -24420,31 +24503,37 @@ class ObjectListScene {
         this.gl = gl;
         this.fieldOfViewRadians = 60.0 * Math.PI / 180;
         var cubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
+        var sphereBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
         // spheres
         // var cubeBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
         this.nodeInfosByName = undefined;
         var nodefact = new objectnode.NodesProducer(p, cubeBufferInfo);
         var parcls = require("./resources/blockguy.json");
-        /* var mydata= this.FetchText(parcls).then ((s: string)=> {
-            //   console.log("mydata="+mydata +  " s="+s);
-               var nodedescriptions: NodeJson = JSON.parse(s);
-               this.scenetree = nodefact.makeNode(nodedescriptions);
-               this.objects = nodefact.objects;
-               this.objectsToDraw = nodefact.objectsToDraw;
-               this.nodeInfosByName= nodefact.nodeInfosByName;
-               sceneReadyCallback(0);
-             });
-         */ var nodedescriptions = JSON.parse(this.sjson);
-        this.scenetree = nodefact.makeNode(nodedescriptions);
+        var nodedescriptions = JSON.parse(this.sjson);
+        this.scenetree = nodefact.makeNode(nodedescriptions, undefined); // -Math.PI/4.0);
         this.objects = nodefact.objects;
         this.objectsToDraw = nodefact.objectsToDraw;
         this.nodeInfosByName = nodefact.nodeInfosByName;
         sceneReadyCallback(0);
+    /*
+        var mydata= this.FetchText(parcls).then ((s: string)=> {
+           //   console.log("mydata="+mydata +  " s="+s);
+              var nodedescriptions: NodeJson = JSON.parse(s);
+              this.scenetree = nodefact.makeNode(nodedescriptions);
+              this.objects = nodefact.objects;
+              this.objectsToDraw = nodefact.objectsToDraw;
+              this.nodeInfosByName= nodefact.nodeInfosByName;
+              sceneReadyCallback(0);
+            });
+            */ }
+    setRotationAdjust(ni, name, axis, adjust) {
+        if (ni[name] != undefined) ni[name].trs.rotation[axis] = adjust;
     }
     drawScene(gl, cam, time) {
         //   gl.enable(gl.BLEND);
         //   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        var _a;
         // check if JSon read and converted
         // if (!this.nodeInfosByName) return; 
         /*
@@ -24468,7 +24557,7 @@ class ObjectListScene {
         if (!this.animationParameters?.b.move)
         this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
         */ // setup a mouse-controlled camhandler camera
-        var speed = 3;
+        var speed = 1;
         /*
           //cam.target = [this.cx, this.cy, this.cz];
           //cam.translateEye([this.vx*speed/4.0,this.vy*speed/4.0,this.vz*speed/4.0])
@@ -24486,42 +24575,39 @@ class ObjectListScene {
         var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
         // Animation
         var adjust;
-        var c = time * 0.001 * speed;
+        var c = time * 0.003 * speed;
         adjust = Math.abs(Math.sin(c));
         var nodeInfosByName = this.nodeInfosByName;
         nodeInfosByName["point between feet"].trs.translation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "point between feet", 1, 0.0); //Math.atan2(this.vx, this.vz));
         adjust = Math.sin(c);
-        nodeInfosByName["left-leg"].trs.rotation[0] = adjust;
-        nodeInfosByName["right-leg"].trs.rotation[0] = -adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-leg", 0, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-leg", 0, -adjust);
         adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-calf"].trs.rotation[0] = -adjust;
-        nodeInfosByName["right-calf"].trs.rotation[0] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-calf", 0, -adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-calf", 0, adjust);
         adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-foot"].trs.rotation[0] = -adjust;
-        nodeInfosByName["right-foot"].trs.rotation[0] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-foot", 0, -adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-foot", 0, adjust);
         adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["left-arm"].trs.rotation[0] = adjust;
-        nodeInfosByName["left-arm"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-arm"].trs.rotation[2] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-arm", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-arm", 2, adjust);
         adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-forearm"].trs.rotation[0] = adjust;
-        nodeInfosByName["left-forearm"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-forearm"].trs.rotation[2] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-forearm", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-forearm", 2, adjust);
         adjust = Math.sin(c - 0.1) * 0.4;
-        nodeInfosByName["left-hand"].trs.rotation[2] = adjust;
-        nodeInfosByName["right-hand"].trs.rotation[2] = adjust;
-        nodeInfosByName["left-hand"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-hand"].trs.rotation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "left-hand", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-hand", 2, adjust);
         adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["waist"].trs.rotation[1] = adjust;
-        adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["torso"].trs.rotation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "waist", 1, adjust);
+        adjust = Math.sin(c) * 0.2;
+        this.setRotationAdjust(nodeInfosByName, "torso", 1, adjust);
         adjust = Math.sin(c + 0.25) * 0.4;
-        nodeInfosByName["neck"].trs.rotation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "neck", 1, adjust);
         adjust = Math.sin(c + 0.5) * 0.4;
-        nodeInfosByName["head"].trs.rotation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "head", 1, adjust);
         adjust = Math.cos(c * 2) * 0.4;
-        nodeInfosByName["head"].trs.rotation[0] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "head", 0, adjust);
         // Update all world matrices in the scene graph
         var currentTranslation = twgl_js_1.m4.translation([
             this.cx,
@@ -24536,13 +24622,49 @@ class ObjectListScene {
         this.objects.forEach((object)=>{
             object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
         });
-        // Draw the objects
-        twgl.drawObjectList(gl, this.objectsToDraw);
+        // Draw the objects using Gregg's drawObjectList (this will clear the background)
+        //  twgl.drawObjectList(gl, this.objectsToDraw);
+        var init = false;
+        // ->drawObjectList replacement..
+        // draw each object using drawBufferInfo()
+        //  this.objectsToDraw.forEach(d => {  
+        //    .. best construct, but I need a break, so..
+        for(var i = 0; i < this.objectsToDraw.length; i++){
+            var d = this.objectsToDraw[i];
+            // gl.useProgram(d.programInfo.program); // no effect
+            twgl.setUniforms(d.programInfo, d.uniforms); // ok
+            // needed, but inserting this one will clear the background!
+            twgl.setBuffersAndAttributes(gl, d.programInfo, d.bufferInfo);
+            /*
+              // -> "setBuffersAndAttributes" replace
+              // (marked obsolete, not published) twgl.setAttributes(programInfo.attribSetters || programInfo, buffers.attribs);
+              // setAttributes written out..
+              // leaving this out.. will not clear the background, but draw faulty geometry!
+              if (init)
+                for (var name in d.bufferInfo!.attribs) {
+                  var setter = d.programInfo.attribSetters[name];
+                  if (setter)
+                  { // a_position
+                    //console.log("set  "+name +"="+d.bufferInfo!.attribs[name]);
+                    setter!(d.bufferInfo!.attribs[name]); // even if called once, inserting this will clear the background!
+                  }
+                }
+              init=false;
+      
+              // ok, needed
+              if (d.bufferInfo?.indices) {
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, d.bufferInfo?.indices);
+              }
+              */ // <- "setBuffersAndAttributes"
+            //break; // doesn't matter! background is cleared on the second draw
+            twgl.drawBufferInfo(gl, d.bufferInfo, gl.TRIANGLES, (_a = d.bufferInfo) === null || _a === void 0 ? void 0 : _a.numElements, 0, undefined);
+        //break
+        }
     }
 }
 exports.ObjectListScene = ObjectListScene;
 
-},{"twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"kyrPs"}],"7UK0I":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./objectnode":"54gzf","./resources/blockguy.json":"2rYWp"}],"7UK0I":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -25389,6 +25511,21 @@ class Canvas3dTextureScene {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
     extendGUI(gui) {}
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         /** @type {HTMLCanvasElement} */ var canvas = gl.canvas; // document.querySelector("#canvas");
         //var gl = canvas.getContext("webgl2");
@@ -25402,32 +25539,34 @@ class Canvas3dTextureScene {
         // twgl.createProgramFromSources(gl,
         //    [this.vertexShaderSource, this.fragmentShaderSource]);
         // look up where the vertex data needs to go.
-        var positionAttributeLocation = gl.getAttribLocation(this.program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.program, "a_position");
         var texcoordAttributeLocation = gl.getAttribLocation(this.program, "a_texcoord");
         // look up uniform locations
         this.matrixLocation = gl.getUniformLocation(this.program, "u_matrix");
         this.textureLocation = gl.getUniformLocation(this.program, "u_texture");
         this.colorMultLocation = gl.getUniformLocation(this.program, "u_colorMult");
         // Create a buffer
-        var positionBuffer = gl.createBuffer();
+        this.positionBuffer = gl.createBuffer();
         // Create a vertex array object (attribute state)
         this.vao = gl.createVertexArray();
         // and make it the one we're currently working with
         gl.bindVertexArray(this.vao);
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        /*
         // Turn on the attribute
-        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         // Set Geometry.
-        var positions = this.setGeometry(gl);
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = 3; // 3 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
+        var size = 3;          // 3 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
         var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer( this.positionAttributeLocation, size, type, normalize, stride, offset);
+      */ var positions = this.setGeometry(gl);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         // create the texcoord buffer, make it the current ARRAY_BUFFER
         // and copy in the texcoord values
         var texcoordBuffer = gl.createBuffer();
@@ -25539,6 +25678,7 @@ class Canvas3dTextureScene {
         gl.useProgram(program);
         // Bind the attribute/buffer set we want.
         gl.bindVertexArray(this.vao);
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         // Compute the projection matrix
         var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
         var viewProjectionMatrix = twgl_js_1.m4.identity();

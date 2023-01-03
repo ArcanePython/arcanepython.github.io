@@ -172,7 +172,7 @@
         str+=lnk(commonhtml+"?animation8&radius0=3&hx=80&hy=0","Tex3d on tex Scene");
         str+=lnk(commonhtml+"?animation1&radius0=80&hx=20&hy=10","Mixed Texture Scene");
         str+=lnk(commonhtml+"?animation5&radius0=50&hx=20&hy=10","Many Textures Scene");
-        str+=lnk(commonhtml+"?animation6&radius0=60&hx=80&hy=0","ObjectList Scene");
+        str+=lnk(commonhtml+"?animation6&radius0=60&hx=0.7&hy=0.0","ObjectList Scene");
         str+=lnk(commonhtml+"?animation7&radius0=60&hx=80&hy=0","Instanced Scene");
         //str+=lnk(commonhtml+"?skybox","Skybox");
         //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
@@ -200,13 +200,13 @@
 <!--Use this while debugging, and before a Parcel fresh build -->
 <script src="src/indexAnimations.js" type="module"></script>
 
-<!--For  a fresh build, clear \Dist locally and invoke Parcel build.
-     the result (with current Parcel.mdb) is: dist/index.5710aea2.js  -->
+<!--For  a fresh build, stop debugging, clear out \Dist locally, then start debugging, invoking Parcel build. 
+    the compiled result entry according to my current Parcel.mdb will be dist/index.5710aea2.js  -->
 
 <!--Use this for index.html on GitHib -->
 <!--script src="dist/index.5710aea2.js"></script -->
 
-<!--Or this.. -->
+<!--Or use this for index.html on GitHib.. -->
 <script language="Javascript">  
   var commonjsparcel = "index.5710aea2.js";       
   document.addEventListener('DOMContentLoaded', () => {

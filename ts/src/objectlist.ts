@@ -3,9 +3,10 @@ import { m4 } from "./../node_modules/twgl.js";
 
 import * as objectnode from "./objectnode";
 
-interface NodeJson {
+export interface NodeJson {
   draw: boolean;
   name: string;
+  scaling: number[];
   translation: number[];
   children: NodeJson[];
 }
@@ -97,7 +98,7 @@ export class ObjectList //extends twglbaseapp.twglbaseapp
     var mydata= this.FetchText(parcls).then ((s: string)=> {
           console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
-          this.scene = nodefact.makeNode(nodedescriptions);
+          this.scene = nodefact.makeNode(nodedescriptions, 0.0);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
           this.nodeInfosByName= nodefact.nodeInfosByName;

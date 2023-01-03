@@ -101,6 +101,26 @@ export class MixedTextureScene implements scene.SceneInterface
 
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
     
+    positionBuffer: WebGLBuffer|undefined;
+    positionAttributeLocation: number|undefined;
+ 
+    public restoreContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+    {
+      // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
+    }
+ 
     public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
     {
       this.animationParameters = cap;
@@ -111,19 +131,22 @@ export class MixedTextureScene implements scene.SceneInterface
       this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix")!;
       
       // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
-      var positionBuffer = gl.createBuffer();
-      var positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");    
+      this.positionBuffer = gl.createBuffer()!;
+      this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");    
       this.vao = gl.createVertexArray()!
-        gl.bindVertexArray(this.vao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);      
-      gl.enableVertexAttribArray(positionAttributeLocation);  // turn on
+      gl.bindVertexArray(this.vao);
+
+      this.restoreContext(gl,  this.positionBuffer,this.positionAttributeLocation!, 3);
+    /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);      
+      gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
       // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
       var size = 3;          // 3 components per iteration
       var type = gl.FLOAT;   // the data is 32bit floats
       var normalize = false; // don't normalize the data
       var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
       var offset = 0;        // start at the beginning of the buffer
-      gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+      gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
+*/
       // => Put setGeometry() result into position buffer 
       gl.bufferData(gl.ARRAY_BUFFER, this.setGeometry(gl), gl.STATIC_DRAW);
     
@@ -195,6 +218,11 @@ export class MixedTextureScene implements scene.SceneInterface
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
+      gl.bindVertexArray(this.vao!); //this always comes first !
+
+      // 2023-01-03 prevent clear issues
+      this.restoreContext(gl,  this.positionBuffer!,this.positionAttributeLocation!, 3);
+
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, this.texture1!);  
       gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
@@ -220,7 +248,7 @@ export class MixedTextureScene implements scene.SceneInterface
       gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
       
       // Bind the attribute/buffer set we want.
-      gl.bindVertexArray(this.vao!);              
+      //gl.bindVertexArray(this.vao!);              
      
       // Draw the geometry.
       var primitiveType = gl.TRIANGLES;

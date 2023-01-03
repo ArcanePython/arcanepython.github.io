@@ -86,6 +86,27 @@ public constructor(gl: WebGL2RenderingContext)
   console.log("<= scene constructor 3dtexture")
 }
 
+
+positionBuffer: WebGLBuffer|undefined;
+positionAttributeLocation: number|undefined;
+
+public restoreContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+{
+  // ==> 2023-03-01 restore this part to solve the clear error
+    // 1. Bind the buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    //var size = 2;          // 2 components per iteration
+    var type = gl.FLOAT;   // the data is 32bit floats
+    var normalize = false; // don't normalize the data
+    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    var offset = 0;        // start at the beginning of the buffer
+    gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+    // 3. Enable this
+    gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+}
+
 initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
 {  // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -102,7 +123,7 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
   //    [this.vertexShaderSource, this.fragmentShaderSource]);
 
   // look up where the vertex data needs to go.
-  var positionAttributeLocation = gl.getAttribLocation(this.program, "a_position");
+  this.positionAttributeLocation = gl.getAttribLocation(this.program, "a_position");
   var texcoordAttributeLocation = gl.getAttribLocation(this.program, "a_texcoord");
 
   // look up uniform locations
@@ -111,7 +132,7 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
   this.colorMultLocation = gl.getUniformLocation(this.program, "u_colorMult")!;
 
   // Create a buffer
-  var positionBuffer = gl.createBuffer();
+  this.positionBuffer = gl.createBuffer()!;
 
   // Create a vertex array object (attribute state)
    this.vao = gl.createVertexArray()!;
@@ -119,25 +140,25 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
   // and make it the one we're currently working with
   gl.bindVertexArray(this.vao);
 
+  this.restoreContext(gl, this.positionBuffer,this.positionAttributeLocation,3);
+  /*
   // Turn on the attribute
-  gl.enableVertexAttribArray(positionAttributeLocation);
-
+  gl.enableVertexAttribArray(this.positionAttributeLocation);
   // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
   // Set Geometry.
-  var positions = this.setGeometry(gl);
-  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
   // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
   var size = 3;          // 3 components per iteration
   var type = gl.FLOAT;   // the data is 32bit floats
   var normalize = false; // don't normalize the data
   var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
   var offset = 0;        // start at the beginning of the buffer
-  gl.vertexAttribPointer(
-      positionAttributeLocation, size, type, normalize, stride, offset);
+  gl.vertexAttribPointer( this.positionAttributeLocation, size, type, normalize, stride, offset);
+*/
 
+var positions = this.setGeometry(gl);
+gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+  
   // create the texcoord buffer, make it the current ARRAY_BUFFER
   // and copy in the texcoord values
   var texcoordBuffer = gl.createBuffer();
@@ -278,6 +299,8 @@ initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:
     // Bind the attribute/buffer set we want.
     gl.bindVertexArray(this.vao!);
 
+    this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
+  
     // Compute the projection matrix
     var projectionMatrix =
         m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);

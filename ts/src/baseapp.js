@@ -36,6 +36,7 @@ class BaseApp {
         // textures repository
         this.textureaspects = new Map();
         this.textures = null;
+        // programs
         this.twglprograminfo = null; // there can be several
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
@@ -216,43 +217,33 @@ class BaseApp {
             }
         }
     }
-    createEnvironmentMapGeoTwgl(gl) {
-        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
-        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
-        gl.bindVertexArray(this.vaoEnvironment);
-    }
     createEnvironmentMapGeo(gl) {
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray();
         gl.bindVertexArray(this.vaoEnvironment);
-        var positionLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
         // Create a buffer for positions
-        var positionBuffer = gl.createBuffer();
+        this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         // Put the positions in the buffer
         var positions = new Float32Array([
             1, -1, -1, -1, -1, 1,
             1, -1, -1, 1, 1, 1, // triangle NW-SE-NE
         ]);
-        //     var positions = new Float32Array(
-        //         [
-        //         -1,-1, 1,-1, -1, 1, // triangle SW-SE-NW
-        //         -1, 1, 1,-1,  1, 1, // triangle NW-SE-NE
-        //         ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-        console.log("createEnvironmentMapGeo - positionLocation=" + positionLocation);
+        //console.log("createEnvironmentMapGeo - positionLocation="+positionLocation);
         // Turn on the position attribute
-        gl.enableVertexAttribArray(positionLocation);
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
         // Bind the position buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
         var size = 2; // 2 components per iteration
         var type = gl.FLOAT; // the data is 32bit floats
         var normalize = false; // don't normalize the data
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, offset);
+        gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
     }
     createEnvironmentMapTexture(gl, scene, textureReadyCallback) {
         var mytexture = gl.createTexture();
@@ -394,21 +385,52 @@ class BaseApp {
         return viewDirectionProjectionMatrix;
         //
     }
-    renderenvironmentmap(gl, fov, uniformlocs, time) {
-        // gl.bindVertexArray(vao);
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = size; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
+    }
+    renderenvironmentmap(gl, fov, uniformlocs, texture) {
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
+        // previous code
         gl.bindVertexArray(this.vaoEnvironment);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
         var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
-        //    gl.depthFunc(gl.LESS);  // use the default depth test
-        // var viewDirectionProjectionMatrix = m4.multiply(this.projectionMatrix!, this.viewMatrix!);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(uniformlocs.loc, 0);
-        //    gl.depthFunc(gl.LEQUAL);
         gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
-        gl.flush();
-        // console.log("<=renderenvironmentmap");
+    }
+    createEnvironmentMapGeoTwgl(gl) {
+        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+        gl.bindVertexArray(this.vaoEnvironment);
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
+        /*  // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer!);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(this.positionAttributeLocation!, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(this.positionAttributeLocation!);
+        // <==
+        */
         var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
         // Rotate the cube around the x axis
         //   if (this.skyboxCubeParameters.movecube)
@@ -418,6 +440,7 @@ class BaseApp {
         // draw the environment
         //     gl.useProgram(this.twglprograminfo![0].program);
         gl.bindVertexArray(this.vaoEnvironment);
+        //  this.restoreContext(gl,this.positionBuffer!,this.positionAttributeLocation!, 2);
         twgl.setUniforms(this.twglprograminfo[0], {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
             u_skybox: texture,

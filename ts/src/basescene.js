@@ -19,14 +19,14 @@ class basescene {
         // and make it the one we're currently working with
         gl.bindVertexArray(this.vaoSingleObject);
         // look up where the vertex data needs to go.
-        var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(program, "a_position");
         var normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
         // Turn on the attribute
-        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
         // Create a buffer
-        var positionBuffer = gl.createBuffer();
+        this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
         // Set Geometry.
         setGeometry(gl);
         // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -35,7 +35,7 @@ class basescene {
         var normalize = false; // don't normalize the data
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
         // create the normalr buffer, make it the current ARRAY_BUFFER
         // and copy in the normal values
         var normalBuffer = gl.createBuffer();

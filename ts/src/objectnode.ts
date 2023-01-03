@@ -1,6 +1,15 @@
 import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 import { m4 } from "./../node_modules/twgl.js";
 
+
+export interface NodeJson {
+    draw: boolean;
+    name: string;
+    scaling: number[];
+    translation: number[];
+    children: NodeJson[];
+  }
+
 export class NodeTransforms     // Gregg's TRS
 {
     translation: number[] = [0, 0, 0];
@@ -34,6 +43,7 @@ export type NodeDescription =
 {
     draw: boolean,
     name: string;
+    scaling: number[];
     translation: number[];
     children: NodeDescription[];
 }
@@ -93,33 +103,37 @@ export class NodesProducer
     objectsToDraw: twgl.DrawObject[] = [];
     objects : Node[] = [];
 
-    makeNode = (nodeDescription: NodeDescription):Node => {
-    var trs  = new NodeTransforms();
-    var cnode = new Node(trs);
-    this.nodeInfosByName[nodeDescription.name] = {
-        trs: trs,
-        node: cnode,
-    };
-    trs.translation = nodeDescription.translation || trs.translation;
-    if (nodeDescription.draw !== false) {
-        cnode.drawInfo = {
-            uniforms: {
-                u_colorOffset: [0, 0, 0.6, 0],
-                u_colorMult: [0.4, 0.4, 0.4, 1],
-                u_matrix: undefined
-            },
-            programInfo: this.programInfo!,
-            bufferInfo: this.cubeBufferInfo!,
+    makeNode = (nodeDescription: NodeDescription, orientationAnglexz: number|undefined):Node => {
+        var trs  = new NodeTransforms();
+        var cnode = new Node(trs);
+        this.nodeInfosByName[nodeDescription.name] = {
+            trs: trs,
+            node: cnode,
         };
-        this.objectsToDraw.push(cnode.drawInfo!);
-        this.objects.push(cnode);
-    }
-    var makeNodes = (nodeDescriptions: NodeDescription[])  => {
-        return nodeDescriptions ? nodeDescriptions.map(this.makeNode) : [];
-    }
-    makeNodes(nodeDescription.children).forEach(function(child: Node) {
-        child.setParent(cnode);
-    });   
-    return cnode;
+        trs.rotation = [0,0,0];
+       // if (orientationAnglexz!=undefined) trs.rotation = [0,orientationAnglexz,0]; // Lx initial rotation of the model
+        trs.scale = nodeDescription.scaling || trs.scale;
+        trs.translation = nodeDescription.translation || trs.translation;
+        if (nodeDescription.draw !== false) {
+            cnode.drawInfo = {
+                
+                uniforms: {
+                    u_colorOffset: [0, 0, 0.6, 0],
+                    u_colorMult: [0.4, 0.4, 0.4, 1],
+                    u_matrix: undefined
+                },
+                programInfo: this.programInfo!,
+                bufferInfo: this.cubeBufferInfo!,
+            };
+            this.objectsToDraw.push(cnode.drawInfo!);
+            this.objects.push(cnode);
+        }
+        var makeNodes = (nodeDescriptions: NodeDescription[])  => {
+            return nodeDescriptions ? nodeDescriptions.map(this.makeNode) : [];
+         }
+        makeNodes(nodeDescription.children).forEach(function(child: Node) {
+           child.setParent(cnode);
+         });   
+        return cnode;
     }
 }

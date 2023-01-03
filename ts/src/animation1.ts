@@ -114,9 +114,9 @@ export class Animation1 extends baseapp.BaseApp
             console.log("init1 skybox"+this.scene.sceneenv+" this.scene.positionLocation="+this.scene.positionLocation);
             this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;
             this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_viewDirectionProjectionInverse")!;
-            gl.useProgram(this.twglprograminfo![0].program);
+           // gl.useProgram(this.twglprograminfo![0].program);
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); //, this.scene.positionLocation!);
-            else this.createEnvironmentMapGeo(gl);  //, this.scene.positionLocation!);
+              else this.createEnvironmentMapGeo(gl);  //, this.scene.positionLocation!);
             console.log("init2 skybox"+this.scene.sceneenv);
             this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureReadyCallback)!;
       
@@ -174,14 +174,16 @@ export class Animation1 extends baseapp.BaseApp
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
          var cam: camhandler.Camera = this.cam!;
         cam.CamHandlingYUp(gl, this.app!, 1.0, -1.0);   
+
+       
        // if ((this.clock.frame%2)==0)
         if (this.scene.sceneenv>0)
         {
          
-            if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
+        /*    if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
               else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.01 * this.scene.animationParameters.b.speed), 0, 
                                                                                       Math.sin(time * 0.01 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
-              
+          */    
 
 
             //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
@@ -189,32 +191,44 @@ export class Animation1 extends baseapp.BaseApp
             //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
             //gl.disable(gl.DEPTH_TEST);     
             gl.useProgram(this.twglprograminfo![0].program);
-            gl.depthFunc(gl.LEQUAL);  
+       //     gl.depthFunc(gl.LEQUAL); 
+           // if ((this.clock.frame %8)==0) 
              if (this.doTwglEnv) 
               this.renderenvironmentmapTwgl(gl, fieldOfViewRadians,  this.texture!);
               else
               { 
-                 gl.disable(gl.CULL_FACE);  
-                this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
+                gl.disable(gl.CULL_FACE);  
+                gl.disable(gl.DEPTH_TEST);  
+                this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, this.texture!);
               } // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }
+      // if ((this.clock.frame)>0)
+      //  {
+        //  gl.flush();
+      //    requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
+      //    return;
+      //  }
+
      //   if ((this.clock.frame%2)==1)
+   
         if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )       
         {  
             gl.useProgram(this.twglprograminfo![1].program);
             gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
-          gl.enable(gl.CULL_FACE);  // only show left-turned triangles
+            gl.enable(gl.CULL_FACE);  // only show left-turned triangles
    
+      //      this.scene.restoreContext();
       //    gl.enable(gl.BLEND);
       //    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
          // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       
         //   if (this.clock.frame>60)
-          this.scene.drawScene(gl, cam, time);
+       
+            this.scene.drawScene(gl, cam, time);
         }
-        gl.flush();
+     //   gl.flush();
      //   console.log("frame="+this.clock.frame+" "+time);
-     //   if (this.clock.frame<1)
+     //  if (this.clock.frame<0)
       //  if (time<(this.ctime+300)) 
          requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
     } 
