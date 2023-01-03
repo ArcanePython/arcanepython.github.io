@@ -12947,18 +12947,7 @@ class BaseApp {
             1
         ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-        //console.log("createEnvironmentMapGeo - positionLocation="+positionLocation);
-        // Turn on the position attribute
-        gl.enableVertexAttribArray(this.positionAttributeLocation);
-        // Bind the position buffer.
-        // gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = 2; // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
+        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
     }
     createEnvironmentMapTexture(gl, scene, textureReadyCallback) {
         var mytexture = gl.createTexture();
@@ -12976,13 +12965,7 @@ class BaseApp {
                 neg_z_name = require("./images/chmuseum/neg-z.jpg");
                 break;
             case 1:
-                /*     pos_x_name= require("./images/yokohama/posx.jpg");
-                     pos_y_name= require("./images/yokohama/posy.jpg");
-                     pos_z_name= require("./images/yokohama/posz.jpg");
-                     neg_x_name= require("./images/yokohama/negx.jpg");
-                     neg_y_name= require("./images/yokohama/negy.jpg");
-                     neg_z_name= require("./images/yokohama/negz.jpg");
-                */ pos_x_name = require("./images/yokohama/posx.jpg");
+                pos_x_name = require("./images/yokohama/posx.jpg");
                 pos_y_name = require("./images/yokohama/posy.jpg");
                 pos_z_name = require("./images/yokohama/posz.jpg");
                 neg_x_name = require("./images/yokohama/negx.jpg");
@@ -13112,7 +13095,7 @@ class BaseApp {
         return viewDirectionProjectionMatrix;
     //
     }
-    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+    restorePosAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -13128,15 +13111,15 @@ class BaseApp {
     // <==
     }
     renderenvironmentmap(gl, fov, uniformlocs, texture) {
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
-        // previous code
         gl.bindVertexArray(this.vaoEnvironment);
+        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
         var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(uniformlocs.loc, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+    //gl.bindVertexArray(null);
     }
     createEnvironmentMapGeoTwgl(gl) {
         this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
@@ -13144,20 +13127,7 @@ class BaseApp {
         gl.bindVertexArray(this.vaoEnvironment);
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
-        /*  // ==> 2023-03-01 restore this part to solve the clear error
-        // 1. Bind the buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer!);
-        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT;   // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0;        // start at the beginning of the buffer
-        gl.vertexAttribPointer(this.positionAttributeLocation!, size, type, normalize, stride, offset);
-        // 3. Enable this
-        gl.enableVertexAttribArray(this.positionAttributeLocation!);
-        // <==
-        */ var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
         // Rotate the cube around the x axis
         //   if (this.skyboxCubeParameters.movecube)
         //     this.worldMatrix = twgl.m4.axisRotation( [1,0,0] as twgl.v3.Vec3 , mstime * this.skyboxCubeParameters.angVelocityCube);
@@ -20859,7 +20829,8 @@ class Animation1 extends baseapp.BaseApp {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         var cam = this.cam;
         cam.CamHandlingYUp(gl, this.app, 1.0, -1);
-        // if ((this.clock.frame%2)==0)
+        //if ((this.clock.frame%2)==0) // semi-transparent "flickeirng"
+        //if (this.clock.frame<10)     // background vanish after 10 frames
         if (this.scene.sceneenv > 0) {
             if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
                 cam === null || cam === void 0 ? void 0 : cam.Position()[0],
@@ -20878,19 +20849,19 @@ class Animation1 extends baseapp.BaseApp {
             //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
             var fieldOfViewRadians = 60 * Math.PI / 180;
             //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
+            gl.disable(gl.CULL_FACE);
             //gl.disable(gl.DEPTH_TEST);     
             gl.useProgram(this.twglprograminfo[0].program);
-            //     gl.depthFunc(gl.LEQUAL); 
+            gl.depthFunc(gl.LEQUAL);
             // if ((this.clock.frame %8)==0) 
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.texture);
-            else {
-                gl.disable(gl.CULL_FACE);
-                gl.disable(gl.DEPTH_TEST);
-                this.renderenvironmentmap(gl, fieldOfViewRadians, {
-                    invproj: this.viewDirectionProjectionInverseLocation,
-                    loc: this.skyboxLocation
-                }, this.texture);
-            } // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
+            else //   gl.disable(gl.CULL_FACE);  
+            //   gl.disable(gl.DEPTH_TEST);  
+            this.renderenvironmentmap(gl, fieldOfViewRadians, {
+                invproj: this.viewDirectionProjectionInverseLocation,
+                loc: this.skyboxLocation
+            }, this.texture);
+             // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }
         // if ((this.clock.frame)>0)
         //  {
@@ -22502,7 +22473,7 @@ class MixedTextureScene {
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
-    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -22528,7 +22499,7 @@ class MixedTextureScene {
         this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
           gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
           // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -22607,7 +22578,7 @@ class MixedTextureScene {
     drawScene(gl, cam, time) {
         gl.bindVertexArray(this.vao); //this always comes first !
         // 2023-01-03 prevent clear issues
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         gl.activeTexture(gl.TEXTURE0 + 0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture1);
         gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
@@ -23064,7 +23035,7 @@ class LightScene extends basescene_1.basescene {
         this.initMatrixUniforms(gl, program);
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
-    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -23091,7 +23062,7 @@ class LightScene extends basescene_1.basescene {
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         // Set the color to use for any light
         gl.uniform4fv(this.colorLocation, [
             1.0,
@@ -24635,43 +24606,12 @@ interface NodeJson {
             object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
         });
         // Draw the objects using Gregg's drawObjectList (this will clear the background)
-        //  twgl.drawObjectList(gl, this.objectsToDraw);
-        var init = false;
-        // ->drawObjectList replacement..
-        // draw each object using drawBufferInfo()
-        //  this.objectsToDraw.forEach(d => {  
-        //    .. best construct, but I need a break, so..
-        for(var i = 0; i < this.objectsToDraw.length; i++){
-            var d = this.objectsToDraw[i];
-            // gl.useProgram(d.programInfo.program); // no effect
-            twgl.setUniforms(d.programInfo, d.uniforms); // ok
-            // needed, but inserting this one will clear the background!
-            twgl.setBuffersAndAttributes(gl, d.programInfo, d.bufferInfo);
-            /*
-              // -> "setBuffersAndAttributes" replace
-              // (marked obsolete, not published) twgl.setAttributes(programInfo.attribSetters || programInfo, buffers.attribs);
-              // setAttributes written out..
-              // leaving this out.. will not clear the background, but draw faulty geometry!
-              if (init)
-                for (var name in d.bufferInfo!.attribs) {
-                  var setter = d.programInfo.attribSetters[name];
-                  if (setter)
-                  { // a_position
-                    //console.log("set  "+name +"="+d.bufferInfo!.attribs[name]);
-                    setter!(d.bufferInfo!.attribs[name]); // even if called once, inserting this will clear the background!
-                  }
-                }
-              init=false;
-      
-              // ok, needed
-              if (d.bufferInfo?.indices) {
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, d.bufferInfo?.indices);
-              }
-              */ // <- "setBuffersAndAttributes"
-            //break; // doesn't matter! background is cleared on the second draw
-            twgl.drawBufferInfo(gl, d.bufferInfo, gl.TRIANGLES, (_a = d.bufferInfo) === null || _a === void 0 ? void 0 : _a.numElements, 0, undefined);
-        //break
-        }
+        twgl.drawObjectList(gl, this.objectsToDraw);
+        var init, i, d;
+        //
+        // below code to spell out drawObjectList to find the cause of the clear issue
+        //
+        return;
     }
 }
 exports.ObjectListScene = ObjectListScene;
@@ -26411,6 +26351,21 @@ class SkyBoxCubeScene {
         sceneReadyCallback(0);
     }
     extendGUI(gui) {}
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
     drawScene(gl, cam, time) {
         var _a;
         this.cameraTarget = [
@@ -26451,8 +26406,13 @@ class SkyBoxCubeScene {
         if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
         if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
         //  gl.useProgram(this.twglprograminfo![1].program);      
-        //  gl.depthFunc(gl.LESS);  // use the default depth test
+        gl.depthFunc(gl.LESS); // use the default depth test
         gl.bindVertexArray(this.vaoCube);
+        //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+        //  var bb=this.reflectingCubeBufferInfo!.indices;
+        //  if (bb!=null) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bb);
+        //var bb=this.reflectingCubeBufferInfo!.attribs![""]!;
+        //foreach(()=>)
         twgl.setUniforms(this.twglprograminfo[1], {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,

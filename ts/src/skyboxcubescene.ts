@@ -64,6 +64,24 @@ export class SkyBoxCubeScene implements scene.SceneInterface
      public cameraTarget: number[] | undefined;
      public cameraPosition: [number,number,number] | undefined;
   
+     
+    restorePositionAttributeContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+    {
+      // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
+    }
+
     drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     { 
         this.cameraTarget = [0,0,0];
@@ -92,8 +110,17 @@ export class SkyBoxCubeScene implements scene.SceneInterface
         if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
 
       //  gl.useProgram(this.twglprograminfo![1].program);      
-      //  gl.depthFunc(gl.LESS);  // use the default depth test
+        gl.depthFunc(gl.LESS);  // use the default depth test
+
         gl.bindVertexArray(this.vaoCube!);  
+     //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+     
+   //  var bb=this.reflectingCubeBufferInfo!.indices;
+   //  if (bb!=null) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bb);
+     //var bb=this.reflectingCubeBufferInfo!.attribs![""]!;
+
+        //foreach(()=>)
+
         twgl.setUniforms(this.twglprograminfo![1]!, {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,

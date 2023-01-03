@@ -104,7 +104,7 @@ export class MixedTextureScene implements scene.SceneInterface
     positionBuffer: WebGLBuffer|undefined;
     positionAttributeLocation: number|undefined;
  
-    public restoreContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+    public restorePositionAttributeContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
     {
       // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
@@ -136,7 +136,7 @@ export class MixedTextureScene implements scene.SceneInterface
       this.vao = gl.createVertexArray()!
       gl.bindVertexArray(this.vao);
 
-      this.restoreContext(gl,  this.positionBuffer,this.positionAttributeLocation!, 3);
+      this.restorePositionAttributeContext(gl,  this.positionBuffer,this.positionAttributeLocation!, 3);
     /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);      
       gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
       // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -221,7 +221,7 @@ export class MixedTextureScene implements scene.SceneInterface
       gl.bindVertexArray(this.vao!); //this always comes first !
 
       // 2023-01-03 prevent clear issues
-      this.restoreContext(gl,  this.positionBuffer!,this.positionAttributeLocation!, 3);
+      this.restorePositionAttributeContext(gl,  this.positionBuffer!,this.positionAttributeLocation!, 3);
 
       gl.activeTexture(gl.TEXTURE0 + 0);
       gl.bindTexture(gl.TEXTURE_2D, this.texture1!);  

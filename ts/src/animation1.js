@@ -148,7 +148,8 @@ class Animation1 extends baseapp.BaseApp {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         var cam = this.cam;
         cam.CamHandlingYUp(gl, this.app, 1.0, -1.0);
-        // if ((this.clock.frame%2)==0)
+        //if ((this.clock.frame%2)==0) // semi-transparent "flickeirng"
+        //if (this.clock.frame<10)     // background vanish after 10 frames
         if (this.scene.sceneenv > 0) {
             if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move))
                 this.cameraPosition = [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[1], cam === null || cam === void 0 ? void 0 : cam.Position()[2]];
@@ -158,15 +159,17 @@ class Animation1 extends baseapp.BaseApp {
             //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
             var fieldOfViewRadians = 60 * Math.PI / 180;
             //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
+            gl.disable(gl.CULL_FACE);
             //gl.disable(gl.DEPTH_TEST);     
             gl.useProgram(this.twglprograminfo[0].program);
-            //     gl.depthFunc(gl.LEQUAL); 
+            gl.depthFunc(gl.LEQUAL);
             // if ((this.clock.frame %8)==0) 
-            if (this.doTwglEnv)
+            if (this.doTwglEnv) {
                 this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.texture);
+            }
             else {
-                gl.disable(gl.CULL_FACE);
-                gl.disable(gl.DEPTH_TEST);
+                //   gl.disable(gl.CULL_FACE);  
+                //   gl.disable(gl.DEPTH_TEST);  
                 this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation, loc: this.skyboxLocation }, this.texture);
             } // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }

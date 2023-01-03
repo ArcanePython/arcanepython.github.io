@@ -234,8 +234,13 @@ this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Positi
     });
 
      // Draw the objects using Gregg's drawObjectList (this will clear the background)
-    //  twgl.drawObjectList(gl, this.objectsToDraw);
- 
+    twgl.drawObjectList(gl, this.objectsToDraw);
+
+    //
+    // below code to spell out drawObjectList to find the cause of the clear issue
+    //
+    return;
+
     var init=false;
     // ->drawObjectList replacement..
     // draw each object using drawBufferInfo()

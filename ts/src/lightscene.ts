@@ -114,7 +114,7 @@ export class LightScene extends basescene implements scene.SceneInterface
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
 
-    public restoreContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+    public restorePositionAttributeContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
     {
       // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
@@ -149,7 +149,7 @@ export class LightScene extends basescene implements scene.SceneInterface
 
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
-        this.restoreContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
+        this.restorePositionAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
  
         // Set the color to use for any light
         gl.uniform4fv(this.colorLocation!, [1.0, 0, 0.2, 1]); // red

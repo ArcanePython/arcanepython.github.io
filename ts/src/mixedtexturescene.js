@@ -89,7 +89,7 @@ class MixedTextureScene {
         return d * Math.PI / 180;
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -115,7 +115,7 @@ class MixedTextureScene {
         this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
           gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
           // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -188,7 +188,7 @@ class MixedTextureScene {
     drawScene(gl, cam, time) {
         gl.bindVertexArray(this.vao); //this always comes first !
         // 2023-01-03 prevent clear issues
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         gl.activeTexture(gl.TEXTURE0 + 0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture1);
         gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1

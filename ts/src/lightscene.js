@@ -211,7 +211,7 @@ class LightScene extends basescene_1.basescene {
         this.initMatrixUniforms(gl, program);
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
-    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -238,7 +238,7 @@ class LightScene extends basescene_1.basescene {
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
         // Set the color to use for any light
         gl.uniform4fv(this.colorLocation, [1.0, 0, 0.2, 1]); // red
         // Set the shininess for any light. 

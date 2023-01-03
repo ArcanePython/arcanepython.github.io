@@ -343,7 +343,11 @@ class ObjectListScene {
             object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
         });
         // Draw the objects using Gregg's drawObjectList (this will clear the background)
-        //  twgl.drawObjectList(gl, this.objectsToDraw);
+        twgl.drawObjectList(gl, this.objectsToDraw);
+        //
+        // below code to spell out drawObjectList to find the cause of the clear issue
+        //
+        return;
         var init = false;
         // ->drawObjectList replacement..
         // draw each object using drawBufferInfo()
