@@ -2,119 +2,117 @@
 <html>
 <head>
 <style>html, body {
-        margin: 0;
-        height: 100%;
-        overflow: hidden
-    }
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
 
-    .gui { position: absolute; top: 2px; left: 7px }
+.gui {
+  position: absolute;
+  top: 2px;
+  left: 7px;
+}
 
 .grid-container {
-  display: grid;
+  height: 99%;
   grid-template-rows: 150px auto 80px;
   grid-template-columns: auto auto 240px;
-  gap: 0px;
-  padding: 0px;
-  height: 99%;
+  gap: 0;
+  padding: 0;
+  display: grid;
 }
 
 .grid-container > div {
-  background-color: rgba(255, 255, 255, 0.8);
   text-align: center;
-  padding: 0px 0;
+  background-color: #fffc;
+  padding: 0;
   font-size: 14px;
 }
 
-.item1 {
-  grid-column-start: 1;
-  grid-column-end: 3;
+.item1, .item3 {
+  grid-column: 1 / 3;
 }
-.item3 {
-  grid-column-start: 1;
-  grid-column-end: 3;
-}
-
-
 
 .dg.main.taller-than-window .close-button {
-    border-top: 1px solid #ddd;
+  border-top: 1px solid #ddd;
 }
 
 .dg.main .close-button {
-    background-color: #ccc;
+  background-color: #ccc;
 }
- 
+
 .dg.main .close-button:hover {
-    background-color: #ddd;
+  background-color: #ddd;
 }
 
 .dg {
-    color: #555;
-    text-shadow: none !important;
+  color: #555;
+  text-shadow: none !important;
 }
 
 .dg.main::-webkit-scrollbar {
-    background: #fafafa;
+  background: #fafafa;
 }
 
 .dg.main::-webkit-scrollbar-thumb {
-    background: #bbb;
+  background: #bbb;
 }
- 
+
 .dg li:not(.folder) {
-    background: #fafafa;
-    border-bottom: 1px solid #ddd;
+  background: #fafafa;
+  border-bottom: 1px solid #ddd;
 }
- 
+
 .dg li.save-row .button {
-    text-shadow: none !important;
+  text-shadow: none !important;
 }
 
 .dg li.title {
-    background: #e8e8e8 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
+  background: #e8e8e8 url("data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==") 6px 10px no-repeat;
 }
 
-.dg .cr.function:hover,.dg .cr.boolean:hover {
-    background: #fff;
+.dg .cr.function:hover, .dg .cr.boolean:hover {
+  background: #fff;
 }
- 
-.dg .c input[type=text] {
-    background: #e9e9e9;
+
+.dg .c input[type="text"] {
+  background: #e9e9e9;
 }
- 
-.dg .c input[type=text]:hover {
-    background: #eee;
+
+.dg .c input[type="text"]:hover {
+  background: #eee;
 }
- 
-.dg .c input[type=text]:focus {
-    background: #eee;
-    color: #555;
+
+.dg .c input[type="text"]:focus {
+  color: #555;
+  background: #eee;
 }
- 
+
 .dg .c .slider {
-    background: #e9e9e9;
+  background: #e9e9e9;
 }
 
 .dg .c .slider:hover {
-    background: #eee;
+  background: #eee;
+}
 
-}</style>
+</style>
 <!-- link rel="stylesheet" href="https://arcanepython.github.io/assets/css/style.css?v=310b88372171c8ac49d89425753ada27e9196b5e" -->
-<link rel="stylesheet" href="/styles.8986bff4.css">
+<link rel="stylesheet" href="/index.1303bb05.css">
 
 <meta name="viewport" content="width=device-width">
-<script src="/styles.8986bff4.js"></script></head>
+</head>
  
     <body>
         <div class="grid-container">
-        <div class="item1" id="cdiv" style="-webkit-text-fill-color:rgb(44, 44, 226); background-color:azure; text-align:left"></div>
-        <div class="item2" id="projection" style="background-color:cornsilk"></div>
-        <div class="item3" id="canvasdiv" style="display:block;background-color:rgb(170, 56, 56)">
-            <canvas id="c" style="width:100%" tabindex="1"></canvas>
+        <div class="item1" id="cdiv" style="-webkit-text-fill-color: #2c2ce2; text-align: left; background-color: azure"></div>
+        <div class="item2" id="projection" style="background-color: #fff8dc"></div>
+        <div class="item3" id="canvasdiv" style="background-color: #aa3838; display: block">
+            <canvas id="c" style="width: 100%" tabindex="1"></canvas>
         </div>
-        <div id="linksdiv" style="background-color:azure; background-color:azure; padding-left: 20px; text-align: left;" class="item5">
+        <div id="linksdiv" style="text-align: left; background-color: azure; padding-left: 20px" class="item5">
         </div>
-        <div id="app" style="background-color:cornsilk">Title</div>
+        <div id="app" style="background-color: #fff8dc">Title</div>
         <div id="eye"></div>  
         <div id="comment"></div>  
     </div>
@@ -127,22 +125,20 @@ var projdiv = document.getElementById("projection");
 var cdivdiv = document.getElementById("cdiv");
 var appdiv = document.getElementById("app");
 var eyediv = document.getElementById("eye");
-
 function lnk(appendlink, appenddescrip) {
-  return '<a href="' + appendlink + '">' + appenddescrip + '</a><br/>';
+    return '<a href="' + appendlink + '">' + appenddescrip + "</a><br/>";
 }
-
 cdivdiv.innerHTML = "";
 appdiv.innerHTML = "";
 eyediv.innerHTML = "";
 projdiv.innerHTML = "";
-var str = "\n        <p>\n        Stills based on .OBJ<br>\n        ";
+var str = `
+        <p>
+        Stills based on .OBJ<br>
+        `;
 var subdir = "dist"; // current parcel dist
-
 var commonjsparcel = "index.73eb0017.js"; // current parcel js
-
 var commonhtml = "index.html"; // this html (do not use dist\ parcel's)
-
 str += lnk(commonhtml + "?cube&radius0=9&hx=-0.8&hy=0.43", "Textured cubes");
 str += lnk(commonhtml + "?koenigsegg&radius0=65&hx=0.8&hy=0.43", "Koenigsegg");
 str += lnk(commonhtml + "?rubik&radius0=15&hx=0.8&hy=0.8", "Blue Rubik");
@@ -153,40 +149,51 @@ str += lnk(commonhtml + "?cat&radius0=137&hx=-1.4&hy=-0.77&hxl=-1.4&hyl=-0.77&di
 str += lnk(commonhtml + "?stone&radius0=4&hx=0.8&hy=0.5", "Stone");
 str += lnk(commonhtml + "?plane&radius0=25&hx=0.8&hy=0.5", "Plane");
 str += lnk(commonhtml + "?greenhouse", "Greenhouse");
-str += "\n        <p>\n        Animations (bone model)<br>\n        "; // str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
-
+str += `
+        <p>
+        Animations (bone model)<br>
+        `;
+// str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
 str += lnk(commonhtml + "?skeleton&radius0=80&hx=2.4&hy=-0.2&mesh=strip&stride=180&numrows=39", "Zelensky whales");
 str += lnk(commonhtml + "?fish&radius0=80&hx=1.9&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1", "Ukrainian Fish");
-str += "\n        <p>\n        Scenes with background<br>\n        ";
+str += `
+        <p>
+        Scenes with background<br>
+        `;
 str += lnk(commonhtml + "?animation4&radius0=20&hx=0&hy=0", "Skycube Scene");
 str += lnk(commonhtml + "?animation3&radius0=250&hx=0&hy=0", "Lights Scene");
 str += lnk(commonhtml + "?animation8&radius0=3&hx=80&hy=0", "Tex3d on tex Scene");
 str += lnk(commonhtml + "?animation1&radius0=80&hx=20&hy=10&fov=32", "Mixed Texture Scene");
 str += lnk(commonhtml + "?animation5&radius0=50&hx=20&hy=10", "Many Textures Scene");
 str += lnk(commonhtml + "?animation6&radius0=60&hx=0.7&hy=0.0", "ObjectList Scene");
-str += lnk(commonhtml + "?animation7&radius0=60&hx=80&hy=0", "Instanced Scene"); //str+=lnk(commonhtml+"?skybox","Skybox");
+str += lnk(commonhtml + "?animation7&radius0=60&hx=80&hy=0", "Instanced Scene");
+//str+=lnk(commonhtml+"?skybox","Skybox");
 //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
-
-str += "\n        <p>\n        Experiments<br>\n        ";
-str += lnk(commonhtml + "?animation0&radius0=60&hx=0&hy=0&speed=0.01", "Skybox scene"); //     str+=lnk(commonhtml+"?skyboxcube","Gregg's Skycube");
+str += `
+        <p>
+        Experiments<br>
+        `;
+str += lnk(commonhtml + "?animation0&radius0=60&hx=0&hy=0&speed=0.01", "Skybox scene");
+//     str+=lnk(commonhtml+"?skyboxcube","Gregg's Skycube");
 //    str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
 //   str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","Tex3d on tex");
 //  str+=lnk(commonhtml+"?textures&radius0=50","Gregg's Textures");
-
 str += lnk("?drawimagespace", "Image space");
 linksdiv.innerHTML = str + "<p>"; // (neat way to do it on a server, but Parcel dvp Server won't run this..)
-//  document.addEventListener('DOMContentLoaded', () => {
-//  document.head.appendChild(document.createElement('script'))
-//       .src = subdir + "/" + commonjsparcel;
-//  });</script>    
+ //  document.addEventListener('DOMContentLoaded', () => {
+ //  document.head.appendChild(document.createElement('script'))
+ //       .src = subdir + "/" + commonjsparcel;
+ //  });
+
+</script>    
 <!--Use this while debugging, and before a Parcel fresh build -->
-<!--script src="src/indexAnimations.js" type="module"></script-->
+<script src="/index.5710aea2.js" defer=""></script>
 
 <!--For  a fresh build, stop debugging, clear out \Dist locally, then start debugging, invoking Parcel build. 
     the compiled result entry according to my current Parcel.mdb will be dist/index.5710aea2.js  -->
 
 <!--Use this for index.html on GitHib -->
-<script src="/indexAnimations.370f14dd.415b2774.js"></script>
+<!-- script src="dist/indexAnimations.370f14dd.js"></script -->
 
 <!--Or use this for index.html on GitHib.. -->
 <!-- script language="Javascript">  
