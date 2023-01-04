@@ -6,7 +6,7 @@ import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 import * as boneanimation from "./boneanimation"
-//import { mat4tools } from "./mat4tools.js";
+
 
 export interface FishInterface 
   {
