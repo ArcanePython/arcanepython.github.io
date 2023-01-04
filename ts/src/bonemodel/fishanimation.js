@@ -22,11 +22,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FishAnimation = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
-const baseapp = __importStar(require("./baseapp/baseapp"));
-const animationclock = __importStar(require("./baseapp/animationclock"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
+const animationclock = __importStar(require("./../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {

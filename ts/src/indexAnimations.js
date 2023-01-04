@@ -21,8 +21,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mtls = __importStar(require("./baseapp/mouselistener")); // connect events for mouse and mouse wheel
-const skeleton = __importStar(require("./skeleton")); // task: bone model (single)
-const fish = __importStar(require("./fishanimation")); // task: bone model (flock)
+const skeleton = __importStar(require("./bonemodel/skeleton")); // task: bone model (single)
+const fish = __importStar(require("./bonemodel/fishanimation")); // task: bone model (flock)
 const manytextures = __importStar(require("./manytextures")); // task: camera projection
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // task: camera projection
 const drawimagespace = __importStar(require("./drawimagespace")); // task: image space texture

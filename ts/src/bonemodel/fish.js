@@ -20,8 +20,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FishOneJoint = exports.FishHRotated = exports.FishV = exports.FishHTranslated = exports.Fish = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
@@ -48,10 +48,10 @@ class Fish extends boneanimation.BoneAnimation {
         this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
     }
     prepareSurfaceTextures(gl, selectedSurface) {
-        var gradientname = require("./resources/models/stone/circlegradient.png");
-        var clovername = require("./images/clover.jpg");
-        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+        var gradientname = require("./../resources/models/stone/circlegradient.png");
+        var clovername = require("./../images/clover.jpg");
+        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
         var textures = twgl.createTextures(gl, {
             checker: {
                 mag: gl.NEAREST,

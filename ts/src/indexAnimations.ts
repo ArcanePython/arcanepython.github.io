@@ -2,8 +2,8 @@
 
 import * as mtls from "./baseapp/mouselistener";   // connect events for mouse and mouse wheel
 
-import * as skeleton from "./skeleton"             // task: bone model (single)
-import * as fish from "./fishanimation"            // task: bone model (flock)
+import * as skeleton from "./bonemodel/skeleton"             // task: bone model (single)
+import * as fish from "./bonemodel/fishanimation"            // task: bone model (flock)
 import * as manytextures from "./manytextures"     // task: camera projection
 import * as manytexturescene from "./scene/manytexturescene"     // task: camera projection
 import * as drawimagespace from "./drawimagespace" // task: image space texture

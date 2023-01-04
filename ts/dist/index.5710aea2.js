@@ -567,8 +567,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 const mtls = __importStar(require("./baseapp/mouselistener")); // connect events for mouse and mouse wheel
-const skeleton = __importStar(require("./skeleton")); // task: bone model (single)
-const fish = __importStar(require("./fishanimation")); // task: bone model (flock)
+const skeleton = __importStar(require("./bonemodel/skeleton")); // task: bone model (single)
+const fish = __importStar(require("./bonemodel/fishanimation")); // task: bone model (flock)
 const manytextures = __importStar(require("./manytextures")); // task: camera projection
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // task: camera projection
 const drawimagespace = __importStar(require("./drawimagespace")); // task: image space texture
@@ -823,7 +823,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","./skeleton":"7hZAU","./fishanimation":"jTKYD","./manytextures":"llxVM","./scene/manytexturescene":"fJWn9","./drawimagespace":"hcp33","./animation1":"5jcfD","./skyboxcube":"h51mu","./objmtlimport.js":"46ggt","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./objectlist":"7xBpC","./scene/objectlistscene":"ZXdmK","./drawinstanced":"7UK0I","./canvas3dtexture":"23adv","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","./bonemodel/skeleton":"5hqLk","./bonemodel/fishanimation":"jVuZu","./manytextures":"llxVM","./scene/manytexturescene":"fJWn9","./drawimagespace":"hcp33","./animation1":"5jcfD","./skyboxcube":"h51mu","./objmtlimport.js":"46ggt","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./objectlist":"7xBpC","./scene/objectlistscene":"ZXdmK","./drawinstanced":"7UK0I","./canvas3dtexture":"23adv","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -934,7 +934,7 @@ class MouseListener {
 }
 exports.MouseListener = MouseListener;
 
-},{}],"7hZAU":[function(require,module,exports) {
+},{}],"5hqLk":[function(require,module,exports) {
 "use strict";
 //import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 //import { m4 } from "./../node_modules/twgl.js";
@@ -973,10 +973,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.Skeleton = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
+//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
-const baseapp = __importStar(require("./baseapp/baseapp"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
 const datgui = __importStar(require("dat.gui"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");
@@ -1107,7 +1108,7 @@ class Skeleton extends baseapp.BaseApp {
 }
 exports.Skeleton = Skeleton;
 
-},{"twgl.js":"3uqAP","./baseapp/camhandler":"1ZnlU","./boneanimation":"aOyYs","./fish":"otYB7","./baseapp/baseapp":"9lZ4F","dat.gui":"k3xQk"}],"3uqAP":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../baseapp/camhandler":"1ZnlU","./boneanimation":"hK6Lv","./fish":"6tAIw","./../baseapp/baseapp":"9lZ4F","dat.gui":"k3xQk"}],"3uqAP":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "addExtensionsToContext", ()=>addExtensionsToContext);
@@ -11477,7 +11478,7 @@ exports.Camera = Camera;
 */ Camera.CamYUp = 1;
 Camera.CamZUp = 2;
 
-},{"twgl.js":"3uqAP"}],"aOyYs":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"hK6Lv":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11675,7 +11676,7 @@ class BoneAnimation {
 }
 exports.BoneAnimation = BoneAnimation;
 
-},{"twgl.js":"3uqAP","./stridedmesh":"8Kodn"}],"8Kodn":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo"}],"kYVeo":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11992,7 +11993,7 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
 }
 exports.StridedMesh = StridedMesh;
 
-},{"./stridedmesh0":"l5gMp"}],"l5gMp":[function(require,module,exports) {
+},{"./stridedmesh0":"gwg6B"}],"gwg6B":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -12053,7 +12054,7 @@ class StridedMesh0 {
 }
 exports.StridedMesh0 = StridedMesh0;
 
-},{}],"otYB7":[function(require,module,exports) {
+},{}],"6tAIw":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -12088,8 +12089,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.FishOneJoint = exports.FishHRotated = exports.FishV = exports.FishHTranslated = exports.Fish = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
@@ -12116,10 +12117,10 @@ class Fish extends boneanimation.BoneAnimation {
         this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
     }
     prepareSurfaceTextures(gl, selectedSurface) {
-        var gradientname = require("./resources/models/stone/circlegradient.png");
-        var clovername = require("./images/clover.jpg");
-        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
+        var gradientname = require("./../resources/models/stone/circlegradient.png");
+        var clovername = require("./../images/clover.jpg");
+        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
         var textures = twgl.createTextures(gl, {
             checker: {
                 mag: gl.NEAREST,
@@ -12416,7 +12417,7 @@ class FishOneJoint extends Fish {
 }
 exports.FishOneJoint = FishOneJoint;
 
-},{"./../node_modules/twgl.js":"3uqAP","./stridedmesh":"8Kodn","./trianglesmesh":"a2gwM","./boneanimation":"aOyYs","./resources/models/stone/circlegradient.png":"1iiep","./images/clover.jpg":"bR3kU","./resources/models/stone/zelenskii.png":"dfC7C","./resources/models/stone/flagofukraine.png":"4oUIn"}],"a2gwM":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./boneanimation":"hK6Lv","./../resources/models/stone/circlegradient.png":"1iiep","./../images/clover.jpg":"bR3kU","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn"}],"jKlEI":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -12615,7 +12616,7 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
 }
 exports.StridedMesh = StridedMesh;
 
-},{"./stridedmesh0":"l5gMp"}],"1iiep":[function(require,module,exports) {
+},{"./stridedmesh0":"gwg6B"}],"1iiep":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "circlegradient.6cda9680.png" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
@@ -15506,7 +15507,7 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "negy.4
 },{"./helpers/bundle-url":"lgJ39"}],"15dT3":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "negz.fa6771d2.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"jTKYD":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"jVuZu":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -15543,11 +15544,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.FishAnimation = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
-const baseapp = __importStar(require("./baseapp/baseapp"));
-const animationclock = __importStar(require("./baseapp/animationclock"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
+const animationclock = __importStar(require("./../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
@@ -15702,7 +15703,7 @@ class FishAnimation extends baseapp.BaseApp {
 }
 exports.FishAnimation = FishAnimation;
 
-},{"twgl.js":"3uqAP","./baseapp/camhandler":"1ZnlU","./boneanimation":"aOyYs","./fish":"otYB7","./baseapp/baseapp":"9lZ4F","./baseapp/animationclock":"4nsaS"}],"4nsaS":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../baseapp/camhandler":"1ZnlU","./boneanimation":"hK6Lv","./fish":"6tAIw","./../baseapp/baseapp":"9lZ4F","./../baseapp/animationclock":"4nsaS"}],"4nsaS":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true

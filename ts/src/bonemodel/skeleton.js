@@ -24,10 +24,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Skeleton = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
+//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
 const fish = __importStar(require("./fish"));
-const baseapp = __importStar(require("./baseapp/baseapp"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
 const datgui = __importStar(require("dat.gui"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");
