@@ -78,7 +78,7 @@ export class Skeleton extends baseapp.BaseApp
       this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh!.arrays);
 
       this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![1], this.bufferInfo!);
-      this.cam=camhandler.Camera.createCamera(gl,dictpar, camhandler.Camera.CamYUp, 50.0, this.app!);
+      this.cam=camhandler.Camera.createCamera(gl,dictpar, camhandler.Camera.CamZUp, 50.0, this.app!);
       this.cam.zoominVelocity = 0.5;
       requestAnimationFrame(() => this.render(time0));   
     }
@@ -145,7 +145,7 @@ export class Skeleton extends baseapp.BaseApp
         gl.enable(gl.CULL_FACE);
       
         var cam: camhandler.Camera = this.cam!;
-        cam.CamHandlingYUp(gl, this.app!, 1.0, -1.0);
+        cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);
         var uniforms = this.uniforms!;
         uniforms.viewprojection = cam.viewProjection;   
   

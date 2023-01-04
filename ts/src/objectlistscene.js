@@ -62,6 +62,7 @@ class ObjectListScene {
   `;
         this.objectsToDraw = [];
         this.objects = [];
+        this.speedpreset = 0.02;
         // state
         this.cx = 0;
         this.cy = 0;
@@ -82,6 +83,14 @@ class ObjectListScene {
     }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.gl = gl;
+        this.animationParameters = (this.animationParameters == undefined) ? cap : this.animationParameters;
+        if (dictpar === null || dictpar === void 0 ? void 0 : dictpar.has("speed")) {
+            this.animationParameters.b.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
+            console.log("specified: speedpreset=" + this.animationParameters.b.speed);
+        }
+        else
+            console.log("not specified: speedpreset");
+        // if (this.speedpreset) this.animationParameters!.b.speed = this.speedpreset!;
         this.fieldOfViewRadians = (60.0 * Math.PI / 180);
         var cBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
         // spheres

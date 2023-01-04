@@ -70,6 +70,8 @@ export class ObjectListScene  implements scene.SceneInterface
   objectsToDraw: twgl.DrawObject[] = [];
   objects : objectnode.Node[] = [];
 
+  speedpreset: number=0.02;
+
   // state
   cx: number=0;
   cy: number=0;
@@ -82,7 +84,7 @@ export class ObjectListScene  implements scene.SceneInterface
   {
     this.twglprograminfo=new Array(2);   
     this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-  }
+   }
 
   async FetchText(cparcelname: string){
     const res = await fetch(cparcelname);
@@ -94,6 +96,18 @@ export class ObjectListScene  implements scene.SceneInterface
   initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
   {  
     this.gl = gl;
+
+    this.animationParameters=(this.animationParameters==undefined)?cap:this.animationParameters;
+    if (dictpar?.has("speed"))
+    {
+      this.animationParameters!.b.speed = +dictpar?.get("speed")!;
+        console.log("specified: speedpreset="+ this.animationParameters!.b.speed) ;
+    } else
+    console.log("not specified: speedpreset") ;
+   
+
+   // if (this.speedpreset) this.animationParameters!.b.speed = this.speedpreset!;
+   
     this.fieldOfViewRadians = (60.0* Math.PI / 180);
     var cBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0);  // create the cube
     // spheres

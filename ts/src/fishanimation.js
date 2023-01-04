@@ -58,12 +58,10 @@ class FishAnimation extends baseapp.BaseApp {
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     main(gl, dictpar) {
-        //  super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         twgl.setAttributePrefix("a_");
         var gl = this.gl;
-        //this.programInfo = this.twglprograminfo![0];// twgl.createProgramInfo(gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
         var nFish = 0;
-        var time0 = 0; // (this.vnow=new Date()).getTime();
+        var time0 = 0;
         this.fish.forEach((afish) => {
             afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
             afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
@@ -105,8 +103,6 @@ class FishAnimation extends baseapp.BaseApp {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        //gl.clearColor(0.1, 0.1, 0.1, 1.0);       
-        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
         var cam = this.cam;
         cam.CamHandlingZUp(gl, this.app, 1.0, -1.0);
         for (var fishtype = 0; fishtype < this.fish.length; fishtype++)

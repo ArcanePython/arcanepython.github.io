@@ -98,7 +98,7 @@ export class ObjectList //extends twglbaseapp.twglbaseapp
     var mydata= this.FetchText(parcls).then ((s: string)=> {
           console.log("mydata="+mydata +  " s="+s);
           var nodedescriptions: NodeJson = JSON.parse(s);
-          this.scene = nodefact.makeNode(nodedescriptions, 0.0);
+          this.scene = nodefact.makeNode(nodedescriptions);
           this.objects = nodefact.objects;
           this.objectsToDraw = nodefact.objectsToDraw;
           this.nodeInfosByName= nodefact.nodeInfosByName;

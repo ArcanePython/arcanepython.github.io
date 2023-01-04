@@ -1017,7 +1017,7 @@ class Skeleton extends baseapp.BaseApp {
         this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
         this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, 50.0, this.app);
+        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
         this.cam.zoominVelocity = 0.5;
         requestAnimationFrame(()=>this.render(time0));
     }
@@ -1065,7 +1065,7 @@ class Skeleton extends baseapp.BaseApp {
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
         var cam = this.cam;
-        cam.CamHandlingYUp(gl, this.app, 1.0, -1);
+        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
@@ -15624,12 +15624,10 @@ class FishAnimation extends baseapp.BaseApp {
         ]);
     }
     main(gl, dictpar) {
-        //  super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         twgl.setAttributePrefix("a_");
         var gl = this.gl;
-        //this.programInfo = this.twglprograminfo![0];// twgl.createProgramInfo(gl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);          
         var nFish = 0;
-        var time0 = 0; // (this.vnow=new Date()).getTime();
+        var time0 = 0;
         this.fish.forEach((afish)=>{
             afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
             afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
@@ -15671,8 +15669,6 @@ class FishAnimation extends baseapp.BaseApp {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        //gl.clearColor(0.1, 0.1, 0.1, 1.0);       
-        //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
         var cam = this.cam;
         cam.CamHandlingZUp(gl, this.app, 1.0, -1);
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
@@ -23907,7 +23903,7 @@ class ObjectList {
         var mydata = this.FetchText(parcls).then((s)=>{
             console.log("mydata=" + mydata + " s=" + s);
             var nodedescriptions = JSON.parse(s);
-            this.scene = nodefact.makeNode(nodedescriptions, 0.0);
+            this.scene = nodefact.makeNode(nodedescriptions);
             this.objects = nodefact.objects;
             this.objectsToDraw = nodefact.objectsToDraw;
             this.nodeInfosByName = nodefact.nodeInfosByName;
@@ -24239,6 +24235,7 @@ class ObjectListScene {
   `;
         this.objectsToDraw = [];
         this.objects = [];
+        this.speedpreset = 0.02;
         // state
         this.cx = 0;
         this.cy = 0;
@@ -24264,6 +24261,12 @@ class ObjectListScene {
     }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.gl = gl;
+        this.animationParameters = this.animationParameters == undefined ? cap : this.animationParameters;
+        if (dictpar === null || dictpar === void 0 ? void 0 : dictpar.has("speed")) {
+            this.animationParameters.b.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
+            console.log("specified: speedpreset=" + this.animationParameters.b.speed);
+        } else console.log("not specified: speedpreset");
+        // if (this.speedpreset) this.animationParameters!.b.speed = this.speedpreset!;
         this.fieldOfViewRadians = 60.0 * Math.PI / 180;
         var cBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
         // spheres
@@ -25966,7 +25969,7 @@ class SkyBoxScene {
         this.speedpreset = 0.05;
         if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
             this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
-            console.log("specified: " + this.speedpreset);
+            console.log("specified: speedpreset=" + this.speedpreset);
         }
     }
     resizeCanvas(gl) {

@@ -26,14 +26,14 @@ export class SkyBoxScene implements scene.SceneInterface
         if (dictPars?.has("speed"))
         {
             this.speedpreset = +dictPars?.get("speed")!;
-            console.log("specified: "+ this.speedpreset) ;
+            console.log("specified: speedpreset="+ this.speedpreset) ;
         }
     }
 
     initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters, dictpar:Map<string,string>, progenv: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
     { 
         this.animationParameters=(this.animationParameters==undefined)?cap:this.animationParameters;
-       if (this.speedpreset) this.animationParameters.b.speed = this.speedpreset!;
+        if (this.speedpreset) this.animationParameters.b.speed = this.speedpreset!;
         sceneReadyCallback(0); 
     }
 

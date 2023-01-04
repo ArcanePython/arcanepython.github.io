@@ -32,7 +32,7 @@ class SkyBoxScene {
         this.speedpreset = 0.05;
         if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
             this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
-            console.log("specified: " + this.speedpreset);
+            console.log("specified: speedpreset=" + this.speedpreset);
         }
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
