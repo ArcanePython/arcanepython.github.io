@@ -103,7 +103,7 @@ export class NodesProducer
     objectsToDraw: twgl.DrawObject[] = [];
     objects : Node[] = [];
 
-    makeNode = (nodeDescription: NodeDescription, orientationAnglexz: number|undefined):Node => {
+    makeNode = (nodeDescription: NodeDescription):Node => {
         var trs  = new NodeTransforms();
         var cnode = new Node(trs);
         this.nodeInfosByName[nodeDescription.name] = {

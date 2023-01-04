@@ -79,7 +79,7 @@ class NodesProducer {
         this.nodeInfosByName = {};
         this.objectsToDraw = [];
         this.objects = [];
-        this.makeNode = (nodeDescription, orientationAnglexz) => {
+        this.makeNode = (nodeDescription) => {
             var trs = new NodeTransforms();
             var cnode = new Node(trs);
             this.nodeInfosByName[nodeDescription.name] = {
