@@ -14,6 +14,7 @@ export type TAnimation1Parameters =
     sling: number,
     shininess: number,
     typelight: string;
+    fov: number;
     b: TbaseappParameters,
       // Checkbox tail animation on/off
      

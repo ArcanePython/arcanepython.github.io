@@ -79,15 +79,13 @@ export class LightScene extends basescene implements scene.SceneInterface
      gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
      gui.updateDisplay();
      var cel2 = gui.add(this.animationParameters!, 'typelight', [ 'directed light','point light', 'spot light' ] );
-      cel2.onChange( this.onChangeTextureCombo);
+     cel2.onChange( this.onChangeTypeLightCombo);
+     gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
     }
 
-    onChangeTextureCombo(value? : any)
-    {
-      
-      console.log("change "+value);
+    onChangeTypeLightCombo(value? : any)
+    {  
       var s = value! as string;
-      console.log("onChange ["+s+"]");
       if (s=="directed light") LightScene.instance.typelight=0; // gl.uniform1i(this.typelightLocation!,0);
       else if (s=="point light") LightScene.instance.typelight=1; // gl.uniform1i(this.typelightLocation!,1);
       else if (s=="spot light") LightScene.instance.typelight=2; //gl.uniform1i(this.typelightLocation!,2);
@@ -134,36 +132,25 @@ export class LightScene extends basescene implements scene.SceneInterface
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
-   
-
-//      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
-//        Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
-//: [4.0,0.0,0.0];
-//if (!this.animationParameters?.b.move)
-//this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
-//gl.enable(gl.CULL_FACE);
-//gl.enable(gl.DEPTH_TEST);
-
         var deltaTime = time - this.ctime;
         this.ctime = time;
 
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
+
+        // Restore position attribute context for this program (2023-01-03 solve clear issue)
         this.restorePositionAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
  
-        // Set the color to use for any light
+        // Set the color to use for light
         gl.uniform4fv(this.colorLocation!, [1.0, 0, 0.2, 1]); // red
     
         // Set the shininess for any light. 
-        // directional light it is intensity
-        // for point light and spot light it is concentration of the light
+        // directional light shininess=intensity
+        // for point light and spot light shininess=concentration of light in the center
         gl.uniform1f(this.shininessLocation!, this.animationParameters!.shininess);
         gl.uniform1i(this.typelightLocation!,this.typelight);
-//        if (this.animationParameters!.typelight=="directed light") gl.uniform1i(this.typelightLocation!,0);
-//        else if (this.animationParameters!.typelight=="point light") gl.uniform1i(this.typelightLocation!,1);
-//        else if (this.animationParameters!.typelight=="spot light") gl.uniform1i(this.typelightLocation!,2);
     
-        // set the light direction (directed light)
+        // Set the light direction (directed light)
         gl.uniform3fv(this.reverseLightDirectionLocation!, twgl.v3.normalize([1.0, 0.0, 0.0]));
 
         // Set the light position used in point light and spot light

@@ -21,6 +21,8 @@ export class basescene
  modelYRotationRadians: number = 0.0;
 
  vaoSingleObject: WebGLVertexArrayObject | undefined;
+ positionBuffer: WebGLBuffer|undefined;
+ positionAttributeLocation: number|undefined;
   
  public initMatrixUniforms(gl: WebGL2RenderingContext, program: WebGLProgram)
  {
@@ -30,8 +32,6 @@ export class basescene
   this.worldLocation = gl.getUniformLocation(program, "u_world")!;
  }
 
- positionBuffer: WebGLBuffer|undefined;
- positionAttributeLocation: number|undefined;
  
  public initSingleObject(gl: WebGL2RenderingContext, 
                          program: WebGLProgram, 

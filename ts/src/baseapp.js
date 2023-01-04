@@ -90,7 +90,7 @@ class BaseApp {
         }
     }
     createGUI(parameters, instanceParameters) {
-        console.log("=> baseApp initGUI " + parameters);
+        //     console.log("=> baseApp initGUI "+parameters);
         this.baseappParameters = parameters;
         var cc = this.gl.canvas.parentNode;
         var ccd = cc;
@@ -107,9 +107,9 @@ class BaseApp {
         // Slider for animation speed
         gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
         // Color dialog sets background color
-        var cel3 = gui.addColor(parameters, 'color0');
-        cel3.onChange(this.onChangeColorValue);
-        console.log("<= baseApp initGUI");
+        //     var cel3 = gui.addColor(parameters, 'color0');
+        //     cel3.onChange( this.onChangeColorValue);
+        //     console.log("<= baseApp initGUI");
         return gui;
     }
     //======================================================================================================

@@ -94,7 +94,7 @@ function preparedefaultparameters(dictPars) {
     }
 }
 var baseapppars = { move: true, speed: 0.01, color0: "#A0A0A0" };
-var defaultParameters = { b: baseapppars, movetail: true, texture: 'geotriangle2', typelight: 'point light', sling: 117, shininess: 11.0 };
+var defaultParameters = { b: baseapppars, movetail: true, texture: 'geotriangle2', typelight: 'point light', sling: 117, shininess: 11.0, fov: 60 };
 function initScene(gl, app, dictPars, scene) {
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
@@ -108,7 +108,7 @@ function show(gl, app, dictPars) {
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
         initScene(gl, app, dictPars, new lightscene.LightScene(gl));
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) {
-        var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars, cdiv);
+        var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(gl, dictPars), dictPars, cdiv);
         mta1.main(gl, dictPars);
         mta1.initGUI(defaultParameters);
     }

@@ -38,6 +38,9 @@ export class BaseApp
     public twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
 
     // environment skybox
+    //parameters for the skybox shader
+    skyboxLocation: WebGLUniformLocation | undefined;
+    viewDirectionProjectionInverseLocation: WebGLUniformLocation | undefined;
     public environmentBufferInfo:twgl.BufferInfo | undefined; // environment texture
     public vaoEnvironment: WebGLVertexArrayObject | undefined; // environment map vao buffer
    
@@ -79,7 +82,7 @@ export class BaseApp
 
     public createGUI(parameters:  {color0: string, move: boolean, speed: number}, instanceParameters: {}): datgui.GUI
     {
-        console.log("=> baseApp initGUI "+parameters);
+   //     console.log("=> baseApp initGUI "+parameters);
         this.baseappParameters= parameters ;
         var cc = (this.gl!.canvas  as HTMLCanvasElement).parentNode;
         var ccd= (cc as HTMLDivElement);
@@ -101,10 +104,10 @@ export class BaseApp
         gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
         
         // Color dialog sets background color
-        var cel3 = gui.addColor(parameters, 'color0');
+   //     var cel3 = gui.addColor(parameters, 'color0');
 
-        cel3.onChange( this.onChangeColorValue);
-        console.log("<= baseApp initGUI");
+   //     cel3.onChange( this.onChangeColorValue);
+   //     console.log("<= baseApp initGUI");
         return gui;
     }
 

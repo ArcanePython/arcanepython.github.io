@@ -88,6 +88,8 @@ export class MixedTextureScene implements scene.SceneInterface
     gui.add(this.animationParameters!, 'movetail');
 
      gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
+     gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+ 
      // Slider for shininess
      //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
      gui.updateDisplay();

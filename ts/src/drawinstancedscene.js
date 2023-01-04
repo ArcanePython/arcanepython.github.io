@@ -25,8 +25,8 @@ const twgl_js_1 = require("./../node_modules/twgl.js");
 class DrawInstancedScene {
     constructor(gl) {
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 15;
-        this.sceneenv = -1;
+        this.scenesize = 115;
+        this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
@@ -157,7 +157,7 @@ void main() {
     drawScene(gl, cam, time) {
         var gl = this.gl;
         time *= 0.001; // seconds
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         // Tell WebGL how to convert from clip space to pixels
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         //  gl.useProgram(this.program!);

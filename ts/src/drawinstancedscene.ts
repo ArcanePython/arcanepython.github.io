@@ -13,8 +13,8 @@ export class DrawInstancedScene implements scene.SceneInterface
 // https://webgl2fundamentals.org/webgl/lessons/webgl-instanced-drawing.html
 {
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-    scenesize=15;
-    sceneenv=-1;
+    scenesize=115;
+    sceneenv=2;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;
@@ -195,7 +195,7 @@ public constructor(gl: WebGL2RenderingContext)
     var gl = this.gl!;
     time *= 0.001; // seconds
 
-    twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+  //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
 
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);

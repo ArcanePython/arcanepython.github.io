@@ -643,7 +643,8 @@ var defaultParameters = {
     texture: "geotriangle2",
     typelight: "point light",
     sling: 117,
-    shininess: 11.0
+    shininess: 11.0,
+    fov: 60
 };
 function initScene(gl, app, dictPars, scene) {
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
@@ -656,7 +657,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl));
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) {
-        var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(), dictPars, cdiv);
+        var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(gl, dictPars), dictPars, cdiv);
         mta1.main(gl, dictPars);
         mta1.initGUI(defaultParameters);
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
@@ -12774,7 +12775,7 @@ class BaseApp {
         }
     }
     createGUI(parameters, instanceParameters) {
-        console.log("=> baseApp initGUI " + parameters);
+        //     console.log("=> baseApp initGUI "+parameters);
         this.baseappParameters = parameters;
         var cc = this.gl.canvas.parentNode;
         var ccd = cc;
@@ -12793,9 +12794,9 @@ class BaseApp {
         // Slider for animation speed
         gui.add(parameters, "speed").min(0.002).max(0.06).step(0.001);
         // Color dialog sets background color
-        var cel3 = gui.addColor(parameters, "color0");
-        cel3.onChange(this.onChangeColorValue);
-        console.log("<= baseApp initGUI");
+        //     var cel3 = gui.addColor(parameters, 'color0');
+        //     cel3.onChange( this.onChangeColorValue);
+        //     console.log("<= baseApp initGUI");
         return gui;
     }
     //======================================================================================================
@@ -20061,6 +20062,7 @@ class ManyTexturesScene {
         //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
         // Slider for shininess
         //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
         gui.updateDisplay();
         console.log("<= manyTextures extendGUI");
     }
@@ -20708,129 +20710,77 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.Animation1 = void 0;
-const baseapp = __importStar(require("./baseapp"));
-const animationclock = __importStar(require("./animationclock"));
+const animationclock = __importStar(require("./animationclock")); // own lib: frame counter
 const camhandler = __importStar(require("./camhandler")); // camera projection
+const baseapp = __importStar(require("./baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
+        // all parameters in any scene
         this.animation1Parameters = {
             b: this.baseappParameters,
             texture: "geotriangle2",
+            fov: 60,
             typelight: "point light",
             sling: 117,
             shininess: 0.1,
             movetail: true
         };
         this.ctime = new Date().getTime();
-        this.doclear = false;
+        this.doclear = true;
         this.doTwglEnv = false;
         this.scene = cscene;
         this.clock = new animationclock.AnimationClock();
-        console.log("<= animation1 constructor");
     }
     initGUI(parameters) {
         console.log("=> animation1 initGUI " + parameters);
         this.animation1Parameters = parameters;
         var gui = super.createGUI(this.animation1Parameters.b, this.animation1Parameters);
-        this.scene.animationParameters = this.animation1Parameters; // { b: b, movetail:movetail, texture: texture,sling: sling,shininess: shininess };
+        this.scene.animationParameters = this.animation1Parameters;
         this.scene.extendGUI(gui);
         return gui;
     }
     main(gl, dictpar) {
-        //   this.twglprograminfo = Array(2);     
-        ///   if (this.scene.sceneenv<0)
-        //      super.maininfos(gl, dictpar, [{vs:'',fs:''},{vs:this.scene.vertexShaderSource, fs:this.scene.fragmentShaderSource}] );
-        //     else 
-        //      super.maininfos(gl, dictpar, [ {vs:this.vsEnvironmentMap, fs:this.fsEnvironmentMap}, {vs:this.scene.vertexShaderSource,fs:this.scene.fragmentShaderSource}]);
-        /*
-              if (this.scene.sceneenv>0)
-              {
-                  var nshaders: number = ((this.scene.twglprograminfo!=null && this.scene.twglprograminfo!=undefined) )?this.scene.twglprograminfo.length:1;
-                  console.log("=> Initialize environment background shader 0/"+nshaders);
-                  console.log("vertex environment: "+super.vsEnvironmentMap);
-                  console.log("fragment environment: "+super.fsEnvironmentMap);
-                   console.log("<= Initialize environment background shader 0");
-              } else
-                  console.log("=> animation1.scene has no environment background");
-      */ if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
-            // if (this.twglprograminfo==null || this.twglprograminfo==undefined) 
-            // { 
-            //   console.log("=> allocate animation.twglprograminfo "+this.scene.twglprograminfo.length+" items");          
-            //   this.twglprograminfo = new Array(this.scene.twglprograminfo.length);
-            // }
+        if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
             var pienv = this.twglprograminfo[0];
             this.twglprograminfo = new Array(this.scene.twglprograminfo.length);
             this.twglprograminfo[0] = pienv;
-            for(var j = 0; j < this.scene.twglprograminfo.length; j++)if (this.scene.twglprograminfo[j] != null && this.scene.twglprograminfo[j] != undefined) {
-                console.log("=> plugin scene.twglprograminfo[" + j + "] into animation parent class");
-                this.twglprograminfo[j] = this.scene.twglprograminfo[j];
-            }
-            console.log("<= provide scene.twglprograminfo to animation parent class");
-        } else console.log("=> animation1.scene.twglprograminfo has no shaders registered");
-        //      super.maininfos(gl, dictpar, [{vs:'',fs:''},{vs:this.scene.vertexShaderSource, fs:this.scene.fragmentShaderSource}] );
-        //     else 
-        //      super.maininfos(gl, dictpar, [ {vs:this.vsEnvironmentMap, fs:this.fsEnvironmentMap}, {vs:this.scene.vertexShaderSource,fs:this.scene.fragmentShaderSource}]);
-        console.log("=> animation1 main create camera");
-        var time0 = 0;
+            for(var j = 0; j < this.scene.twglprograminfo.length; j++)if (this.scene.twglprograminfo[j] != null && this.scene.twglprograminfo[j] != undefined) this.twglprograminfo[j] = this.scene.twglprograminfo[j];
+        }
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene.scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
         if (this.scene.sceneenv > 0) {
             gl.useProgram(this.twglprograminfo[0].program);
-            console.log("init1 skybox" + this.scene.sceneenv + " this.scene.positionLocation=" + this.scene.positionLocation);
             this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo[0].program, "u_skybox");
             this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo[0].program, "u_viewDirectionProjectionInverse");
-            // gl.useProgram(this.twglprograminfo![0].program);
-            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); //, this.scene.positionLocation!);
-            else this.createEnvironmentMapGeo(gl); //, this.scene.positionLocation!);
-            console.log("init2 skybox" + this.scene.sceneenv);
-            this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureReadyCallback);
-        } else {
-            console.log("initial this.clock.frame=" + this.clock.frame + " gettime=>" + this.clock.getTime(this.clock.frame));
-            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo[1], this.sceneReadyCallback);
-        // this.scene.resizeCanvas(gl);  
-        //   requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame))); 
-        }
-        console.log("<= animation1 main");
+            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
+            else this.createEnvironmentMapGeo(gl);
+            this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback);
+        } else this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo[1], this.sceneReadyCallback);
     }
     sceneReadyCallback(err) {
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
-        console.log("=>Animation1 event sceneReadyCallback");
         ainstance.scene.resizeCanvas(ainstance.gl);
-        console.log("<=Animation1event request first frame.");
         requestAnimationFrame(()=>ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
-        console.log("<=Animation1event sceneReadyCallback ready, first frame requested.");
     }
-    textureReadyCallback(err, texture) {
+    textureEnvReadyCallback(err, texture) {
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
-        //ainstance.scene.resizeCanvas(ainstance.gl!); 
-        console.log("=>Animation1 event textureReadyCallback: ainstance.scene.initScene");
         ainstance.scene.initScene(ainstance.gl, ainstance.animation1Parameters, undefined, ainstance.twglprograminfo[1], ainstance.sceneReadyCallback);
-        //requestAnimationFrame(() => ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
-        console.log("<=Animation1 return from initScene()");
     }
     render(time) {
         var _a, _b;
         var gl = this.gl;
         if (this.doclear) {
-            //gl.enable(gl.BLEND);
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             gl.clear(gl.DEPTH_BUFFER_BIT);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
-        //   gl.enable(gl.CULL_FACE);
-        //   gl.enable(gl.DEPTH_TEST);     
-        //        
         this.scene.animationParameters = this.animation1Parameters;
-        // this.scene.resizeCanvas(gl);  
-        //    if(this.clock.frame==0) 
+        this.scene.resizeCanvas(gl);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         var cam = this.cam;
         cam.CamHandlingYUp(gl, this.app, 1.0, -1);
-        //if ((this.clock.frame%2)==0) // semi-transparent "flickeirng"
-        //if (this.clock.frame<10)     // background vanish after 10 frames
         if (this.scene.sceneenv > 0) {
             if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
                 cam === null || cam === void 0 ? void 0 : cam.Position()[0],
@@ -20838,53 +20788,30 @@ class Animation1 extends baseapp.BaseApp {
                 cam === null || cam === void 0 ? void 0 : cam.Position()[2]
             ];
             else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.b.move) ? [
-                Math.cos(time * 0.01 * this.scene.animationParameters.b.speed),
+                Math.cos(time * 0.005 * this.scene.animationParameters.b.speed),
                 0,
-                Math.sin(time * 0.01 * this.scene.animationParameters.b.speed)
+                Math.sin(time * 0.005 * this.scene.animationParameters.b.speed)
             ] : [
                 1.0,
                 0.0,
                 0.0
             ];
-            //this.cameraPosition = this.scene.cameraPosition==undefined? [Math.cos(vtime * .001), 0, Math.sin(vtime * .001)]:this.scene.cameraPosition;    
-            var fieldOfViewRadians = 60 * Math.PI / 180;
-            //this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, time);
-            gl.disable(gl.CULL_FACE);
-            //gl.disable(gl.DEPTH_TEST);     
+            var fieldOfViewRadians = this.animation1Parameters.fov * Math.PI / 180;
             gl.useProgram(this.twglprograminfo[0].program);
+            gl.disable(gl.CULL_FACE);
             gl.depthFunc(gl.LEQUAL);
-            // if ((this.clock.frame %8)==0) 
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.texture);
-            else //   gl.disable(gl.CULL_FACE);  
-            //   gl.disable(gl.DEPTH_TEST);  
-            this.renderenvironmentmap(gl, fieldOfViewRadians, {
+            else this.renderenvironmentmap(gl, fieldOfViewRadians, {
                 invproj: this.viewDirectionProjectionInverseLocation,
                 loc: this.skyboxLocation
             }, this.texture);
-             // console.log("render env cam="+this.cameraPosition+" target="+this.cameraTarget+" "+this.vaoEnvironment+" "+this.viewDirectionProjectionInverseLocation!+" "+this.skyboxLocation! +" "+time);
         }
-        // if ((this.clock.frame)>0)
-        //  {
-        //  gl.flush();
-        //    requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
-        //    return;
-        //  }
-        //   if ((this.clock.frame%2)==1)
         if (this.twglprograminfo[1] != undefined && this.twglprograminfo[1] != null) {
             gl.useProgram(this.twglprograminfo[1].program);
             gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
             gl.enable(gl.CULL_FACE); // only show left-turned triangles
-            //      this.scene.restoreContext();
-            //    gl.enable(gl.BLEND);
-            //    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            //   if (this.clock.frame>60)
             this.scene.drawScene(gl, cam, time);
         }
-        //   gl.flush();
-        //   console.log("frame="+this.clock.frame+" "+time);
-        //  if (this.clock.frame<0)
-        //  if (time<(this.ctime+300)) 
         requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
     }
 }
@@ -22463,6 +22390,7 @@ class MixedTextureScene {
         // Slider for sling speed
         gui.add(this.animationParameters, "movetail");
         gui.add(this.animationParameters, "sling").min(9).max(120).step(1);
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
         // Slider for shininess
         //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
         gui.updateDisplay();
@@ -23010,12 +22938,11 @@ class LightScene extends basescene_1.basescene {
             "point light",
             "spot light"
         ]);
-        cel2.onChange(this.onChangeTextureCombo);
+        cel2.onChange(this.onChangeTypeLightCombo);
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
     }
-    onChangeTextureCombo(value) {
-        console.log("change " + value);
+    onChangeTypeLightCombo(value) {
         var s = value;
-        console.log("onChange [" + s + "]");
         if (s == "directed light") LightScene.instance.typelight = 0; // gl.uniform1i(this.typelightLocation!,0);
         else if (s == "point light") LightScene.instance.typelight = 1; // gl.uniform1i(this.typelightLocation!,1);
         else if (s == "spot light") LightScene.instance.typelight = 2; //gl.uniform1i(this.typelightLocation!,2);
@@ -23051,19 +22978,13 @@ class LightScene extends basescene_1.basescene {
     // <==
     }
     drawScene(gl, cam, time) {
-        //      this.cameraPosition = (this.animationParameters?.b.move)? [Math.cos(time * 0.04 * this.animationParameters.b.speed) * 4.0, 0, 
-        //        Math.sin(time * 0.04 * this.animationParameters.b.speed) * 4.0] 
-        //: [4.0,0.0,0.0];
-        //if (!this.animationParameters?.b.move)
-        //this.cameraPosition = cam?.Position() as [number,number,number]; // [cam?.Position()[0]!,cam?.Position()[1]!,cam?.Position()[2]!];
-        //gl.enable(gl.CULL_FACE);
-        //gl.enable(gl.DEPTH_TEST);
         var deltaTime = time - this.ctime;
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
+        // Restore position attribute context for this program (2023-01-03 solve clear issue)
         this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
-        // Set the color to use for any light
+        // Set the color to use for light
         gl.uniform4fv(this.colorLocation, [
             1.0,
             0,
@@ -23071,14 +22992,11 @@ class LightScene extends basescene_1.basescene {
             1
         ]); // red
         // Set the shininess for any light. 
-        // directional light it is intensity
-        // for point light and spot light it is concentration of the light
+        // directional light shininess=intensity
+        // for point light and spot light shininess=concentration of light in the center
         gl.uniform1f(this.shininessLocation, this.animationParameters.shininess);
         gl.uniform1i(this.typelightLocation, this.typelight);
-        //        if (this.animationParameters!.typelight=="directed light") gl.uniform1i(this.typelightLocation!,0);
-        //        else if (this.animationParameters!.typelight=="point light") gl.uniform1i(this.typelightLocation!,1);
-        //        else if (this.animationParameters!.typelight=="spot light") gl.uniform1i(this.typelightLocation!,2);
-        // set the light direction (directed light)
+        // Set the light direction (directed light)
         gl.uniform3fv(this.reverseLightDirectionLocation, twgl.v3.normalize([
             1.0,
             0.0,
@@ -25462,7 +25380,9 @@ class Canvas3dTextureScene {
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
-    extendGUI(gui) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+    }
     restoreContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer
@@ -25985,8 +25905,8 @@ const twgl_js_1 = require("./../node_modules/twgl.js");
 class DrawInstancedScene {
     constructor(gl){
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 15;
-        this.sceneenv = -1;
+        this.scenesize = 115;
+        this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
@@ -26142,7 +26062,7 @@ void main() {
     drawScene(gl, cam, time) {
         var gl = this.gl;
         time *= 0.001; // seconds
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         // Tell WebGL how to convert from clip space to pixels
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         //  gl.useProgram(this.program!);
@@ -26216,21 +26136,30 @@ Object.defineProperty(exports, "__esModule", {
 exports.SkyBoxScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 class SkyBoxScene {
-    constructor(){
+    constructor(gl, dictPars){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
         this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
+        this.speedpreset = 0.05;
+        if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
+            this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
+            console.log("specified: " + this.speedpreset);
+        }
     }
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
     initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
+        this.animationParameters = this.animationParameters == undefined ? cap : this.animationParameters;
+        if (this.speedpreset) this.animationParameters.b.speed = this.speedpreset;
         sceneReadyCallback(0);
     }
-    extendGUI(gui) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+    }
     drawScene(gl, cam, time) {}
 }
 exports.SkyBoxScene = SkyBoxScene;
@@ -26350,7 +26279,9 @@ class SkyBoxCubeScene {
         // console.log("dictpar[r0]="+dictpar.get('radius0'));          
         sceneReadyCallback(0);
     }
-    extendGUI(gui) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+    }
     restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer

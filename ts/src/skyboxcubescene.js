@@ -95,7 +95,9 @@ class SkyBoxCubeScene {
         // console.log("dictpar[r0]="+dictpar.get('radius0'));          
         sceneReadyCallback(0);
     }
-    extendGUI(gui) { }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
+    }
     restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer

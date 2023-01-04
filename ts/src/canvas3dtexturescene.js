@@ -79,7 +79,9 @@ class Canvas3dTextureScene {
         console.log("<= scene constructor 3dtexture");
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    extendGUI(gui) { }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
+    }
     restoreContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
         // 1. Bind the buffer

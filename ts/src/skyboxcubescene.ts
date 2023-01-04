@@ -58,7 +58,10 @@ export class SkyBoxCubeScene implements scene.SceneInterface
     }
 
     extendGUI(gui: datgui.GUI)
-    { }
+    { 
+      gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+  
+    }
 
      // camera
      public cameraTarget: number[] | undefined;

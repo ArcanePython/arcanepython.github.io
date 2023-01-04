@@ -17,7 +17,11 @@ implements scene.SceneInterface
   cameraPosition: [number,number,number] | undefined
   animationParameters: TAnimation1Parameters | undefined;
   public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
-  public extendGUI(gui: datgui.GUI) {}
+  public extendGUI(gui: datgui.GUI) 
+  {
+    gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+ 
+  }
 
      targetTextureWidth = 512;
      targetTextureHeight = 512;

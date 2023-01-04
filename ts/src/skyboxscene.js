@@ -22,17 +22,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SkyBoxScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 class SkyBoxScene {
-    constructor() {
+    constructor(gl, dictPars) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
         this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
+        this.speedpreset = 0.05;
+        if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
+            this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
+            console.log("specified: " + this.speedpreset);
+        }
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) { sceneReadyCallback(0); }
-    extendGUI(gui) { }
+    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
+        this.animationParameters = (this.animationParameters == undefined) ? cap : this.animationParameters;
+        if (this.speedpreset)
+            this.animationParameters.b.speed = this.speedpreset;
+        sceneReadyCallback(0);
+    }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
+    }
     drawScene(gl, cam, time) { }
 }
 exports.SkyBoxScene = SkyBoxScene;

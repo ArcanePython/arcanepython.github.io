@@ -167,6 +167,8 @@ console.log("=> manyTextures extendGUI movetail"+this.animationParameters!);
  //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
  // Slider for shininess
  //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+ gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+ 
  gui.updateDisplay();
  console.log("<= manyTextures extendGUI");
 }
