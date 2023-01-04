@@ -28,7 +28,7 @@ const chroma_js_1 = __importDefault(require("chroma-js"));
 //import { m4 } from "./../node_modules/twgl.js";
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./camhandler")); // camera projection
+const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
 const datgui = __importStar(require("dat.gui"));
 class Tdrawitem {
     constructor(cdo, cobj) {

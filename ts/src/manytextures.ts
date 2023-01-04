@@ -6,8 +6,8 @@ import chroma from "chroma-js";
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
-import * as mtls from "./mouselistener";
-import * as camhandler from "./camhandler" // camera projection
+import * as mtls from "./baseapp/mouselistener";
+import * as camhandler from "./baseapp/camhandler" // camera projection
 
 import  * as datgui from "dat.gui";
    

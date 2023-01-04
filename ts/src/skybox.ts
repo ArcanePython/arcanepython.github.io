@@ -1,6 +1,6 @@
-import * as mtls from "./mouselistener";     // connect events for buttons and wheel
-import * as twglbaseapp from "./twglbaseapp";
-import * as camhandler from "./camhandler"   // camera projection
+import * as mtls from "./baseapp/mouselistener";     // connect events for buttons and wheel
+import * as twglbaseapp from "./baseapp/twglbaseapp";
+import * as camhandler from "./baseapp/camhandler"   // camera projection
 
 import { m4, v3 }  from "twgl.js";    // Greg's work, this baseapp  only imports geometry matrix/vector tools
 

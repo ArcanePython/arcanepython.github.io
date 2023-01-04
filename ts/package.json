@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "JavaScript and TypeScript example starter project",
   "scripts": {
-    "start": "parcel build index.html && parcel index.html --open",
+    "start": "parcel build --no-minify index.html && parcel index.html --open",
     "build": "tsc"
   },
   "dependencies": {

@@ -20,7 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BoneAnimation = exports.fsSkeleton = exports.vsSkeleton = void 0;
-const twgl_js_1 = require("./../node_modules/twgl.js");
+const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 // -- vertex shader --
 exports.vsSkeleton = `#version 300 es

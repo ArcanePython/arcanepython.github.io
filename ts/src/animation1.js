@@ -20,9 +20,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Animation1 = void 0;
-const animationclock = __importStar(require("./animationclock")); // own lib: frame counter
-const camhandler = __importStar(require("./camhandler")); // camera projection
-const baseapp = __importStar(require("./baseapp")); // base app for this
+const animationclock = __importStar(require("./baseapp/animationclock")); // own lib: frame counter
+const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);

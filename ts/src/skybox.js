@@ -20,8 +20,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skybox = void 0;
-const twglbaseapp = __importStar(require("./twglbaseapp"));
-const camhandler = __importStar(require("./camhandler")); // camera projection
+const twglbaseapp = __importStar(require("./baseapp/twglbaseapp"));
+const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
 const datgui = __importStar(require("dat.gui"));
 class skybox extends twglbaseapp.twglbaseapp // use m4, v3  from twgl
  {

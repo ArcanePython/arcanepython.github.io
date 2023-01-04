@@ -1,7 +1,7 @@
 import * as twgl from "twgl.js";          // Greg's work
-import * as mtls from "./mouselistener";  // connect events for buttons and wheel
-import * as baseapp from "./baseapp";
-import * as camhandler from "./camhandler";  
+import * as mtls from "./baseapp/mouselistener";  // connect events for buttons and wheel
+import * as baseapp from "./baseapp/baseapp";
+import * as camhandler from "./baseapp/camhandler";  
 
 import  * as datgui from "dat.gui";
 

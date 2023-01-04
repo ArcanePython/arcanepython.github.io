@@ -1,10 +1,10 @@
 import * as datgui from "dat.gui";                      // ext lib: datgui
-import * as animationclock from "./animationclock";     // own lib: frame counter
-import * as mtls from "./mouselistener";                // own lib: mouse/touhcpad
+import * as animationclock from "./baseapp/animationclock";     // own lib: frame counter
+import * as mtls from "./baseapp/mouselistener";                // own lib: mouse/touhcpad
 
-import * as camhandler from "./camhandler"   // camera projection
-import * as baseapp from "./baseapp";        // base app for this
-import * as scene from "./scene"             // generic scene (interface)
+import * as camhandler from "./baseapp/camhandler"   // camera projection
+import * as baseapp from "./baseapp/baseapp";        // base app for this
+import * as scene from "./scene/scene"             // generic scene (interface)
 
 export class Animation1 extends baseapp.BaseApp
 {

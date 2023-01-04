@@ -24,7 +24,7 @@ const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work 
 const twgl_js_1 = require("./../node_modules/twgl.js"); // Greg's work (lib)
 const mobj = __importStar(require("./matobjreader")); // read geometry from .obj / .mtl files (interface)
 const mobjfiles = __importStar(require("./matobjfiles")); // read geometry from .obj / .mtl files (resources)
-const camhandler = __importStar(require("./camhandler")); // camera projection
+const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
 const datgui = __importStar(require("dat.gui"));
 class ObjMtlImport {
     constructor(cgl, capp, UrlPars) {

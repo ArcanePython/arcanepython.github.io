@@ -5,8 +5,8 @@ import * as OBJ from './../node_modules/webgl-obj-loader';   // read geometry fr
 import * as mobj from "./matobjreader"       // read geometry from .obj / .mtl files (interface)
 import * as mobjfiles from "./matobjfiles"   // read geometry from .obj / .mtl files (resources)
 
-import * as mtls from "./mouselistener";     // connect events for buttons and wheel
-import * as camhandler from "./camhandler"   // camera projection
+import * as mtls from "./baseapp/mouselistener";     // connect events for buttons and wheel
+import * as camhandler from "./baseapp/camhandler"   // camera projection
 
 import  * as datgui from "dat.gui";
 

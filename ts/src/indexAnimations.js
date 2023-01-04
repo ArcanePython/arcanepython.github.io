@@ -20,25 +20,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const mtls = __importStar(require("./mouselistener")); // connect events for mouse and mouse wheel
+const mtls = __importStar(require("./baseapp/mouselistener")); // connect events for mouse and mouse wheel
 const skeleton = __importStar(require("./skeleton")); // task: bone model (single)
 const fish = __importStar(require("./fishanimation")); // task: bone model (flock)
 const manytextures = __importStar(require("./manytextures")); // task: camera projection
-const manytexturescene = __importStar(require("./manytexturescene")); // task: camera projection
+const manytexturescene = __importStar(require("./scene/manytexturescene")); // task: camera projection
 const drawimagespace = __importStar(require("./drawimagespace")); // task: image space texture
 const animation1 = __importStar(require("./animation1")); // task: image space texture
 const skyboxcube = __importStar(require("./skyboxcube")); // task: show reflecting box
 const objmtlimport = __importStar(require("./objmtlimport.js")); // task: obj/mtl file imports
-const rotatingcubescene = __importStar(require("./mixedtexturescene"));
-const lightscene = __importStar(require("./lightscene"));
+const rotatingcubescene = __importStar(require("./scene/mixedtexturescene"));
+const lightscene = __importStar(require("./scene/lightscene"));
 const objectlist = __importStar(require("./objectlist"));
-const objectlistscene = __importStar(require("./objectlistscene"));
+const objectlistscene = __importStar(require("./scene/objectlistscene"));
 const drawinstanced = __importStar(require("./drawinstanced"));
 const canvas3dtexture = __importStar(require("./canvas3dtexture"));
-const canvas3dtexturescene = __importStar(require("./canvas3dtexturescene"));
-const drawinstancedscene = __importStar(require("./drawinstancedscene"));
-const skyboxscene = __importStar(require("./skyboxscene"));
-const skyboxcubescene = __importStar(require("./skyboxcubescene"));
+const canvas3dtexturescene = __importStar(require("./scene/canvas3dtexturescene"));
+const drawinstancedscene = __importStar(require("./scene/drawinstancedscene"));
+const skyboxscene = __importStar(require("./scene/skyboxscene"));
+const skyboxcubescene = __importStar(require("./scene/skyboxcubescene"));
 const ShowOBJMTL = 1;
 const ShowTextures = 2;
 const ShowFish = 3;

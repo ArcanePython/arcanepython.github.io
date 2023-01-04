@@ -1,7 +1,7 @@
 import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 import { m4 } from "./../node_modules/twgl.js";
 
-import * as objectnode from "./objectnode";
+import * as objectnode from "./scene/objectnode";
 
 export interface NodeJson {
   draw: boolean;

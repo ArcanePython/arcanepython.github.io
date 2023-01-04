@@ -1,5 +1,5 @@
-import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-import { m4 } from "./../node_modules/twgl.js";
+import * as twgl from "twgl.js";    // Greg's work
+import { m4 } from "twgl.js";
 
 import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 import * as stridedmesh from "./stridedmesh" // mesh and bones (data)

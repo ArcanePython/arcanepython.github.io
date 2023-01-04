@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectList = void 0;
 const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
 const twgl_js_1 = require("./../node_modules/twgl.js");
-const objectnode = __importStar(require("./objectnode"));
+const objectnode = __importStar(require("./scene/objectnode"));
 class ObjectList //extends twglbaseapp.twglbaseapp
  {
     constructor() {

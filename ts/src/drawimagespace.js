@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.drawimagespace = void 0;
 const twgl = __importStar(require("twgl.js")); // Lib: Gregg's work
 const datgui = __importStar(require("dat.gui")); // Lib: dat.gui
-const baseapp = __importStar(require("./baseapp")); // convenient base class initializing gl2 and program(s)
+const baseapp = __importStar(require("./baseapp/baseapp")); // convenient base class initializing gl2 and program(s)
 class drawimagespace extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);

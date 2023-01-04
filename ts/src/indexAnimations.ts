@@ -1,30 +1,26 @@
 //==================================================================================================================================
 
-import * as mtls from "./mouselistener";   // connect events for mouse and mouse wheel
+import * as mtls from "./baseapp/mouselistener";   // connect events for mouse and mouse wheel
 
 import * as skeleton from "./skeleton"             // task: bone model (single)
 import * as fish from "./fishanimation"            // task: bone model (flock)
 import * as manytextures from "./manytextures"     // task: camera projection
-import * as manytexturescene from "./manytexturescene"     // task: camera projection
+import * as manytexturescene from "./scene/manytexturescene"     // task: camera projection
 import * as drawimagespace from "./drawimagespace" // task: image space texture
 import * as animation1 from "./animation1" // task: image space texture
 import * as skyboxcube from "./skyboxcube"         // task: show reflecting box
 import * as objmtlimport from "./objmtlimport.js"; // task: obj/mtl file imports
-import * as rotatingcubescene from "./mixedtexturescene";
-import * as lightscene from "./lightscene";
+import * as rotatingcubescene from "./scene/mixedtexturescene";
+import * as lightscene from "./scene/lightscene";
 import * as objectlist from "./objectlist";
-import * as objectlistscene from "./objectlistscene";
+import * as objectlistscene from "./scene/objectlistscene";
 import * as drawinstanced from "./drawinstanced";
 import * as canvas3dtexture from "./canvas3dtexture";
-import * as canvas3dtexturescene from "./canvas3dtexturescene";
-import * as drawinstancedscene from "./drawinstancedscene";
-
-import * as skyboxscene from "./skyboxscene";
-
-import * as scene from "./scene";
-
-import { SkyBoxScene } from "./skyboxscene";
-import * as skyboxcubescene from "./skyboxcubescene";
+import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";
+import * as drawinstancedscene from "./scene/drawinstancedscene";
+import * as skyboxscene from "./scene/skyboxscene";
+import * as scene from "./scene/scene";
+import * as skyboxcubescene from "./scene/skyboxcubescene";
 
 const ShowOBJMTL     = 1;
 const ShowTextures   = 2;

@@ -1,5 +1,5 @@
-import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-import { m4 } from "./../node_modules/twgl.js";
+import * as twgl from "twgl.js";    // Greg's work
+import { m4 } from "twgl.js";
 
 
 export class Canvas3dTexture
