@@ -1,6 +1,7 @@
 *.pipo
 ts/node_modules
 ts/.parcel-cache
+ts/.cache
 *.gyp
 *.gypi
 *.flow
