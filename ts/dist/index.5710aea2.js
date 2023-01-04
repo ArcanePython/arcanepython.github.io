@@ -21997,15 +21997,11 @@ f 14/18/6 13/19/6 9/20/6 10/11/6
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.getFileNamesChair = exports.getFileNamesChair2 = exports.getFileNamesPlane = exports.getFileNamesCube = exports.getFileNamesRubik = exports.getFileNamesCat = exports.getFileNamesGreenhouse = exports.getFileNamesBuilding = exports.getFileNamesStone = exports.getFileNamesKoenigsEgg = void 0;
+exports.getFileNamesChair = exports.getFileNamesChair2 = exports.getFileNamesMario = exports.getFileNamesPlane = exports.getFileNamesCube = exports.getFileNamesRubik = exports.getFileNamesCat = exports.getFileNamesGreenhouse = exports.getFileNamesBuilding = exports.getFileNamesStone = exports.getFileNamesKoenigsEgg = void 0;
 function getFileNamesKoenigsEgg() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/koenigsegg/koenigsegg.obj");
     var cobjname = require("./resources/models/koenigsegg/koenigsegg.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/koenigsegg/koenigsegg.mtl");
     var cmatname = require("./resources/models/koenigsegg/koenigsegg.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22014,20 +22010,13 @@ function getFileNamesKoenigsEgg() {
 }
 exports.getFileNamesKoenigsEgg = getFileNamesKoenigsEgg;
 function getFileNamesStone() {
-    // var cfiles: {fName:string, fNameResolved:string}[] = [];
-    // cfiles.push({fName:'stone12021_01.png',fNameResolved:require('./resources/models/stone/stone12021_01.png')});
-    // cfiles.push({fName:'Material.001_diffuse.png',fNameResolved:require('./resources/models/stone/Material.001_diffuse.png')});
     var cfiles = [];
     cfiles.push({
         fName: "stone12021_01.jpg",
         fNameResolved: require("./resources/models/stone/stone12021_01.jpg")
     });
-    console.log("Resolve: ./resources/models/stone/stone12021_01.obj");
     var cobjname = require("./resources/models/stone/stone12021_01.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/stone/stone12021_01.mtl");
     var cmatname = require("./resources/models/stone/stone12021_01.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22041,12 +22030,8 @@ function getFileNamesBuilding() {
         fName: "stone12021_01.png",
         fNameResolved: require("./resources/models/stone/stone12021_01.png")
     });
-    console.log("Resolve: ./resources/models/building/building_04a.obj");
     var cobjname = require("./resources/models/building/building_04a.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/building/building_04.mtl");
     var cmatname = require("./resources/models/building/building_04.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22060,12 +22045,8 @@ function getFileNamesGreenhouse() {
         fName: "greenhouse_flooring.png",
         fNameResolved: require("./resources/models/greenhouse/greenhouse_flooring.png")
     });
-    console.log("Resolve: ./resources/models/greenhouse/greenhouse.obj");
     var cobjname = require("./resources/models/greenhouse/greenhouse.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/greenhouse/greenhouse.mtl");
     var cmatname = require("./resources/models/greenhouse/greenhouse.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22075,12 +22056,8 @@ function getFileNamesGreenhouse() {
 exports.getFileNamesGreenhouse = getFileNamesGreenhouse;
 function getFileNamesCat() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/cat/12221_Cat_v1_l3.obj");
     var cobjname = require("./resources/models/cat/12221_Cat_v1_l3.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/cat/12221_Cat_v1_l3.mtl");
     var cmatname = require("./resources/models/cat/12221_Cat_v1_l3.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22090,12 +22067,8 @@ function getFileNamesCat() {
 exports.getFileNamesCat = getFileNamesCat;
 function getFileNamesRubik() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/rubik/xrubik.obj");
     var cobjname = require("./resources/models/rubik/xrubik.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/rubik/xrubik.mtl");
     var cmatname = require("./resources/models/rubik/xrubik.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22121,12 +22094,8 @@ function getFileNamesCube() {
         fName: "zelenskyycube.jpg",
         fNameResolved: require("./resources/models/stone/zelenskyycube.jpg")
     });
-    console.log("Resolve: ./resources/models/cube/cube2.obj");
     var cobjname = require("./resources/models/cube/cube2.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/cube/cube2.mtl");
     var cmatname = require("./resources/models/cube/cube2.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22134,28 +22103,10 @@ function getFileNamesCube() {
     };
 }
 exports.getFileNamesCube = getFileNamesCube;
-/*
-export function getFileNamesBike(): { cobjname: string, cmatname: string, cfiles:{fName:string, fNameResolved:string}[] }
-{
-  var cfiles: {fName:string, fNameResolved:string}[] = [];
-  console.log("Resolve: ./resources/models/bike/bike.obj");
-  var cobjname = require('./resources/models/bike/bike.obj');
-  console.log("Resolved: cparcelname="+cobjname);
- 
-  console.log("Resolve: ./resources/models/bike/bike.mtl");
-  var cmatname = require('./resources/models/bike/bike.mtl');
-  console.log("Resolved: cparcelname="+cmatname);
-
-  return { cobjname, cmatname, cfiles };
-}
-*/ function getFileNamesPlane() {
+function getFileNamesPlane() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/plane/plane.obj");
     var cobjname = require("./resources/models/plane/plane.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/plane/plane.mtl");
     var cmatname = require("./resources/models/plane/plane.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22163,28 +22114,21 @@ export function getFileNamesBike(): { cobjname: string, cmatname: string, cfiles
     };
 }
 exports.getFileNamesPlane = getFileNamesPlane;
-/*
-export function getFileNamesMario(): { cobjname: string, cmatname: string, cfiles:{fName:string, fNameResolved:string}[] }
-{
-  var cfiles: {fName:string, fNameResolved:string}[] = [];
-  console.log("Resolve: ./resources/models/mario/mario-sculpture.obj");
-  var cobjname = require('./resources/models/mario/mario-sculpture.obj');
-  console.log("Resolved: cparcelname="+cobjname);
- 
-  console.log("Resolve: ./resources/models/mario/mario-sculpture.mtl");
-  var cmatname = require('./resources/models/mario/mario-sculpture.mtl');
-  console.log("Resolved: cparcelname="+cmatname);
-
-  return { cobjname, cmatname, cfiles };
-}
-*/ function getFileNamesChair2() {
+function getFileNamesMario() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/chair/willisau_riale.obj");
+    var cobjname = require("./resources/models/mario/mario-sculpture.obj");
+    var cmatname = require("./resources/models/mario/mario-sculpture.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesMario = getFileNamesMario;
+function getFileNamesChair2() {
+    var cfiles = [];
     var cobjname = require("./resources/models/chair/willisau_riale.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/chair/willisau_riale.mtl");
     var cmatname = require("./resources/models/chair/willisau_riale.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22194,12 +22138,8 @@ export function getFileNamesMario(): { cobjname: string, cmatname: string, cfile
 exports.getFileNamesChair2 = getFileNamesChair2;
 function getFileNamesChair() {
     var cfiles = [];
-    console.log("Resolve: ./resources/models/chair/chair.obj");
     var cobjname = require("./resources/models/chair/chair.obj");
-    console.log("Resolved: cparcelname=" + cobjname);
-    console.log("Resolve: ./resources/models/chair/chair.mtl");
     var cmatname = require("./resources/models/chair/chair.mtl");
-    console.log("Resolved: cparcelname=" + cmatname);
     return {
         cobjname,
         cmatname,
@@ -22208,7 +22148,7 @@ function getFileNamesChair() {
 }
 exports.getFileNamesChair = getFileNamesChair;
 
-},{"./resources/models/koenigsegg/koenigsegg.obj":"1xJq5","./resources/models/koenigsegg/koenigsegg.mtl":"7l8tN","./resources/models/stone/stone12021_01.jpg":"Z9Rjf","./resources/models/stone/stone12021_01.obj":"dIAFL","./resources/models/stone/stone12021_01.mtl":"jqwyh","./resources/models/stone/stone12021_01.png":"gVMOm","./resources/models/building/building_04a.obj":"bp1la","./resources/models/building/building_04.mtl":"8zC3u","./resources/models/greenhouse/greenhouse_flooring.png":"gigXQ","./resources/models/greenhouse/greenhouse.obj":"dl1xS","./resources/models/greenhouse/greenhouse.mtl":"acdEn","./resources/models/cat/12221_Cat_v1_l3.obj":"jTKAI","./resources/models/cat/12221_Cat_v1_l3.mtl":"3zKC9","./resources/models/rubik/xrubik.obj":"fZxyN","./resources/models/rubik/xrubik.mtl":"bguwy","./resources/models/stone/clover.jpg":"cS5ze","./resources/models/stone/Di-3d.png":"hG8vP","./resources/models/stone/zelenskyycube.jpg":"0393A","./resources/models/cube/cube2.obj":"kgQxU","./resources/models/cube/cube2.mtl":"ldq2n","./resources/models/plane/plane.obj":"aq2Ph","./resources/models/plane/plane.mtl":"l5PEl","./resources/models/chair/willisau_riale.obj":"lg9C7","./resources/models/chair/willisau_riale.mtl":"cJdff","./resources/models/chair/chair.obj":"hDYgj","./resources/models/chair/chair.mtl":"cDjVC"}],"1xJq5":[function(require,module,exports) {
+},{"./resources/models/koenigsegg/koenigsegg.obj":"1xJq5","./resources/models/koenigsegg/koenigsegg.mtl":"7l8tN","./resources/models/stone/stone12021_01.jpg":"Z9Rjf","./resources/models/stone/stone12021_01.obj":"dIAFL","./resources/models/stone/stone12021_01.mtl":"jqwyh","./resources/models/stone/stone12021_01.png":"gVMOm","./resources/models/building/building_04a.obj":"bp1la","./resources/models/building/building_04.mtl":"8zC3u","./resources/models/greenhouse/greenhouse_flooring.png":"gigXQ","./resources/models/greenhouse/greenhouse.obj":"dl1xS","./resources/models/greenhouse/greenhouse.mtl":"acdEn","./resources/models/cat/12221_Cat_v1_l3.obj":"jTKAI","./resources/models/cat/12221_Cat_v1_l3.mtl":"3zKC9","./resources/models/rubik/xrubik.obj":"fZxyN","./resources/models/rubik/xrubik.mtl":"bguwy","./resources/models/stone/clover.jpg":"cS5ze","./resources/models/stone/Di-3d.png":"hG8vP","./resources/models/stone/zelenskyycube.jpg":"0393A","./resources/models/cube/cube2.obj":"kgQxU","./resources/models/cube/cube2.mtl":"ldq2n","./resources/models/plane/plane.obj":"aq2Ph","./resources/models/plane/plane.mtl":"l5PEl","./resources/models/mario/mario-sculpture.obj":"gIudg","./resources/models/mario/mario-sculpture.mtl":"9zmWL","./resources/models/chair/willisau_riale.obj":"lg9C7","./resources/models/chair/willisau_riale.mtl":"cJdff","./resources/models/chair/chair.obj":"hDYgj","./resources/models/chair/chair.mtl":"cDjVC"}],"1xJq5":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "koenigsegg.551b58eb.obj" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"7l8tN":[function(require,module,exports) {
@@ -22273,6 +22213,12 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.
 
 },{"./helpers/bundle-url":"lgJ39"}],"l5PEl":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.2ea8e87c.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gIudg":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.0c0037de.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"9zmWL":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.e2a0597d.mtl" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"lg9C7":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "willisau_riale.ac5452da.obj" + "?" + Date.now();
