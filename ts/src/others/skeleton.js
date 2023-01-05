@@ -26,9 +26,9 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 //import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-const boneanimation = __importStar(require("./boneanimation"));
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
-const fishhtranslated = __importStar(require("./fishhtranslated"));
+const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
 const datgui = __importStar(require("dat.gui"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");

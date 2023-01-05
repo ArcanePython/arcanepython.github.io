@@ -145,7 +145,7 @@
         projdiv.innerHTML = "";
         var str = `
         <p>
-        Stills based on .OBJ<br>
+        <b>Stills based on .OBJ</b><br>
         `;
         var commonhtml =  "index.html";           // this html (do not use dist\ parcel's)
         str+=lnk(commonhtml+"?cube&radius0=9&hx=-0.8&hy=0.43","Textured cubes");
@@ -160,18 +160,18 @@
         str+=lnk(commonhtml+"?greenhouse","Greenhouse");
         str+=`
         <p>
-        Experiments<br>
+        <b>Experiments</b><br>
         `;
        // str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
       // str+=lnk(commonhtml+"?skyboxcube","Greggs Skycube with cam");
         //str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
         //str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","Tex3d on tex");
-        str+=lnk(commonhtml+"?skeleton&radius0=120&hx=1.7&hy=0.1&mesh=strip&stride=180&numrows=39","Zelensky whales");
-        str+=lnk(commonhtml+"?fish&radius0=80&hx=1.9&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Various Fish shapes");
+        str+=lnk(commonhtml+"?whales&radius0=120&hx=1.7&hy=0.1&mesh=strip&stride=180&numrows=39","Zelensky whales patrol");
+        str+=lnk(commonhtml+"?variousfish&radius0=120&hx=1.6&hy=-1.1&mesh=strip&stride=180&numrows=39&fish=1","Various Fish shapes");
         str+=lnk("?drawimagespace","Image space");
         str+=`
         <p>
-        Scenes with background<br>
+        <b>Scenes with background</b><br>
         `;
         str+=lnk(commonhtml+"?animation0&radius0=60&hx=0&hy=0&speed=0.01","Skybox only scene");
         str+=lnk(commonhtml+"?animation4&radius0=20&hx=0&hy=0","Skycube Scene");

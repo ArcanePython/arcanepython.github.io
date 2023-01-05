@@ -19,7 +19,6 @@ import { FishVTranslated } from "../bonemodel/fishvtranslated";
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-twgl.setAttributePrefix("a_");
 
 type Tuniforms = {
     world: m4.Mat4,
@@ -68,7 +67,8 @@ export class SkeletonScene implements scene.SceneInterface
     constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv:string)
     { 
      // super(cgl, capp, dictpar, cdiv);
-      SkeletonScene.instance = this;
+     twgl.setAttributePrefix("a_");
+     SkeletonScene.instance = this;
       this.twglprograminfo = new Array(2);
       this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
   
@@ -105,7 +105,7 @@ export class SkeletonScene implements scene.SceneInterface
 
     //------------------------------------------------------------------------------------------------------------
 
-    gui: datgui.GUI|null=null;
+  //  gui: datgui.GUI|null=null;
 
     onChangeColorValue(value? : any)
     {

@@ -7,7 +7,6 @@ import * as datgui from "dat.gui";
 import * as camhandler from "./../baseapp/camhandler"   // camera projection
 import * as scene from "./scene"
 
-import { TAnimation1Parameters }  from "./scene"
 import { BaseScene } from "./basescene";
 
 export class LightScene extends BaseScene implements scene.SceneInterface
@@ -46,7 +45,7 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     innerLimit : number;
     outerLimit : number;
   
-    animationParameters: TAnimation1Parameters | undefined;
+    animationParameters: scene.TAnimation1Parameters | undefined;
 
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
 
@@ -94,7 +93,7 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     }
 
 
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+    public initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters, dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
     {
         var program = p.program;
         this.animationParameters = cap;
@@ -131,8 +130,6 @@ export class LightScene extends BaseScene implements scene.SceneInterface
         // <==
     }
  
-
-   
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
         var deltaTime = time - this.ctime;

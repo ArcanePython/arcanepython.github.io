@@ -8,10 +8,10 @@ import * as mtls from "./../baseapp/mouselistener";     // connect events for bu
 import * as camhandler from "./../baseapp/camhandler"   // camera projection
 //import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 
-import * as boneanimation from "./boneanimation"
-import * as fish from "./fish"
+import * as boneanimation from "./../bonemodel/boneanimation"
+import * as fish from "./../bonemodel/fish"
 import * as baseapp from "./../baseapp/baseapp";
-import * as fishhtranslated from "./fishhtranslated";
+import * as fishhtranslated from "./../bonemodel/fishhtranslated";
 import  * as datgui from "dat.gui";
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------

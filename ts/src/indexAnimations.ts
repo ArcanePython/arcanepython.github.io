@@ -9,10 +9,11 @@ import * as objectlist from "./others/objectlist";                            //
 import * as drawinstanced from "./others/drawinstanced";                      // baseapp derivative: show texture space navigator
 import * as canvas3dtexture from "./others/canvas3dtexture";                  // baseapp derivative: show 3d on texture
 
-//import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
+import * as skeleton from "./others/skeleton"                       // baseapp derivative: bone model (single)
 import * as skeletonscene from "./scene/skeletonscene"                       // baseapp derivative: bone model (single)
-import * as fish from "./bonemodel/fishanimation"                      // baseapp derivative: bone model (flock)
-import * as objmtlimportapp from "./others/objmtlimportapp"                      // baseapp derivative: bone model (flock)
+import * as fishanimationscene from "./scene/fishanimationscene"                       // baseapp derivative: bone model (single)
+import * as fishanimation from "./others/fishanimation"                      // baseapp derivative: bone model (flock)
+//import * as objmtlimportapp from "./others/objmtlimportapp"                      // baseapp derivative: bone model (flock)
 
 import * as scene from "./scene/scene";                                // scene: interface to implement
 import * as manytexturescene from "./scene/manytexturescene"           // scene: many textures / objects
@@ -117,24 +118,31 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
     console.log("ins.main done.");
     ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2',color0: "#D0A010"  }); 
   } 
-  else  if (dictPars?.get("skeleton")!=undefined)
+  else  if (dictPars?.get("skeletonapp")!=undefined)
   {
-    initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
-    /*
     var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
     var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
     sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
     sk.main(gl, dictPars);
-    
-    */
   } 
-  else if (dictPars?.get("fish")!=undefined)
+  else if (dictPars?.get("fishapp")!=undefined)
   {  
-    var fa = new fish.FishAnimation(gl, app, dictPars!, cdiv);
+
+    var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
     var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
     fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
     fa.main(gl, dictPars);
+    
   } 
+  else  if (dictPars?.get("whales")!=undefined)
+  {
+    initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
+  } 
+  else if (dictPars?.get("variousfish")!=undefined)
+  {  
+    initScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
+  } 
+
   else if (dictPars?.get("skyboxcube")!=undefined)
   {  
     var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 

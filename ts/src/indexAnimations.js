@@ -27,9 +27,10 @@ const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp deri
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
-//import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
+const skeleton = __importStar(require("./others/skeleton")); // baseapp derivative: bone model (single)
 const skeletonscene = __importStar(require("./scene/skeletonscene")); // baseapp derivative: bone model (single)
-const fish = __importStar(require("./bonemodel/fishanimation")); // baseapp derivative: bone model (flock)
+const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // baseapp derivative: bone model (single)
+const fishanimation = __importStar(require("./others/fishanimation")); // baseapp derivative: bone model (flock)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
 const lightscene = __importStar(require("./scene/lightscene")); // scene: lights directed, point, spot
@@ -118,21 +119,23 @@ function show(gl, app, dictPars) {
         console.log("ins.main done.");
         ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeleton")) != undefined) {
-        initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
-        /*
-        var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
-        var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
-        sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeletonapp")) != undefined) {
+        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
+        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
+        sk.initGUI({ move: false, movetail: true, speed: 0.06, texture: "zelenskyy", color0: "#afb9af" });
         sk.main(gl, dictPars);
-        
-        */
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fish")) != undefined) {
-        var fa = new fish.FishAnimation(gl, app, dictPars, cdiv);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fishapp")) != undefined) {
+        var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
         fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2', sling: 117 });
         fa.main(gl, dictPars);
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) {
+        initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) {
+        initScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
         var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);

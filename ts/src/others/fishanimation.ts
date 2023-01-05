@@ -1,19 +1,19 @@
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
-import * as mtls from "./../baseapp/mouselistener";     // connect events for buttons and wheel
-import * as camhandler from "./../baseapp/camhandler"   // camera projection
+import * as mtls from "../baseapp/mouselistener";     // connect events for buttons and wheel
+import * as camhandler from "../baseapp/camhandler"   // camera projection
 
-import * as boneanimation from "./boneanimation"
-import * as fish from "./fish"
-import * as fishonejoint from "./fishonejoint"
-import * as fishv from "./fishv"
-import * as fishhrotated from "./fishhrotated"
-import * as fishhtranslated from "./fishhtranslated"
+import * as boneanimation from "../bonemodel/boneanimation"
+import * as fish from "../bonemodel/fish"
+import * as fishonejoint from "../bonemodel/fishonejoint"
+import * as fishv from "../bonemodel/fishv"
+import * as fishhrotated from "../bonemodel/fishhrotated"
+import * as fishhtranslated from "../bonemodel/fishhtranslated"
 
 import  * as datgui from "dat.gui";
-import * as baseapp from "./../baseapp/baseapp";
-import * as animationclock from "./../baseapp/animationclock";
+import * as baseapp from "../baseapp/baseapp";
+import * as animationclock from "../baseapp/animationclock";
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------

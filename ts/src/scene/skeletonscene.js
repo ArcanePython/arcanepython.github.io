@@ -28,8 +28,6 @@ const twgl_js_1 = require("twgl.js");
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 //import { FishV } from "../bonemodel/fishv";
 const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-twgl.setAttributePrefix("a_");
 class SkeletonScene {
     constructor(cgl, capp, dictpar, cdiv) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
@@ -48,9 +46,8 @@ class SkeletonScene {
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
-        //------------------------------------------------------------------------------------------------------------
-        this.gui = null;
         // super(cgl, capp, dictpar, cdiv);
+        twgl.setAttributePrefix("a_");
         SkeletonScene.instance = this;
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
@@ -80,6 +77,8 @@ class SkeletonScene {
         //      this.cam.zoominVelocity = 0.5;
         //      requestAnimationFrame(() => this.render(time0));   
     }
+    //------------------------------------------------------------------------------------------------------------
+    //  gui: datgui.GUI|null=null;
     onChangeColorValue(value) {
         //console.log("we are in color=["+value+"]");
         /*    var thisinstance = SkeletonScene.instance!;
