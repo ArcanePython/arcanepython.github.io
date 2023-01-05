@@ -1,3 +1,4 @@
+
 import { m4 } from "twgl.js";
 
 import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
@@ -6,7 +7,7 @@ import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 
 import * as fish from "./fish"
 
-export class FishV extends fish.Fish
+export class FishH extends fish.Fish
 // Fish with vertical tail 
 {    
   prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number)
@@ -39,8 +40,8 @@ export class FishV extends fish.Fish
    for (var i = 0; i < bones.length; i++)
    {           
        m4.translate(m4.identity(),[this.px,
-                      this.py + amp*Math.cos(arange*(i+di)/bones.length + di),
-                      this.pz + amp*10.0*Math.sin(+arange*i/bones.length + di)], 
+                      this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
+                      this.pz + amp*Math.sin(+arange*i/bones.length + di)], 
                       bones[i]);
       this.py+=0.0;
       this.pz+=0.00000;

@@ -119,13 +119,13 @@ function show(gl, app, dictPars) {
         console.log("ins.main done.");
         ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeletonapp")) != undefined) {
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
         var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
         var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
         sk.initGUI({ move: false, movetail: true, speed: 0.06, texture: "zelenskyy", color0: "#afb9af" });
         sk.main(gl, dictPars);
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fishapp")) != undefined) {
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
         fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2', sling: 117 });

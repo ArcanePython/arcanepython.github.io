@@ -26,7 +26,7 @@ const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
 const fishv = __importStar(require("./../bonemodel/fishv"));
 const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
-const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
+const fishvtranslated = __importStar(require("./../bonemodel/fishvtranslated"));
 const animationclock = __importStar(require("../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FishAnimationScene {
@@ -44,11 +44,11 @@ class FishAnimationScene {
          };
      */
         this.fish = [
-            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
+            new fishvtranslated.FishVTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 0.0, 1.0]),
             new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
             new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+            new fishvtranslated.FishVTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
         ];
         this.fishjointcounts = [1, 28, 1, 1, 1];
         this.fishpositions = [

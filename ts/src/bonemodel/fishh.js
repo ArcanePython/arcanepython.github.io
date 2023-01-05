@@ -19,12 +19,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FishV = void 0;
+exports.FishH = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
-class FishV extends fish.Fish {
+class FishH extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         this.scale = scale;
         var cstride = this.numberDictPar(dictpar, "stride", 80);
@@ -47,8 +47,8 @@ class FishV extends fish.Fish {
         var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
         for (var i = 0; i < bones.length; i++) {
             twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [this.px,
-                this.py + amp * Math.cos(arange * (i + di) / bones.length + di),
-                this.pz + amp * 10.0 * Math.sin(+arange * i / bones.length + di)], bones[i]);
+                this.py + amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
+                this.pz + amp * Math.sin(+arange * i / bones.length + di)], bones[i]);
             this.py += 0.0;
             this.pz += 0.00000;
             amp += this.scale * damp;
@@ -56,5 +56,5 @@ class FishV extends fish.Fish {
         //   this.px+=-this.forwardspeed; // * bones.length;      
     }
 }
-exports.FishV = FishV;
-//# sourceMappingURL=fishv.js.map
+exports.FishH = FishH;
+//# sourceMappingURL=fishh.js.map

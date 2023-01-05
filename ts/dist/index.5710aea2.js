@@ -668,7 +668,7 @@ function show(gl, app, dictPars) {
             texture: "geotriangle2",
             color0: "#D0A010"
         });
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeletonapp")) != undefined) {
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
         var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
         var baseapppars = {
             move: true,
@@ -683,7 +683,7 @@ function show(gl, app, dictPars) {
             color0: "#afb9af"
         });
         sk.main(gl, dictPars);
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fishapp")) != undefined) {
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars = {
             move: true,
@@ -787,7 +787,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./others/skeleton":"8B1KF","./scene/fishanimationscene":"7ZHPR","./scene/skeletonscene":"6mdLk","./others/fishanimation":"2homp"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/skeleton":"8B1KF","./scene/skeletonscene":"6mdLk","./scene/fishanimationscene":"7ZHPR","./others/fishanimation":"2homp","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -16014,7 +16014,2155 @@ void main() {
 }
 exports.Canvas3dTexture = Canvas3dTexture;
 
-},{"twgl.js":"3uqAP"}],"fJWn9":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"8B1KF":[function(require,module,exports) {
+"use strict";
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Skeleton = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
+//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
+const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
+const datgui = __importStar(require("dat.gui"));
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+twgl.setAttributePrefix("a_");
+class Skeleton extends baseapp.BaseApp {
+    constructor(cgl, capp, dictpar, cdiv){
+        super(cgl, capp, dictpar, cdiv);
+        this.skeletonParameters = {
+            move: false,
+            movetail: true,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
+        this.bufferInfo = null;
+        this.skinVAO = null;
+        this.phase0 = 0.0; //2.0; // 143 degrees 
+        //------------------------------------------------------------------------------------------------------------
+        this.gui = null;
+        Skeleton.instance = this;
+        this.twglprograminfo = new Array(2);
+        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
+        ]);
+    }
+    main(gl, dictpar) {
+        var time0 = 0;
+        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
+        var spar;
+        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
+        this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
+        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
+        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
+        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
+        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
+        this.afish.createBoneTexture(gl, time0, dictpar);
+        this.afish.createSurfaceTexture(gl);
+        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
+        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
+        this.cam.zoominVelocity = 0.5;
+        requestAnimationFrame(()=>this.render(time0));
+    }
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = Skeleton.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.skeletonParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.skeletonParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel
+        gui.remember(parameters); //this.fishAnimationParameters);
+        // Checkbox forward move animation on/off
+        gui.add(parameters, "move"); //this.fishAnimationParameters, 'move');
+        // Checkbox tail animation on/off
+        gui.add(parameters, "movetail");
+        // Slider for animation speed
+        gui.add(parameters, "speed").min(0.02).max(0.1).step(0.002);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(parameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        gui.updateDisplay();
+        return gui;
+    }
+    //------------------------------------------------------------------------------------------------------------------------------------
+    render(time) {
+        var gl = this.gl;
+        gl.useProgram(this.twglprograminfo[1].program);
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        var cam = this.cam;
+        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
+        var uniforms = this.uniforms;
+        uniforms.viewprojection = cam.viewProjection;
+        gl.bindVertexArray(this.skinVAO);
+        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            20.0,
+            -20,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            0.0,
+            0.0,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            50.0,
+            -20,
+            10.0
+        ]); // draw a fish    
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            -10,
+            5.0,
+            -10
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        requestAnimationFrame(()=>this.render(++time));
+    }
+}
+exports.Skeleton = Skeleton;
+
+},{"twgl.js":"3uqAP","./../baseapp/camhandler":"1ZnlU","./../bonemodel/boneanimation":"hK6Lv","./../baseapp/baseapp":"9lZ4F","./../bonemodel/fishhtranslated":"XD4rL","dat.gui":"k3xQk"}],"hK6Lv":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.BoneAnimation = exports.fsSkeleton = exports.vsSkeleton = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+// -- vertex shader --
+exports.vsSkeleton = `#version 300 es
+
+// camera
+uniform mat4 viewprojection;
+uniform vec3 lightWorldPos;
+uniform mat4 world;
+uniform mat4 viewInverse;
+uniform mat4 worldInverseTranspose;
+
+in vec4 a_position;
+in vec4 a_weight;
+in uvec4 a_boneNdx;
+in vec2 a_texcoord;
+ 
+uniform mat4 projection;
+uniform mat4 view;
+
+uniform sampler2D boneMatrixTexture;
+
+uniform float numBones;
+
+out vec2 v_texCoord;
+
+mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
+
+mat4 getBoneMatrix(uint boneNdx) {
+  if (boneNdx>99998u) return m4zero;
+  return mat4(
+    texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
+    texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
+    texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
+    texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
+}
+
+void main() {
+  v_texCoord = a_texcoord;
+  vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
+  gl_Position = viewprojection * world * bonemovedskinpos;
+ }
+`;
+exports.fsSkeleton = `#version 300 es
+precision mediump float;
+//precision highp float;
+uniform vec4 color;
+in vec2 v_texCoord;
+out vec4 outColor;
+uniform sampler2D surfaceTexture;
+
+void main () {
+  vec4 cColor =  texture(surfaceTexture, v_texCoord);
+  outColor=cColor * vec4(0.5,0.5,0.5,1);
+}
+`;
+class BoneAnimation {
+    constructor(){
+        this.bindPose = [];
+        this.bones = [];
+        this.boneMatrices = [];
+        // animation state
+        this.px = 0.0;
+        this.py = 0.0;
+        this.pz = 0.0;
+        this.scale = 1.0;
+        this.bindPoseInv2 = [];
+        this.phase0 = 0;
+        this.mesh = new stridedmesh.StridedMesh(1, 1, 1); // | null = null;   
+        this.uniforms = {
+            world: [],
+            projection: [],
+            viewprojection: [],
+            view: [],
+            surfaceTexture: {},
+            boneMatrixTexture: {},
+            color: []
+        };
+        this.bufferInfo = null;
+        this.skinVAO = null;
+    //   this.boneMatrixTexture = new WebGLTexture();
+    //   this.surfaceTexture = new WebGLTexture();
+    }
+    setNumBones(gl) {
+        this.numBones = this.mesh.type == gl.TRIANGLE_STRIP ? this.mesh.nsegments / this.mesh.bonediv : this.mesh.nsegments;
+    }
+    mat4report(m) {
+        var srep = m.toString();
+        var srep1 = "";
+        srep.split(",").forEach((item)=>{
+            srep1 += item.substring(0, 5) + ",";
+        });
+        return srep;
+    }
+    prepareBoneInv(bindPose) {
+        // compute the initial positions of each matrix
+        var nrep = 0;
+        console.log("prepareBoneInv - bindpose");
+        bindPose.forEach((v)=>{
+            this.mat4report(v);
+            console.log(nrep + "] [" + v.toString() + "] ");
+            nrep++;
+        });
+        // compute their inverses
+        return bindPose.map(function(m) {
+            return twgl_js_1.m4.inverse(m);
+        });
+    }
+    prepareBoneMatrices(gl, dictpar) {
+        if (this.numBones == undefined) return;
+        this.boneArray = new Float32Array(this.numBones * 16);
+        // prepare the texture for bone matrices
+        this.boneMatrixTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
+        // since we want to use the texture for pure data we turn off filtering
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        for(let i = 0; i < this.numBones; ++i){
+            this.boneMatrices.push(new Float32Array(this.boneArray.buffer, i * 64, 16));
+            this.bindPose.push(twgl_js_1.m4.identity()); // just allocate storage
+            this.bones.push(twgl_js_1.m4.identity()); // just allocate storage
+        }
+    }
+    prepareBoneTexture(gl, bindPosInv) {
+        if (bindPosInv == null) this.bones.forEach((bone, ndx)=>{
+            twgl_js_1.m4.multiply(bone, twgl_js_1.m4.identity(), this.boneMatrices[ndx]);
+        });
+        else this.bones.forEach((bone, ndx)=>{
+            twgl_js_1.m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]);
+        });
+        // update the texture with the current matrices
+        gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, this.numBones, 0, gl.RGBA, gl.FLOAT, this.boneArray);
+    }
+}
+exports.BoneAnimation = BoneAnimation;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo"}],"kYVeo":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.StridedMesh = void 0;
+const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones data
+class StridedMesh extends stridedmesh0.StridedMesh0 {
+    constructor(cnrows, cnsegments, scale){
+        super();
+        this.segmentsize = scale * 0.18;
+        this.nsegments = cnsegments;
+        this.nrows = cnrows;
+        this.arrays = {
+            position: {
+                numComponents: 0,
+                data: new Float32Array()
+            },
+            boneNdx: this.buildBoneIndex(this.nrows, this.nsegments),
+            weight: this.buildBoneWeights(this.nrows, this.nsegments),
+            indices: this.buildIndicesStridedTriangleStrip(this.nrows, this.nsegments),
+            texcoord: this.buildTexCoords(this.nrows, this.nsegments)
+        };
+    }
+    buildPositions(n, nrows, stride) {
+        var posdata = [];
+        var cx = 0, cy = 0, cz = 0;
+        for(var y = 0; y < nrows; y++)for(var x = 0; x < stride; x++){
+            var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
+            d = 1.0 - Math.cos(d);
+            cx = x * this.segmentsize;
+            cy = y * this.segmentsize;
+            cz = 88.0 * d * this.segmentsize;
+            posdata.push([
+                cx,
+                cy,
+                cz
+            ]);
+        }
+        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
+        return {
+            numComponents: 3,
+            data
+        };
+    }
+    buildCylPositions(n, nrows, stride, r1, r2) {
+        var posdata = [];
+        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 5;
+        for(var y = 0; y < nrows; y++){
+            for(var x = 0; x < stride; x++){
+                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
+                d = 1.0 - Math.cos(d);
+                cx = x * this.segmentsize;
+                cy = this.segmentsize * Math.sin(a) * r1;
+                cz = this.segmentsize * Math.cos(a) * r2;
+                posdata.push([
+                    cx,
+                    cy,
+                    cz
+                ]);
+            }
+            a += da;
+        }
+        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
+        return {
+            numComponents: 3,
+            data
+        };
+    }
+    //-------------------------------------------------------------------------------------------------------------------------
+    buildFishVPositions(n, nrows, stride) {
+        var posdata = [];
+        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 20;
+        var dtail = stride / 4;
+        var htail = stride * 3 / 4;
+        var dr = r / dtail;
+        for(var y = 0; y < nrows; y++){
+            r = 1;
+            for(var x = 0; x < stride; x++){
+                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
+                d = 1.0 - Math.cos(d);
+                cx = x * this.segmentsize;
+                if (x < dtail) r = r + dr;
+                var dtailr = x - htail;
+                if (dtailr < 0) {
+                    cy = this.segmentsize * Math.cos(-a) * r;
+                    cz = this.segmentsize * Math.sin(-a) * r;
+                } else {
+                    var cdr = 1.0 - dtailr / dtail;
+                    cy = this.segmentsize * Math.cos(-a) * r * cdr;
+                    cz = this.segmentsize * Math.sin(-a) * r * (2.0 - cdr);
+                }
+                posdata.push([
+                    cx,
+                    cy,
+                    cz
+                ]);
+            }
+            a += da;
+        }
+        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
+        return {
+            numComponents: 3,
+            data
+        };
+    }
+    buildFishHPositions(n, nrows, stride) {
+        var posdata = [];
+        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 20;
+        var dtail = stride / 4;
+        var htail = stride * 3 / 4;
+        var dr = r / dtail;
+        for(var y = 0; y < nrows; y++){
+            r = 1;
+            for(var x = 0; x < stride; x++){
+                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
+                d = 1.0 - Math.cos(d);
+                cx = x * this.segmentsize;
+                if (x < dtail) r = r + dr;
+                var dtailr = x - htail;
+                if (dtailr < 0) {
+                    cy = this.segmentsize * Math.sin(a) * r;
+                    cz = this.segmentsize * Math.cos(a) * r;
+                } else {
+                    var cdr = 1.0 - dtailr / dtail;
+                    cy = this.segmentsize * Math.sin(a) * r * (2.0 - cdr);
+                    cz = this.segmentsize * Math.cos(a) * r * cdr;
+                }
+                posdata.push([
+                    cx,
+                    cy,
+                    cz
+                ]);
+            }
+            a += da;
+        }
+        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
+        return {
+            numComponents: 3,
+            data
+        };
+    }
+    getFishHPositions() {
+        var pos = this.buildFishHPositions(this.nsegments, this.nrows, this.nsegments);
+        return pos;
+    }
+    getFishVPositions() {
+        var pos = this.buildFishVPositions(this.nsegments, this.nrows, this.nsegments);
+        return pos;
+    }
+    getCylPositions(r1, r2) {
+        var pos = this.buildCylPositions(this.nsegments, this.nrows, this.nsegments, r1, r2);
+        return pos;
+    }
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    buildIndicesStridedTriangleStrip(nrows, stride) {
+        var inxdata = [];
+        var crow = 1;
+        var ca1 = stride;
+        while(crow < nrows){
+            var i = 0;
+            var val = 0;
+            var ca0 = ca1 - stride;
+            while(i < stride){
+                val = ca0;
+                if (this.degen) {
+                    if (i == 0) inxdata.push(val);
+                }
+                inxdata.push(val);
+                val = ca1;
+                inxdata.push(val);
+                ca1++;
+                ca0++;
+                i++;
+            }
+            if (this.degen) inxdata.push(val);
+            crow++;
+        }
+        var data = this.intArray("Indices", inxdata);
+        return {
+            numComponents: 1,
+            data
+        };
+    }
+    buildBoneIndex(nrows, stride) {
+        var ndxdata = [];
+        var n1 = 0, n2 = 0;
+        for(var y = 0; y < nrows; y++){
+            for(var x = 0; x < stride; x++)if (x % 2 == 0) {
+                if (this.bonediv >= 2) {
+                    n1 = x / this.bonediv;
+                    n2 = 99999;
+                    ndxdata.push([
+                        n1,
+                        n2,
+                        99999,
+                        99999
+                    ]);
+                    n2 = 1 + x / this.bonediv;
+                    ndxdata.push([
+                        n1,
+                        n2,
+                        99999,
+                        99999
+                    ]);
+                } else {
+                    n1 = x;
+                    n2 = 99999;
+                    ndxdata.push([
+                        n1,
+                        n2,
+                        99999,
+                        99999
+                    ]);
+                    n1 = x + 1;
+                    n2 = 99999;
+                    ndxdata.push([
+                        n1,
+                        n2,
+                        99999,
+                        99999
+                    ]);
+                }
+            }
+        }
+        var data = this.intStraighten("BoneIndex", 4, ndxdata);
+        return {
+            numComponents: 4,
+            data
+        };
+    }
+    buildTexCoords(nrows, stride) {
+        var i = 0, n1 = 1.0, n2 = 0.0;
+        var wdata = [];
+        var crow = 0;
+        while(crow < nrows){
+            for(var i = 0; i < stride; i++){
+                var xt = i / +stride.toFixed(4);
+                var yt = crow / +nrows.toFixed(4);
+                wdata.push([
+                    xt,
+                    yt
+                ]);
+            }
+            crow++;
+        }
+        var data = new Float32Array(wdata.length * 2);
+        console.log("=>copy texcoords len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
+        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 2; j++)data[i * 2 + j] = wdata[i][j];
+        console.log("texcoords buffer: len=" + data.length);
+        console.log(data);
+        return {
+            numComponents: 2,
+            data
+        };
+    }
+    buildBoneWeights(nrows, stride) {
+        var wdata = [];
+        var n1 = 1.0, n2 = 0.0;
+        for(var y = 0; y < nrows; y++){
+            for(var x = 0; x < stride; x++)if (x % 2 == 0) {
+                wdata.push([
+                    1.0,
+                    0.0,
+                    0,
+                    0
+                ]);
+                wdata.push([
+                    0.5,
+                    0.5,
+                    0,
+                    0
+                ]);
+            /*   else
+                       {
+                         wdata.push([n1,n2,0,0]);
+                         wdata.push([n1,n2,0,0]);
+                       } */ }
+        }
+        var data = this.floatStraighten("BoneWeights", 4, wdata); // this.floatStraighten4("BoneWeights",wdata);
+        return {
+            numComponents: 4,
+            data
+        };
+    }
+}
+exports.StridedMesh = StridedMesh;
+
+},{"./stridedmesh0":"gwg6B"}],"gwg6B":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.StridedMesh0 = void 0;
+class StridedMesh0 {
+    constructor(){
+        this.nrows = 0;
+        this.nsegments = 0;
+        this.arrays = {
+            position: {
+                numComponents: 0,
+                data: new Float32Array()
+            },
+            boneNdx: {
+                numComponents: 0,
+                data: new Uint32Array()
+            },
+            weight: {
+                numComponents: 0,
+                data: new Float32Array()
+            },
+            texcoord: {
+                numComponents: 0,
+                data: new Float32Array()
+            },
+            indices: {
+                numComponents: 0,
+                data: new Uint32Array()
+            }
+        };
+        this.degen = true;
+        this.segmentsize = 1.0;
+        this.bonediv = 2.0;
+        this.type = 0;
+    }
+    floatStraighten(datatitle, w, wdata) {
+        var data = new Float32Array(wdata.length * w);
+        console.log(">floatstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
+        console.log("<floatstraighten" + w + " " + datatitle + ": len=" + data.length);
+        return data;
+    }
+    intStraighten(datatitle, w, wdata) {
+        var data = new Uint32Array(wdata.length * w);
+        console.log(">intstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
+        console.log("<intstraighten" + w + " " + datatitle + ": len=" + data.length);
+        return data;
+    }
+    intArray(datatitle, wdata) {
+        var data = new Uint32Array(wdata.length);
+        console.log(">intArray " + datatitle + " wdata.length=" + wdata.length);
+        for(var i = 0; i < wdata.length; i++)data[i] = wdata[i];
+        console.log("<intArray " + datatitle + ": len=" + data.length);
+        return data;
+    }
+}
+exports.StridedMesh0 = StridedMesh0;
+
+},{}],"XD4rL":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishHTranslated = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishHTranslated extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishHPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishHPositions();
+            console.log("created triangles mesh. phase=" + this.phase0);
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            var m = twgl_js_1.m4.identity();
+            var normx = i;
+            normx = normx / bones.length;
+            var ay = arange * (normx * di);
+            var az = arange * (normx * di);
+            twgl_js_1.m4.translate(m, [
+                this.px,
+                this.py + amp * Math.cos(0.5 * ay),
+                this.pz + amp * 10.0 * Math.sin(az)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.size * damp;
+        }
+    //      this.px+=-this.forwardspeed; // * bones.length;    
+    }
+}
+exports.FishHTranslated = FishHTranslated;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"jKlEI":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.StridedMesh = void 0;
+const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones data
+//type number4 = number[];
+//type number2 = number[];
+class StridedMesh extends stridedmesh0.StridedMesh0 {
+    getFishHPositions() {
+        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
+        return pos;
+    }
+    getFishPPositions() {
+        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
+        return pos;
+    }
+    getFishVPositions() {
+        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
+        return pos;
+    }
+    constructor(cnrows, cnsegments){
+        super();
+        this.segmentsize = 0.1;
+        this.nsegments = cnsegments;
+        this.nrows = cnrows;
+        this.arrays = {
+            position: this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments),
+            boneNdx: this.buildBoneTrianglesNDX(this.nsegments, this.nrows, this.nsegments),
+            weight: this.buildWeightsTriangles(this.nsegments, this.nrows, this.nsegments),
+            indices: this.buildIndicesTriangles(this.nsegments, this.nrows, this.nsegments),
+            texcoord: this.buildTexCoordTriangles(this.nsegments, this.nrows, this.nsegments)
+        };
+    }
+    buildWeightsTriangles(n, nrows, stride) {
+        var i = 0, n1 = 1.0, n2 = 0.0;
+        var wdata = [];
+        var crow = 0;
+        while(crow < nrows){
+            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)wdata.push([
+                n1,
+                n2,
+                0,
+                0
+            ]);
+            crow++;
+        }
+        var data = new Float32Array(wdata.length * 4);
+        console.log("=>copy weights len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
+        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 4; j++)data[i * 4 + j] = wdata[i][j];
+        console.log("NDX weights buffer: len=" + data.length);
+        return {
+            numComponents: 4,
+            data
+        };
+    }
+    buildTexCoordTriangles(n, nrows, stride) {
+        var i = 0, n1 = 1.0, n2 = 0.0;
+        var wdata = [];
+        var crow = 0;
+        while(crow < nrows){
+            for(var i = 0; i < stride; i++){
+                var xt = i / +stride.toFixed(4);
+                var yt = crow / +nrows.toFixed(4);
+                for(var j = 0; j < 6; j++)wdata.push([
+                    xt,
+                    yt
+                ]);
+            }
+            crow++;
+        }
+        var data = new Float32Array(wdata.length * 2);
+        console.log("=>copy texcoords len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
+        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 2; j++)data[i * 2 + j] = wdata[i][j];
+        console.log("texcoords buffer: len=" + data.length);
+        console.log(data);
+        return {
+            numComponents: 2,
+            data
+        };
+    }
+    buildIndicesTriangles(n, nrows, stride) {
+        var inxdata = [];
+        var crow = 0;
+        var cpos = 0;
+        while(crow < nrows){
+            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)inxdata.push(cpos++);
+            crow++;
+        }
+        var data = new Uint32Array(inxdata.length);
+        for(var i = 0; i < inxdata.length; i++)data[i] = inxdata[i];
+        console.log("indices: len=" + data.length);
+        console.log(data);
+        return {
+            numComponents: 1,
+            data
+        };
+    }
+    buildBoneTrianglesNDX(n, nrows, stride) {
+        var ndxdata = [];
+        var crow = 0;
+        while(crow < nrows){
+            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)ndxdata.push([
+                i / this.bonediv,
+                99999,
+                99999,
+                99999
+            ]);
+            crow++;
+        }
+        var data = new Uint32Array(ndxdata.length * 4);
+        crow = 0;
+        console.log("ndxdat4.len=" + ndxdata.length);
+        console.log(ndxdata);
+        for(var i = 0; i < ndxdata.length; i++)//console.log(i+"] "+ndxdata[i]);
+        for(var j = 0; j < 4; j++)data[i * 4 + j] = ndxdata[i][j];
+        console.log("NDX indices buffer: len=" + data.length);
+        console.log(data);
+        return {
+            numComponents: 4,
+            data
+        };
+    }
+    build3DTrianglesPositions(n, nrows, stride) {
+        var posdata = [];
+        var z = 0, sz, cx, cy, cz = 0.0, dz = 0.0;
+        sz = this.segmentsize;
+        dz = sz * dz;
+        for(var y = 0; y < nrows; y++){
+            var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
+            d = 1.0 - Math.cos(d);
+            z = 8.0 * d;
+            for(var x = 0; x < stride; x++){
+                cx = sz * x;
+                cy = sz * y;
+                cz = sz * z;
+                posdata.push(cx); //  |_\
+                posdata.push(cy);
+                posdata.push(cz);
+                posdata.push(cx);
+                posdata.push(cy + sz);
+                posdata.push(cz + dz);
+                posdata.push(cx + sz);
+                posdata.push(cy + sz);
+                posdata.push(cz + dz);
+                posdata.push(cx + sz); //  \-|
+                posdata.push(cy + sz);
+                posdata.push(cz + dz);
+                posdata.push(cx + sz);
+                posdata.push(cy);
+                posdata.push(cz);
+                posdata.push(cx);
+                posdata.push(cy);
+                posdata.push(cz);
+            }
+            cz = cz + dz;
+        }
+        var data3d = new Float32Array(posdata.length);
+        for(var i = 0; i < posdata.length; i++)data3d[i] = posdata[i];
+        console.log("positions: len=" + data3d.length + " nvect=" + data3d.length / 3);
+        console.log(data3d);
+        return {
+            numComponents: 3,
+            data: data3d
+        };
+    }
+}
+exports.StridedMesh = StridedMesh;
+
+},{"./stridedmesh0":"gwg6B"}],"6tAIw":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Fish = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const boneanimation = __importStar(require("./boneanimation"));
+// type Meshproducer = (numrows: number, stride: number, scale: number) => {
+//   numComponents: number;
+//   data: Float32Array;
+//  };
+class Fish extends boneanimation.BoneAnimation {
+    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile){
+        super();
+        this.size = size;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.forwardspeed = forwardspeed;
+        this.phase0 = phase0;
+        this.deltaphase = deltaphase;
+        this.arange = arange;
+        this.ampl = ampl;
+        this.surfacetexturefile = surfacetexturefile;
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    computeBone(time, domove, domovetail) {
+        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
+        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    prepareSurfaceTextures(gl, selectedSurface) {
+        var gradientname = require("./../resources/models/stone/circlegradient.png");
+        var clovername = require("./../resources/images/clover.jpg");
+        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
+        var textures = twgl.createTextures(gl, {
+            checker: {
+                mag: gl.NEAREST,
+                min: gl.LINEAR,
+                src: [
+                    255,
+                    255,
+                    255,
+                    255,
+                    192,
+                    192,
+                    192,
+                    255,
+                    92,
+                    92,
+                    92,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255, 
+                ]
+            },
+            clover: {
+                src: clovername
+            },
+            zelenskyy: {
+                src: zelenskyyname
+            },
+            gradient: {
+                src: gradientname
+            },
+            flagofukraine: {
+                src: flagofukrainname
+            }
+        });
+        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
+        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
+        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
+        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
+        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
+        return textures;
+    }
+    createSurfaceTexture(gl) {
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
+    }
+    createBoneTexture(gl, time, dictpar) {
+        gl.activeTexture(gl.TEXTURE0);
+        this.prepareBoneMatrices(gl, dictpar);
+        this.computeBone(time, false, false);
+        this.bindPose = this.bones;
+        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    createUniforms(gl, dictpar) {
+        return {
+            world: twgl_js_1.m4.identity(),
+            projection: twgl_js_1.m4.identity(),
+            viewprojection: twgl_js_1.m4.identity(),
+            view: twgl_js_1.m4.translation([
+                0.0,
+                0.0,
+                0.0
+            ]),
+            surfaceTexture: this.surfaceTexture,
+            boneMatrixTexture: this.boneMatrixTexture,
+            color: [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        };
+    }
+    numberDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return +spar;
+        return pardefault;
+    }
+    stringDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return spar;
+        return pardefault;
+    }
+}
+exports.Fish = Fish; //--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
+ //--------------------------------------------------------------------------------------------------------
+ //----------------------------------------------------------------------------------------------------------
+ //----------------------------------------------------------------------------------------------------------
+
+},{"twgl.js":"3uqAP","./boneanimation":"hK6Lv","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn"}],"6mdLk":[function(require,module,exports) {
+"use strict";
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.SkeletonScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+//import { FishV } from "../bonemodel/fishv";
+const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
+class SkeletonScene {
+    constructor(cgl, capp, dictpar, cdiv){
+        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
+        this.scenesize = 40;
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.twglprograminfo = null;
+        this.skeletonParameters = {
+            move: false,
+            movetail: true,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
+        this.bufferInfo = null;
+        this.skinVAO = null;
+        this.phase0 = 0.0; //2.0; // 143 degrees 
+        // super(cgl, capp, dictpar, cdiv);
+        twgl.setAttributePrefix("a_");
+        SkeletonScene.instance = this;
+        this.twglprograminfo = new Array(2);
+        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {}
+    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
+    initScene(gl, cap, dictpar, p, textureReadyCallback) {
+        var time0 = 0;
+        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
+        var spar;
+        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
+        this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
+        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
+        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
+        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
+        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
+        this.afish.createBoneTexture(gl, time0, dictpar);
+        this.afish.createSurfaceTexture(gl);
+        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
+        textureReadyCallback(0);
+    //    this.cam=camhandler.Camera.createCamera(gl,dictpar!, camhandler.Camera.CamZUp, 50.0, cap);
+    //      this.cam.zoominVelocity = 0.5;
+    //      requestAnimationFrame(() => this.render(time0));   
+    }
+    //------------------------------------------------------------------------------------------------------------
+    //  gui: datgui.GUI|null=null;
+    onChangeColorValue(value) {
+    //console.log("we are in color=["+value+"]");
+    /*    var thisinstance = SkeletonScene.instance!;
+            if (thisinstance.gl!=null)
+            {
+              var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+              var ccd= (cc as HTMLDivElement);
+              ccd.style.backgroundColor =  value;
+            }
+            */ }
+    /*
+        public initGUI(parameters: {move:boolean, movetail:boolean,speed:number, texture:string, color0:string})
+        {
+          this.skeletonParameters = parameters;
+    
+          var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
+          var ccd= (cc as HTMLDivElement);
+          ccd.style.backgroundColor =  this.skeletonParameters.color0;
+      
+          // park the dat.gui box in the linksdiv below the links, in closed state
+          var gui = new datgui.GUI( { autoPlace: false } );
+          gui.domElement.id = 'gui_drawimagespace';
+          document.getElementById("linksdiv")!.append( gui.domElement);
+          gui.close();
+    
+          // connect viewmodel
+          gui.remember(parameters); //this.fishAnimationParameters);
+        
+          // Checkbox forward move animation on/off
+          gui.add(parameters, 'move'); //this.fishAnimationParameters, 'move');
+          // Checkbox tail animation on/off
+          gui.add(parameters, 'movetail');
+        
+          // Slider for animation speed
+          gui.add(parameters, 'speed').min(0.02).max(0.1).step(0.002);
+      
+          // Color dialog sets background color
+          var cel3 = gui.addColor(parameters, 'color0');
+          cel3.onChange( this.onChangeColorValue);
+            
+          gui.updateDisplay();
+          return gui;
+        }
+      */ //------------------------------------------------------------------------------------------------------------------------------------
+    drawScene(gl, cam, time) {
+        /*   var gl = this.gl!;
+           gl.useProgram(this.twglprograminfo![1].program);
+           twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
+           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
+           gl.enable(gl.DEPTH_TEST);
+           gl.enable(gl.CULL_FACE);
+         
+           var cam: camhandler.Camera = this.cam!;
+           cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);
+        */ var uniforms = this.uniforms;
+        uniforms.viewprojection = cam.viewProjection;
+        gl.bindVertexArray(this.skinVAO);
+        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            20.0,
+            -20,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            -15,
+            0.0,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            50.0,
+            -10,
+            10.0
+        ]); // draw a fish    
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            -50,
+            5.0,
+            -10
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+    //  requestAnimationFrame(() => this.render(++time));       
+    }
+}
+exports.SkeletonScene = SkeletonScene;
+
+},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishvtranslated":"40Zci"}],"40Zci":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishVTranslated = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishVTranslated extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishVPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishVPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        /*
+         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
+         for (var i = 0; i < bones.length; i++)
+         {
+             m4.translate(m4.identity(),[this.px,
+                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
+                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
+                            bones[i]);
+            this.py+=0.0;
+            this.pz+=0.00000;
+            amp+=this.scale*damp;
+            
+         }
+         */ var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            var m = twgl_js_1.m4.identity();
+            var normx = i;
+            normx = normx / bones.length;
+            var ay = arange * (normx * di);
+            var az = arange * (normx * di);
+            twgl_js_1.m4.translate(m, [
+                this.px,
+                this.py + amp * 10.0 * Math.cos(0.5 * ay),
+                this.pz + amp * Math.sin(1.0 * az)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.size * damp;
+        }
+    //   this.px+=-this.forwardspeed; // * bones.length;      
+    }
+}
+exports.FishVTranslated = FishVTranslated;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"7ZHPR":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishAnimationScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
+const fishv = __importStar(require("./../bonemodel/fishv"));
+const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
+const fishvtranslated = __importStar(require("./../bonemodel/fishvtranslated"));
+const animationclock = __importStar(require("../baseapp/animationclock"));
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+class FishAnimationScene {
+    constructor(cgl, capp, dictpar, cdiv){
+        this.scenesize = 40;
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.twglprograminfo = null;
+        /* fishAnimationParameters = {
+           b: this.baseappParameters,
+           movetail: true,
+           texture: 'geotriangle2',
+           sling: 117,
+         };
+     */ this.fish = [
+            new fishvtranslated.FishVTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
+                0.0,
+                0.0,
+                1.0
+            ]),
+            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new fishvtranslated.FishVTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+        ];
+        this.fishjointcounts = [
+            1,
+            28,
+            1,
+            1,
+            1
+        ];
+        this.fishpositions = [
+            [
+                [
+                    0.0,
+                    -20,
+                    0.0
+                ]
+            ],
+            [
+                [
+                    -15,
+                    15,
+                    0
+                ]
+            ],
+            [
+                [
+                    20.0,
+                    -5,
+                    -15
+                ]
+            ],
+            [
+                [
+                    -10,
+                    -5,
+                    0.0
+                ]
+            ],
+            [
+                [
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            ]
+        ];
+        // cam: camhandler.Camera|undefined;
+        this.clock = new animationclock.AnimationClock();
+        //  super(cgl, capp, dictpar, cdiv);
+        FishAnimationScene.instance = this;
+        twgl.setAttributePrefix("a_");
+        this.twglprograminfo = new Array(2);
+        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {}
+    initScene(gl, cap, dictpar, p, textureReadyCallback) {
+        //twgl.setAttributePrefix("a_");
+        //var gl = this.gl!;
+        var nFish = 0;
+        var time0 = 0;
+        this.fish.forEach((afish)=>{
+            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
+            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+            afish.setNumBones(gl);
+            afish.createBoneTexture(gl, time0, dictpar);
+            afish.createSurfaceTexture(gl);
+            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
+            nFish++;
+            if (nFish == this.fish.length) textureReadyCallback(0);
+        });
+    // this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamZUp, 30.0, this.app!);
+    // this.cam.zoominVelocity = 0.5;
+    // requestAnimationFrame(() => this.render(time0));    
+    }
+    /*   onChangeColorValue(value? : any)
+       {
+         //console.log("we are in color=["+value+"]");
+         var thisinstance = FishAnimationScene.instance!;
+         if (thisinstance.gl!=null)
+         {
+           var cc = (thisinstance.gl!.canvas  as HTMLCanvasElement).parentNode;
+           var ccd= (cc as HTMLDivElement);
+           ccd.style.backgroundColor =  value;
+         }
+       }
+   
+       public initGUI(parameters: { b: {color0: string, move: boolean,  speed: number}, movetail:boolean, texture:string,  sling:number}): datgui.GUI
+       {
+         this.fishAnimationParameters= parameters;
+       
+         // The base GUI provides checkboxes for move and move of objects,
+         // a color dialog to choose background, Slider for animation speed
+         var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+         
+         // add a slider for sling
+         gui.add(this.fishAnimationParameters, 'sling').min(9).max(120).step(1);
+      
+         gui.updateDisplay();
+         return gui;
+       }
+    */ //render(time: number) 
+    drawScene(gl, cam, time) {
+        //  var gl = this.gl!;
+        //  gl.useProgram(this.twglprograminfo![1].program);
+        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+        //  gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
+        //  gl.enable(gl.DEPTH_TEST);
+        //  gl.enable(gl.CULL_FACE);
+        //var cam: camhandler.Camera = this.cam;
+        //cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);     
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
+            gl.bindVertexArray(this.fish[fishtype].skinVAO);
+            this.fish[fishtype].forwardspeed = this.animationParameters.b.move ? this.animationParameters.b.speed : 0.0;
+            if (this.fishjointcounts[fishtype] == 1) {
+                this.fish[fishtype].computeBone(time, this.animationParameters.b.move, this.animationParameters.movetail);
+                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
+                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+            } else {
+                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
+                var ampl0 = this.fish[fishtype].ampl;
+                var sling = this.animationParameters.sling;
+                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
+                    var timeoffs = i * sling;
+                    var nx = i / this.fishjointcounts[fishtype];
+                    this.fish[fishtype].ampl = ampl0 * nx;
+                    this.fish[fishtype].computeBone(time - timeoffs, this.animationParameters.b.move, this.animationParameters.movetail);
+                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
+                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
+                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
+                }
+                this.fish[fishtype].ampl = ampl0;
+            }
+        }
+    //   requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));   
+    }
+}
+exports.FishAnimationScene = FishAnimationScene;
+
+},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishvtranslated":"40Zci","../baseapp/animationclock":"4nsaS"}],"6rbFF":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishOneJoint = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishOneJoint extends fish.Fish {
+    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile, jointpos, vaxis){
+        super(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile);
+        this.size = size;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.forwardspeed = forwardspeed;
+        this.phase0 = phase0;
+        this.deltaphase = deltaphase;
+        this.arange = arange;
+        this.ampl = ampl;
+        this.surfacetexturefile = surfacetexturefile;
+        this.jointpos = jointpos;
+        this.vaxis = vaxis;
+    }
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishVPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction
+        var len = this.jointpos * bonesize; // len is distance from 0 to joint
+        var mtrans1 = twgl_js_1.m4.translation([
+            len,
+            0,
+            0
+        ]); // joint serves as a rotation point (trans to)
+        var mtrans2 = twgl_js_1.m4.translation([
+            -len,
+            0,
+            0
+        ]); // joint serves as a rotation point (trans back)
+        var ii = bones.length * this.jointpos; // ii is index where joint starts
+        var mrot = twgl_js_1.m4.axisRotate(mtrans1, this.vaxis, di * this.ampl); // rotation used beyond joint
+        for(var i = 0; i < bones.length; i++){
+            var m = i > ii ? mrot : mtrans1; // before joint, use trans1 matrix. After joint, use rotated trans1
+            bones[i] = twgl_js_1.m4.multiply(m, mtrans2); // bone matrix consists of local m translated back to origin
+        }
+        this.EndOfBoneTrans = twgl_js_1.m4.translate(mrot, [
+            bonesize - len - 0.1,
+            0,
+            0,
+            0
+        ]); // the end of the bone      
+    }
+}
+exports.FishOneJoint = FishOneJoint;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"gjwG7":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishV = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishV extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishHPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishHPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+                this.px,
+                this.py + amp * Math.cos(arange * (i + di) / bones.length + di),
+                this.pz + amp * 10.0 * Math.sin(+arange * i / bones.length + di)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.scale * damp;
+        }
+    //   this.px+=-this.forwardspeed; // * bones.length;      
+    }
+}
+exports.FishV = FishV;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"1fDzv":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishHRotated = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishHRotated extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2);
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishPPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arad = di * Math.PI / 180.0;
+        var asin = this.ampl * di * Math.PI * 2.0; //Math.sin( this.phase0+12.0*arad)*this.arange;
+        // var arange=this.arange;
+        // var cay = -180.0; 
+        var ay = 0.0;
+        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
+        var jointpos = 0.5;
+        var jointpos2 = 0.3;
+        for(var i = 0; i < bones.length; i++){
+            var nnormx = i / bones.length;
+            var nnormxal = 0.5 + 0.5 * Math.sin(this.arange * nnormx * asin);
+            //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
+            ay = asin * nnormxal;
+            var m = twgl_js_1.m4.identity();
+            m = twgl_js_1.m4.translate(m, [
+                jointpos * bonesize / 2 + this.px,
+                0,
+                0
+            ]);
+            m = twgl_js_1.m4.rotateY(m, ay);
+            m = twgl_js_1.m4.translate(m, [
+                -(jointpos * bonesize / 2 + this.px),
+                0,
+                0,
+                0
+            ]);
+            m = twgl_js_1.m4.translate(m, [
+                this.px,
+                0,
+                0,
+                0
+            ]);
+            //  m = m4.translate(m,[jointpos*bonesize,0,0]);
+            //   m = m4.rotateY(m, posay );
+            //   m = m4.translate(m,[this.px,0,0,0]);
+            bones[i] = m;
+        //  this.py+=0.0;
+        //  this.pz+=0.00000;
+        // amp+=this.size*damp;       
+        }
+    //    this.px+=-this.forwardspeed; // * bones.length;    
+    }
+}
+exports.FishHRotated = FishHRotated;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"2homp":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishAnimation = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const camhandler = __importStar(require("../baseapp/camhandler")); // camera projection
+const boneanimation = __importStar(require("../bonemodel/boneanimation"));
+const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
+const fishv = __importStar(require("../bonemodel/fishv"));
+const fishhrotated = __importStar(require("../bonemodel/fishhrotated"));
+const fishhtranslated = __importStar(require("../bonemodel/fishhtranslated"));
+const baseapp = __importStar(require("../baseapp/baseapp"));
+const animationclock = __importStar(require("../baseapp/animationclock"));
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+class FishAnimation extends baseapp.BaseApp {
+    constructor(cgl, capp, dictpar, cdiv){
+        super(cgl, capp, dictpar, cdiv);
+        this.fishAnimationParameters = {
+            b: this.baseappParameters,
+            movetail: true,
+            texture: "geotriangle2",
+            sling: 117
+        };
+        this.fish = [
+            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
+                0.0,
+                1.0,
+                0.0
+            ]),
+            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+        ];
+        this.fishjointcounts = [
+            1,
+            28,
+            1,
+            1,
+            1
+        ];
+        this.fishpositions = [
+            [
+                [
+                    0.0,
+                    -20,
+                    0.0
+                ]
+            ],
+            [
+                [
+                    -15,
+                    15,
+                    0
+                ]
+            ],
+            [
+                [
+                    20.0,
+                    -5,
+                    -15
+                ]
+            ],
+            [
+                [
+                    -10,
+                    -5,
+                    0.0
+                ]
+            ],
+            [
+                [
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            ]
+        ];
+        this.clock = new animationclock.AnimationClock();
+        FishAnimation.instance = this;
+        this.twglprograminfo = new Array(2);
+        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
+        ]);
+    }
+    main(gl, dictpar) {
+        twgl.setAttributePrefix("a_");
+        var gl = this.gl;
+        var nFish = 0;
+        var time0 = 0;
+        this.fish.forEach((afish)=>{
+            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
+            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+            afish.setNumBones(gl);
+            afish.createBoneTexture(gl, time0, dictpar);
+            afish.createSurfaceTexture(gl);
+            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
+            nFish++;
+        });
+        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 30.0, this.app);
+        this.cam.zoominVelocity = 0.5;
+        requestAnimationFrame(()=>this.render(time0));
+    }
+    onChangeColorValue(value) {
+        //console.log("we are in color=["+value+"]");
+        var thisinstance = FishAnimation.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    initGUI(parameters) {
+        this.fishAnimationParameters = parameters;
+        // The base GUI provides checkboxes for move and move of objects,
+        // a color dialog to choose background, Slider for animation speed
+        var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+        // add a slider for sling
+        gui.add(this.fishAnimationParameters, "sling").min(9).max(120).step(1);
+        gui.updateDisplay();
+        return gui;
+    }
+    render(time) {
+        var gl = this.gl;
+        gl.useProgram(this.twglprograminfo[1].program);
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+        var cam = this.cam;
+        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
+            gl.bindVertexArray(this.fish[fishtype].skinVAO);
+            this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move ? this.fishAnimationParameters.b.speed : 0.0;
+            if (this.fishjointcounts[fishtype] == 1) {
+                this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
+                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+            } else {
+                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
+                var ampl0 = this.fish[fishtype].ampl;
+                var sling = this.fishAnimationParameters.sling;
+                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
+                    var timeoffs = i * sling;
+                    var nx = i / this.fishjointcounts[fishtype];
+                    this.fish[fishtype].ampl = ampl0 * nx;
+                    this.fish[fishtype].computeBone(time - timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
+                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
+                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
+                }
+                this.fish[fishtype].ampl = ampl0;
+            }
+        }
+        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
+    }
+}
+exports.FishAnimation = FishAnimation;
+
+},{"twgl.js":"3uqAP","../baseapp/camhandler":"1ZnlU","../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishonejoint":"6rbFF","../bonemodel/fishv":"gjwG7","../bonemodel/fishhrotated":"1fDzv","../bonemodel/fishhtranslated":"XD4rL","../baseapp/baseapp":"9lZ4F","../baseapp/animationclock":"4nsaS"}],"fJWn9":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -24225,2154 +26373,6 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.
 },{"./helpers/bundle-url":"lgJ39"}],"cDjVC":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.a0644976.mtl" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"8B1KF":[function(require,module,exports) {
-"use strict";
-//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-//import { m4 } from "./../node_modules/twgl.js";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Skeleton = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
-//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-const baseapp = __importStar(require("./../baseapp/baseapp"));
-const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
-const datgui = __importStar(require("dat.gui"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-twgl.setAttributePrefix("a_");
-class Skeleton extends baseapp.BaseApp {
-    constructor(cgl, capp, dictpar, cdiv){
-        super(cgl, capp, dictpar, cdiv);
-        this.skeletonParameters = {
-            move: false,
-            movetail: true,
-            speed: 0.4,
-            texture: "geotriangle2",
-            color0: "#00A000"
-        };
-        this.bufferInfo = null;
-        this.skinVAO = null;
-        this.phase0 = 0.0; //2.0; // 143 degrees 
-        //------------------------------------------------------------------------------------------------------------
-        this.gui = null;
-        Skeleton.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    main(gl, dictpar) {
-        var time0 = 0;
-        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
-        var spar;
-        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
-        this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
-        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
-        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
-        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
-        this.afish.createBoneTexture(gl, time0, dictpar);
-        this.afish.createSurfaceTexture(gl);
-        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
-        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
-        this.cam.zoominVelocity = 0.5;
-        requestAnimationFrame(()=>this.render(time0));
-    }
-    onChangeColorValue(value) {
-        //console.log("we are in color=["+value+"]");
-        var thisinstance = Skeleton.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
-        }
-    }
-    initGUI(parameters) {
-        this.skeletonParameters = parameters;
-        var cc = this.gl.canvas.parentNode;
-        var ccd = cc;
-        ccd.style.backgroundColor = this.skeletonParameters.color0;
-        // park the dat.gui box in the linksdiv below the links, in closed state
-        var gui = new datgui.GUI({
-            autoPlace: false
-        });
-        gui.domElement.id = "gui_drawimagespace";
-        document.getElementById("linksdiv").append(gui.domElement);
-        gui.close();
-        // connect viewmodel
-        gui.remember(parameters); //this.fishAnimationParameters);
-        // Checkbox forward move animation on/off
-        gui.add(parameters, "move"); //this.fishAnimationParameters, 'move');
-        // Checkbox tail animation on/off
-        gui.add(parameters, "movetail");
-        // Slider for animation speed
-        gui.add(parameters, "speed").min(0.02).max(0.1).step(0.002);
-        // Color dialog sets background color
-        var cel3 = gui.addColor(parameters, "color0");
-        cel3.onChange(this.onChangeColorValue);
-        gui.updateDisplay();
-        return gui;
-    }
-    //------------------------------------------------------------------------------------------------------------------------------------
-    render(time) {
-        var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        var cam = this.cam;
-        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
-        var uniforms = this.uniforms;
-        uniforms.viewprojection = cam.viewProjection;
-        gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            20.0,
-            -20,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            0.0,
-            0.0,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            50.0,
-            -20,
-            10.0
-        ]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -10,
-            5.0,
-            -10
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        requestAnimationFrame(()=>this.render(++time));
-    }
-}
-exports.Skeleton = Skeleton;
-
-},{"twgl.js":"3uqAP","./../baseapp/camhandler":"1ZnlU","./../bonemodel/boneanimation":"hK6Lv","./../baseapp/baseapp":"9lZ4F","./../bonemodel/fishhtranslated":"XD4rL","dat.gui":"k3xQk"}],"hK6Lv":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.BoneAnimation = exports.fsSkeleton = exports.vsSkeleton = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-// -- vertex shader --
-exports.vsSkeleton = `#version 300 es
-
-// camera
-uniform mat4 viewprojection;
-uniform vec3 lightWorldPos;
-uniform mat4 world;
-uniform mat4 viewInverse;
-uniform mat4 worldInverseTranspose;
-
-in vec4 a_position;
-in vec4 a_weight;
-in uvec4 a_boneNdx;
-in vec2 a_texcoord;
- 
-uniform mat4 projection;
-uniform mat4 view;
-
-uniform sampler2D boneMatrixTexture;
-
-uniform float numBones;
-
-out vec2 v_texCoord;
-
-mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
-
-mat4 getBoneMatrix(uint boneNdx) {
-  if (boneNdx>99998u) return m4zero;
-  return mat4(
-    texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
-}
-
-void main() {
-  v_texCoord = a_texcoord;
-  vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
-  gl_Position = viewprojection * world * bonemovedskinpos;
- }
-`;
-exports.fsSkeleton = `#version 300 es
-precision mediump float;
-//precision highp float;
-uniform vec4 color;
-in vec2 v_texCoord;
-out vec4 outColor;
-uniform sampler2D surfaceTexture;
-
-void main () {
-  vec4 cColor =  texture(surfaceTexture, v_texCoord);
-  outColor=cColor * vec4(0.5,0.5,0.5,1);
-}
-`;
-class BoneAnimation {
-    constructor(){
-        this.bindPose = [];
-        this.bones = [];
-        this.boneMatrices = [];
-        // animation state
-        this.px = 0.0;
-        this.py = 0.0;
-        this.pz = 0.0;
-        this.scale = 1.0;
-        this.bindPoseInv2 = [];
-        this.phase0 = 0;
-        this.mesh = new stridedmesh.StridedMesh(1, 1, 1); // | null = null;   
-        this.uniforms = {
-            world: [],
-            projection: [],
-            viewprojection: [],
-            view: [],
-            surfaceTexture: {},
-            boneMatrixTexture: {},
-            color: []
-        };
-        this.bufferInfo = null;
-        this.skinVAO = null;
-    //   this.boneMatrixTexture = new WebGLTexture();
-    //   this.surfaceTexture = new WebGLTexture();
-    }
-    setNumBones(gl) {
-        this.numBones = this.mesh.type == gl.TRIANGLE_STRIP ? this.mesh.nsegments / this.mesh.bonediv : this.mesh.nsegments;
-    }
-    mat4report(m) {
-        var srep = m.toString();
-        var srep1 = "";
-        srep.split(",").forEach((item)=>{
-            srep1 += item.substring(0, 5) + ",";
-        });
-        return srep;
-    }
-    prepareBoneInv(bindPose) {
-        // compute the initial positions of each matrix
-        var nrep = 0;
-        console.log("prepareBoneInv - bindpose");
-        bindPose.forEach((v)=>{
-            this.mat4report(v);
-            console.log(nrep + "] [" + v.toString() + "] ");
-            nrep++;
-        });
-        // compute their inverses
-        return bindPose.map(function(m) {
-            return twgl_js_1.m4.inverse(m);
-        });
-    }
-    prepareBoneMatrices(gl, dictpar) {
-        if (this.numBones == undefined) return;
-        this.boneArray = new Float32Array(this.numBones * 16);
-        // prepare the texture for bone matrices
-        this.boneMatrixTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
-        // since we want to use the texture for pure data we turn off filtering
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        for(let i = 0; i < this.numBones; ++i){
-            this.boneMatrices.push(new Float32Array(this.boneArray.buffer, i * 64, 16));
-            this.bindPose.push(twgl_js_1.m4.identity()); // just allocate storage
-            this.bones.push(twgl_js_1.m4.identity()); // just allocate storage
-        }
-    }
-    prepareBoneTexture(gl, bindPosInv) {
-        if (bindPosInv == null) this.bones.forEach((bone, ndx)=>{
-            twgl_js_1.m4.multiply(bone, twgl_js_1.m4.identity(), this.boneMatrices[ndx]);
-        });
-        else this.bones.forEach((bone, ndx)=>{
-            twgl_js_1.m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]);
-        });
-        // update the texture with the current matrices
-        gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, this.numBones, 0, gl.RGBA, gl.FLOAT, this.boneArray);
-    }
-}
-exports.BoneAnimation = BoneAnimation;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo"}],"kYVeo":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.StridedMesh = void 0;
-const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones data
-class StridedMesh extends stridedmesh0.StridedMesh0 {
-    constructor(cnrows, cnsegments, scale){
-        super();
-        this.segmentsize = scale * 0.18;
-        this.nsegments = cnsegments;
-        this.nrows = cnrows;
-        this.arrays = {
-            position: {
-                numComponents: 0,
-                data: new Float32Array()
-            },
-            boneNdx: this.buildBoneIndex(this.nrows, this.nsegments),
-            weight: this.buildBoneWeights(this.nrows, this.nsegments),
-            indices: this.buildIndicesStridedTriangleStrip(this.nrows, this.nsegments),
-            texcoord: this.buildTexCoords(this.nrows, this.nsegments)
-        };
-    }
-    buildPositions(n, nrows, stride) {
-        var posdata = [];
-        var cx = 0, cy = 0, cz = 0;
-        for(var y = 0; y < nrows; y++)for(var x = 0; x < stride; x++){
-            var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
-            d = 1.0 - Math.cos(d);
-            cx = x * this.segmentsize;
-            cy = y * this.segmentsize;
-            cz = 88.0 * d * this.segmentsize;
-            posdata.push([
-                cx,
-                cy,
-                cz
-            ]);
-        }
-        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-        return {
-            numComponents: 3,
-            data
-        };
-    }
-    buildCylPositions(n, nrows, stride, r1, r2) {
-        var posdata = [];
-        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 5;
-        for(var y = 0; y < nrows; y++){
-            for(var x = 0; x < stride; x++){
-                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
-                d = 1.0 - Math.cos(d);
-                cx = x * this.segmentsize;
-                cy = this.segmentsize * Math.sin(a) * r1;
-                cz = this.segmentsize * Math.cos(a) * r2;
-                posdata.push([
-                    cx,
-                    cy,
-                    cz
-                ]);
-            }
-            a += da;
-        }
-        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-        return {
-            numComponents: 3,
-            data
-        };
-    }
-    //-------------------------------------------------------------------------------------------------------------------------
-    buildFishVPositions(n, nrows, stride) {
-        var posdata = [];
-        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 20;
-        var dtail = stride / 4;
-        var htail = stride * 3 / 4;
-        var dr = r / dtail;
-        for(var y = 0; y < nrows; y++){
-            r = 1;
-            for(var x = 0; x < stride; x++){
-                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
-                d = 1.0 - Math.cos(d);
-                cx = x * this.segmentsize;
-                if (x < dtail) r = r + dr;
-                var dtailr = x - htail;
-                if (dtailr < 0) {
-                    cy = this.segmentsize * Math.cos(-a) * r;
-                    cz = this.segmentsize * Math.sin(-a) * r;
-                } else {
-                    var cdr = 1.0 - dtailr / dtail;
-                    cy = this.segmentsize * Math.cos(-a) * r * cdr;
-                    cz = this.segmentsize * Math.sin(-a) * r * (2.0 - cdr);
-                }
-                posdata.push([
-                    cx,
-                    cy,
-                    cz
-                ]);
-            }
-            a += da;
-        }
-        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-        return {
-            numComponents: 3,
-            data
-        };
-    }
-    buildFishHPositions(n, nrows, stride) {
-        var posdata = [];
-        var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 20;
-        var dtail = stride / 4;
-        var htail = stride * 3 / 4;
-        var dr = r / dtail;
-        for(var y = 0; y < nrows; y++){
-            r = 1;
-            for(var x = 0; x < stride; x++){
-                var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
-                d = 1.0 - Math.cos(d);
-                cx = x * this.segmentsize;
-                if (x < dtail) r = r + dr;
-                var dtailr = x - htail;
-                if (dtailr < 0) {
-                    cy = this.segmentsize * Math.sin(a) * r;
-                    cz = this.segmentsize * Math.cos(a) * r;
-                } else {
-                    var cdr = 1.0 - dtailr / dtail;
-                    cy = this.segmentsize * Math.sin(a) * r * (2.0 - cdr);
-                    cz = this.segmentsize * Math.cos(a) * r * cdr;
-                }
-                posdata.push([
-                    cx,
-                    cy,
-                    cz
-                ]);
-            }
-            a += da;
-        }
-        var data = this.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-        return {
-            numComponents: 3,
-            data
-        };
-    }
-    getFishHPositions() {
-        var pos = this.buildFishHPositions(this.nsegments, this.nrows, this.nsegments);
-        return pos;
-    }
-    getFishVPositions() {
-        var pos = this.buildFishVPositions(this.nsegments, this.nrows, this.nsegments);
-        return pos;
-    }
-    getCylPositions(r1, r2) {
-        var pos = this.buildCylPositions(this.nsegments, this.nrows, this.nsegments, r1, r2);
-        return pos;
-    }
-    //-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-    buildIndicesStridedTriangleStrip(nrows, stride) {
-        var inxdata = [];
-        var crow = 1;
-        var ca1 = stride;
-        while(crow < nrows){
-            var i = 0;
-            var val = 0;
-            var ca0 = ca1 - stride;
-            while(i < stride){
-                val = ca0;
-                if (this.degen) {
-                    if (i == 0) inxdata.push(val);
-                }
-                inxdata.push(val);
-                val = ca1;
-                inxdata.push(val);
-                ca1++;
-                ca0++;
-                i++;
-            }
-            if (this.degen) inxdata.push(val);
-            crow++;
-        }
-        var data = this.intArray("Indices", inxdata);
-        return {
-            numComponents: 1,
-            data
-        };
-    }
-    buildBoneIndex(nrows, stride) {
-        var ndxdata = [];
-        var n1 = 0, n2 = 0;
-        for(var y = 0; y < nrows; y++){
-            for(var x = 0; x < stride; x++)if (x % 2 == 0) {
-                if (this.bonediv >= 2) {
-                    n1 = x / this.bonediv;
-                    n2 = 99999;
-                    ndxdata.push([
-                        n1,
-                        n2,
-                        99999,
-                        99999
-                    ]);
-                    n2 = 1 + x / this.bonediv;
-                    ndxdata.push([
-                        n1,
-                        n2,
-                        99999,
-                        99999
-                    ]);
-                } else {
-                    n1 = x;
-                    n2 = 99999;
-                    ndxdata.push([
-                        n1,
-                        n2,
-                        99999,
-                        99999
-                    ]);
-                    n1 = x + 1;
-                    n2 = 99999;
-                    ndxdata.push([
-                        n1,
-                        n2,
-                        99999,
-                        99999
-                    ]);
-                }
-            }
-        }
-        var data = this.intStraighten("BoneIndex", 4, ndxdata);
-        return {
-            numComponents: 4,
-            data
-        };
-    }
-    buildTexCoords(nrows, stride) {
-        var i = 0, n1 = 1.0, n2 = 0.0;
-        var wdata = [];
-        var crow = 0;
-        while(crow < nrows){
-            for(var i = 0; i < stride; i++){
-                var xt = i / +stride.toFixed(4);
-                var yt = crow / +nrows.toFixed(4);
-                wdata.push([
-                    xt,
-                    yt
-                ]);
-            }
-            crow++;
-        }
-        var data = new Float32Array(wdata.length * 2);
-        console.log("=>copy texcoords len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
-        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 2; j++)data[i * 2 + j] = wdata[i][j];
-        console.log("texcoords buffer: len=" + data.length);
-        console.log(data);
-        return {
-            numComponents: 2,
-            data
-        };
-    }
-    buildBoneWeights(nrows, stride) {
-        var wdata = [];
-        var n1 = 1.0, n2 = 0.0;
-        for(var y = 0; y < nrows; y++){
-            for(var x = 0; x < stride; x++)if (x % 2 == 0) {
-                wdata.push([
-                    1.0,
-                    0.0,
-                    0,
-                    0
-                ]);
-                wdata.push([
-                    0.5,
-                    0.5,
-                    0,
-                    0
-                ]);
-            /*   else
-                       {
-                         wdata.push([n1,n2,0,0]);
-                         wdata.push([n1,n2,0,0]);
-                       } */ }
-        }
-        var data = this.floatStraighten("BoneWeights", 4, wdata); // this.floatStraighten4("BoneWeights",wdata);
-        return {
-            numComponents: 4,
-            data
-        };
-    }
-}
-exports.StridedMesh = StridedMesh;
-
-},{"./stridedmesh0":"gwg6B"}],"gwg6B":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.StridedMesh0 = void 0;
-class StridedMesh0 {
-    constructor(){
-        this.nrows = 0;
-        this.nsegments = 0;
-        this.arrays = {
-            position: {
-                numComponents: 0,
-                data: new Float32Array()
-            },
-            boneNdx: {
-                numComponents: 0,
-                data: new Uint32Array()
-            },
-            weight: {
-                numComponents: 0,
-                data: new Float32Array()
-            },
-            texcoord: {
-                numComponents: 0,
-                data: new Float32Array()
-            },
-            indices: {
-                numComponents: 0,
-                data: new Uint32Array()
-            }
-        };
-        this.degen = true;
-        this.segmentsize = 1.0;
-        this.bonediv = 2.0;
-        this.type = 0;
-    }
-    floatStraighten(datatitle, w, wdata) {
-        var data = new Float32Array(wdata.length * w);
-        console.log(">floatstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
-        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
-        console.log("<floatstraighten" + w + " " + datatitle + ": len=" + data.length);
-        return data;
-    }
-    intStraighten(datatitle, w, wdata) {
-        var data = new Uint32Array(wdata.length * w);
-        console.log(">intstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
-        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
-        console.log("<intstraighten" + w + " " + datatitle + ": len=" + data.length);
-        return data;
-    }
-    intArray(datatitle, wdata) {
-        var data = new Uint32Array(wdata.length);
-        console.log(">intArray " + datatitle + " wdata.length=" + wdata.length);
-        for(var i = 0; i < wdata.length; i++)data[i] = wdata[i];
-        console.log("<intArray " + datatitle + ": len=" + data.length);
-        return data;
-    }
-}
-exports.StridedMesh0 = StridedMesh0;
-
-},{}],"XD4rL":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishHTranslated = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishHTranslated extends fish.Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishHPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishHPositions();
-            console.log("created triangles mesh. phase=" + this.phase0);
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            var m = twgl_js_1.m4.identity();
-            var normx = i;
-            normx = normx / bones.length;
-            var ay = arange * (normx * di);
-            var az = arange * (normx * di);
-            twgl_js_1.m4.translate(m, [
-                this.px,
-                this.py + amp * Math.cos(0.5 * ay),
-                this.pz + amp * 10.0 * Math.sin(az)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.size * damp;
-        }
-    //      this.px+=-this.forwardspeed; // * bones.length;    
-    }
-}
-exports.FishHTranslated = FishHTranslated;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"jKlEI":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.StridedMesh = void 0;
-const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones data
-//type number4 = number[];
-//type number2 = number[];
-class StridedMesh extends stridedmesh0.StridedMesh0 {
-    getFishHPositions() {
-        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
-        return pos;
-    }
-    getFishPPositions() {
-        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
-        return pos;
-    }
-    getFishVPositions() {
-        var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
-        return pos;
-    }
-    constructor(cnrows, cnsegments){
-        super();
-        this.segmentsize = 0.1;
-        this.nsegments = cnsegments;
-        this.nrows = cnrows;
-        this.arrays = {
-            position: this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments),
-            boneNdx: this.buildBoneTrianglesNDX(this.nsegments, this.nrows, this.nsegments),
-            weight: this.buildWeightsTriangles(this.nsegments, this.nrows, this.nsegments),
-            indices: this.buildIndicesTriangles(this.nsegments, this.nrows, this.nsegments),
-            texcoord: this.buildTexCoordTriangles(this.nsegments, this.nrows, this.nsegments)
-        };
-    }
-    buildWeightsTriangles(n, nrows, stride) {
-        var i = 0, n1 = 1.0, n2 = 0.0;
-        var wdata = [];
-        var crow = 0;
-        while(crow < nrows){
-            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)wdata.push([
-                n1,
-                n2,
-                0,
-                0
-            ]);
-            crow++;
-        }
-        var data = new Float32Array(wdata.length * 4);
-        console.log("=>copy weights len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
-        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 4; j++)data[i * 4 + j] = wdata[i][j];
-        console.log("NDX weights buffer: len=" + data.length);
-        return {
-            numComponents: 4,
-            data
-        };
-    }
-    buildTexCoordTriangles(n, nrows, stride) {
-        var i = 0, n1 = 1.0, n2 = 0.0;
-        var wdata = [];
-        var crow = 0;
-        while(crow < nrows){
-            for(var i = 0; i < stride; i++){
-                var xt = i / +stride.toFixed(4);
-                var yt = crow / +nrows.toFixed(4);
-                for(var j = 0; j < 6; j++)wdata.push([
-                    xt,
-                    yt
-                ]);
-            }
-            crow++;
-        }
-        var data = new Float32Array(wdata.length * 2);
-        console.log("=>copy texcoords len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
-        for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 2; j++)data[i * 2 + j] = wdata[i][j];
-        console.log("texcoords buffer: len=" + data.length);
-        console.log(data);
-        return {
-            numComponents: 2,
-            data
-        };
-    }
-    buildIndicesTriangles(n, nrows, stride) {
-        var inxdata = [];
-        var crow = 0;
-        var cpos = 0;
-        while(crow < nrows){
-            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)inxdata.push(cpos++);
-            crow++;
-        }
-        var data = new Uint32Array(inxdata.length);
-        for(var i = 0; i < inxdata.length; i++)data[i] = inxdata[i];
-        console.log("indices: len=" + data.length);
-        console.log(data);
-        return {
-            numComponents: 1,
-            data
-        };
-    }
-    buildBoneTrianglesNDX(n, nrows, stride) {
-        var ndxdata = [];
-        var crow = 0;
-        while(crow < nrows){
-            for(var i = 0; i < stride; i++)for(var j = 0; j < 6; j++)ndxdata.push([
-                i / this.bonediv,
-                99999,
-                99999,
-                99999
-            ]);
-            crow++;
-        }
-        var data = new Uint32Array(ndxdata.length * 4);
-        crow = 0;
-        console.log("ndxdat4.len=" + ndxdata.length);
-        console.log(ndxdata);
-        for(var i = 0; i < ndxdata.length; i++)//console.log(i+"] "+ndxdata[i]);
-        for(var j = 0; j < 4; j++)data[i * 4 + j] = ndxdata[i][j];
-        console.log("NDX indices buffer: len=" + data.length);
-        console.log(data);
-        return {
-            numComponents: 4,
-            data
-        };
-    }
-    build3DTrianglesPositions(n, nrows, stride) {
-        var posdata = [];
-        var z = 0, sz, cx, cy, cz = 0.0, dz = 0.0;
-        sz = this.segmentsize;
-        dz = sz * dz;
-        for(var y = 0; y < nrows; y++){
-            var d = Math.PI / 4.0 * (y - nrows / 2) / nrows;
-            d = 1.0 - Math.cos(d);
-            z = 8.0 * d;
-            for(var x = 0; x < stride; x++){
-                cx = sz * x;
-                cy = sz * y;
-                cz = sz * z;
-                posdata.push(cx); //  |_\
-                posdata.push(cy);
-                posdata.push(cz);
-                posdata.push(cx);
-                posdata.push(cy + sz);
-                posdata.push(cz + dz);
-                posdata.push(cx + sz);
-                posdata.push(cy + sz);
-                posdata.push(cz + dz);
-                posdata.push(cx + sz); //  \-|
-                posdata.push(cy + sz);
-                posdata.push(cz + dz);
-                posdata.push(cx + sz);
-                posdata.push(cy);
-                posdata.push(cz);
-                posdata.push(cx);
-                posdata.push(cy);
-                posdata.push(cz);
-            }
-            cz = cz + dz;
-        }
-        var data3d = new Float32Array(posdata.length);
-        for(var i = 0; i < posdata.length; i++)data3d[i] = posdata[i];
-        console.log("positions: len=" + data3d.length + " nvect=" + data3d.length / 3);
-        console.log(data3d);
-        return {
-            numComponents: 3,
-            data: data3d
-        };
-    }
-}
-exports.StridedMesh = StridedMesh;
-
-},{"./stridedmesh0":"gwg6B"}],"6tAIw":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Fish = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const boneanimation = __importStar(require("./boneanimation"));
-// type Meshproducer = (numrows: number, stride: number, scale: number) => {
-//   numComponents: number;
-//   data: Float32Array;
-//  };
-class Fish extends boneanimation.BoneAnimation {
-    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile){
-        super();
-        this.size = size;
-        this.r1 = r1;
-        this.r2 = r2;
-        this.forwardspeed = forwardspeed;
-        this.phase0 = phase0;
-        this.deltaphase = deltaphase;
-        this.arange = arange;
-        this.ampl = ampl;
-        this.surfacetexturefile = surfacetexturefile;
-        this.EndOfBoneTrans = twgl_js_1.m4.identity();
-    }
-    computeBone(time, domove, domovetail) {
-        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
-        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
-    }
-    prepareSurfaceTextures(gl, selectedSurface) {
-        var gradientname = require("./../resources/models/stone/circlegradient.png");
-        var clovername = require("./../resources/images/clover.jpg");
-        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
-        var textures = twgl.createTextures(gl, {
-            checker: {
-                mag: gl.NEAREST,
-                min: gl.LINEAR,
-                src: [
-                    255,
-                    255,
-                    255,
-                    255,
-                    192,
-                    192,
-                    192,
-                    255,
-                    92,
-                    92,
-                    92,
-                    255,
-                    255,
-                    255,
-                    255,
-                    255, 
-                ]
-            },
-            clover: {
-                src: clovername
-            },
-            zelenskyy: {
-                src: zelenskyyname
-            },
-            gradient: {
-                src: gradientname
-            },
-            flagofukraine: {
-                src: flagofukrainname
-            }
-        });
-        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
-        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
-        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
-        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
-        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
-        return textures;
-    }
-    createSurfaceTexture(gl) {
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
-    }
-    createBoneTexture(gl, time, dictpar) {
-        gl.activeTexture(gl.TEXTURE0);
-        this.prepareBoneMatrices(gl, dictpar);
-        this.computeBone(time, false, false);
-        this.bindPose = this.bones;
-        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
-        this.EndOfBoneTrans = twgl_js_1.m4.identity();
-    }
-    createUniforms(gl, dictpar) {
-        return {
-            world: twgl_js_1.m4.identity(),
-            projection: twgl_js_1.m4.identity(),
-            viewprojection: twgl_js_1.m4.identity(),
-            view: twgl_js_1.m4.translation([
-                0.0,
-                0.0,
-                0.0
-            ]),
-            surfaceTexture: this.surfaceTexture,
-            boneMatrixTexture: this.boneMatrixTexture,
-            color: [
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        };
-    }
-    numberDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return +spar;
-        return pardefault;
-    }
-    stringDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return spar;
-        return pardefault;
-    }
-}
-exports.Fish = Fish; //--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
- //--------------------------------------------------------------------------------------------------------
- //----------------------------------------------------------------------------------------------------------
- //----------------------------------------------------------------------------------------------------------
-
-},{"twgl.js":"3uqAP","./boneanimation":"hK6Lv","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn"}],"7ZHPR":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishAnimationScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
-const fishv = __importStar(require("./../bonemodel/fishv"));
-const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
-const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
-const animationclock = __importStar(require("../baseapp/animationclock"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class FishAnimationScene {
-    constructor(cgl, capp, dictpar, cdiv){
-        this.scenesize = 40;
-        this.sceneenv = 2;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        /* fishAnimationParameters = {
-           b: this.baseappParameters,
-           movetail: true,
-           texture: 'geotriangle2',
-           sling: 117,
-         };
-     */ this.fish = [
-            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
-                0.0,
-                1.0,
-                0.0
-            ]),
-            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
-        ];
-        this.fishjointcounts = [
-            1,
-            28,
-            1,
-            1,
-            1
-        ];
-        this.fishpositions = [
-            [
-                [
-                    0.0,
-                    -20,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    -15,
-                    15,
-                    0
-                ]
-            ],
-            [
-                [
-                    20.0,
-                    -5,
-                    -15
-                ]
-            ],
-            [
-                [
-                    -10,
-                    -5,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            ]
-        ];
-        // cam: camhandler.Camera|undefined;
-        this.clock = new animationclock.AnimationClock();
-        //  super(cgl, capp, dictpar, cdiv);
-        FishAnimationScene.instance = this;
-        twgl.setAttributePrefix("a_");
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {}
-    initScene(gl, cap, dictpar, p, textureReadyCallback) {
-        //twgl.setAttributePrefix("a_");
-        //var gl = this.gl!;
-        var nFish = 0;
-        var time0 = 0;
-        this.fish.forEach((afish)=>{
-            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
-            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
-            afish.setNumBones(gl);
-            afish.createBoneTexture(gl, time0, dictpar);
-            afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
-            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
-            nFish++;
-            if (nFish == this.fish.length) textureReadyCallback(0);
-        });
-    // this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamZUp, 30.0, this.app!);
-    // this.cam.zoominVelocity = 0.5;
-    // requestAnimationFrame(() => this.render(time0));    
-    }
-    /*   onChangeColorValue(value? : any)
-       {
-         //console.log("we are in color=["+value+"]");
-         var thisinstance = FishAnimationScene.instance!;
-         if (thisinstance.gl!=null)
-         {
-           var cc = (thisinstance.gl!.canvas  as HTMLCanvasElement).parentNode;
-           var ccd= (cc as HTMLDivElement);
-           ccd.style.backgroundColor =  value;
-         }
-       }
-   
-       public initGUI(parameters: { b: {color0: string, move: boolean,  speed: number}, movetail:boolean, texture:string,  sling:number}): datgui.GUI
-       {
-         this.fishAnimationParameters= parameters;
-       
-         // The base GUI provides checkboxes for move and move of objects,
-         // a color dialog to choose background, Slider for animation speed
-         var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
-         
-         // add a slider for sling
-         gui.add(this.fishAnimationParameters, 'sling').min(9).max(120).step(1);
-      
-         gui.updateDisplay();
-         return gui;
-       }
-    */ //render(time: number) 
-    drawScene(gl, cam, time) {
-        //  var gl = this.gl!;
-        //  gl.useProgram(this.twglprograminfo![1].program);
-        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-        //  gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
-        //  gl.enable(gl.DEPTH_TEST);
-        //  gl.enable(gl.CULL_FACE);
-        //var cam: camhandler.Camera = this.cam;
-        //cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);     
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
-            gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = this.animationParameters.b.move ? this.animationParameters.b.speed : 0.0;
-            if (this.fishjointcounts[fishtype] == 1) {
-                this.fish[fishtype].computeBone(time, this.animationParameters.b.move, this.animationParameters.movetail);
-                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
-                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
-                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-            } else {
-                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
-                var ampl0 = this.fish[fishtype].ampl;
-                var sling = this.animationParameters.sling;
-                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
-                    var timeoffs = i * sling;
-                    var nx = i / this.fishjointcounts[fishtype];
-                    this.fish[fishtype].ampl = ampl0 * nx;
-                    this.fish[fishtype].computeBone(time - timeoffs, this.animationParameters.b.move, this.animationParameters.movetail);
-                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
-                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
-                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
-                }
-                this.fish[fishtype].ampl = ampl0;
-            }
-        }
-    //   requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));   
-    }
-}
-exports.FishAnimationScene = FishAnimationScene;
-
-},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishhtranslated":"XD4rL","../baseapp/animationclock":"4nsaS"}],"6rbFF":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishOneJoint = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishOneJoint extends fish.Fish {
-    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile, jointpos, vaxis){
-        super(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile);
-        this.size = size;
-        this.r1 = r1;
-        this.r2 = r2;
-        this.forwardspeed = forwardspeed;
-        this.phase0 = phase0;
-        this.deltaphase = deltaphase;
-        this.arange = arange;
-        this.ampl = ampl;
-        this.surfacetexturefile = surfacetexturefile;
-        this.jointpos = jointpos;
-        this.vaxis = vaxis;
-    }
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction
-        var len = this.jointpos * bonesize; // len is distance from 0 to joint
-        var mtrans1 = twgl_js_1.m4.translation([
-            len,
-            0,
-            0
-        ]); // joint serves as a rotation point (trans to)
-        var mtrans2 = twgl_js_1.m4.translation([
-            -len,
-            0,
-            0
-        ]); // joint serves as a rotation point (trans back)
-        var ii = bones.length * this.jointpos; // ii is index where joint starts
-        var mrot = twgl_js_1.m4.axisRotate(mtrans1, this.vaxis, di * this.ampl); // rotation used beyond joint
-        for(var i = 0; i < bones.length; i++){
-            var m = i > ii ? mrot : mtrans1; // before joint, use trans1 matrix. After joint, use rotated trans1
-            bones[i] = twgl_js_1.m4.multiply(m, mtrans2); // bone matrix consists of local m translated back to origin
-        }
-        this.EndOfBoneTrans = twgl_js_1.m4.translate(mrot, [
-            bonesize - len - 0.1,
-            0,
-            0,
-            0
-        ]); // the end of the bone      
-    }
-}
-exports.FishOneJoint = FishOneJoint;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"gjwG7":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishV = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishV extends fish.Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishVPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-                this.px,
-                this.py + amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
-                this.pz + amp * Math.sin(+arange * i / bones.length + di)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.scale * damp;
-        }
-    //   this.px+=-this.forwardspeed; // * bones.length;      
-    }
-}
-exports.FishV = FishV;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"1fDzv":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishHRotated = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishHRotated extends fish.Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2);
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishPPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arad = di * Math.PI / 180.0;
-        var asin = this.ampl * di * Math.PI * 2.0; //Math.sin( this.phase0+12.0*arad)*this.arange;
-        // var arange=this.arange;
-        // var cay = -180.0; 
-        var ay = 0.0;
-        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
-        var jointpos = 0.5;
-        var jointpos2 = 0.3;
-        for(var i = 0; i < bones.length; i++){
-            var nnormx = i / bones.length;
-            var nnormxal = 0.5 + 0.5 * Math.sin(this.arange * nnormx * asin);
-            //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
-            ay = asin * nnormxal;
-            var m = twgl_js_1.m4.identity();
-            m = twgl_js_1.m4.translate(m, [
-                jointpos * bonesize / 2 + this.px,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.rotateY(m, ay);
-            m = twgl_js_1.m4.translate(m, [
-                -(jointpos * bonesize / 2 + this.px),
-                0,
-                0,
-                0
-            ]);
-            m = twgl_js_1.m4.translate(m, [
-                this.px,
-                0,
-                0,
-                0
-            ]);
-            //  m = m4.translate(m,[jointpos*bonesize,0,0]);
-            //   m = m4.rotateY(m, posay );
-            //   m = m4.translate(m,[this.px,0,0,0]);
-            bones[i] = m;
-        //  this.py+=0.0;
-        //  this.pz+=0.00000;
-        // amp+=this.size*damp;       
-        }
-    //    this.px+=-this.forwardspeed; // * bones.length;    
-    }
-}
-exports.FishHRotated = FishHRotated;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"6mdLk":[function(require,module,exports) {
-"use strict";
-//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-//import { m4 } from "./../node_modules/twgl.js";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.SkeletonScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-//import { FishV } from "../bonemodel/fishv";
-const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
-class SkeletonScene {
-    constructor(cgl, capp, dictpar, cdiv){
-        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
-        this.scenesize = 40;
-        this.sceneenv = 2;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        this.skeletonParameters = {
-            move: false,
-            movetail: true,
-            speed: 0.4,
-            texture: "geotriangle2",
-            color0: "#00A000"
-        };
-        this.bufferInfo = null;
-        this.skinVAO = null;
-        this.phase0 = 0.0; //2.0; // 143 degrees 
-        // super(cgl, capp, dictpar, cdiv);
-        twgl.setAttributePrefix("a_");
-        SkeletonScene.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {}
-    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
-    initScene(gl, cap, dictpar, p, textureReadyCallback) {
-        var time0 = 0;
-        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
-        var spar;
-        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
-        this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
-        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
-        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
-        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
-        this.afish.createBoneTexture(gl, time0, dictpar);
-        this.afish.createSurfaceTexture(gl);
-        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
-        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        textureReadyCallback(0);
-    //    this.cam=camhandler.Camera.createCamera(gl,dictpar!, camhandler.Camera.CamZUp, 50.0, cap);
-    //      this.cam.zoominVelocity = 0.5;
-    //      requestAnimationFrame(() => this.render(time0));   
-    }
-    //------------------------------------------------------------------------------------------------------------
-    //  gui: datgui.GUI|null=null;
-    onChangeColorValue(value) {
-    //console.log("we are in color=["+value+"]");
-    /*    var thisinstance = SkeletonScene.instance!;
-            if (thisinstance.gl!=null)
-            {
-              var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
-              var ccd= (cc as HTMLDivElement);
-              ccd.style.backgroundColor =  value;
-            }
-            */ }
-    /*
-        public initGUI(parameters: {move:boolean, movetail:boolean,speed:number, texture:string, color0:string})
-        {
-          this.skeletonParameters = parameters;
-    
-          var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
-          var ccd= (cc as HTMLDivElement);
-          ccd.style.backgroundColor =  this.skeletonParameters.color0;
-      
-          // park the dat.gui box in the linksdiv below the links, in closed state
-          var gui = new datgui.GUI( { autoPlace: false } );
-          gui.domElement.id = 'gui_drawimagespace';
-          document.getElementById("linksdiv")!.append( gui.domElement);
-          gui.close();
-    
-          // connect viewmodel
-          gui.remember(parameters); //this.fishAnimationParameters);
-        
-          // Checkbox forward move animation on/off
-          gui.add(parameters, 'move'); //this.fishAnimationParameters, 'move');
-          // Checkbox tail animation on/off
-          gui.add(parameters, 'movetail');
-        
-          // Slider for animation speed
-          gui.add(parameters, 'speed').min(0.02).max(0.1).step(0.002);
-      
-          // Color dialog sets background color
-          var cel3 = gui.addColor(parameters, 'color0');
-          cel3.onChange( this.onChangeColorValue);
-            
-          gui.updateDisplay();
-          return gui;
-        }
-      */ //------------------------------------------------------------------------------------------------------------------------------------
-    drawScene(gl, cam, time) {
-        /*   var gl = this.gl!;
-           gl.useProgram(this.twglprograminfo![1].program);
-           twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
-           gl.enable(gl.DEPTH_TEST);
-           gl.enable(gl.CULL_FACE);
-         
-           var cam: camhandler.Camera = this.cam!;
-           cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);
-        */ var uniforms = this.uniforms;
-        uniforms.viewprojection = cam.viewProjection;
-        gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            20.0,
-            -20,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -15,
-            0.0,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            50.0,
-            -10,
-            10.0
-        ]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -50,
-            5.0,
-            -10
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-    //  requestAnimationFrame(() => this.render(++time));       
-    }
-}
-exports.SkeletonScene = SkeletonScene;
-
-},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishvtranslated":"40Zci"}],"40Zci":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishVTranslated = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishVTranslated extends fish.Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishVPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        /*
-         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
-         for (var i = 0; i < bones.length; i++)
-         {
-             m4.translate(m4.identity(),[this.px,
-                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
-                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
-                            bones[i]);
-            this.py+=0.0;
-            this.pz+=0.00000;
-            amp+=this.scale*damp;
-            
-         }
-         */ var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            var m = twgl_js_1.m4.identity();
-            var normx = i;
-            normx = normx / bones.length;
-            var ay = arange * (normx * di);
-            var az = arange * (normx * di);
-            twgl_js_1.m4.translate(m, [
-                this.px,
-                this.py + amp * 10.0 * Math.cos(0.5 * ay),
-                this.pz + amp * Math.sin(1.0 * az)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.size * damp;
-        }
-    //   this.px+=-this.forwardspeed; // * bones.length;      
-    }
-}
-exports.FishVTranslated = FishVTranslated;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"2homp":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishAnimation = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("../baseapp/camhandler")); // camera projection
-const boneanimation = __importStar(require("../bonemodel/boneanimation"));
-const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
-const fishv = __importStar(require("../bonemodel/fishv"));
-const fishhrotated = __importStar(require("../bonemodel/fishhrotated"));
-const fishhtranslated = __importStar(require("../bonemodel/fishhtranslated"));
-const baseapp = __importStar(require("../baseapp/baseapp"));
-const animationclock = __importStar(require("../baseapp/animationclock"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class FishAnimation extends baseapp.BaseApp {
-    constructor(cgl, capp, dictpar, cdiv){
-        super(cgl, capp, dictpar, cdiv);
-        this.fishAnimationParameters = {
-            b: this.baseappParameters,
-            movetail: true,
-            texture: "geotriangle2",
-            sling: 117
-        };
-        this.fish = [
-            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
-                0.0,
-                1.0,
-                0.0
-            ]),
-            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
-        ];
-        this.fishjointcounts = [
-            1,
-            28,
-            1,
-            1,
-            1
-        ];
-        this.fishpositions = [
-            [
-                [
-                    0.0,
-                    -20,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    -15,
-                    15,
-                    0
-                ]
-            ],
-            [
-                [
-                    20.0,
-                    -5,
-                    -15
-                ]
-            ],
-            [
-                [
-                    -10,
-                    -5,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            ]
-        ];
-        this.clock = new animationclock.AnimationClock();
-        FishAnimation.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    main(gl, dictpar) {
-        twgl.setAttributePrefix("a_");
-        var gl = this.gl;
-        var nFish = 0;
-        var time0 = 0;
-        this.fish.forEach((afish)=>{
-            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
-            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
-            afish.setNumBones(gl);
-            afish.createBoneTexture(gl, time0, dictpar);
-            afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
-            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
-            nFish++;
-        });
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 30.0, this.app);
-        this.cam.zoominVelocity = 0.5;
-        requestAnimationFrame(()=>this.render(time0));
-    }
-    onChangeColorValue(value) {
-        //console.log("we are in color=["+value+"]");
-        var thisinstance = FishAnimation.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
-        }
-    }
-    initGUI(parameters) {
-        this.fishAnimationParameters = parameters;
-        // The base GUI provides checkboxes for move and move of objects,
-        // a color dialog to choose background, Slider for animation speed
-        var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
-        // add a slider for sling
-        gui.add(this.fishAnimationParameters, "sling").min(9).max(120).step(1);
-        gui.updateDisplay();
-        return gui;
-    }
-    render(time) {
-        var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        var cam = this.cam;
-        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
-            gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move ? this.fishAnimationParameters.b.speed : 0.0;
-            if (this.fishjointcounts[fishtype] == 1) {
-                this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
-                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
-                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
-                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-            } else {
-                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
-                var ampl0 = this.fish[fishtype].ampl;
-                var sling = this.fishAnimationParameters.sling;
-                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
-                    var timeoffs = i * sling;
-                    var nx = i / this.fishjointcounts[fishtype];
-                    this.fish[fishtype].ampl = ampl0 * nx;
-                    this.fish[fishtype].computeBone(time - timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
-                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
-                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
-                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
-                }
-                this.fish[fishtype].ampl = ampl0;
-            }
-        }
-        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
-    }
-}
-exports.FishAnimation = FishAnimation;
-
-},{"twgl.js":"3uqAP","../baseapp/camhandler":"1ZnlU","../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishonejoint":"6rbFF","../bonemodel/fishv":"gjwG7","../bonemodel/fishhrotated":"1fDzv","../bonemodel/fishhtranslated":"XD4rL","../baseapp/baseapp":"9lZ4F","../baseapp/animationclock":"4nsaS"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
+},{"./helpers/bundle-url":"lgJ39"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
 
 //# sourceMappingURL=index.5710aea2.js.map
