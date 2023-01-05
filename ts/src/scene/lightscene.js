@@ -24,7 +24,7 @@ exports.LightScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const basescene_1 = require("./basescene");
-class LightScene extends basescene_1.basescene {
+class LightScene extends basescene_1.BaseScene {
     constructor(gl) {
         super();
         // shaders to merge (here: none)

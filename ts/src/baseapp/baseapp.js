@@ -36,7 +36,7 @@ class BaseApp {
         // programs
         this.twglprograminfo = null; // there can be several
         // environment skybox camera
-        this.cameraTarget = [0, 0.5, 0];
+        this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [4, 0, 0];
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es

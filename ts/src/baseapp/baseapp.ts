@@ -27,9 +27,10 @@ export class BaseApp
 
     // programs
     protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
+    protected dictpars:Map<string,string>|undefined;
 
     // environment skybox camera
-    public cameraTarget= [0,0.5,0];
+    public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [4,0,0];
 
     // environment skybox
@@ -41,7 +42,6 @@ export class BaseApp
     private environmentBufferInfo:twgl.BufferInfo | undefined; // environment texture
     private vaoEnvironment: WebGLVertexArrayObject | undefined; // environment map vao buffer 
     
-    dictpars:Map<string,string>|undefined;
     
     protected constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, divname: string)
     {

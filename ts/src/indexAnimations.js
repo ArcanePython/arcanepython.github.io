@@ -27,7 +27,8 @@ const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp deri
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
-const skeleton = __importStar(require("./bonemodel/skeleton")); // baseapp derivative: bone model (single)
+//import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
+const skeletonscene = __importStar(require("./scene/skeletonscene")); // baseapp derivative: bone model (single)
 const fish = __importStar(require("./bonemodel/fishanimation")); // baseapp derivative: bone model (flock)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
@@ -81,7 +82,8 @@ function preparedefaultparameters(dictPars) {
 }
 var baseapppars = { move: true, speed: 0.01, color0: "#A0A0A0" };
 var defaultParameters = { b: baseapppars, movetail: true, texture: 'geotriangle2', typelight: 'point light', sling: 117, shininess: 11.0, fov: 60 };
-function initScene(gl, app, dictPars, scene) {
+function initScene(gl, app, dictPars, scene, heighttop) {
+    document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
@@ -91,23 +93,23 @@ function show(gl, app, dictPars) {
     // Default parameters for all Animation1 scenes
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
-        var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl));
+        var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
         mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined)
-        initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
+        initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
-        initScene(gl, app, dictPars, new lightscene.LightScene(gl));
+        initScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined)
-        initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars));
+        initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined)
-        initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl));
+        initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined)
-        initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl));
+        initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
-        initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl));
+        initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined)
-        initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl));
+        initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
     //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
         var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
@@ -117,10 +119,14 @@ function show(gl, app, dictPars) {
         ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeleton")) != undefined) {
-        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
-        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
-        sk.initGUI({ move: false, movetail: true, speed: 0.06, texture: "zelenskyy", color0: "#afb9af" });
+        initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
+        /*
+        var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
+        var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
+        sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
         sk.main(gl, dictPars);
+        
+        */
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fish")) != undefined) {
         var fa = new fish.FishAnimation(gl, app, dictPars, cdiv);
@@ -148,7 +154,8 @@ function show(gl, app, dictPars) {
     //--------------------------------------------------------------------------------------------------
     else // any other, take first argument as OBJ/MTL to show
      {
-        initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars));
+        initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+        document.getElementById("gridcells").style.gridTemplateRows = "170px";
         //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
         //  oi.main(gl, dictPars!);
         //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });

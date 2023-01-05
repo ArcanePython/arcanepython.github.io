@@ -1,10 +1,10 @@
 // https://www.npmjs.com/package/webgl-obj-loader
 
-import * as OBJ from 'webgl-obj-loader';
+import * as webglobjloader from 'webgl-obj-loader';
 
 import { ExtendedGLBuffer, MaterialLibrary, Mesh } from 'webgl-obj-loader';
 
-export var mesh: OBJ.Mesh;
+export var mesh: webglobjloader.Mesh;
 
 export var meshMinMax: {
   minx: number;
@@ -15,11 +15,11 @@ export var meshMinMax: {
   maxz: number;
 }
 
-export var meshWithBuffers: OBJ.MeshWithBuffers;
+export var meshWithBuffers: webglobjloader.MeshWithBuffers;
 
 export function CreateMeshWithBuffers(gl: WebGL2RenderingContext)
 {
-  meshWithBuffers = OBJ.initMeshBuffers(gl, mesh);
+  meshWithBuffers = webglobjloader.initMeshBuffers(gl, mesh); // use lib
   console.log("meshWithBuffers.vertexBuffer.numItems="+meshWithBuffers.vertexBuffer.numItems);
   console.log("meshWithBuffers.vertexBuffer.vertices.length="+meshWithBuffers.vertices.values.length);
   console.log("meshWithBuffers.vertexBuffer.vertices.values.length="+meshWithBuffers.vertices.values.length);
@@ -63,7 +63,7 @@ export function render(gl: WebGLRenderingContext, vertexPositionAttribute: numbe
 
 //===============================================================================================================================================================
 
-var matlib: OBJ.MaterialLibrary;
+var matlib: webglobjloader.MaterialLibrary;
 var indexBuffers: ExtendedGLBuffer[] = [];
 
 export function renderIndexBuffer(gl: WebGLRenderingContext, vertexPositionAttribute: number, normalAttribute: number, texCoordAttribute: number, offset: number, 
@@ -178,7 +178,7 @@ export function GetDeclaredObjMtl()
    var abobj= cubegeo;
    var abmtl= cubemat;
    //const arr = abobj.toString().replace(/\r\n/g,'\n').split('\n');
-   if (OBJ)
+   if (webglobjloader)
   {    
       matlib = new MaterialLibrary(abmtl);
       if (matlib)

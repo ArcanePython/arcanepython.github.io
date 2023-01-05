@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.basescene = void 0;
+exports.BaseScene = void 0;
 const twgl_js_1 = require("twgl.js");
-class basescene {
+class BaseScene {
     constructor() {
         this.modelXRotationRadians = 0.0;
         this.modelYRotationRadians = 0.0;
@@ -74,5 +74,5 @@ class basescene {
         gl.uniformMatrix4fv(this.worldInverseTransposeLocation, false, worldInverseTransposeMatrix);
     }
 }
-exports.basescene = basescene;
+exports.BaseScene = BaseScene;
 //# sourceMappingURL=basescene.js.map

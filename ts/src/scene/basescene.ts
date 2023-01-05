@@ -2,7 +2,7 @@ import { m4 } from "twgl.js";
 import * as camhandler from "./../baseapp/camhandler"
 import {TAnimation1Parameters} from "./scene"
 
-export class basescene
+export class BaseScene
 {
  animationParameters: TAnimation1Parameters | undefined;
 

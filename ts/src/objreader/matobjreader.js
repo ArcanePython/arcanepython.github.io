@@ -21,10 +21,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetDeclaredObjMtl = exports.asyncFetchObjMtl = exports.FetchImage = exports.PrepareIndexBuffers = exports.renderIndexBuffer = exports.render = exports.NumElements = exports.CreateMeshWithBuffers = exports.meshWithBuffers = exports.meshMinMax = exports.mesh = void 0;
-const OBJ = __importStar(require("webgl-obj-loader"));
+const webglobjloader = __importStar(require("webgl-obj-loader"));
 const webgl_obj_loader_1 = require("webgl-obj-loader");
 function CreateMeshWithBuffers(gl) {
-    exports.meshWithBuffers = OBJ.initMeshBuffers(gl, exports.mesh);
+    exports.meshWithBuffers = webglobjloader.initMeshBuffers(gl, exports.mesh); // use lib
     console.log("meshWithBuffers.vertexBuffer.numItems=" + exports.meshWithBuffers.vertexBuffer.numItems);
     console.log("meshWithBuffers.vertexBuffer.vertices.length=" + exports.meshWithBuffers.vertices.values.length);
     console.log("meshWithBuffers.vertexBuffer.vertices.values.length=" + exports.meshWithBuffers.vertices.values.length);
@@ -173,7 +173,7 @@ function GetDeclaredObjMtl() {
     var abobj = cubegeo;
     var abmtl = cubemat;
     //const arr = abobj.toString().replace(/\r\n/g,'\n').split('\n');
-    if (OBJ) {
+    if (webglobjloader) {
         matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
         if (matlib) {
             var l = matlib.materials["Material"];

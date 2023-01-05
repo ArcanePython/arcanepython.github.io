@@ -8,9 +8,9 @@ import * as camhandler from "./../baseapp/camhandler"   // camera projection
 import * as scene from "./scene"
 
 import { TAnimation1Parameters }  from "./scene"
-import { basescene } from "./basescene";
+import { BaseScene } from "./basescene";
 
-export class LightScene extends basescene implements scene.SceneInterface
+export class LightScene extends BaseScene implements scene.SceneInterface
 {
     vertexShaderSource: string;   // =vertexShaderSourceSpotLight
     fragmentShaderSource: string; // =fragmentShaderSourceSpotLight

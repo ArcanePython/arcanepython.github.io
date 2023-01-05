@@ -14,7 +14,7 @@ import * as  baseapp from "../baseapp/baseapp";
 
 import * as scene from "./scene"
 
-type Tuniforms = {
+type matObjUniforms = {
     u_lightWorldPos: number[]
     u_ambient: number[],
     u_specular: number[],
@@ -39,28 +39,16 @@ export class MatObjScene implements scene.SceneInterface
       positionLocation: number | undefined;
       resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
       
-    objMtlImportParameters = {
-      move: false,
-      speed: 0.4,
-      texture: 'geotriangle2',
-      color0: "#00A000",
-    };
-  
-    time: number = 0;
-    dtime: number = 0.01;
-       
-    //private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
-    //private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
-    //private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
-        
-    private  vertexPositionAttribute: number=0;  // address of positions buffer in shader
-    private  normalAttribute: number=0;          // address of normals buffer in shader
-    private  texCoordAttribute : number=0;       // address of texture coords in shader
-   // private programInfo:twgl.ProgramInfo | undefined;
-    private texs:WebGLTexture[] = []; 
-    private mats:OBJ.IndexToMaterial|undefined|null;
-           
-    private uniforms: Tuniforms = 
+      time: number = 0;
+      dtime: number = 0.01;
+          
+      private  vertexPositionAttributeLocation: number=0;  // address of positions buffer in shader
+      private  normalAttributeLocation: number=0;          // address of normals buffer in shader
+      private  texCoordAttributeLocation : number=0;       // address of texture coords in shader
+      private texs:WebGLTexture[] = []; 
+      private mats:OBJ.IndexToMaterial|undefined|null;
+            
+      private uniforms: matObjUniforms = 
         {
           u_lightWorldPos: [0, 0, 0],
           u_ambient: [0, 0, 0, 1],
@@ -102,41 +90,25 @@ export class MatObjScene implements scene.SceneInterface
   }
 
   initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
- 
- // main(gl:WebGL2RenderingContext,UrlPars:Map<string,string>)
   {
     
     this.getFiles(dictpar).then(() =>  // Fetch obj/mtl content
     { 
       var cc = (gl.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
-      ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
+      ccd.style.backgroundColor =  this.animationParameters!.b.color0;
    
       if (mobj.mesh)
       {
-      //  var gl =this.gl;
-      //  console.log("=> Constructor - create programInfo");
-      //  this.programInfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
-    
-        var program = this.twglprograminfo![1].program;
-        console.log("=> Constructor - register attributes");
-        this.vertexPositionAttribute = gl.getAttribLocation(program,  "position");
-        gl.enableVertexAttribArray(this.vertexPositionAttribute);
-        this.normalAttribute = gl.getAttribLocation(program, "normal");
-        gl.enableVertexAttribArray(this.normalAttribute);
-        this.texCoordAttribute = gl.getAttribLocation(program, "texcoord");
-        gl.enableVertexAttribArray(this.texCoordAttribute);
-
- /*       // Create a camera
-        var szx=mobj.meshMinMax.maxx-mobj.meshMinMax.minx;
-        var szy=mobj.meshMinMax.maxy-mobj.meshMinMax.miny;
-        var szz=mobj.meshMinMax.maxz-mobj.meshMinMax.minz;
-        var szobj = Math.sqrt(szx*szx+szy*szy+szz*szz);
-     //   this.cam = camhandler.Camera.createCamera(gl,dictpar!,camhandler.Camera.CamYUp, szobj*2, cap);
      
-        this.cam.translateTarget( [(mobj.meshMinMax.maxx+mobj.meshMinMax.minx)/2, (mobj.meshMinMax.maxy+mobj.meshMinMax.miny)/2, (mobj.meshMinMax.maxz+mobj.meshMinMax.minz)/2]);
-        this.cam.zoominVelocity = szobj/40.0;
-   */   
+        var program = this.twglprograminfo![1].program;
+        this.vertexPositionAttributeLocation = gl.getAttribLocation(program,  "position");
+        gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
+        this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
+        gl.enableVertexAttribArray(this.normalAttributeLocation);
+        this.texCoordAttributeLocation = gl.getAttribLocation(program, "texcoord");
+        gl.enableVertexAttribArray(this.texCoordAttributeLocation);
+
         // Prepare obj mesh for display
         console.log("obj/mtl mesh read ok");
         mobj.CreateMeshWithBuffers(gl); // unpack index and positions
@@ -144,30 +116,15 @@ export class MatObjScene implements scene.SceneInterface
         console.log("<= Prepare obj/mtl mesh <= buffers ok");
        
         // Fetch file texture content, start rendering when all textures read
-        this.Prepare(gl, sceneReadyCallback);   
-      //  sceneReadyCallback(0);
-       
+        this.Prepare(gl, sceneReadyCallback);      
       }
       else console.log("ERROR: obj/mtl no mesh could be created.");  
     }); // getfiles then({})
   }
 
-      
+  
 
-  gui: datgui.GUI|null=null;
-
-  onChangeTextureCombo(value? : any)
-  {
-    var thisinstance = baseapp.instance!;
-    //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
-  //  thisinstance.currentTexture = value;
-  //  console.log("set currentTexture to ["+value+"]");
-  //  if (value=="clover") thisinstance.ny=8.0; else 
-  //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
-    thisinstance.app!.mouse.totaldelta = 0;
-  }
-
-  onChangeColorValue(value? : any)
+/*  onChangeColorValue(value? : any)
   {
     //console.log("we are in color=["+value+"]");
     var thisinstance = baseapp.instance!;
@@ -178,7 +135,7 @@ export class MatObjScene implements scene.SceneInterface
       ccd.style.backgroundColor =  value;
     }
   }
-
+*/
   public extendGUI(gui: datgui.GUI)
 //  public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
   {
@@ -203,7 +160,7 @@ export class MatObjScene implements scene.SceneInterface
    //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
    
       // Color dialog sets background color
-      var cel3 = gui.addColor(this.objMtlImportParameters, 'color0');
+  /*    var cel3 = gui.addColor(this.animationParameters!, 'color0');
       cel3.onChange( this.onChangeColorValue);
      
       // Combobox texture from accepted values
@@ -212,6 +169,7 @@ export class MatObjScene implements scene.SceneInterface
          
       gui.updateDisplay();
     //  return gui;
+    */
     }
 
 //------------------------------------------------------------------------
@@ -433,7 +391,7 @@ export class MatObjScene implements scene.SceneInterface
           u_worldInverseTranspose: m4.transpose(m4.inverse(world)),
           u_worldViewProjection: m4.multiply(cam.viewProjection, world)
         });
-        mobj.renderIndexBuffer(gl,  this.vertexPositionAttribute, this.normalAttribute, this.texCoordAttribute, i, 2, ctexture );
+        mobj.renderIndexBuffer(gl,  this.vertexPositionAttributeLocation, this.normalAttributeLocation, this.texCoordAttributeLocation, i, 2, ctexture );
       } else console.log("undefined material i="+i);
     } // for
  //!   requestAnimationFrame(() => this.render(this.dtime)); 

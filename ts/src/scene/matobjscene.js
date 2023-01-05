@@ -24,7 +24,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work (lib)
 const twgl_js_1 = require("twgl.js"); // Greg's work (lib)
 const mobj = __importStar(require("./../objreader/matobjreader")); // read geometry from .obj / .mtl files (interface)
 const mobjfiles = __importStar(require("./../objreader/matobjfiles")); // read geometry from .obj / .mtl files (resources)
-const baseapp = __importStar(require("../baseapp/baseapp"));
 class MatObjScene {
     constructor(gl, capp, dictPar) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
@@ -33,21 +32,11 @@ class MatObjScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
-        this.objMtlImportParameters = {
-            move: false,
-            speed: 0.4,
-            texture: 'geotriangle2',
-            color0: "#00A000",
-        };
         this.time = 0;
         this.dtime = 0.01;
-        //private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
-        //private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
-        //private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
-        this.vertexPositionAttribute = 0; // address of positions buffer in shader
-        this.normalAttribute = 0; // address of normals buffer in shader
-        this.texCoordAttribute = 0; // address of texture coords in shader
-        // private programInfo:twgl.ProgramInfo | undefined;
+        this.vertexPositionAttributeLocation = 0; // address of positions buffer in shader
+        this.normalAttributeLocation = 0; // address of normals buffer in shader
+        this.texCoordAttributeLocation = 0; // address of texture coords in shader
         this.texs = [];
         this.uniforms = {
             u_lightWorldPos: [0, 0, 0],
@@ -64,7 +53,6 @@ class MatObjScene {
         this.resolvedtextures = new Map();
         this.imgs = [];
         this.imgsa = [];
-        this.gui = null;
         this.ctime = 0;
         //--- SHADERS ------------------------------------------------------------------------------------------------------
         this.vs = `#version 300 es
@@ -171,29 +159,15 @@ void main() {
          {
             var cc = gl.canvas.parentNode;
             var ccd = cc;
-            ccd.style.backgroundColor = this.objMtlImportParameters.color0;
+            ccd.style.backgroundColor = this.animationParameters.b.color0;
             if (mobj.mesh) {
-                //  var gl =this.gl;
-                //  console.log("=> Constructor - create programInfo");
-                //  this.programInfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
                 var program = this.twglprograminfo[1].program;
-                console.log("=> Constructor - register attributes");
-                this.vertexPositionAttribute = gl.getAttribLocation(program, "position");
-                gl.enableVertexAttribArray(this.vertexPositionAttribute);
-                this.normalAttribute = gl.getAttribLocation(program, "normal");
-                gl.enableVertexAttribArray(this.normalAttribute);
-                this.texCoordAttribute = gl.getAttribLocation(program, "texcoord");
-                gl.enableVertexAttribArray(this.texCoordAttribute);
-                /*       // Create a camera
-                       var szx=mobj.meshMinMax.maxx-mobj.meshMinMax.minx;
-                       var szy=mobj.meshMinMax.maxy-mobj.meshMinMax.miny;
-                       var szz=mobj.meshMinMax.maxz-mobj.meshMinMax.minz;
-                       var szobj = Math.sqrt(szx*szx+szy*szy+szz*szz);
-                    //   this.cam = camhandler.Camera.createCamera(gl,dictpar!,camhandler.Camera.CamYUp, szobj*2, cap);
-                    
-                       this.cam.translateTarget( [(mobj.meshMinMax.maxx+mobj.meshMinMax.minx)/2, (mobj.meshMinMax.maxy+mobj.meshMinMax.miny)/2, (mobj.meshMinMax.maxz+mobj.meshMinMax.minz)/2]);
-                       this.cam.zoominVelocity = szobj/40.0;
-                  */
+                this.vertexPositionAttributeLocation = gl.getAttribLocation(program, "position");
+                gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
+                this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
+                gl.enableVertexAttribArray(this.normalAttributeLocation);
+                this.texCoordAttributeLocation = gl.getAttribLocation(program, "texcoord");
+                gl.enableVertexAttribArray(this.texCoordAttributeLocation);
                 // Prepare obj mesh for display
                 console.log("obj/mtl mesh read ok");
                 mobj.CreateMeshWithBuffers(gl); // unpack index and positions
@@ -201,30 +175,23 @@ void main() {
                 console.log("<= Prepare obj/mtl mesh <= buffers ok");
                 // Fetch file texture content, start rendering when all textures read
                 this.Prepare(gl, sceneReadyCallback);
-                //  sceneReadyCallback(0);
             }
             else
                 console.log("ERROR: obj/mtl no mesh could be created.");
         }); // getfiles then({})
     }
-    onChangeTextureCombo(value) {
-        var thisinstance = baseapp.instance;
-        //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
-        //  thisinstance.currentTexture = value;
-        //  console.log("set currentTexture to ["+value+"]");
-        //  if (value=="clover") thisinstance.ny=8.0; else 
-        //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
-        thisinstance.app.mouse.totaldelta = 0;
-    }
-    onChangeColorValue(value) {
+    /*  onChangeColorValue(value? : any)
+      {
         //console.log("we are in color=["+value+"]");
-        var thisinstance = baseapp.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
+        var thisinstance = baseapp.instance!;
+        if (thisinstance.gl!=null)
+        {
+          var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+          var ccd= (cc as HTMLDivElement);
+          ccd.style.backgroundColor =  value;
         }
-    }
+      }
+    */
     extendGUI(gui) {
         /*  this.objMtlImportParameters=parameters;
           var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
@@ -245,13 +212,16 @@ void main() {
         // Slider for animation speed
         //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
         // Color dialog sets background color
-        var cel3 = gui.addColor(this.objMtlImportParameters, 'color0');
-        cel3.onChange(this.onChangeColorValue);
-        // Combobox texture from accepted values
-        //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
-        //   cel2.onChange( this.onChangeTextureCombo);
-        gui.updateDisplay();
-        //  return gui;
+        /*    var cel3 = gui.addColor(this.animationParameters!, 'color0');
+            cel3.onChange( this.onChangeColorValue);
+           
+            // Combobox texture from accepted values
+         //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+         //   cel2.onChange( this.onChangeTextureCombo);
+               
+            gui.updateDisplay();
+          //  return gui;
+          */
     }
     //------------------------------------------------------------------------
     async getFiles(UrlPars) {
@@ -455,7 +425,7 @@ void main() {
                     u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),
                     u_worldViewProjection: twgl_js_1.m4.multiply(cam.viewProjection, world)
                 });
-                mobj.renderIndexBuffer(gl, this.vertexPositionAttribute, this.normalAttribute, this.texCoordAttribute, i, 2, ctexture);
+                mobj.renderIndexBuffer(gl, this.vertexPositionAttributeLocation, this.normalAttributeLocation, this.texCoordAttributeLocation, i, 2, ctexture);
             }
             else
                 console.log("undefined material i=" + i);

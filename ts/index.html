@@ -108,7 +108,7 @@
 </head>
  
     <body>
-        <div class="grid-container">
+        <div class="grid-container" ID="gridcells">
           <div class="item1" id="cdiv" style="-webkit-text-fill-color:rgb(44, 44, 226); background-color:azure; text-align:left"></div>
           <div class="item2" id="projection" style="background-color:rgb(200, 247, 188)"></div>
 
@@ -125,6 +125,9 @@
 
     <!------------------------------------------------------------------------------------------------------------------------->
     <script language="Javascript">
+
+
+
         var canvasdiv = document.getElementById("canvasdiv");
         var canvas = document.getElementById("c");
         var linksdiv = document.getElementById("linksdiv");
@@ -152,16 +155,20 @@
         str+=lnk(commonhtml+"?chair&radius0=20&hx=0.8&hy=0.8","Chair");
         str+=lnk(commonhtml+"?chair2&radius0=138&hx=0.7&hy=0.4","Chair 2");
         str+=lnk(commonhtml+"?cat&radius0=137&hx=-1.4&hy=-0.77&hxl=-1.4&hyl=-0.77&difflight=0.8","Cat");
-        str+=lnk(commonhtml+"?stone&radius0=4&hx=0.8&hy=0.5","Stone");
+        str+=lnk(commonhtml+"?stone&radius0=8&hx=0.8&hy=0.5","Stone");
         str+=lnk(commonhtml+"?plane&radius0=25&hx=0.8&hy=0.5","Plane");
         str+=lnk(commonhtml+"?greenhouse","Greenhouse");
         str+=`
         <p>
-        Animations (bone model)<br>
+        Experiments<br>
         `;
        // str+=lnk(commonhtml+"?skeleton&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
-        str+=lnk(commonhtml+"?skeleton&radius0=80&hx=2.4&hy=-0.2&mesh=strip&stride=180&numrows=39","Zelensky whales");
-        str+=lnk(commonhtml+"?fish&radius0=80&hx=1.9&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Ukrainian Fish");
+      // str+=lnk(commonhtml+"?skyboxcube","Greggs Skycube with cam");
+        //str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
+        //str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","Tex3d on tex");
+        str+=lnk(commonhtml+"?skeleton&radius0=120&hx=1.7&hy=0.1&mesh=strip&stride=180&numrows=39","Zelensky whales");
+        str+=lnk(commonhtml+"?fish&radius0=80&hx=1.9&hy=-0.4&mesh=strip&stride=180&numrows=39&fish=1","Various Fish shapes");
+        str+=lnk("?drawimagespace","Image space");
         str+=`
         <p>
         Scenes with background<br>
@@ -175,14 +182,6 @@
         str+=lnk(commonhtml+"?animation6&radius0=60&hx=0.7&hy=0.0","ObjectList Scene");
         str+=lnk(commonhtml+"?animation7&radius0=60&hx=80&hy=0","Instanced Scene");
         //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
-        str+=`
-        <p>
-        Experiments<br>
-        `;
-        str+=lnk(commonhtml+"?skyboxcube","Greggs Skycube with cam");
-        //str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
-        //str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","Tex3d on tex");
-        str+=lnk("?drawimagespace","Image space");
         
         linksdiv.innerHTML =  str + "<p>";        
     

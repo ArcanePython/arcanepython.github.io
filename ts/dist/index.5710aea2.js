@@ -573,7 +573,8 @@ const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp deri
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
-const skeleton = __importStar(require("./bonemodel/skeleton")); // baseapp derivative: bone model (single)
+//import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
+const skeletonscene = __importStar(require("./scene/skeletonscene")); // baseapp derivative: bone model (single)
 const fish = __importStar(require("./bonemodel/fishanimation")); // baseapp derivative: bone model (flock)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
@@ -634,7 +635,8 @@ var defaultParameters = {
     shininess: 11.0,
     fov: 60
 };
-function initScene(gl, app, dictPars, scene) {
+function initScene(gl, app, dictPars, scene, heighttop) {
+    document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.initGUI(defaultParameters);
@@ -644,15 +646,15 @@ function show(gl, app, dictPars) {
     // Default parameters for all Animation1 scenes
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
-        var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl));
+        var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
         mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl));
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl));
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
         var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
         console.log("imscreated.");
@@ -665,22 +667,8 @@ function show(gl, app, dictPars) {
             texture: "geotriangle2",
             color0: "#D0A010"
         });
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeleton")) != undefined) {
-        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
-        var baseapppars = {
-            move: true,
-            speed: 0.4,
-            color0: "#A0A0A0"
-        };
-        sk.initGUI({
-            move: false,
-            movetail: true,
-            speed: 0.06,
-            texture: "zelenskyy",
-            color0: "#afb9af"
-        });
-        sk.main(gl, dictPars);
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fish")) != undefined) {
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skeleton")) != undefined) initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("fish")) != undefined) {
         var fa = new fish.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars = {
             move: true,
@@ -714,7 +702,13 @@ function show(gl, app, dictPars) {
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawinstanced")) != undefined) {
         var mtai = new drawinstanced.DrawInstanced();
         mtai.main(gl);
-    } else initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars));
+    } else {
+        initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+        document.getElementById("gridcells").style.gridTemplateRows = "170px";
+    //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
+    //  oi.main(gl, dictPars!);
+    //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
+    }
 }
 //=== ENTRY MAIN ===============================================================================================================================
 function main() {
@@ -776,7 +770,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./bonemodel/skeleton":"5hqLk","./bonemodel/fishanimation":"jVuZu","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./scene/skeletonscene":"6mdLk","./bonemodel/fishanimation":"jVuZu","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -13667,7 +13661,7 @@ class BaseApp {
         // environment skybox camera
         this.cameraTarget = [
             0,
-            0.5,
+            0,
             0
         ];
         this.cameraPosition = [
@@ -16003,7 +15997,7 @@ void main() {
 }
 exports.Canvas3dTexture = Canvas3dTexture;
 
-},{"twgl.js":"3uqAP"}],"5hqLk":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"6mdLk":[function(require,module,exports) {
 "use strict";
 //import * as twgl from "./../node_modules/twgl.js";    // Greg's work
 //import { m4 } from "./../node_modules/twgl.js";
@@ -16039,20 +16033,23 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Skeleton = void 0;
+exports.SkeletonScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 //import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-const boneanimation = __importStar(require("./boneanimation"));
-const baseapp = __importStar(require("./../baseapp/baseapp"));
-const fishhtranslated = __importStar(require("./fishhtranslated"));
-const datgui = __importStar(require("dat.gui"));
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+//import { FishV } from "../bonemodel/fishv";
+const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");
-class Skeleton extends baseapp.BaseApp {
+class SkeletonScene {
     constructor(cgl, capp, dictpar, cdiv){
-        super(cgl, capp, dictpar, cdiv);
+        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
+        this.scenesize = 40;
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.twglprograminfo = null;
         this.skeletonParameters = {
             move: false,
             movetail: true,
@@ -16065,19 +16062,26 @@ class Skeleton extends baseapp.BaseApp {
         this.phase0 = 0.0; //2.0; // 143 degrees 
         //------------------------------------------------------------------------------------------------------------
         this.gui = null;
-        Skeleton.instance = this;
+        // super(cgl, capp, dictpar, cdiv);
+        SkeletonScene.instance = this;
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
             boneanimation.vsSkeleton,
             boneanimation.fsSkeleton
         ]);
     }
-    main(gl, dictpar) {
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {}
+    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
+    initScene(gl, cap, dictpar, p, textureReadyCallback) {
         var time0 = 0;
         // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
-        this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
+        this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
         this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
         this.afish.prepareSurfaceTextures(gl, "zelenskyy");
         this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
@@ -16087,56 +16091,66 @@ class Skeleton extends baseapp.BaseApp {
         this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
         this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
-        this.cam.zoominVelocity = 0.5;
-        requestAnimationFrame(()=>this.render(time0));
+        textureReadyCallback(0);
+    //    this.cam=camhandler.Camera.createCamera(gl,dictpar!, camhandler.Camera.CamZUp, 50.0, cap);
+    //      this.cam.zoominVelocity = 0.5;
+    //      requestAnimationFrame(() => this.render(time0));   
     }
     onChangeColorValue(value) {
-        //console.log("we are in color=["+value+"]");
-        var thisinstance = Skeleton.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
+    //console.log("we are in color=["+value+"]");
+    /*    var thisinstance = SkeletonScene.instance!;
+            if (thisinstance.gl!=null)
+            {
+              var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+              var ccd= (cc as HTMLDivElement);
+              ccd.style.backgroundColor =  value;
+            }
+            */ }
+    /*
+        public initGUI(parameters: {move:boolean, movetail:boolean,speed:number, texture:string, color0:string})
+        {
+          this.skeletonParameters = parameters;
+    
+          var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
+          var ccd= (cc as HTMLDivElement);
+          ccd.style.backgroundColor =  this.skeletonParameters.color0;
+      
+          // park the dat.gui box in the linksdiv below the links, in closed state
+          var gui = new datgui.GUI( { autoPlace: false } );
+          gui.domElement.id = 'gui_drawimagespace';
+          document.getElementById("linksdiv")!.append( gui.domElement);
+          gui.close();
+    
+          // connect viewmodel
+          gui.remember(parameters); //this.fishAnimationParameters);
+        
+          // Checkbox forward move animation on/off
+          gui.add(parameters, 'move'); //this.fishAnimationParameters, 'move');
+          // Checkbox tail animation on/off
+          gui.add(parameters, 'movetail');
+        
+          // Slider for animation speed
+          gui.add(parameters, 'speed').min(0.02).max(0.1).step(0.002);
+      
+          // Color dialog sets background color
+          var cel3 = gui.addColor(parameters, 'color0');
+          cel3.onChange( this.onChangeColorValue);
+            
+          gui.updateDisplay();
+          return gui;
         }
-    }
-    initGUI(parameters) {
-        this.skeletonParameters = parameters;
-        var cc = this.gl.canvas.parentNode;
-        var ccd = cc;
-        ccd.style.backgroundColor = this.skeletonParameters.color0;
-        // park the dat.gui box in the linksdiv below the links, in closed state
-        var gui = new datgui.GUI({
-            autoPlace: false
-        });
-        gui.domElement.id = "gui_drawimagespace";
-        document.getElementById("linksdiv").append(gui.domElement);
-        gui.close();
-        // connect viewmodel
-        gui.remember(parameters); //this.fishAnimationParameters);
-        // Checkbox forward move animation on/off
-        gui.add(parameters, "move"); //this.fishAnimationParameters, 'move');
-        // Checkbox tail animation on/off
-        gui.add(parameters, "movetail");
-        // Slider for animation speed
-        gui.add(parameters, "speed").min(0.02).max(0.1).step(0.002);
-        // Color dialog sets background color
-        var cel3 = gui.addColor(parameters, "color0");
-        cel3.onChange(this.onChangeColorValue);
-        gui.updateDisplay();
-        return gui;
-    }
-    //------------------------------------------------------------------------------------------------------------------------------------
-    render(time) {
-        var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        var cam = this.cam;
-        cam.CamHandlingZUp(gl, this.app, 1.0, -1);
-        var uniforms = this.uniforms;
+      */ //------------------------------------------------------------------------------------------------------------------------------------
+    drawScene(gl, cam, time) {
+        /*   var gl = this.gl!;
+           gl.useProgram(this.twglprograminfo![1].program);
+           twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
+           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
+           gl.enable(gl.DEPTH_TEST);
+           gl.enable(gl.CULL_FACE);
+         
+           var cam: camhandler.Camera = this.cam!;
+           cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);
+        */ var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
         this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
@@ -16150,7 +16164,7 @@ class Skeleton extends baseapp.BaseApp {
         twgl.setUniforms(this.twglprograminfo[1], uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            0.0,
+            -15,
             0.0,
             0.0
         ]); // draw a fish
@@ -16160,24 +16174,24 @@ class Skeleton extends baseapp.BaseApp {
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             50.0,
-            -20,
+            -10,
             10.0
         ]); // draw a fish    
         twgl.setUniforms(this.twglprograminfo[1], uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -10,
+            -50,
             5.0,
             -10
         ]); // draw a fish
         twgl.setUniforms(this.twglprograminfo[1], uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        requestAnimationFrame(()=>this.render(++time));
+    //  requestAnimationFrame(() => this.render(++time));       
     }
 }
-exports.Skeleton = Skeleton;
+exports.SkeletonScene = SkeletonScene;
 
-},{"twgl.js":"3uqAP","./../baseapp/camhandler":"1ZnlU","./boneanimation":"hK6Lv","./../baseapp/baseapp":"9lZ4F","./fishhtranslated":"XD4rL","dat.gui":"k3xQk"}],"hK6Lv":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishvtranslated":"40Zci"}],"hK6Lv":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -16728,7 +16742,7 @@ class StridedMesh0 {
 }
 exports.StridedMesh0 = StridedMesh0;
 
-},{}],"XD4rL":[function(require,module,exports) {
+},{}],"40Zci":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -16762,33 +16776,44 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.FishHTranslated = void 0;
+exports.FishVTranslated = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
-class FishHTranslated extends fish.Fish {
+class FishVTranslated extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         this.scale = scale;
         var cstride = this.numberDictPar(dictpar, "stride", 80);
         var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         if (cmeshtype == "strip") {
             var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishHPositions();
+            tsmesh.arrays.position = tsmesh.getFishVPositions();
             tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
             return tsmesh;
         } else {
             var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishHPositions();
-            console.log("created triangles mesh. phase=" + this.phase0);
+            trmesh.arrays.position = trmesh.getFishVPositions();
             trmesh.type = gl.TRIANGLES;
             return trmesh;
         }
     }
     computeBoneMatrices(bones, di) {
-        var amp = 0.0;
+        /*
+         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
+         for (var i = 0; i < bones.length; i++)
+         {
+             m4.translate(m4.identity(),[this.px,
+                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
+                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
+                            bones[i]);
+            this.py+=0.0;
+            this.pz+=0.00000;
+            amp+=this.scale*damp;
+            
+         }
+         */ var amp = 0.0;
         var damp = this.ampl / bones.length;
         var arange = this.arange * 2.0 * Math.PI;
         for(var i = 0; i < bones.length; i++){
@@ -16799,17 +16824,17 @@ class FishHTranslated extends fish.Fish {
             var az = arange * (normx * di);
             twgl_js_1.m4.translate(m, [
                 this.px,
-                this.py + amp * Math.cos(0.5 * ay),
-                this.pz + amp * 10.0 * Math.sin(az)
+                this.py + amp * 10.0 * Math.cos(0.5 * ay),
+                this.pz + amp * Math.sin(1.0 * az)
             ], bones[i]);
             this.py += 0.0;
             this.pz += 0.00000;
             amp += this.size * damp;
         }
-    //      this.px+=-this.forwardspeed; // * bones.length;    
+    //   this.px+=-this.forwardspeed; // * bones.length;      
     }
 }
-exports.FishHTranslated = FishHTranslated;
+exports.FishVTranslated = FishVTranslated;
 
 },{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"jKlEI":[function(require,module,exports) {
 "use strict";
@@ -17645,6 +17670,89 @@ class FishHRotated extends fish.Fish {
     }
 }
 exports.FishHRotated = FishHRotated;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"XD4rL":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishHTranslated = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishHTranslated extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "triangle");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishHPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            console.log("created triangle strip mesh. phase=" + this.phase0);
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishHPositions();
+            console.log("created triangles mesh. phase=" + this.phase0);
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            var m = twgl_js_1.m4.identity();
+            var normx = i;
+            normx = normx / bones.length;
+            var ay = arange * (normx * di);
+            var az = arange * (normx * di);
+            twgl_js_1.m4.translate(m, [
+                this.px,
+                this.py + amp * Math.cos(0.5 * ay),
+                this.pz + amp * 10.0 * Math.sin(az)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.size * damp;
+        }
+    //      this.px+=-this.forwardspeed; // * bones.length;    
+    }
+}
+exports.FishHTranslated = FishHTranslated;
 
 },{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"fJWn9":[function(require,module,exports) {
 "use strict";
@@ -22249,7 +22357,7 @@ exports.LightScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const basescene_1 = require("./basescene");
-class LightScene extends basescene_1.basescene {
+class LightScene extends basescene_1.BaseScene {
     constructor(gl){
         super();
         // shaders to merge (here: none)
@@ -23192,9 +23300,9 @@ exports.LightScene = LightScene;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.basescene = void 0;
+exports.BaseScene = void 0;
 const twgl_js_1 = require("twgl.js");
-class basescene {
+class BaseScene {
     constructor(){
         this.modelXRotationRadians = 0.0;
         this.modelYRotationRadians = 0.0;
@@ -23274,7 +23382,7 @@ class basescene {
         gl.uniformMatrix4fv(this.worldInverseTransposeLocation, false, worldInverseTransposeMatrix);
     }
 }
-exports.basescene = basescene;
+exports.BaseScene = BaseScene;
 
 },{"twgl.js":"3uqAP"}],"ZXdmK":[function(require,module,exports) {
 "use strict";
@@ -24726,7 +24834,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work (lib)
 const twgl_js_1 = require("twgl.js"); // Greg's work (lib)
 const mobj = __importStar(require("./../objreader/matobjreader")); // read geometry from .obj / .mtl files (interface)
 const mobjfiles = __importStar(require("./../objreader/matobjfiles")); // read geometry from .obj / .mtl files (resources)
-const baseapp = __importStar(require("../baseapp/baseapp"));
 class MatObjScene {
     constructor(gl, capp, dictPar){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
@@ -24735,21 +24842,11 @@ class MatObjScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
-        this.objMtlImportParameters = {
-            move: false,
-            speed: 0.4,
-            texture: "geotriangle2",
-            color0: "#00A000"
-        };
         this.time = 0;
         this.dtime = 0.01;
-        //private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
-        //private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
-        //private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
-        this.vertexPositionAttribute = 0; // address of positions buffer in shader
-        this.normalAttribute = 0; // address of normals buffer in shader
-        this.texCoordAttribute = 0; // address of texture coords in shader
-        // private programInfo:twgl.ProgramInfo | undefined;
+        this.vertexPositionAttributeLocation = 0; // address of positions buffer in shader
+        this.normalAttributeLocation = 0; // address of normals buffer in shader
+        this.texCoordAttributeLocation = 0; // address of texture coords in shader
         this.texs = [];
         this.uniforms = {
             u_lightWorldPos: [
@@ -24785,7 +24882,6 @@ class MatObjScene {
         this.resolvedtextures = new Map();
         this.imgs = [];
         this.imgsa = [];
-        this.gui = null;
         this.ctime = 0;
         //--- SHADERS ------------------------------------------------------------------------------------------------------
         this.vs = `#version 300 es
@@ -24900,59 +24996,38 @@ void main() {
         this.getFiles(dictpar).then(()=>{
             var cc = gl.canvas.parentNode;
             var ccd = cc;
-            ccd.style.backgroundColor = this.objMtlImportParameters.color0;
+            ccd.style.backgroundColor = this.animationParameters.b.color0;
             if (mobj.mesh) {
-                //  var gl =this.gl;
-                //  console.log("=> Constructor - create programInfo");
-                //  this.programInfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
                 var program = this.twglprograminfo[1].program;
-                console.log("=> Constructor - register attributes");
-                this.vertexPositionAttribute = gl.getAttribLocation(program, "position");
-                gl.enableVertexAttribArray(this.vertexPositionAttribute);
-                this.normalAttribute = gl.getAttribLocation(program, "normal");
-                gl.enableVertexAttribArray(this.normalAttribute);
-                this.texCoordAttribute = gl.getAttribLocation(program, "texcoord");
-                gl.enableVertexAttribArray(this.texCoordAttribute);
-                /*       // Create a camera
-                       var szx=mobj.meshMinMax.maxx-mobj.meshMinMax.minx;
-                       var szy=mobj.meshMinMax.maxy-mobj.meshMinMax.miny;
-                       var szz=mobj.meshMinMax.maxz-mobj.meshMinMax.minz;
-                       var szobj = Math.sqrt(szx*szx+szy*szy+szz*szz);
-                    //   this.cam = camhandler.Camera.createCamera(gl,dictpar!,camhandler.Camera.CamYUp, szobj*2, cap);
-                    
-                       this.cam.translateTarget( [(mobj.meshMinMax.maxx+mobj.meshMinMax.minx)/2, (mobj.meshMinMax.maxy+mobj.meshMinMax.miny)/2, (mobj.meshMinMax.maxz+mobj.meshMinMax.minz)/2]);
-                       this.cam.zoominVelocity = szobj/40.0;
-                  */ // Prepare obj mesh for display
+                this.vertexPositionAttributeLocation = gl.getAttribLocation(program, "position");
+                gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
+                this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
+                gl.enableVertexAttribArray(this.normalAttributeLocation);
+                this.texCoordAttributeLocation = gl.getAttribLocation(program, "texcoord");
+                gl.enableVertexAttribArray(this.texCoordAttributeLocation);
+                // Prepare obj mesh for display
                 console.log("obj/mtl mesh read ok");
                 mobj.CreateMeshWithBuffers(gl); // unpack index and positions
                 mobj.PrepareIndexBuffers(gl); // for each material, set up an index buffer
                 console.log("<= Prepare obj/mtl mesh <= buffers ok");
                 // Fetch file texture content, start rendering when all textures read
                 this.Prepare(gl, sceneReadyCallback);
-            //  sceneReadyCallback(0);
             } else console.log("ERROR: obj/mtl no mesh could be created.");
         }); // getfiles then({})
     }
-    onChangeTextureCombo(value) {
-        var thisinstance = baseapp.instance;
-        //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
-        //  thisinstance.currentTexture = value;
-        //  console.log("set currentTexture to ["+value+"]");
-        //  if (value=="clover") thisinstance.ny=8.0; else 
-        //  if (value=="geotriangle2") thisinstance.ny=2.0; else thisinstance.ny=4.0;
-        thisinstance.app.mouse.totaldelta = 0;
-    }
-    onChangeColorValue(value) {
+    /*  onChangeColorValue(value? : any)
+      {
         //console.log("we are in color=["+value+"]");
-        var thisinstance = baseapp.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
+        var thisinstance = baseapp.instance!;
+        if (thisinstance.gl!=null)
+        {
+          var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
+          var ccd= (cc as HTMLDivElement);
+          ccd.style.backgroundColor =  value;
         }
-    }
-    extendGUI(gui) {
-        /*  this.objMtlImportParameters=parameters;
+      }
+    */ extendGUI(gui) {
+    /*  this.objMtlImportParameters=parameters;
           var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
           var ccd= (cc as HTMLDivElement);
           ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
@@ -24966,18 +25041,20 @@ void main() {
             // connect viewmodel
             gui.remember(this.objMtlImportParameters);
          */ // Checkbox for animation on/off
-        //    gui.add(this.objMtlImportParameters, 'move');
-        // Slider for animation speed
-        //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
-        // Color dialog sets background color
-        var cel3 = gui.addColor(this.objMtlImportParameters, "color0");
-        cel3.onChange(this.onChangeColorValue);
-        // Combobox texture from accepted values
-        //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
-        //   cel2.onChange( this.onChangeTextureCombo);
-        gui.updateDisplay();
-    //  return gui;
-    }
+    //    gui.add(this.objMtlImportParameters, 'move');
+    // Slider for animation speed
+    //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
+    // Color dialog sets background color
+    /*    var cel3 = gui.addColor(this.animationParameters!, 'color0');
+            cel3.onChange( this.onChangeColorValue);
+           
+            // Combobox texture from accepted values
+         //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
+         //   cel2.onChange( this.onChangeTextureCombo);
+               
+            gui.updateDisplay();
+          //  return gui;
+          */ }
     //------------------------------------------------------------------------
     async getFiles(UrlPars) {
         const useInMemoryObj = false;
@@ -25159,7 +25236,7 @@ void main() {
                 u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),
                 u_worldViewProjection: twgl_js_1.m4.multiply(cam.viewProjection, world)
             });
-            mobj.renderIndexBuffer(gl, this.vertexPositionAttribute, this.normalAttribute, this.texCoordAttribute, i, 2, ctexture);
+            mobj.renderIndexBuffer(gl, this.vertexPositionAttributeLocation, this.normalAttributeLocation, this.texCoordAttributeLocation, i, 2, ctexture);
         } else console.log("undefined material i=" + i);
          // for
     //!   requestAnimationFrame(() => this.render(this.dtime)); 
@@ -25167,7 +25244,7 @@ void main() {
 }
 exports.MatObjScene = MatObjScene;
 
-},{"twgl.js":"3uqAP","./../objreader/matobjreader":"bBSvh","./../objreader/matobjfiles":"cdQWH","../baseapp/baseapp":"9lZ4F"}],"bBSvh":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../objreader/matobjreader":"bBSvh","./../objreader/matobjfiles":"cdQWH"}],"bBSvh":[function(require,module,exports) {
 "use strict";
 // https://www.npmjs.com/package/webgl-obj-loader
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
@@ -25203,10 +25280,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.GetDeclaredObjMtl = exports.asyncFetchObjMtl = exports.FetchImage = exports.PrepareIndexBuffers = exports.renderIndexBuffer = exports.render = exports.NumElements = exports.CreateMeshWithBuffers = exports.meshWithBuffers = exports.meshMinMax = exports.mesh = void 0;
-const OBJ = __importStar(require("webgl-obj-loader"));
+const webglobjloader = __importStar(require("webgl-obj-loader"));
 const webgl_obj_loader_1 = require("webgl-obj-loader");
 function CreateMeshWithBuffers(gl) {
-    exports.meshWithBuffers = OBJ.initMeshBuffers(gl, exports.mesh);
+    exports.meshWithBuffers = webglobjloader.initMeshBuffers(gl, exports.mesh); // use lib
     console.log("meshWithBuffers.vertexBuffer.numItems=" + exports.meshWithBuffers.vertexBuffer.numItems);
     console.log("meshWithBuffers.vertexBuffer.vertices.length=" + exports.meshWithBuffers.vertices.values.length);
     console.log("meshWithBuffers.vertexBuffer.vertices.values.length=" + exports.meshWithBuffers.vertices.values.length);
@@ -25351,7 +25428,7 @@ function GetDeclaredObjMtl() {
     var abobj = cubegeo;
     var abmtl = cubemat;
     //const arr = abobj.toString().replace(/\r\n/g,'\n').split('\n');
-    if (OBJ) {
+    if (webglobjloader) {
         matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
         if (matlib) {
             var l = matlib.materials["Material"];
