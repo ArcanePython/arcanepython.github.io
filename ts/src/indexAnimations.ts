@@ -1,31 +1,30 @@
-//==================================================================================================================================
+import * as mtls from "./baseapp/mouselistener";                       // app: connect events for mouse and mouse wheel
 
-import * as mtls from "./baseapp/mouselistener";   // connect events for mouse and mouse wheel
+import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
 
-import * as skeleton from "./bonemodel/skeleton"             // task: bone model (single)
-import * as fish from "./bonemodel/fishanimation"            // task: bone model (flock)
-import * as manytextures from "./manytextures"     // task: camera projection
-import * as manytexturescene from "./scene/manytexturescene"     // task: camera projection
-import * as drawimagespace from "./drawimagespace" // task: image space texture
-import * as animation1 from "./animation1" // task: image space texture
-import * as skyboxcube from "./skyboxcube"         // task: show reflecting box
-import * as objmtlimport from "./objmtlimport.js"; // task: obj/mtl file imports
-import * as rotatingcubescene from "./scene/mixedtexturescene";
-import * as lightscene from "./scene/lightscene";
-import * as objectlist from "./objectlist";
-import * as objectlistscene from "./scene/objectlistscene";
-import * as drawinstanced from "./drawinstanced";
-import * as canvas3dtexture from "./canvas3dtexture";
-import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";
-import * as drawinstancedscene from "./scene/drawinstancedscene";
-import * as skyboxscene from "./scene/skyboxscene";
-import * as scene from "./scene/scene";
-import * as skyboxcubescene from "./scene/skyboxcubescene";
+import * as drawimagespace from "./drawimagespace"                     // baseapp derivative: image space texture
+import * as animation1 from "./animation1"                             // baseapp derivative: scene container
+import * as skyboxcube from "./skyboxcube"                             // baseapp derivative: show reflecting cube in skybox
+import * as objectlist from "./objectlist";                            // baseapp derivative: show bouncing guy node tree
+import * as drawinstanced from "./drawinstanced";                      // baseapp derivative: show texture space navigator
+import * as canvas3dtexture from "./canvas3dtexture";                  // baseapp derivative: show 3d on texture
+
+import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
+import * as fish from "./bonemodel/fishanimation"                      // baseapp derivative: bone model (flock)
+
+import * as scene from "./scene/scene";                                // scene: interface to implement
+import * as manytexturescene from "./scene/manytexturescene"           // scene: many textures / objects
+import * as rotatingcubescene from "./scene/mixedtexturescene";        // scene: two textures alpha-mixed
+import * as lightscene from "./scene/lightscene";                      // scene: lights directed, point, spot
+import * as objectlistscene from "./scene/objectlistscene";            // scene: show bouncing guy node tree
+import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";  // scene: show 3d on texture
+import * as drawinstancedscene from "./scene/drawinstancedscene";      // scene: show texture space navigator
+import * as skyboxscene from "./scene/skyboxscene";                    // scene: show skybox only (empty scene)
+import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
+import { BaseApp } from "./baseapp/baseapp";
 
 const ShowOBJMTL     = 1;
-const ShowTextures   = 2;
 const ShowFish       = 3; 
-const ShowSkyBox     = 4; 
 const ShowAnimation1 = 5; 
 
 var selectedShow    = ShowAnimation1;
@@ -33,7 +32,6 @@ var selectedShow    = ShowAnimation1;
 var cdiv = 'c';  // name of canvas accessed by gl
 
 //=== DISPATCH TASKS =================================================================================================================
-
 
 function preparedefaultparameters(dictPars: Map<string,string>)
 {
@@ -52,27 +50,14 @@ function preparedefaultparameters(dictPars: Map<string,string>)
             break;
           }
 
-          case ShowSkyBox:
-            {
-              console.log("Skybox");
-              dictPars.set("skybox","");
-              dictPars.set("radius0","60");
-              dictPars.set("mesh","strip");
-              dictPars.set("hx","1.2");
-              dictPars.set("hy","0.1");
-              dictPars.set("stride","180");
-              dictPars.set("numrows","39");
-              break;
-            }
-
-        case ShowTextures:
-          {
-            console.log("ShowTextures");
-            dictPars.set("textures","");
-            break; 
-          }
-
         case ShowAnimation1:
+          {
+            dictPars.set("animation8","");
+            dictPars.set("radius0","4");
+            dictPars.set("hx","-0.06");
+            dictPars.set("hy","0.47");
+            break;
+          }
         case ShowOBJMTL:
           {
             dictPars.set("radius0","45");
@@ -90,11 +75,12 @@ function preparedefaultparameters(dictPars: Map<string,string>)
 var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
 var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0, fov: 60 };
  
-function initScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface )
+function initScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface ): animation1.Animation1
 {
   var mta1 = new animation1.Animation1(gl, app, scene, dictPars!, cdiv);
   mta1.main(gl, dictPars!);
   mta1.initGUI(defaultParameters);
+  return mta1;
 }
 
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
@@ -103,48 +89,21 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
  
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
-  if (dictPars?.get("animation1")!=undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
+  if (dictPars?.get("animation4")!=undefined)
+   {
+     var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl));
+     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.texture!; // background texture is needed for reflection
+   } 
+  else if (dictPars?.get("animation1")!=undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
   else if (dictPars?.get("animation3")!=undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl)); 
-  else if (dictPars?.get("animation0")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new skyboxscene.SkyBoxScene(gl,dictPars), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  } 
-  else if (dictPars?.get("animation4")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new skyboxcubescene.SkyBoxCubeScene(gl), dictPars, cdiv);
-    //var sbs = mta1.scene as skyboxcubescene.SkyBoxCubeScene;
-    mta1.main(gl, dictPars);
-    (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.texture!;
-    mta1.initGUI(defaultParameters);
-  } 
-  else if (dictPars?.get("animation5")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new manytexturescene.ManyTexturesScene(gl), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  }  
-  else
-  if (dictPars?.get("animation6")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new objectlistscene.ObjectListScene(gl), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  } 
-  else if (dictPars?.get("animation7")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new drawinstancedscene.DrawInstancedScene(gl), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  }  
-  else if (dictPars?.get("animation8")!=undefined)
-  {
-    var mta1 = new animation1.Animation1(gl, app, new canvas3dtexturescene.Canvas3dTextureScene(gl), dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    mta1.initGUI(defaultParameters);
-  }  
-  //--- Animations with a specific parameter set based on twglbaseapp ------------------------------------------------------------------------------------------------------------------
+  else if (dictPars?.get("animation0")!=undefined) initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars)); 
+  else if (dictPars?.get("animation5")!=undefined) initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl)); 
+  else if (dictPars?.get("animation6")!=undefined) initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl)); 
+  else if (dictPars?.get("animation7")!=undefined) initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl)); 
+  else if (dictPars?.get("animation8")!=undefined) initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl)); 
+ 
+  //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------
+  
   else 
   if (dictPars?.get("drawimagespace")!=undefined)
   {
@@ -174,8 +133,6 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
     sbc.main(gl, dictPars);
     sbc.initGUI({movecube:true, moveenv:true, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
   } 
- 
-   //--- Animations with a specific parameter set ----------------------------------------------------------------------------------------------------------------------------------
    else
    if(dictPars?.get("canvas3dtexture")!=undefined)
    {
@@ -192,13 +149,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
      var mtai = new drawinstanced.DrawInstanced();
      mtai.main(gl);
    } 
-   else if (dictPars?.get("textures")!=undefined)
-   {
-     var mt = new manytextures.ManyTextures(gl, app, dictPars);
-     mt.main(gl, dictPars);
-     mt.initGUI({ move: true,speed: 0.4,texture: 'geotriangle2', color0: "#A0A0A0",});
-   } 
-  
+  //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
     var oi = new objmtlimport.ObjMtlImport(gl, app, dictPars!);

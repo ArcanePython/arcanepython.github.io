@@ -201,15 +201,15 @@ drawCircle2D(  time: number)
 public    CreateAllTextures(gl: WebGLRenderingContext, ctx: CanvasRenderingContext2D, cubemapCtx: CanvasRenderingContext2D, 
   cubeFaceCvs: HTMLCanvasElement[] | null, cb: twgl.TexturesReadyCallback | undefined): {[key: string]: WebGLTexture} | null
 {
-  var posxname = require("./../images/yokohama/small/posx.jpg")
-  var negxname = require("./../images/yokohama/small/negx.jpg")
-  var posyname = require("./../images/yokohama/small/posy.jpg")
-  var negyname = require("./../images/yokohama/small/negy.jpg")
-  var poszname = require("./../images/yokohama/small/posz.jpg")
-  var negzname = require("./../images/yokohama/small/negz.jpg")
-  var clovername = require("./../images/clover.jpg")
-  var hfticon16name =  require("./../images/hft-icon-16.png")
-  var goldengatename =  require("./../images/goldengate.jpg")
+  var posxname = require("./../resources/images/yokohama/small/posx.jpg")
+  var negxname = require("./../resources/images/yokohama/small/negx.jpg")
+  var posyname = require("./../resources/images/yokohama/small/posy.jpg")
+  var negyname = require("./../resources/images/yokohama/small/negy.jpg")
+  var poszname = require("./../resources/images/yokohama/small/posz.jpg")
+  var negzname = require("./../resources/images/yokohama/small/negz.jpg")
+  var clovername = require("./../resources/images/clover.jpg")
+  var hfticon16name =  require("./../resources/images/hft-icon-16.png")
+  var goldengatename =  require("./../resources/images/goldengate.jpg")
  
 
   var textures = twgl.createTextures(gl, {

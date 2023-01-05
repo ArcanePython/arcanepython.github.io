@@ -39,7 +39,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
     prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
    {
        var gradientname = require("./../resources/models/stone/circlegradient.png");
-       var clovername = require("./../images/clover.jpg");
+       var clovername = require("./../resources/images/clover.jpg");
        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
        var textures = twgl.createTextures(gl, { 

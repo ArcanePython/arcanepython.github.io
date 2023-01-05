@@ -140,7 +140,7 @@ export class BaseApp
           this.textureaspects.set("protractorT2", (395.0/747.0));
           var gradientname = require("./../resources/models/stone/circlegradient.png");
           var aristotlename = require("./../resources/models/stone/aristoteles1.png");
-          var clovername = require("./../images/clover.jpg");
+          var clovername = require("./../resources/images/clover.jpg");
           var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
           var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
           var flagofukrainname2 = require("./../resources/models/stone/flagofukraine2.png");
@@ -279,30 +279,30 @@ export class BaseApp
         var p=scene;
         switch (p) {
             case 0: {
-                pos_x_name= require("./../images/chmuseum/pos-x.jpg");
-                pos_y_name= require("./../images/chmuseum/pos-y.jpg");
-                pos_z_name= require("./../images/chmuseum/pos-z.jpg");
-                neg_x_name= require("./../images/chmuseum/neg-x.jpg");
-                neg_y_name= require("./../images/chmuseum/neg-y.jpg");
-                neg_z_name= require("./../images/chmuseum/neg-z.jpg");
+                pos_x_name= require("./../resources/images/chmuseum/pos-x.jpg");
+                pos_y_name= require("./../resources/images/chmuseum/pos-y.jpg");
+                pos_z_name= require("./../resources/images/chmuseum/pos-z.jpg");
+                neg_x_name= require("./../resources/images/chmuseum/neg-x.jpg");
+                neg_y_name= require("./../resources/images/chmuseum/neg-y.jpg");
+                neg_z_name= require("./../resources/images/chmuseum/neg-z.jpg");
                 break;
             }
             case 1: {
-                pos_x_name= require("./../images/yokohama/posx.jpg");
-                pos_y_name= require("./../images/yokohama/posy.jpg");
-                pos_z_name= require("./../images/yokohama/posz.jpg");
-                neg_x_name= require("./../images/yokohama/negx.jpg");
-                neg_y_name= require("./../images/yokohama/negy.jpg");
-                neg_z_name= require("./../images/yokohama/negz.jpg");
+                pos_x_name= require("./../resources/images/yokohama/posx.jpg");
+                pos_y_name= require("./../resources/images/yokohama/posy.jpg");
+                pos_z_name= require("./../resources/images/yokohama/posz.jpg");
+                neg_x_name= require("./../resources/images/yokohama/negx.jpg");
+                neg_y_name= require("./../resources/images/yokohama/negy.jpg");
+                neg_z_name= require("./../resources/images/yokohama/negz.jpg");
                 break;
             }
             case 2: {
-                pos_x_name= require("./../images/gamlastan/posx.jpg");
-                pos_y_name= require("./../images/gamlastan/posy.jpg");
-                pos_z_name= require("./../images/gamlastan/posz.jpg");
-                neg_x_name= require("./../images/gamlastan/negx.jpg");
-                neg_y_name= require("./../images/gamlastan/negy.jpg");
-                neg_z_name= require("./../images/gamlastan/negz.jpg");
+                pos_x_name= require("./../resources/images/gamlastan/posx.jpg");
+                pos_y_name= require("./../resources/images/gamlastan/posy.jpg");
+                pos_z_name= require("./../resources/images/gamlastan/posz.jpg");
+                neg_x_name= require("./../resources/images/gamlastan/negx.jpg");
+                neg_y_name= require("./../resources/images/gamlastan/negy.jpg");
+                neg_z_name= require("./../resources/images/gamlastan/negz.jpg");
                 break;
             }
         }

@@ -49,7 +49,7 @@ class Fish extends boneanimation.BoneAnimation {
     }
     prepareSurfaceTextures(gl, selectedSurface) {
         var gradientname = require("./../resources/models/stone/circlegradient.png");
-        var clovername = require("./../images/clover.jpg");
+        var clovername = require("./../resources/images/clover.jpg");
         var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
         var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
         var textures = twgl.createTextures(gl, {

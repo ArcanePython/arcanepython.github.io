@@ -1,4 +1,7 @@
 "use strict";
+//import * as twgl from "./../node_modules/twgl.js";           // Greg's work (lib)
+//import { m4 } from "./../node_modules/twgl.js";              // Greg's work (lib)
+//import * as OBJ from './../node_modules/webgl-obj-loader';   // read geometry from .obj / .mtl files (lib)
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -20,11 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjMtlImport = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work (lib)
-const twgl_js_1 = require("./../node_modules/twgl.js"); // Greg's work (lib)
+const twgl = __importStar(require("twgl.js")); // Greg's work (lib)
+const twgl_js_1 = require("twgl.js"); // Greg's work (lib)
 const mobj = __importStar(require("./matobjreader")); // read geometry from .obj / .mtl files (interface)
 const mobjfiles = __importStar(require("./matobjfiles")); // read geometry from .obj / .mtl files (resources)
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 const datgui = __importStar(require("dat.gui"));
 class ObjMtlImport {
     constructor(cgl, capp, UrlPars) {

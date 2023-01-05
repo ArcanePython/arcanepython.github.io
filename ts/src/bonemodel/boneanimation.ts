@@ -136,33 +136,7 @@ export class BoneAnimation
          }); 
     }
     
-  /*  
-    prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
-    {
-        var gradientname = require("./resources/models/stone/circlegradient.png");
-        var clovername = require("./images/clover.jpg");
-        var zelenskyyname = require("./resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./resources/models/stone/flagofukraine.png");
-        var textures = twgl.createTextures(gl, { 
-         checker: {
-           mag: gl.NEAREST,
-           min: gl.LINEAR,
-           src: [255, 255, 255, 255,  192, 192, 192, 255,
-                 92, 92, 92, 255, 255, 255, 255, 255, ],},
-         clover: { src: clovername },
-         zelenskyy: { src: zelenskyyname },
-         gradient: { src: gradientname },
-         flagofukraine: { src: flagofukrainname },
-        });
-       if (selectedSurface=="clover") this.surfaceTexture = textures.clover;
-       if (selectedSurface=="zelenskyy") this.surfaceTexture = textures.zelenskyy;
-       if (selectedSurface=="checker") this.surfaceTexture = textures.checker;
-       if (selectedSurface=="gradient") this.surfaceTexture = textures.gradient;
-       if (selectedSurface=="flagofukraine") this.surfaceTexture = textures.flagofukraine;
-       return textures;
-    } 
-  */
- 
+  
     prepareBoneMatrices(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
     {
        if (this.numBones==undefined) return;
