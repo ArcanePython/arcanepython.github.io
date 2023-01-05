@@ -24,7 +24,10 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 const boneanimation = __importStar(require("./boneanimation"));
-const fish = __importStar(require("./fish"));
+const fishonejoint = __importStar(require("./fishonejoint"));
+const fishv = __importStar(require("./fishv"));
+const fishhrotated = __importStar(require("./fishhrotated"));
+const fishhtranslated = __importStar(require("./fishhtranslated"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
 const animationclock = __importStar(require("./../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -38,11 +41,11 @@ class FishAnimation extends baseapp.BaseApp {
             sling: 117,
         };
         this.fish = [
-            new fish.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fish.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
-            new fish.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-            new fish.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fish.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
+            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
         ];
         this.fishjointcounts = [1, 28, 1, 1, 1];
         this.fishpositions = [

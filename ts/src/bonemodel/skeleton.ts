@@ -11,7 +11,7 @@ import * as camhandler from "./../baseapp/camhandler"   // camera projection
 import * as boneanimation from "./boneanimation"
 import * as fish from "./fish"
 import * as baseapp from "./../baseapp/baseapp";
-
+import * as fishhtranslated from "./fishhtranslated";
 import  * as datgui from "dat.gui";
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ export class Skeleton extends baseapp.BaseApp
     bufferInfo: twgl.BufferInfo | null = null;
     skinVAO: WebGLVertexArrayObject | null = null;
     phase0: number=0.0; //2.0; // 143 degrees 
-    afish: fish.FishHTranslated | undefined;
+    afish: fishhtranslated.FishHTranslated | undefined;
    
 
     static instance: Skeleton;
@@ -66,7 +66,7 @@ export class Skeleton extends baseapp.BaseApp
       var spar:string|undefined;
       if ((spar=dictpar.get("phase2"))!=undefined) this.phase0= +spar!;
     
-      this.afish = new fish.FishHTranslated (1.0,0.2,0.3,  0.0, 1.0, 0.015,0.5,2.5, "zelenskyy");
+      this.afish = new fishhtranslated.FishHTranslated (1.0,0.2,0.3,  0.0, 1.0, 0.015,0.5,2.5, "zelenskyy");
       this.afish.forwardspeed=(this.skeletonParameters.move)?0.06:0.0;
       this.afish.prepareSurfaceTextures(gl, "zelenskyy");
       this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);   

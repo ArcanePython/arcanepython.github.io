@@ -27,8 +27,8 @@ const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("./../baseapp/camhandler")); // camera projection
 //import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
-const fish = __importStar(require("./fish"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
+const fishhtranslated = __importStar(require("./fishhtranslated"));
 const datgui = __importStar(require("dat.gui"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 twgl.setAttributePrefix("a_");
@@ -57,7 +57,7 @@ class Skeleton extends baseapp.BaseApp {
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined)
             this.phase0 = +spar;
-        this.afish = new fish.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
+        this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
         this.afish.forwardspeed = (this.skeletonParameters.move) ? 0.06 : 0.0;
         this.afish.prepareSurfaceTextures(gl, "zelenskyy");
         this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);

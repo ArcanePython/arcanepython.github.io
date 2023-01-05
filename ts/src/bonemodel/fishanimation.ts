@@ -6,10 +6,15 @@ import * as camhandler from "./../baseapp/camhandler"   // camera projection
 
 import * as boneanimation from "./boneanimation"
 import * as fish from "./fish"
+import * as fishonejoint from "./fishonejoint"
+import * as fishv from "./fishv"
+import * as fishhrotated from "./fishhrotated"
+import * as fishhtranslated from "./fishhtranslated"
 
 import  * as datgui from "dat.gui";
 import * as baseapp from "./../baseapp/baseapp";
 import * as animationclock from "./../baseapp/animationclock";
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -23,11 +28,11 @@ export class FishAnimation extends baseapp.BaseApp
     };          
 
     fish: fish.Fish[] = [ // SIZE R1 R2 FWSP  PH0  DELTAP  AR   AMPL  TEX          JOINT JOINTAX
-    new fish.FishHTranslated(1.0,2.0,0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-    new fish.FishOneJoint   (0.06, 40.0,24.0,0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0,1.0,0.0]),
-    new fish.FishHRotated   (0.5,16.0,22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-    new fish.FishV(          0.2,0.2,0.3, 0.03, 1.0,  0.0150, 0.5, 5.00, "flagofukraine"),
-    new fish.FishHTranslated(0.3,0.2,0.3, 0.03, 0.8,  0.0085, 0.5, 2.50, "zelenskyy")];  
+    new fishhtranslated.FishHTranslated(1.0,2.0,0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+    new fishonejoint.FishOneJoint   (0.06, 40.0,24.0,0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0,1.0,0.0]),
+    new fishhrotated.FishHRotated   (0.5,16.0,22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+    new fishv.FishV(          0.2,0.2,0.3, 0.03, 1.0,  0.0150, 0.5, 5.00, "flagofukraine"),
+    new fishhtranslated.FishHTranslated(0.3,0.2,0.3, 0.03, 0.8,  0.0085, 0.5, 2.50, "zelenskyy")];  
   
     fishjointcounts: number[] = [1, 28, 1, 1, 1];  
 
