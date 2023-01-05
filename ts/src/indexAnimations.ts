@@ -131,7 +131,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
   {  
     var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
     sbc.main(gl, dictPars);
-    sbc.initGUI({movecube:true, moveenv:true, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
+    sbc.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
   } 
    else
    if(dictPars?.get("canvas3dtexture")!=undefined)

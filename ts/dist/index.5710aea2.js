@@ -697,8 +697,8 @@ function show(gl, app, dictPars) {
         var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
         sbc.main(gl, dictPars);
         sbc.initGUI({
-            movecube: true,
-            moveenv: true,
+            movecube: false,
+            moveenv: false,
             fieldOfViewDegrees: 32,
             radiusCam: 5.0,
             angVelocityCam: 0.005,
