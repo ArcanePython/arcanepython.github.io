@@ -97,7 +97,6 @@
 }
 
 </style>
-<!-- link rel="stylesheet" href="https://arcanepython.github.io/assets/css/style.css?v=310b88372171c8ac49d89425753ada27e9196b5e" -->
 <link rel="stylesheet" href="/index.1303bb05.css">
 
 <meta name="viewport" content="width=device-width">
@@ -136,8 +135,6 @@ var str = `
         <p>
         Stills based on .OBJ<br>
         `;
-var subdir = "dist"; // current parcel dist
-var commonjsparcel = "index.73eb0017.js"; // current parcel js
 var commonhtml = "index.html"; // this html (do not use dist\ parcel's)
 str += lnk(commonhtml + "?cube&radius0=9&hx=-0.8&hy=0.43", "Textured cubes");
 str += lnk(commonhtml + "?koenigsegg&radius0=65&hx=0.8&hy=0.43", "Koenigsegg");
@@ -188,9 +185,9 @@ linksdiv.innerHTML = str + "<p>";
     the compiled result entry according to my current Parcel.mdb will be dist/index.5710aea2.js  -->
 
 <!--Use this for index.html on GitHib -->
-<!-- script src="dist/indexAnimations.370f14dd.js"></script -->
+<!-- script src="dist/index.5710aea2.js"></script -->
 
-<!--Or use this for index.html on GitHib.. -->
+<!--Or.. use this for index.html on GitHibto keep the load dynamic.. -->
 <script language="Javascript">var commonjsparcel = "index.5710aea2.js";
 document.addEventListener("DOMContentLoaded", ()=>{
     document.head.appendChild(document.createElement("script")).src = "dist/" + commonjsparcel;
