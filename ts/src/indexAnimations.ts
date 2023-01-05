@@ -2,12 +2,12 @@ import * as mtls from "./baseapp/mouselistener";                       // app: c
 
 import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
 
-import * as drawimagespace from "./drawimagespace"                     // baseapp derivative: image space texture
+import * as drawimagespace from "./others/drawimagespace"                     // baseapp derivative: image space texture
 import * as animation1 from "./animation1"                             // baseapp derivative: scene container
-import * as skyboxcube from "./skyboxcube"                             // baseapp derivative: show reflecting cube in skybox
-import * as objectlist from "./objectlist";                            // baseapp derivative: show bouncing guy node tree
-import * as drawinstanced from "./drawinstanced";                      // baseapp derivative: show texture space navigator
-import * as canvas3dtexture from "./canvas3dtexture";                  // baseapp derivative: show 3d on texture
+import * as skyboxcube from "./others/skyboxcube"                             // baseapp derivative: show reflecting cube in skybox
+import * as objectlist from "./others/objectlist";                            // baseapp derivative: show bouncing guy node tree
+import * as drawinstanced from "./others/drawinstanced";                      // baseapp derivative: show texture space navigator
+import * as canvas3dtexture from "./others/canvas3dtexture";                  // baseapp derivative: show 3d on texture
 
 import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
 import * as fish from "./bonemodel/fishanimation"                      // baseapp derivative: bone model (flock)

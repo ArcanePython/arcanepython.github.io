@@ -20,8 +20,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DrawInstanced = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
 class DrawInstanced {
     constructor() {
         this.vertexShaderSource = `#version 300 es

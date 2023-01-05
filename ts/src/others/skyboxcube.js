@@ -21,8 +21,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skyboxcube = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-const baseapp = __importStar(require("./baseapp/baseapp"));
-const camhandler = __importStar(require("./baseapp/camhandler"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
+const camhandler = __importStar(require("./../baseapp/camhandler"));
 const datgui = __importStar(require("dat.gui"));
 class skyboxcube extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {

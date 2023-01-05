@@ -20,9 +20,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectList = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
-const objectnode = __importStar(require("./scene/objectnode"));
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const objectnode = __importStar(require("./../scene/objectnode"));
 class ObjectList //extends twglbaseapp.twglbaseapp
  {
     constructor() {
@@ -94,7 +94,7 @@ class ObjectList //extends twglbaseapp.twglbaseapp
         // var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
         this.nodeInfosByName = undefined;
         var nodefact = new objectnode.NodesProducer(this.programInfo, cubeBufferInfo);
-        var parcls = require('./resources/blockguy.json');
+        var parcls = require('./../resources/blockguy.json');
         var mydata = this.FetchText(parcls).then((s) => {
             console.log("mydata=" + mydata + " s=" + s);
             var nodedescriptions = JSON.parse(s);

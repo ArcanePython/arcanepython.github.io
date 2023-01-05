@@ -567,12 +567,12 @@ Object.defineProperty(exports, "__esModule", {
 });
 const mtls = __importStar(require("./baseapp/mouselistener")); // app: connect events for mouse and mouse wheel
 const objmtlimport = __importStar(require("./objreader/objmtlimport.js")); // main: obj/mtl file imports
-const drawimagespace = __importStar(require("./drawimagespace")); // baseapp derivative: image space texture
+const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation1 = __importStar(require("./animation1")); // baseapp derivative: scene container
-const skyboxcube = __importStar(require("./skyboxcube")); // baseapp derivative: show reflecting cube in skybox
-const objectlist = __importStar(require("./objectlist")); // baseapp derivative: show bouncing guy node tree
-const drawinstanced = __importStar(require("./drawinstanced")); // baseapp derivative: show texture space navigator
-const canvas3dtexture = __importStar(require("./canvas3dtexture")); // baseapp derivative: show 3d on texture
+const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp derivative: show reflecting cube in skybox
+const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
+const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
+const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
 const skeleton = __importStar(require("./bonemodel/skeleton")); // baseapp derivative: bone model (single)
 const fish = __importStar(require("./bonemodel/fishanimation")); // baseapp derivative: bone model (flock)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
@@ -784,7 +784,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","./objreader/objmtlimport.js":"ddzee","./drawimagespace":"hcp33","./animation1":"5jcfD","./skyboxcube":"h51mu","./objectlist":"7xBpC","./drawinstanced":"7UK0I","./canvas3dtexture":"23adv","./bonemodel/skeleton":"5hqLk","./bonemodel/fishanimation":"jVuZu","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","./objreader/objmtlimport.js":"ddzee","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./bonemodel/skeleton":"5hqLk","./bonemodel/fishanimation":"jVuZu","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxscene":"kcBXj","./scene/skyboxcubescene":"aFl5l"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -14761,7 +14761,7 @@ var index = {
 };
 exports.default = index;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hcp33":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fDS7w":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -14798,7 +14798,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.drawimagespace = void 0;
 const twgl = __importStar(require("twgl.js")); // Lib: Gregg's work
 const datgui = __importStar(require("dat.gui")); // Lib: dat.gui
-const baseapp = __importStar(require("./baseapp/baseapp")); // convenient base class initializing gl2 and program(s)
+const baseapp = __importStar(require("./../baseapp/baseapp")); // convenient base class initializing gl2 and program(s)
 class drawimagespace extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
@@ -15059,7 +15059,7 @@ exports.drawimagespace = drawimagespace;
 drawimagespace.zoomVelocity = 0.075;
 drawimagespace.animationVelocity = 0.25;
 
-},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./baseapp/baseapp":"9lZ4F"}],"9lZ4F":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../baseapp/baseapp":"9lZ4F"}],"9lZ4F":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -15799,7 +15799,7 @@ class AnimationClock {
 }
 exports.AnimationClock = AnimationClock;
 
-},{}],"h51mu":[function(require,module,exports) {
+},{}],"hTGOp":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -15835,8 +15835,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.skyboxcube = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-const baseapp = __importStar(require("./baseapp/baseapp"));
-const camhandler = __importStar(require("./baseapp/camhandler"));
+const baseapp = __importStar(require("./../baseapp/baseapp"));
+const camhandler = __importStar(require("./../baseapp/camhandler"));
 const datgui = __importStar(require("dat.gui"));
 class skyboxcube extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
@@ -16051,7 +16051,7 @@ class skyboxcube extends baseapp.BaseApp {
 }
 exports.skyboxcube = skyboxcube;
 
-},{"twgl.js":"3uqAP","./baseapp/baseapp":"9lZ4F","./baseapp/camhandler":"1ZnlU","dat.gui":"k3xQk"}],"7xBpC":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../baseapp/baseapp":"9lZ4F","./../baseapp/camhandler":"1ZnlU","dat.gui":"k3xQk"}],"piLyt":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -16086,9 +16086,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.ObjectList = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
-const objectnode = __importStar(require("./scene/objectnode"));
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const objectnode = __importStar(require("./../scene/objectnode"));
 class ObjectList {
     constructor(){
         this.vs = `#version 300 es
@@ -16162,7 +16162,7 @@ class ObjectList {
         // var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
         this.nodeInfosByName = undefined;
         var nodefact = new objectnode.NodesProducer(this.programInfo, cubeBufferInfo);
-        var parcls = require("./resources/blockguy.json");
+        var parcls = require("./../resources/blockguy.json");
         var mydata = this.FetchText(parcls).then((s)=>{
             console.log("mydata=" + mydata + " s=" + s);
             var nodedescriptions = JSON.parse(s);
@@ -16271,7 +16271,7 @@ class ObjectList {
 }
 exports.ObjectList = ObjectList;
 
-},{"./../node_modules/twgl.js":"3uqAP","./scene/objectnode":"kGgzx","./resources/blockguy.json":"2rYWp"}],"kGgzx":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./../scene/objectnode":"kGgzx","./../resources/blockguy.json":"2rYWp"}],"kGgzx":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -16421,7 +16421,7 @@ exports.NodesProducer = NodesProducer;
 },{"twgl.js":"3uqAP"}],"2rYWp":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "blockguy.ba5581b9.json" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"7UK0I":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"VzCYY":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -16456,8 +16456,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.DrawInstanced = void 0;
-const twgl = __importStar(require("./../node_modules/twgl.js")); // Greg's work
-const twgl_js_1 = require("./../node_modules/twgl.js");
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
 class DrawInstanced {
     constructor(){
         this.vertexShaderSource = `#version 300 es
@@ -16656,7 +16656,7 @@ void main() {
 }
 exports.DrawInstanced = DrawInstanced;
 
-},{"./../node_modules/twgl.js":"3uqAP"}],"23adv":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"hNUAa":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

@@ -21,12 +21,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mtls = __importStar(require("./baseapp/mouselistener")); // app: connect events for mouse and mouse wheel
 const objmtlimport = __importStar(require("./objreader/objmtlimport.js")); // main: obj/mtl file imports
-const drawimagespace = __importStar(require("./drawimagespace")); // baseapp derivative: image space texture
+const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation1 = __importStar(require("./animation1")); // baseapp derivative: scene container
-const skyboxcube = __importStar(require("./skyboxcube")); // baseapp derivative: show reflecting cube in skybox
-const objectlist = __importStar(require("./objectlist")); // baseapp derivative: show bouncing guy node tree
-const drawinstanced = __importStar(require("./drawinstanced")); // baseapp derivative: show texture space navigator
-const canvas3dtexture = __importStar(require("./canvas3dtexture")); // baseapp derivative: show 3d on texture
+const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp derivative: show reflecting cube in skybox
+const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
+const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
+const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
 const skeleton = __importStar(require("./bonemodel/skeleton")); // baseapp derivative: bone model (single)
 const fish = __importStar(require("./bonemodel/fishanimation")); // baseapp derivative: bone model (flock)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
