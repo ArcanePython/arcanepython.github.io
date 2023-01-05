@@ -127,6 +127,7 @@ class ManyTexturesScene {
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.one_point_vs, this.one_point_fs]);
         this.twglprograminfo[2] = twgl.createProgramInfo(gl, [this.env_map_vs, this.env_map_fs]);
     }
+    defaultCamera(gl, cam) { }
     extendGUI(gui) {
         // Slider for sling speed
         // Checkbox forward move animation on/off

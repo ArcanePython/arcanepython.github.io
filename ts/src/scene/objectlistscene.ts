@@ -26,6 +26,7 @@ export class ObjectListScene  implements scene.SceneInterface
   animationParameters: TAnimation1Parameters | undefined;
   public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
   public extendGUI(gui: datgui.GUI) {}
+  public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
 
   scenetree:objectnode.Node |undefined;
   gl: WebGL2RenderingContext | undefined;

@@ -22,6 +22,8 @@ implements scene.SceneInterface
     gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
  
   }
+  public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
 
      targetTextureWidth = 512;
      targetTextureHeight = 512;

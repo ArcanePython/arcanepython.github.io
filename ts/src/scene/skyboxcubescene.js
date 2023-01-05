@@ -84,6 +84,7 @@ class SkyBoxCubeScene {
         this.fieldOfViewRadians = 60 * Math.PI / 180;
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
+    defaultCamera(gl, cam) { }
     createReflectingCubeGeo(gl) {
         this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
         this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);

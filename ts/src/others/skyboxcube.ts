@@ -31,7 +31,7 @@ export class skyboxcube extends baseapp.BaseApp
     reflectingCubeBufferInfo: twgl.BufferInfo | undefined;
    // texture: WebGLTexture| undefined;
     cam: camhandler.Camera|undefined;
-
+    skyboxtexture: WebGLTexture | undefined;
 
     worldMatrix: twgl.m4.Mat4 | undefined;
     viewMatrix: twgl.m4.Mat4 | undefined;
@@ -64,7 +64,7 @@ export class skyboxcube extends baseapp.BaseApp
       twgl.setAttributePrefix("a_");  // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
       this.createReflectingCubeGeo(gl);         
       this.createEnvironmentMapGeoTwgl(gl);         
-      this.texture =  this.createEnvironmentMapTexture(gl, 1,this.textureReadyCallback)!;
+      this.skyboxtexture =  this.createEnvironmentMapTexture(gl, 1,this.textureReadyCallback)!;
       
       this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp, 0.5, this.app!);
       this.cam.zoominVelocity = 0.5;
@@ -152,16 +152,21 @@ export class skyboxcube extends baseapp.BaseApp
           this.worldMatrix = twgl.m4.translation([0,0,0]); // twgl.m4.identity();
 
         // draw the environment
+
+        
         gl.useProgram(this.twglprograminfo![0].program);
+
+        this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture!);
+/*
         gl.bindVertexArray(this.vaoEnvironment!);
         twgl.setUniforms( this.twglprograminfo![0], { 
           u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
           u_skybox: this.texture,
         });
         twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
-
+*/
            
-        // Build a view matrix for the mirror cube.
+       // Build a view matrix for the mirror cube.
         var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
         this.projectionMatrix = twgl.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
         // Build a view matrix.
@@ -169,7 +174,6 @@ export class skyboxcube extends baseapp.BaseApp
         var cameraMatrix = twgl.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
         this.viewMatrix = twgl.m4.inverse(cameraMatrix);
      
-
         // draw the mirror cube
         if (this.viewMatrix==undefined)this.viewMatrix=twgl.m4.identity();
         if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
@@ -180,7 +184,7 @@ export class skyboxcube extends baseapp.BaseApp
           u_world: this.worldMatrix,
           u_view: this.viewMatrix,
           u_projection: this.projectionMatrix,
-          u_texture: this.texture,
+          u_texture: this.skyboxtexture,
           u_worldCameraPosition: this.cameraPosition,
         });
         twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo!);

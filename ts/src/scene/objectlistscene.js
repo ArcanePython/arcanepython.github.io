@@ -205,6 +205,7 @@ class ObjectListScene {
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) { }
+    defaultCamera(gl, cam) { }
     async FetchText(cparcelname) {
         const res = await fetch(cparcelname);
         var b = await res.arrayBuffer();

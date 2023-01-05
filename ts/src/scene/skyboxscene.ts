@@ -20,6 +20,8 @@ export class SkyBoxScene implements scene.SceneInterface
     
     speedpreset: number|undefined;
 
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
     constructor(gl: WebGL2RenderingContext, dictPars: Map<string,string> | undefined)
     { 
         this.speedpreset = 0.05;
@@ -27,6 +29,7 @@ export class SkyBoxScene implements scene.SceneInterface
         {
             this.speedpreset = +dictPars?.get("speed")!;
             console.log("specified: speedpreset="+ this.speedpreset) ;
+            // no shaders (this scene does not have a context)
         }
     }
 

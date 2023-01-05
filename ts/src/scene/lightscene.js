@@ -178,6 +178,7 @@ class LightScene extends basescene_1.basescene {
         this.outerLimit = 20 * Math.PI / 180;
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
+    defaultCamera(gl, cam) { }
     extendGUI(gui) {
         // Slider for shininess
         gui.add(this.animationParameters, 'shininess').min(0).max(20.0).step(0.1);

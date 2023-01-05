@@ -78,6 +78,7 @@ class RotatingCubeScene {
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
+    defaultCamera(gl, cam) { }
     extendGUI(gui) {
         // Slider for sling speed
         gui.add(this.animationParameters, 'movetail');

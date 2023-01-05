@@ -24,6 +24,9 @@ export class SpotLightScene extends twglbasescene implements scene.SceneInterfac
     ctime: number = 0;
     scenesize: number = 60;
 
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
+
     typelightLocation: WebGLUniformLocation | undefined ; 
     viewWorldPositionLocation: WebGLUniformLocation | undefined ;
     colorLocation: WebGLUniformLocation | undefined ;

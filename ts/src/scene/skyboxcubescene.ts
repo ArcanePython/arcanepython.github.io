@@ -22,6 +22,8 @@ export class SkyBoxCubeScene implements scene.SceneInterface
     positionLocation: number | undefined;
     resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
     
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
     fieldOfViewRadians: number;
     
     worldMatrix: twgl.m4.Mat4 | undefined;

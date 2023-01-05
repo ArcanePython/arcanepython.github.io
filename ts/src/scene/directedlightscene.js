@@ -137,6 +137,7 @@ class DirectedLightScene {
         this.outerLimit = degToRad(20);
         console.log("<= directedLightScene constructor");
     }
+    defaultCamera(gl, cam) { }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) {
         // Slider for sling speed

@@ -117,7 +117,7 @@ class skyboxcube extends baseapp.BaseApp {
         twgl.setAttributePrefix("a_"); // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
         this.createReflectingCubeGeo(gl);
         this.createEnvironmentMapGeoTwgl(gl);
-        this.texture = this.createEnvironmentMapTexture(gl, 1, this.textureReadyCallback);
+        this.skyboxtexture = this.createEnvironmentMapTexture(gl, 1, this.textureReadyCallback);
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, 0.5, this.app);
         this.cam.zoominVelocity = 0.5;
         this.cam.setRadius(6.0);
@@ -184,12 +184,15 @@ class skyboxcube extends baseapp.BaseApp {
             this.worldMatrix = twgl.m4.translation([0, 0, 0]); // twgl.m4.identity();
         // draw the environment
         gl.useProgram(this.twglprograminfo[0].program);
-        gl.bindVertexArray(this.vaoEnvironment);
-        twgl.setUniforms(this.twglprograminfo[0], {
-            u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
-            u_skybox: this.texture,
-        });
-        twgl.drawBufferInfo(gl, this.environmentBufferInfo);
+        this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture);
+        /*
+                gl.bindVertexArray(this.vaoEnvironment!);
+                twgl.setUniforms( this.twglprograminfo![0], {
+                  u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+                  u_skybox: this.texture,
+                });
+                twgl.drawBufferInfo(gl, this.environmentBufferInfo!);
+        */
         // Build a view matrix for the mirror cube.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         this.projectionMatrix = twgl.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
@@ -209,7 +212,7 @@ class skyboxcube extends baseapp.BaseApp {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,
             u_projection: this.projectionMatrix,
-            u_texture: this.texture,
+            u_texture: this.skyboxtexture,
             u_worldCameraPosition: this.cameraPosition,
         });
         twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo);

@@ -169,6 +169,7 @@ class SpotLightScene extends twglbasescene_1.twglbasescene {
         this.innerLimit = 10 * Math.PI / 180;
         this.outerLimit = 20 * Math.PI / 180;
     }
+    defaultCamera(gl, cam) { }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) {
         // Slider for shininess

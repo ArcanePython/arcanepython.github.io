@@ -141,8 +141,8 @@
       var sEye = this.eye[0].toPrecision(4)+","+this.eye[1].toPrecision(4)+","+this.eye[2].toPrecision(4);
       var sTarget = this.target[0].toPrecision(4)+","+this.target[1].toPrecision(4)+","+this.target[2].toPrecision(4);
       var sLightPos = this.lightpos[0].toPrecision(4)+","+this.lightpos[1].toPrecision(4)+","+this.lightpos[2].toPrecision(4);
-        (document.getElementById('projection') as HTMLDivElement).innerHTML = "hx:"+((180.0/Math.PI)*this.ahx).toPrecision(3)+" hy:"+((180.0/Math.PI)*this.ahy).toPrecision(3)+
-        "<br>r0="+this.radius0.toPrecision(4)+", r="+this.radius.toPrecision(4)+"<br>eye:["+sEye+"]<br>target: ["+sTarget+"]<br>light: "+sLightPos; 
+        (document.getElementById('projection') as HTMLDivElement).innerHTML = "h:"+((180.0/Math.PI)*this.ahx).toPrecision(3)+", "+((180.0/Math.PI)*this.ahy).toPrecision(3)+
+        ", r0="+this.radius0.toPrecision(4)+", r="+this.radius.toPrecision(4)+", eye:["+sEye+"], t["+sTarget+"]"; //, light: "+sLightPos; 
     }
 
     public Position(): number[]

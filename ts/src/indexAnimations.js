@@ -20,7 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mtls = __importStar(require("./baseapp/mouselistener")); // app: connect events for mouse and mouse wheel
-const objmtlimport = __importStar(require("./objreader/objmtlimport.js")); // main: obj/mtl file imports
+//import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
 const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation1 = __importStar(require("./animation1")); // baseapp derivative: scene container
 const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp derivative: show reflecting cube in skybox
@@ -37,6 +37,7 @@ const canvas3dtexturescene = __importStar(require("./scene/canvas3dtexturescene"
 const drawinstancedscene = __importStar(require("./scene/drawinstancedscene")); // scene: show texture space navigator
 const skyboxscene = __importStar(require("./scene/skyboxscene")); // scene: show skybox only (empty scene)
 const skyboxcubescene = __importStar(require("./scene/skyboxcubescene")); // scene: show reflecting cube in skybox
+const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show reflecting cube in skybox
 const ShowOBJMTL = 1;
 const ShowFish = 3;
 const ShowAnimation1 = 5;
@@ -91,7 +92,7 @@ function show(gl, app, dictPars) {
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
         var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl));
-        mta1.scene.texture = mta1.texture; // background texture is needed for reflection
+        mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined)
         initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
@@ -147,9 +148,10 @@ function show(gl, app, dictPars) {
     //--------------------------------------------------------------------------------------------------
     else // any other, take first argument as OBJ/MTL to show
      {
-        var oi = new objmtlimport.ObjMtlImport(gl, app, dictPars);
-        oi.main(gl, dictPars);
-        oi.initGUI({ move: false, speed: 0, texture: '', color0: "#9cbbcd" });
+        initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars));
+        //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
+        //  oi.main(gl, dictPars!);
+        //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
     }
 }
 //=== ENTRY MAIN ===============================================================================================================================

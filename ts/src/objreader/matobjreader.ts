@@ -69,7 +69,7 @@ var indexBuffers: ExtendedGLBuffer[] = [];
 export function renderIndexBuffer(gl: WebGLRenderingContext, vertexPositionAttribute: number, normalAttribute: number, texCoordAttribute: number, offset: number, 
                                   texItemSize:number, tex: WebGLTexture )
 {
-    gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.vertexBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.vertexBuffer);
     gl.vertexAttribPointer(vertexPositionAttribute, meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.normalBuffer);
     gl.vertexAttribPointer(normalAttribute, meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);  

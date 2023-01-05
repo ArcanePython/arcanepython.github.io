@@ -22,7 +22,8 @@ export class Animation1 extends baseapp.BaseApp
     scene: scene.SceneInterface;                                                     
     clock: animationclock.AnimationClock;
     cam: camhandler.Camera|undefined;
-
+     
+    skyboxtexture: WebGLTexture | undefined;
     doclear: boolean = true;
     doTwglEnv: boolean = false;
 
@@ -60,17 +61,15 @@ export class Animation1 extends baseapp.BaseApp
       
         this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp,  this.scene.scenesize, this.app!);
         this.cam.zoominVelocity = 0.5;
-
+     
         if (this.scene.sceneenv>0)
         {   
             gl.useProgram(this.twglprograminfo![0].program);
-             this.skyboxLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;
-            this.viewDirectionProjectionInverseLocation = gl.getUniformLocation(this.twglprograminfo![0].program, "u_viewDirectionProjectionInverse")!;
-            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
-              else this.createEnvironmentMapGeo(gl); 
-            this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback)!;     
+            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl); 
+            this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback)!;     
         }  else 
         {      
+            gl.useProgram(this.twglprograminfo![0].program);     
             this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo![1], this.sceneReadyCallback);
         }
     }
@@ -79,7 +78,9 @@ export class Animation1 extends baseapp.BaseApp
     { 
         var thisinstance = baseapp.instance!;
         var ainstance = thisinstance as Animation1;
+        ainstance.scene.defaultCamera(ainstance.gl!, ainstance.cam!);
         ainstance.scene.resizeCanvas(ainstance.gl!); 
+        console.log("sceneReadyCallback requests first frame");
         requestAnimationFrame(() => ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
     }
 
@@ -87,40 +88,49 @@ export class Animation1 extends baseapp.BaseApp
     { 
         var thisinstance = baseapp.instance!;
         var ainstance = thisinstance as Animation1;
-        ainstance.scene.initScene(ainstance.gl!, ainstance.animation1Parameters, undefined, ainstance.twglprograminfo![1], ainstance.sceneReadyCallback);   
+        console.log("textureEnvReadyCallback executes initScene");
+        ainstance.scene.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.dictpars, ainstance.twglprograminfo![1], ainstance.sceneReadyCallback);   
     }
 
     render(time: number) 
     {
+        // prepare context and canvas
         var gl = this.gl!;
         if (this.doclear)
         { 
           gl.clear(gl.DEPTH_BUFFER_BIT);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
-        this.scene.animationParameters = this.animation1Parameters;
         this.scene.resizeCanvas(gl);  
-        gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
-         var cam: camhandler.Camera = this.cam!;
+        gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);    
+
+        // prepare camera
+        var cam: camhandler.Camera = this.cam!;
         cam.CamHandlingYUp(gl, this.app!, 1.0, -1.0);   
+
+        // set current scene parameters
+        this.scene.animationParameters = this.animation1Parameters;
+
+        // render skybox                                                                          
         if (this.scene.sceneenv>0)
         {         
+            // set skybox camera
             if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
               else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.005 * this.scene.animationParameters.b.speed), 0, 
-                                                                                      Math.sin(time * 0.005 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];
-            var  fieldOfViewRadians = this.animation1Parameters.fov * Math.PI / 180; 
+                                                                                      Math.sin(time * 0.005 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];      
             gl.useProgram(this.twglprograminfo![0].program);
             gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL); 
             if (this.doTwglEnv) 
               {
-                this.renderenvironmentmapTwgl(gl, fieldOfViewRadians,  this.texture!); 
+                this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180,  this.skyboxtexture!); 
               }
               else
               { 
-                this.renderenvironmentmap(gl, fieldOfViewRadians, { invproj: this.viewDirectionProjectionInverseLocation!, loc:this.skyboxLocation! }, this.texture!);
+                this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture!);
               } 
         }    
+        // render scene
         if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )       
         {  
             gl.useProgram(this.twglprograminfo![1].program);
@@ -128,6 +138,7 @@ export class Animation1 extends baseapp.BaseApp
             gl.enable(gl.CULL_FACE);  // only show left-turned triangles
             this.scene.drawScene(gl, cam, time);
         }
+        // request next frame
         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
     } 
 }

@@ -66,6 +66,7 @@ void main() {
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) { }
+    defaultCamera(gl, cam) { }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         twgl.setAttributePrefix("a_");
         this.gl = gl;

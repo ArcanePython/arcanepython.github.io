@@ -33,9 +33,11 @@ class SkyBoxScene {
         if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
             this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
             console.log("specified: speedpreset=" + this.speedpreset);
+            // no shaders (this scene does not have a context)
         }
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
+    defaultCamera(gl, cam) { }
     initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
         this.animationParameters = (this.animationParameters == undefined) ? cap : this.animationParameters;
         if (this.speedpreset)

@@ -17,6 +17,8 @@ export class DirectedLightScene implements scene.SceneInterface
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
   cameraPosition: [number,number,number] | undefined
 
+  public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
   animationParameters: TAnimation1Parameters | undefined;
 
     vertexShaderSource = `#version 300 es

@@ -130,6 +130,7 @@ class PointLightScene {
         this.innerLimit = degToRad(10);
         this.outerLimit = degToRad(20);
     }
+    defaultCamera(gl, cam) { }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) {
         // Slider for sling speed

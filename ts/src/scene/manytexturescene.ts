@@ -57,7 +57,8 @@ export class ManyTexturesScene implements scene.SceneInterface
   sceneenv:number = 1;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
       
-  
+  public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
   public static instance: ManyTexturesScene | undefined;
 
   vertexShaderSource = ``;

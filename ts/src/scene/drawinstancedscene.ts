@@ -20,7 +20,8 @@ export class DrawInstancedScene implements scene.SceneInterface
     animationParameters: TAnimation1Parameters | undefined;
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
     public extendGUI(gui: datgui.GUI) {}
-  
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
   gl: WebGL2RenderingContext | undefined;
   fieldOfViewRadians: number  | undefined;
   

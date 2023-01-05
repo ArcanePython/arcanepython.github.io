@@ -1,6 +1,6 @@
 import * as mtls from "./baseapp/mouselistener";                       // app: connect events for mouse and mouse wheel
 
-import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
+//import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
 
 import * as drawimagespace from "./others/drawimagespace"                     // baseapp derivative: image space texture
 import * as animation1 from "./animation1"                             // baseapp derivative: scene container
@@ -11,6 +11,7 @@ import * as canvas3dtexture from "./others/canvas3dtexture";                  //
 
 import * as skeleton from "./bonemodel/skeleton"                       // baseapp derivative: bone model (single)
 import * as fish from "./bonemodel/fishanimation"                      // baseapp derivative: bone model (flock)
+import * as objmtlimportapp from "./others/objmtlimportapp"                      // baseapp derivative: bone model (flock)
 
 import * as scene from "./scene/scene";                                // scene: interface to implement
 import * as manytexturescene from "./scene/manytexturescene"           // scene: many textures / objects
@@ -21,7 +22,7 @@ import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";  // scene:
 import * as drawinstancedscene from "./scene/drawinstancedscene";      // scene: show texture space navigator
 import * as skyboxscene from "./scene/skyboxscene";                    // scene: show skybox only (empty scene)
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
-import { BaseApp } from "./baseapp/baseapp";
+import * as matobjscene from "./scene/matobjscene";            // scene: show reflecting cube in skybox
 
 const ShowOBJMTL     = 1;
 const ShowFish       = 3; 
@@ -92,7 +93,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
   if (dictPars?.get("animation4")!=undefined)
    {
      var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl));
-     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.texture!; // background texture is needed for reflection
+     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.skyboxtexture!; // background texture is needed for reflection
    } 
   else if (dictPars?.get("animation1")!=undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl));
   else if (dictPars?.get("animation3")!=undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl)); 
@@ -152,9 +153,10 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
   //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
-    var oi = new objmtlimport.ObjMtlImport(gl, app, dictPars!);
-    oi.main(gl, dictPars!);
-    oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
+    initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!)); 
+    //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
+  //  oi.main(gl, dictPars!);
+  //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
   }      
 }
 

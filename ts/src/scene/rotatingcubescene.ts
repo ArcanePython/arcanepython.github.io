@@ -17,6 +17,7 @@ export class RotatingCubeScene implements scene.SceneInterface
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
 
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
  
     matrixLocation:WebGLUniformLocation =0;
     textureLocation1:WebGLUniformLocation =0;

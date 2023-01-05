@@ -50,6 +50,8 @@ export class LightScene extends basescene implements scene.SceneInterface
 
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
 
+    public  defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+
     public static instance : LightScene;
 
     public constructor(gl: WebGL2RenderingContext)
@@ -130,6 +132,7 @@ export class LightScene extends basescene implements scene.SceneInterface
     }
  
 
+   
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
         var deltaTime = time - this.ctime;

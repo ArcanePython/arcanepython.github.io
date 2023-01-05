@@ -38,6 +38,7 @@ export interface SceneInterface
  
   resizeCanvas(gl: WebGL2RenderingContext): void;
   initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters, dictpar:Map<string,string>| undefined,  p: twgl.ProgramInfo, textureReadyCallback: (a:any)=>void | undefined): void;
+  defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera): void;
   drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void;
   extendGUI(datgui: datgui.GUI): void;
  

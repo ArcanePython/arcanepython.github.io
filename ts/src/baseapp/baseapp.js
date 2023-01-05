@@ -33,11 +33,11 @@ class BaseApp {
         };
         this.gl = null;
         this.app = null;
-        // textures repository
-        this.textureaspects = new Map();
-        this.textures = null;
         // programs
         this.twglprograminfo = null; // there can be several
+        // environment skybox camera
+        this.cameraTarget = [0, 0.5, 0];
+        this.cameraPosition = [4, 0, 0];
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
         in vec4 a_position;
@@ -65,20 +65,22 @@ class BaseApp {
         }
         `;
         exports.instance = this;
-        this.cameraTarget = [0, 0.5, 0];
-        this.cameraPosition = [4, 0, 0];
         document.getElementById('cdiv').innerHTML = "finding webgl2...";
         var isWebGL2 = !!cgl;
         if (!isWebGL2) {
             document.getElementById('cdiv').innerHTML = "no webgl2";
         }
-        else {
-            document.getElementById('cdiv').innerHTML = "webgl2 found";
+        else // prepare skybox shaders
+         {
             this.gl = cgl;
             this.app = capp;
+            this.dictpars = dictpar;
             this.twglprograminfo = new Array(1);
             this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [this.vsEnvironmentMap, this.fsEnvironmentMap]);
-            document.getElementById('cdiv').innerHTML = "environment shaders initialized";
+            document.getElementById('cdiv').innerHTML = "cdiv environment shaders initialized";
+            this.skyboxLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_skybox");
+            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_viewDirectionProjectionInverse");
+            document.getElementById('cdiv').innerHTML = "BaseApp: skybox perspective prepared";
         }
     }
     onChangeColorValue(value) {
@@ -118,60 +120,6 @@ class BaseApp {
     }
     straightTextureCallback(err, texture) {
         console.log("Environment textureB isready.");
-    }
-    //--- used in drawimagespace, reads the texture repository maps textures[] and texureaspects[] ----------------------
-    prepareSurfaceTextures(gl, selectedSurface) {
-        this.textureaspects.set("checker", 1.0);
-        this.textureaspects.set("clover", 1.0);
-        this.textureaspects.set("zelenskyy", 1.0);
-        this.textureaspects.set("aristotle", (512.0 / 512.0));
-        this.textureaspects.set("flagofukraine", (856.0 / 1288.0));
-        this.textureaspects.set("flagofukraine2", (1288.0 / 856.0));
-        this.textureaspects.set("geotriangle", (258.0 / 424.0));
-        this.textureaspects.set("geotriangle2", (212.0 / 424.0));
-        this.textureaspects.set("geotriangle2", (212.0 / 424.0));
-        this.textureaspects.set("protractorT2", (395.0 / 747.0));
-        var gradientname = require("./../resources/models/stone/circlegradient.png");
-        var aristotlename = require("./../resources/models/stone/aristoteles1.png");
-        var clovername = require("./../resources/images/clover.jpg");
-        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
-        var flagofukrainname2 = require("./../resources/models/stone/flagofukraine2.png");
-        var trianglename = require("./../resources/models/stone/geodriehoek.png");
-        var trianglename2 = require("./../resources/models/stone/geodriehoek2.png");
-        var protractorT2name = require("./../resources/models/stone/protractorT2.png");
-        this.textures = twgl.createTextures(gl, {
-            checker: { mag: gl.NEAREST, min: gl.LINEAR, src: [255, 255, 255, 255, 192, 192, 192, 0, 92, 92, 92, 255, 255, 255, 255, 255,], },
-            clover: { src: clovername },
-            zelenskyy: { src: zelenskyyname },
-            gradient: { src: gradientname },
-            flagofukraine: { src: flagofukrainname },
-            flagofukraine2: { src: flagofukrainname2 },
-            geotriangle: { src: trianglename },
-            geotriangle2: { src: trianglename2 },
-            aristotle: { src: aristotlename },
-            protractorT2: { src: protractorT2name }
-        });
-        if (selectedSurface == "checker")
-            return this.textures.checker;
-        if (selectedSurface == "clover")
-            return this.textures.clover;
-        if (selectedSurface == "zelenskyy")
-            return this.textures.zelenskyy;
-        if (selectedSurface == "gradient")
-            return this.textures.gradient;
-        if (selectedSurface == "flagofukraine")
-            return this.textures.flagofukraine;
-        if (selectedSurface == "flagofukraine2")
-            return this.textures.flagofukraine2;
-        if (selectedSurface == "geotriangle")
-            return this.textures.geotriangle;
-        if (selectedSurface == "geotriangle2")
-            return this.textures.geotriangle2;
-        if (selectedSurface == "aristotle")
-            return this.textures.geotriangle2;
-        if (selectedSurface == "protractorT2")
-            return this.textures.protractorT2;
     }
     compileandconnectshaders(gl, program, vs, fs, reportdiv) {
         var serr = "";
@@ -312,7 +260,7 @@ class BaseApp {
                 }
             });
         });
-        this.texture = mytexture;
+        //!  this.texture= mytexture!;
         return mytexture;
     }
     /*
@@ -380,14 +328,16 @@ class BaseApp {
         gl.enableVertexAttribArray(posAttributeLocation);
         // <==
     }
-    renderenvironmentmap(gl, fov, uniformlocs, texture) {
+    renderenvironmentmap(gl, fov, texture) {
+        var invproj = this.viewDirectionProjectionInverseLocation;
+        var loc = this.skyboxLocation;
         gl.bindVertexArray(this.vaoEnvironment);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
         var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
-        gl.uniformMatrix4fv(uniformlocs.invproj, false, viewDirectionProjectionInverseMatrix);
-        gl.uniform1i(uniformlocs.loc, 0);
+        gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
+        gl.uniform1i(loc, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
         //gl.bindVertexArray(null);
     }
