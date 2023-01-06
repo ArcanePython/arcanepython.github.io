@@ -25,7 +25,7 @@ const twgl_js_1 = require("twgl.js");
 class DrawInstancedScene {
     constructor(gl) {
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 15;
+        this.scenesize = 5;
         this.sceneenv = 1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
@@ -67,8 +67,11 @@ void main() {
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
-    extendGUI(gui) { }
     defaultCamera(gl, cam) { }
+    extendGUI(gui) {
+        // Checkbox forward move animation on/off
+        gui.add(this.animationParameters, 'movetail');
+    }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.gl = gl;
         this.program = p.program;
@@ -87,12 +90,12 @@ void main() {
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         const posdim = 3;
         var fa = new Float32Array([
-            -0.1, 0.4, 0.6,
-            -0.1, -0.4, 0.6,
-            0.1, -0.4, 0.6,
-            -0.1, 0.4, 0.6,
-            0.1, -0.4, 0.6,
-            0.1, 0.4, 0.6,
+            -0.1, 0.4, 0.1,
+            -0.1, -0.4, 0.1,
+            0.1, -0.4, 0.1,
+            -0.1, 0.4, 0.1,
+            0.1, -0.4, 0.1,
+            0.1, 0.4, 0.1,
             -0.4, -0.1, 0,
             0.4, -0.1, 0,
             -0.4, 0.1, 0,
@@ -182,7 +185,7 @@ void main() {
         this.matrices.forEach((mat, ndx) => {
             var _a;
             twgl_js_1.m4.translation([-0.5 + ndx * 0.25, 0, 0.01 * ndx], mat);
-            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)
+            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.movetail)
                 twgl_js_1.m4.axisRotate(mat, [0, 0, 1], time * (0.1 + 0.1 * ndx), mat);
         });
         // upload the new matrix data

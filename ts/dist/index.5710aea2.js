@@ -24504,7 +24504,7 @@ const twgl_js_1 = require("twgl.js");
 class DrawInstancedScene {
     constructor(gl){
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 15;
+        this.scenesize = 5;
         this.sceneenv = 1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
@@ -24551,8 +24551,11 @@ void main() {
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
-    extendGUI(gui) {}
     defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        // Checkbox forward move animation on/off
+        gui.add(this.animationParameters, "movetail");
+    }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.gl = gl;
         this.program = p.program;
@@ -24573,22 +24576,22 @@ void main() {
         var fa = new Float32Array([
             -0.1,
             0.4,
-            0.6,
+            0.1,
             -0.1,
             -0.4,
-            0.6,
+            0.1,
             0.1,
             -0.4,
-            0.6,
+            0.1,
             -0.1,
             0.4,
-            0.6,
+            0.1,
             0.1,
             -0.4,
-            0.6,
+            0.1,
             0.1,
             0.4,
-            0.6,
+            0.1,
             -0.4,
             -0.1,
             0,
@@ -24706,7 +24709,7 @@ void main() {
                 0,
                 0.01 * ndx
             ], mat);
-            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move) twgl_js_1.m4.axisRotate(mat, [
+            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.movetail) twgl_js_1.m4.axisRotate(mat, [
                 0,
                 0,
                 1

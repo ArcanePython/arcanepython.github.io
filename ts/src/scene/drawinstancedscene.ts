@@ -13,15 +13,20 @@ export class DrawInstancedScene implements scene.SceneInterface
 // https://webgl2fundamentals.org/webgl/lessons/webgl-instanced-drawing.html
 {
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-    scenesize=15;
+    scenesize=5;
     sceneenv=1;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
-    public extendGUI(gui: datgui.GUI) {}
     public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
 
+    public extendGUI(gui: datgui.GUI) {
+        // Checkbox forward move animation on/off
+        gui.add(this.animationParameters!, 'movetail');
+     
+    }
+ 
   gl: WebGL2RenderingContext | undefined;
   fieldOfViewRadians: number  | undefined;
   
@@ -101,12 +106,12 @@ public constructor(gl: WebGL2RenderingContext)
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     const posdim = 3;
     var fa = new Float32Array([    
-      -0.1,  0.4, 0.6,
-      -0.1, -0.4, 0.6,
-       0.1, -0.4, 0.6,
-      -0.1,  0.4, 0.6,
-       0.1, -0.4, 0.6,
-       0.1,  0.4, 0.6,
+      -0.1,  0.4, 0.1,
+      -0.1, -0.4, 0.1,
+       0.1, -0.4, 0.1,
+      -0.1,  0.4, 0.1,
+       0.1, -0.4, 0.1,
+       0.1,  0.4, 0.1,
       -0.4, -0.1, 0,
        0.4, -0.1, 0,
       -0.4,  0.1, 0,
@@ -225,7 +230,7 @@ public constructor(gl: WebGL2RenderingContext)
     // update all the matrices
     this.matrices.forEach((mat, ndx) => {
       m4.translation([-0.5 + ndx * 0.25,0, 0.01*ndx], mat);
-     if(this.animationParameters?.b.move) m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
+     if(this.animationParameters?.movetail) m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
     });
 
     // upload the new matrix data
