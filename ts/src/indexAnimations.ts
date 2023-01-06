@@ -78,12 +78,15 @@ function preparedefaultparameters(dictPars: Map<string,string>)
 var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
 var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0, fov: 60 };
  
-function initScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number ): animation1.Animation1
+function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number ): animation1.Animation1
 {
   document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
    
   var mta1 = new animation1.Animation1(gl, app, scene, dictPars!, cdiv);
+
   mta1.main(gl, dictPars!);
+  if (scene.sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
+    else if (dictPars?.get("backcolorchoice")!=undefined) mta1.doShowBackgroundColorChoice = ((+dictPars?.get("backcolorchoice")!)>0);
   mta1.initGUI(defaultParameters);
   return mta1;
 }
@@ -96,19 +99,20 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
 
   if (dictPars?.get("animation4")!=undefined)
    {
-     var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
-     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture=mta1.skyboxtexture!; // background texture is needed for reflection
+     var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
+     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!; // background texture is needed for reflection
    } 
-  else if (dictPars?.get("animation1")!=undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
-  else if (dictPars?.get("animation3")!=undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
-  else if (dictPars?.get("animation0")!=undefined) initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
-  else if (dictPars?.get("animation5")!=undefined) initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
-  else if (dictPars?.get("animation6")!=undefined) initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
-  else if (dictPars?.get("animation7")!=undefined) initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70); 
-  else if (dictPars?.get("animation8")!=undefined) initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
- 
-  //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------
-  
+  else if (dictPars?.get("animation7")!=undefined)  initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
+  else if (dictPars?.get("animation1")!=undefined)  initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
+  else if (dictPars?.get("animation3")!=undefined)  initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
+  else if (dictPars?.get("animation0")!=undefined)  initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
+  else if (dictPars?.get("animation5")!=undefined)  initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
+  else if (dictPars?.get("animation6")!=undefined)  initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
+  else if (dictPars?.get("animation8")!=undefined)  initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
+  else if (dictPars?.get("whales")!=undefined)      initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
+  else if (dictPars?.get("variousfish")!=undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
+
+  //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------ 
   else 
   if (dictPars?.get("drawimagespace")!=undefined)
   {
@@ -135,11 +139,11 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
   } 
   else  if (dictPars?.get("whales")!=undefined)
   {
-    initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
+   
   } 
   else if (dictPars?.get("variousfish")!=undefined)
   {  
-    initScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
+ 
   } 
 
   else if (dictPars?.get("skyboxcube")!=undefined)
@@ -167,7 +171,7 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
   //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
-    initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
+    initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
     document.getElementById("gridcells")!.style.gridTemplateRows = "170px";
     //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
   //  oi.main(gl, dictPars!);

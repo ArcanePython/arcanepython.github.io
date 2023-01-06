@@ -14,7 +14,7 @@ export class DrawInstancedScene implements scene.SceneInterface
 {
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
     scenesize=115;
-    sceneenv=2;
+    sceneenv=-1;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;

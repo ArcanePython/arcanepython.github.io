@@ -33,6 +33,8 @@ export class BaseApp
     public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [4,0,0];
 
+    public doShowBackgroundColorChoice: boolean = false;
+
     // environment skybox
     private skyboxLocation: WebGLUniformLocation | undefined;
     private viewDirectionProjectionInverseLocation: WebGLUniformLocation | undefined;
@@ -101,9 +103,11 @@ export class BaseApp
         gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
         
         // Color dialog sets background color
-   //     var cel3 = gui.addColor(parameters, 'color0');
-
-   //     cel3.onChange( this.onChangeColorValue);
+        if (this.doShowBackgroundColorChoice)
+        {
+            var cel3 = gui.addColor(parameters, 'color0');
+            cel3.onChange( this.onChangeColorValue);
+        }
    //     console.log("<= baseApp initGUI");
         return gui;
     }

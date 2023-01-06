@@ -636,10 +636,12 @@ var defaultParameters = {
     shininess: 11.0,
     fov: 60
 };
-function initScene(gl, app, dictPars, scene, heighttop) {
+function initSkyboxScene(gl, app, dictPars, scene, heighttop) {
     document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
+    if (scene.sceneenv < 0) mta1.doShowBackgroundColorChoice = true;
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) != undefined) mta1.doShowBackgroundColorChoice = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) > 0;
     mta1.initGUI(defaultParameters);
     return mta1;
 }
@@ -647,15 +649,17 @@ function show(gl, app, dictPars) {
     // Default parameters for all Animation1 scenes
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
-        var mta1 = initScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
+        var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
         mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
         var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
         console.log("imscreated.");
@@ -697,8 +701,8 @@ function show(gl, app, dictPars) {
             sling: 117
         });
         fa.main(gl, dictPars);
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) initScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) initScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) ;
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) ;
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
         var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
         sbc.main(gl, dictPars);
@@ -720,7 +724,7 @@ function show(gl, app, dictPars) {
         var mtai = new drawinstanced.DrawInstanced();
         mtai.main(gl);
     } else {
-        initScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+        initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
         document.getElementById("gridcells").style.gridTemplateRows = "170px";
     //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
     //  oi.main(gl, dictPars!);
@@ -949,19 +953,20 @@ class drawimagespace extends baseapp.BaseApp {
         this.diffuseLocation = 0;
         this.imageSizeLocation = 0;
         this.tealLocation = 0;
+        this.aspectLocation = 0;
         this.xshiftLocation = 0;
         this.yshiftLocation = 0;
-        this.aspectLocation = 0;
         this.cxshift = 0; // total hhift texture space (pixels)
         this.cyshift = 0; // total hhift texture space (pixels)
-        this.cxdshift = 6.0; // moving camera
-        this.cydshift = 4.0; // moving camera
-        this.cxshiftmax = 1000; // moving camera x limit
-        this.cyshiftmax = 400; // moving camera y limit
+        /*
+              cxdshift: number=6.0; // moving camera
+              cydshift: number=4.0; // moving camera
+              cxshiftmax: number=1000; // moving camera x limit
+              cyshiftmax: number=400;  // moving camera y limit
+         */ this.xzoomoffsetLocation = 0;
+        this.yzoomoffsetLocation = 0;
         this.xzoomoffset = 0;
         this.yzoomoffset = 0;
-        this.xzoomoffsetLocation = 0;
-        this.yzoomoffsetLocation = 0;
         this.currentTexture = "geotriangle2";
         this.ny = 0.0;
         this.txtaspect = 1.0;
@@ -1001,7 +1006,7 @@ class drawimagespace extends baseapp.BaseApp {
           float py = gl_FragCoord.y-float(u_yshift);
           px-=u_xzoomoffset;
           py-=u_yzoomoffset;
-          vec2 texoffset1 = vec2(  px, py) / u_imageSize;
+          vec2 texoffset1 = vec2(  px,  u_imageSize.y -py) / u_imageSize;
           vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
 
           vec4 ccolor = texture(diffuse, texcoord1);
@@ -1215,25 +1220,29 @@ class drawimagespace extends baseapp.BaseApp {
                 return;
             }
             //  gl.bindTexture(gl.TEXTURE_2D, texture);
-            if (this.imagespaceParameters.move) {
-                this.cxshift += this.imagespaceParameters.speed * this.cxdshift;
-                if (this.cxshift > this.cxshiftmax) this.cxdshift = -this.cxdshift;
-                if (this.cxshift < 1) this.cxdshift = -this.cxdshift;
-                this.cyshift += this.imagespaceParameters.speed * this.cydshift;
-                if (this.cyshift > this.cyshiftmax) this.cydshift = -this.cydshift;
-                if (this.cyshift < 1) this.cydshift = -this.cydshift;
-            } else if (this.app.mouse.dragvector && this.app.mouse.dragdistance) {
-                var v = this.app.mouse.dragvector;
-                var d = this.app.mouse.dragpdistance;
-                this.cxshift += 0; //  /gl.canvas.width;
-                this.cyshift += 0; // /gl.canvas.width;
-                this.xzoomoffset = this.app.mouse.px;
-                this.yzoomoffset = this.app.mouse.py;
-            ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)             
-            }
-            // this does not work here, background is div background of canvas
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            /*
+                        if (this.imagespaceParameters.move)
+                        {
+                            this.cxshift+=this.imagespaceParameters.speed*this.cxdshift;
+                            if (this.cxshift>this.cxshiftmax) this.cxdshift=-this.cxdshift;
+                            if (this.cxshift<1) this.cxdshift=-this.cxdshift;
+                            this.cyshift+=this.imagespaceParameters.speed*this.cydshift;
+                            if (this.cyshift>this.cyshiftmax) this.cydshift=-this.cydshift;
+                            if (this.cyshift<1) this.cydshift=-this.cydshift;
+                        }     else
+                        if (this.app!.mouse.dragvector && this.app!.mouse.dragdistance)
+                        {
+                          var v = this.app!.mouse.dragvector!;
+                          var d = this.app!.mouse.dragpdistance!;
+                          this.cxshift+=0; //  /gl.canvas.width;
+                          this.cyshift+=0; // /gl.canvas.width;
+                          this.xzoomoffset= this.app!.mouse.px!;
+                          this.yzoomoffset= this.app!.mouse.py!;
+                          ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)
+                        }
+             */ // this does not work here, background is div background of canvas
+            //    gl.clearColor(0.0,0.0,0.0,1.0);       
+            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, texture);
             // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
@@ -13686,6 +13695,7 @@ class BaseApp {
             0,
             0
         ];
+        this.doShowBackgroundColorChoice = false;
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
         in vec4 a_position;
@@ -13759,8 +13769,10 @@ class BaseApp {
         // Slider for animation speed
         gui.add(parameters, "speed").min(0.002).max(0.06).step(0.001);
         // Color dialog sets background color
-        //     var cel3 = gui.addColor(parameters, 'color0');
-        //     cel3.onChange( this.onChangeColorValue);
+        if (this.doShowBackgroundColorChoice) {
+            var cel3 = gui.addColor(parameters, "color0");
+            cel3.onChange(this.onChangeColorValue);
+        }
         //     console.log("<= baseApp initGUI");
         return gui;
     }
@@ -24748,7 +24760,7 @@ class DrawInstancedScene {
     constructor(gl){
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 115;
-        this.sceneenv = 2;
+        this.sceneenv = -1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;

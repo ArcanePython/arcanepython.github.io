@@ -36,19 +36,21 @@ class drawimagespace extends baseapp.BaseApp {
         this.diffuseLocation = 0;
         this.imageSizeLocation = 0;
         this.tealLocation = 0;
+        this.aspectLocation = 0;
         this.xshiftLocation = 0;
         this.yshiftLocation = 0;
-        this.aspectLocation = 0;
         this.cxshift = 0; // total hhift texture space (pixels)
         this.cyshift = 0; // total hhift texture space (pixels)
-        this.cxdshift = 6.0; // moving camera
-        this.cydshift = 4.0; // moving camera
-        this.cxshiftmax = 1000; // moving camera x limit
-        this.cyshiftmax = 400; // moving camera y limit
-        this.xzoomoffset = 0;
-        this.yzoomoffset = 0;
+        /*
+              cxdshift: number=6.0; // moving camera
+              cydshift: number=4.0; // moving camera
+              cxshiftmax: number=1000; // moving camera x limit
+              cyshiftmax: number=400;  // moving camera y limit
+         */
         this.xzoomoffsetLocation = 0;
         this.yzoomoffsetLocation = 0;
+        this.xzoomoffset = 0;
+        this.yzoomoffset = 0;
         this.currentTexture = "geotriangle2";
         this.ny = 0.0;
         this.txtaspect = 1.0;
@@ -88,7 +90,7 @@ class drawimagespace extends baseapp.BaseApp {
           float py = gl_FragCoord.y-float(u_yshift);
           px-=u_xzoomoffset;
           py-=u_yzoomoffset;
-          vec2 texoffset1 = vec2(  px, py) / u_imageSize;
+          vec2 texoffset1 = vec2(  px,  u_imageSize.y -py) / u_imageSize;
           vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
 
           vec4 ccolor = texture(diffuse, texcoord1);
@@ -276,30 +278,30 @@ class drawimagespace extends baseapp.BaseApp {
                 return;
             }
             //  gl.bindTexture(gl.TEXTURE_2D, texture);
-            if (this.imagespaceParameters.move) {
-                this.cxshift += this.imagespaceParameters.speed * this.cxdshift;
-                if (this.cxshift > this.cxshiftmax)
-                    this.cxdshift = -this.cxdshift;
-                if (this.cxshift < 1)
-                    this.cxdshift = -this.cxdshift;
-                this.cyshift += this.imagespaceParameters.speed * this.cydshift;
-                if (this.cyshift > this.cyshiftmax)
-                    this.cydshift = -this.cydshift;
-                if (this.cyshift < 1)
-                    this.cydshift = -this.cydshift;
-            }
-            else if (this.app.mouse.dragvector && this.app.mouse.dragdistance) {
-                var v = this.app.mouse.dragvector;
-                var d = this.app.mouse.dragpdistance;
-                this.cxshift += 0; //  /gl.canvas.width;
-                this.cyshift += 0; // /gl.canvas.width;
-                this.xzoomoffset = this.app.mouse.px;
-                this.yzoomoffset = this.app.mouse.py;
-                ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)             
-            }
+            /*
+                        if (this.imagespaceParameters.move)
+                        {
+                            this.cxshift+=this.imagespaceParameters.speed*this.cxdshift;
+                            if (this.cxshift>this.cxshiftmax) this.cxdshift=-this.cxdshift;
+                            if (this.cxshift<1) this.cxdshift=-this.cxdshift;
+                            this.cyshift+=this.imagespaceParameters.speed*this.cydshift;
+                            if (this.cyshift>this.cyshiftmax) this.cydshift=-this.cydshift;
+                            if (this.cyshift<1) this.cydshift=-this.cydshift;
+                        }     else
+                        if (this.app!.mouse.dragvector && this.app!.mouse.dragdistance)
+                        {
+                          var v = this.app!.mouse.dragvector!;
+                          var d = this.app!.mouse.dragpdistance!;
+                          this.cxshift+=0; //  /gl.canvas.width;
+                          this.cyshift+=0; // /gl.canvas.width;
+                          this.xzoomoffset= this.app!.mouse.px!;
+                          this.yzoomoffset= this.app!.mouse.py!;
+                          ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)
+                        }
+             */
             // this does not work here, background is div background of canvas
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            //    gl.clearColor(0.0,0.0,0.0,1.0);       
+            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, texture);
             // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);

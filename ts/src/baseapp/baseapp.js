@@ -38,6 +38,7 @@ class BaseApp {
         // environment skybox camera
         this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [4, 0, 0];
+        this.doShowBackgroundColorChoice = false;
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
         in vec4 a_position;
@@ -109,8 +110,10 @@ class BaseApp {
         // Slider for animation speed
         gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
         // Color dialog sets background color
-        //     var cel3 = gui.addColor(parameters, 'color0');
-        //     cel3.onChange( this.onChangeColorValue);
+        if (this.doShowBackgroundColorChoice) {
+            var cel3 = gui.addColor(parameters, 'color0');
+            cel3.onChange(this.onChangeColorValue);
+        }
         //     console.log("<= baseApp initGUI");
         return gui;
     }
