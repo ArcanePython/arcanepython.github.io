@@ -27,8 +27,7 @@ export class BaseApp
 
     // programs
     protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
-    protected dictpars:Map<string,string>|undefined;
-
+ 
     // environment skybox camera
     public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [4,0,0];
@@ -58,8 +57,7 @@ export class BaseApp
         {
             this.gl=cgl!;  
             this.app=capp!;  
-            this.dictpars = dictpar;
-            this.twglprograminfo = new Array(1);
+             this.twglprograminfo = new Array(1);
             this.twglprograminfo![0] = twgl.createProgramInfo(cgl!,[this.vsEnvironmentMap,this.fsEnvironmentMap]);         
             document.getElementById('cdiv')!.innerHTML = "cdiv environment shaders initialized";    
             this.skyboxLocation = cgl!.getUniformLocation(this.twglprograminfo![0].program, "u_skybox")!;

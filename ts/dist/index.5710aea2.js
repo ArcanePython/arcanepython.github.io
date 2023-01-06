@@ -589,14 +589,14 @@ const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show
 const ShowOBJMTL = 1;
 const ShowFish = 3;
 const ShowAnimation1 = 5;
-var selectedShow = ShowAnimation1;
+var selectedShow = ShowFish;
 var cdiv = "c"; // name of canvas accessed by gl
 //=== DISPATCH TASKS =================================================================================================================
 function preparedefaultparameters(dictPars) {
     switch(selectedShow){
         case ShowFish:
-            console.log("ShowFish");
-            dictPars.set("fish", "");
+            console.log("variousfish");
+            dictPars.set("variousfish", "");
             dictPars.set("radius0", "90");
             dictPars.set("mesh", "strip");
             dictPars.set("hx", "1.2");
@@ -645,22 +645,8 @@ function initSkyboxScene(gl, app, dictPars, scene, heighttop) {
     mta1.initGUI(defaultParameters);
     return mta1;
 }
-function show(gl, app, dictPars) {
-    // Default parameters for all Animation1 scenes
-    //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
-        var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
-        mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
+function showOtherAnimations(gl, app, dictPars) {
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
         var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
         console.log("imscreated.");
         ims.main(gl, dictPars);
@@ -672,6 +658,7 @@ function show(gl, app, dictPars) {
             texture: "geotriangle2",
             color0: "#D0A010"
         });
+        return ims;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
         var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
         var baseapppars = {
@@ -687,6 +674,7 @@ function show(gl, app, dictPars) {
             color0: "#afb9af"
         });
         sk.main(gl, dictPars);
+        return sk;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars = {
@@ -701,9 +689,8 @@ function show(gl, app, dictPars) {
             sling: 117
         });
         fa.main(gl, dictPars);
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) ;
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) ;
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
+        return fa;
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
         var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
         sbc.main(gl, dictPars);
         sbc.initGUI({
@@ -714,22 +701,38 @@ function show(gl, app, dictPars) {
             angVelocityCam: 0.005,
             angVelocityCube: 0.003
         });
+        return sbc;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("canvas3dtexture")) != undefined) {
         var mtat = new canvas3dtexture.Canvas3dTexture();
         mtat.main(gl);
+        return undefined;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("objectlist")) != undefined) {
         var mtao = new objectlist.ObjectList();
         mtao.main(gl);
+        return undefined;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawinstanced")) != undefined) {
         var mtai = new drawinstanced.DrawInstanced();
         mtai.main(gl);
-    } else {
-        initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
-        document.getElementById("gridcells").style.gridTemplateRows = "170px";
-    //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
-    //  oi.main(gl, dictPars!);
-    //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
-    }
+        return undefined;
+    } else return initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+}
+function show(gl, app, dictPars) {
+    // Default parameters for all Animation1 scenes
+    //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
+        var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
+        mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
+        console.log("assigned " + mta1.skyboxtexture + " to scene reflection texture");
+    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
+    else showOtherAnimations(gl, app, dictPars);
 }
 //=== ENTRY MAIN ===============================================================================================================================
 function main() {
@@ -1281,7 +1284,7 @@ class drawimagespace extends baseapp.BaseApp {
             // gl.bindVertexArray(this.vertexArray!);
             // ..this results in the
             gl.drawArrays(gl.TRIANGLES, 0, 3);
-            document.getElementById("cdiv").innerHTML = "draw " + time + "<br>xshift=" + Math.round(this.cxshift) + "<br>yshift=" + this.cyshift + "<br>" + "<br>xcoom=" + this.xzoomoffset + "<br>yzoom=" + this.yzoomoffset + "<br>" + " c.width=" + gl.canvas.width + " " + " c.height=" + gl.canvas.height + "<br>texture=" + this.currentTexture + " ny=" + this.ny; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
+            document.getElementById("cdiv").innerHTML = "draw " + time + ", xshift=" + Math.round(this.cxshift) + ", yshift=" + this.cyshift + ", " + "xcoom=" + this.xzoomoffset + ", yzoom=" + this.yzoomoffset + "<br>" + " c.width=" + gl.canvas.width + " " + " c.height=" + gl.canvas.height + ", texture=" + this.currentTexture + " ny=" + this.ny; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
         } else document.getElementById("cdiv").innerHTML = "Initializing textures, time=" + time; //+ " this.textures.length="+this.textures!.length;
         requestAnimationFrame(()=>this.render(++time));
     }
@@ -13729,7 +13732,6 @@ class BaseApp {
         else {
             this.gl = cgl;
             this.app = capp;
-            this.dictpars = dictpar;
             this.twglprograminfo = new Array(1);
             this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [
                 this.vsEnvironmentMap,
@@ -14198,6 +14200,7 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
+        //=============================================================================
         // all parameters in any scene
         this.animation1Parameters = {
             b: this.baseappParameters,
@@ -14223,6 +14226,7 @@ class Animation1 extends baseapp.BaseApp {
         return gui;
     }
     main(gl, dictpar) {
+        this.dictpars = dictpar;
         if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
             var pienv = this.twglprograminfo[0];
             this.twglprograminfo = new Array(this.scene.twglprograminfo.length);

@@ -8,8 +8,13 @@ import * as scene from "./scene/scene"             // generic scene (interface)
 
 export class Animation1 extends baseapp.BaseApp
 {
+    public scene: scene.SceneInterface;                                                     
+    public skyboxtexture: WebGLTexture | undefined;
+
+    //=============================================================================
+
     // all parameters in any scene
-    animation1Parameters: scene.TAnimation1Parameters = {
+    private animation1Parameters: scene.TAnimation1Parameters = {
         b:  this.baseappParameters,
         texture: 'geotriangle2',
         fov: 60,
@@ -18,14 +23,15 @@ export class Animation1 extends baseapp.BaseApp
         shininess: 0.1,
         movetail: true
       };  
-    ctime: number = new Date().getTime();
-    scene: scene.SceneInterface;                                                     
-    clock: animationclock.AnimationClock;
-    cam: camhandler.Camera|undefined;
-     
-    skyboxtexture: WebGLTexture | undefined;
-    doclear: boolean = true;
-    doTwglEnv: boolean = false;
+
+    private ctime: number = new Date().getTime();
+    private clock: animationclock.AnimationClock;
+    private  cam: camhandler.Camera|undefined;
+    
+    private doclear: boolean = true;
+    private doTwglEnv: boolean = false;
+
+    private dictpars:Map<string,string>|undefined;
 
     constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , cscene: scene.SceneInterface, dictpar:Map<string,string>, cdiv: string)
     {       
@@ -46,6 +52,8 @@ export class Animation1 extends baseapp.BaseApp
 
     public main(gl:WebGL2RenderingContext,  dictpar:Map<string,string>)
     {
+        this.dictpars = dictpar;
+        
         if (this.scene.twglprograminfo!=null && this.scene.twglprograminfo!=undefined) 
            {
               var pienv = this.twglprograminfo![0];

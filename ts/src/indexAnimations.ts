@@ -26,11 +26,13 @@ import * as skyboxscene from "./scene/skyboxscene";                    // scene:
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
 import * as matobjscene from "./scene/matobjscene";            // scene: show reflecting cube in skybox
 
+import * as baseapp from "./baseapp/baseapp"
+
 const ShowOBJMTL     = 1;
 const ShowFish       = 3; 
 const ShowAnimation1 = 5; 
 
-var selectedShow    = ShowAnimation1;
+var selectedShow    = ShowFish;
 
 var cdiv = 'c';  // name of canvas accessed by gl
 
@@ -42,8 +44,8 @@ function preparedefaultparameters(dictPars: Map<string,string>)
   {
         case ShowFish:
           {
-            console.log("ShowFish");
-            dictPars.set("fish","");
+            console.log("variousfish");
+            dictPars.set("variousfish","");
             dictPars.set("radius0","90");
             dictPars.set("mesh","strip");
             dictPars.set("hx","1.2");
@@ -78,7 +80,7 @@ function preparedefaultparameters(dictPars: Map<string,string>)
 var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
 var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0, fov: 60 };
  
-function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number ): animation1.Animation1
+function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation1.Animation1
 {
   document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
    
@@ -91,6 +93,68 @@ function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, di
   return mta1;
 }
 
+function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListener,dictPars: Map<string,string> | undefined ): baseapp.BaseApp | undefined
+{
+  if (dictPars?.get("drawimagespace")!=undefined)
+  {
+    var ims = new drawimagespace.drawimagespace(gl,app,dictPars,cdiv); 
+    console.log("imscreated.");
+    ims.main(gl,dictPars);
+    console.log("ins.main done.");
+    ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2',color0: "#D0A010"  }); 
+    return ims;
+  } 
+  else  if (dictPars?.get("whalesapp")!=undefined)
+  {
+    var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
+    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
+    sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
+    sk.main(gl, dictPars);
+    return sk;
+  } 
+  else if (dictPars?.get("variousfishapp")!=undefined)
+  {  
+
+    var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
+    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
+    fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
+    fa.main(gl, dictPars);
+    return  fa;
+  }
+  else if (dictPars?.get("skyboxcube")!=undefined)
+  {  
+    var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
+    sbc.main(gl, dictPars);
+    sbc.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
+    return sbc;
+  } 
+   else
+   if(dictPars?.get("canvas3dtexture")!=undefined)
+   {
+     var mtat = new canvas3dtexture.Canvas3dTexture();
+     mtat.main(gl);
+     return undefined;
+   }
+   else if (dictPars?.get("objectlist")!=undefined)
+   {
+     var mtao = new objectlist.ObjectList();
+     mtao.main(gl);
+     return undefined;
+   } 
+   else if (dictPars?.get("drawinstanced")!=undefined)
+   {
+     var mtai = new drawinstanced.DrawInstanced();
+     mtai.main(gl);
+     return undefined;
+   } 
+  //--------------------------------------------------------------------------------------------------
+  else  // any other, take first argument as OBJ/MTL to show
+  {
+    return initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
+  }    
+}
+
+
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
 {
   // Default parameters for all Animation1 scenes
@@ -101,82 +165,19 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
    {
      var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
      (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!; // background texture is needed for reflection
+     console.log("assigned "+mta1.skyboxtexture!+" to scene reflection texture");
    } 
-  else if (dictPars?.get("animation7")!=undefined)  initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
-  else if (dictPars?.get("animation1")!=undefined)  initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
-  else if (dictPars?.get("animation3")!=undefined)  initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
-  else if (dictPars?.get("animation0")!=undefined)  initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
-  else if (dictPars?.get("animation5")!=undefined)  initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
-  else if (dictPars?.get("animation6")!=undefined)  initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
-  else if (dictPars?.get("animation8")!=undefined)  initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
-  else if (dictPars?.get("whales")!=undefined)      initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
-  else if (dictPars?.get("variousfish")!=undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
-
-  //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------ 
-  else 
-  if (dictPars?.get("drawimagespace")!=undefined)
-  {
-    var ims = new drawimagespace.drawimagespace(gl,app,dictPars,cdiv); 
-    console.log("imscreated.");
-    ims.main(gl,dictPars);
-    console.log("ins.main done.");
-    ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2',color0: "#D0A010"  }); 
-  } 
-  else  if (dictPars?.get("whalesapp")!=undefined)
-  {
-    var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
-    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
-    sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
-    sk.main(gl, dictPars);
-  } 
-  else if (dictPars?.get("variousfishapp")!=undefined)
-  {  
-
-    var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
-    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
-    fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
-    fa.main(gl, dictPars);
-  } 
-  else  if (dictPars?.get("whales")!=undefined)
-  {
+    else if (dictPars?.get("animation7")!=undefined)  initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
+    else if (dictPars?.get("animation1")!=undefined)  initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
+    else if (dictPars?.get("animation3")!=undefined)  initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
+    else if (dictPars?.get("animation0")!=undefined)  initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
+    else if (dictPars?.get("animation5")!=undefined)  initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
+    else if (dictPars?.get("animation6")!=undefined)  initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
+    else if (dictPars?.get("animation8")!=undefined)  initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
+    else if (dictPars?.get("whales")!=undefined)      initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
+    else if (dictPars?.get("variousfish")!=undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
    
-  } 
-  else if (dictPars?.get("variousfish")!=undefined)
-  {  
- 
-  } 
-
-  else if (dictPars?.get("skyboxcube")!=undefined)
-  {  
-    var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
-    sbc.main(gl, dictPars);
-    sbc.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
-  } 
-   else
-   if(dictPars?.get("canvas3dtexture")!=undefined)
-   {
-     var mtat = new canvas3dtexture.Canvas3dTexture();
-     mtat.main(gl);
-   }
-   else if (dictPars?.get("objectlist")!=undefined)
-   {
-     var mtao = new objectlist.ObjectList();
-     mtao.main(gl);
-   } 
-   else if (dictPars?.get("drawinstanced")!=undefined)
-   {
-     var mtai = new drawinstanced.DrawInstanced();
-     mtai.main(gl);
-   } 
-  //--------------------------------------------------------------------------------------------------
-  else  // any other, take first argument as OBJ/MTL to show
-  {
-    initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
-    document.getElementById("gridcells")!.style.gridTemplateRows = "170px";
-    //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
-  //  oi.main(gl, dictPars!);
-  //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
-  }      
+  else showOtherAnimations(gl, app, dictPars );
 }
 
 //=== ENTRY MAIN ===============================================================================================================================

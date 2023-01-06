@@ -43,15 +43,15 @@ const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show
 const ShowOBJMTL = 1;
 const ShowFish = 3;
 const ShowAnimation1 = 5;
-var selectedShow = ShowAnimation1;
+var selectedShow = ShowFish;
 var cdiv = 'c'; // name of canvas accessed by gl
 //=== DISPATCH TASKS =================================================================================================================
 function preparedefaultparameters(dictPars) {
     switch (selectedShow) {
         case ShowFish:
             {
-                console.log("ShowFish");
-                dictPars.set("fish", "");
+                console.log("variousfish");
+                dictPars.set("variousfish", "");
                 dictPars.set("radius0", "90");
                 dictPars.set("mesh", "strip");
                 dictPars.set("hx", "1.2");
@@ -94,12 +94,63 @@ function initSkyboxScene(gl, app, dictPars, scene, heighttop) {
     mta1.initGUI(defaultParameters);
     return mta1;
 }
+function showOtherAnimations(gl, app, dictPars) {
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
+        var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
+        console.log("imscreated.");
+        ims.main(gl, dictPars);
+        console.log("ins.main done.");
+        ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
+        return ims;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
+        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
+        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
+        sk.initGUI({ move: false, movetail: true, speed: 0.06, texture: "zelenskyy", color0: "#afb9af" });
+        sk.main(gl, dictPars);
+        return sk;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
+        var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
+        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
+        fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2', sling: 117 });
+        fa.main(gl, dictPars);
+        return fa;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
+        var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
+        sbc.main(gl, dictPars);
+        sbc.initGUI({ movecube: false, moveenv: false, fieldOfViewDegrees: 32, radiusCam: 5.0, angVelocityCam: 0.005, angVelocityCube: 0.003 });
+        return sbc;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("canvas3dtexture")) != undefined) {
+        var mtat = new canvas3dtexture.Canvas3dTexture();
+        mtat.main(gl);
+        return undefined;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("objectlist")) != undefined) {
+        var mtao = new objectlist.ObjectList();
+        mtao.main(gl);
+        return undefined;
+    }
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawinstanced")) != undefined) {
+        var mtai = new drawinstanced.DrawInstanced();
+        mtai.main(gl);
+        return undefined;
+    }
+    //--------------------------------------------------------------------------------------------------
+    else // any other, take first argument as OBJ/MTL to show
+     {
+        return initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+    }
+}
 function show(gl, app, dictPars) {
     // Default parameters for all Animation1 scenes
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
         var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
         mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
+        console.log("assigned " + mta1.skyboxtexture + " to scene reflection texture");
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
@@ -119,56 +170,8 @@ function show(gl, app, dictPars) {
         initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined)
         initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
-    //--- Animations with a specific parameter set based on baseapp ------------------------------------------------------------------------------------------------------------------ 
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
-        var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
-        console.log("imscreated.");
-        ims.main(gl, dictPars);
-        console.log("ins.main done.");
-        ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
-        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
-        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
-        sk.initGUI({ move: false, movetail: true, speed: 0.06, texture: "zelenskyy", color0: "#afb9af" });
-        sk.main(gl, dictPars);
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
-        var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
-        var baseapppars = { move: true, speed: 0.4, color0: "#A0A0A0" };
-        fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2', sling: 117 });
-        fa.main(gl, dictPars);
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) {
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) {
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
-        var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
-        sbc.main(gl, dictPars);
-        sbc.initGUI({ movecube: false, moveenv: false, fieldOfViewDegrees: 32, radiusCam: 5.0, angVelocityCam: 0.005, angVelocityCube: 0.003 });
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("canvas3dtexture")) != undefined) {
-        var mtat = new canvas3dtexture.Canvas3dTexture();
-        mtat.main(gl);
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("objectlist")) != undefined) {
-        var mtao = new objectlist.ObjectList();
-        mtao.main(gl);
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawinstanced")) != undefined) {
-        var mtai = new drawinstanced.DrawInstanced();
-        mtai.main(gl);
-    }
-    //--------------------------------------------------------------------------------------------------
-    else // any other, take first argument as OBJ/MTL to show
-     {
-        initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
-        document.getElementById("gridcells").style.gridTemplateRows = "170px";
-        //var oi = new objmtlimportapp.MatObjApp(gl, app, dictPars!);
-        //  oi.main(gl, dictPars!);
-        //  oi.initGUI({ move: false,  speed: 0,  texture: '', color0: "#9cbbcd" });
-    }
+    else
+        showOtherAnimations(gl, app, dictPars);
 }
 //=== ENTRY MAIN ===============================================================================================================================
 function main() {

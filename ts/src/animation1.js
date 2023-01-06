@@ -26,6 +26,7 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
+        //=============================================================================
         // all parameters in any scene
         this.animation1Parameters = {
             b: this.baseappParameters,
@@ -51,6 +52,7 @@ class Animation1 extends baseapp.BaseApp {
         return gui;
     }
     main(gl, dictpar) {
+        this.dictpars = dictpar;
         if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
             var pienv = this.twglprograminfo[0];
             this.twglprograminfo = new Array(this.scene.twglprograminfo.length);

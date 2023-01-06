@@ -363,8 +363,8 @@ export class drawimagespace extends baseapp.BaseApp
             // ..this results in the
             gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-            document.getElementById("cdiv")!.innerHTML ="draw "+time+"<br>xshift="+Math.round(this.cxshift)+"<br>yshift="+this.cyshift+"<br>"+"<br>xcoom="+this.xzoomoffset+"<br>yzoom="+this.yzoomoffset+"<br>"+" c.width="+gl.canvas.width+
-                                                        " "+" c.height="+gl.canvas.height+"<br>texture="+this.currentTexture+" ny="+this.ny  ; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
+            document.getElementById("cdiv")!.innerHTML ="draw "+time+", xshift="+Math.round(this.cxshift)+", yshift="+this.cyshift+", "+"xcoom="+this.xzoomoffset+", yzoom="+this.yzoomoffset+"<br>"+" c.width="+gl.canvas.width+
+                                                        " "+" c.height="+gl.canvas.height+", texture="+this.currentTexture+" ny="+this.ny  ; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
           } else 
             document.getElementById("cdiv")!.innerHTML = "Initializing textures, time="+time ; //+ " this.textures.length="+this.textures!.length;
           requestAnimationFrame(() => this.render(++time));
