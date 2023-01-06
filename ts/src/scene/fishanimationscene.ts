@@ -33,7 +33,11 @@ export class FishAnimationScene implements scene.SceneInterface
   positionLocation: number | undefined;
   resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
   defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) {}
-  extendGUI(gui: datgui.GUI) {}
+  extendGUI(gui: datgui.GUI)
+   {
+    gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+  
+   }
 
    /* fishAnimationParameters = {
       b: this.baseappParameters,
@@ -68,7 +72,6 @@ export class FishAnimationScene implements scene.SceneInterface
     {       
     //  super(cgl, capp, dictpar, cdiv);
       FishAnimationScene.instance=this;
-      twgl.setAttributePrefix("a_");
       this.twglprograminfo = new Array(2);
       this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
@@ -76,8 +79,6 @@ export class FishAnimationScene implements scene.SceneInterface
     initScene(gl: WebGL2RenderingContext,  cap:scene.TAnimation1Parameters, dictpar:Map<string,string>| undefined,  p: twgl.ProgramInfo, textureReadyCallback: (a:any)=>void | undefined)
     //main(gl:WebGL2RenderingContext, dictpar:Map<string,string>)
     {
-      //twgl.setAttributePrefix("a_");
-      //var gl = this.gl!;
       var nFish: number = 0;
       var time0: number = 0;
       this.fish.forEach((afish)=>{

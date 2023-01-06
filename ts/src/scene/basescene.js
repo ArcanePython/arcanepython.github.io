@@ -13,6 +13,21 @@ class BaseScene {
         this.worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
         this.worldLocation = gl.getUniformLocation(program, "u_world");
     }
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
+    }
     initSingleObject(gl, program, setGeometry, setNormals, sceneReadyCallback) {
         // Create a vertex array object (attribute state)
         this.vaoSingleObject = gl.createVertexArray();

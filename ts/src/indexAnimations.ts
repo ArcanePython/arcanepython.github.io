@@ -1,32 +1,34 @@
-import * as mtls from "./baseapp/mouselistener";                       // app: connect events for mouse and mouse wheel
+import * as baseapp from "./baseapp/baseapp"                           // baseapp providing environment skybox
+import * as mtls from "./baseapp/mouselistener";                       // baseapp connects events for mouse click, move and wheel to an app object
 
-//import * as objmtlimport from "./objreader/objmtlimport.js";           // main: obj/mtl file imports
+import * as skyboxcube from "./others/skyboxcube"                      // baseapp derivative: show reflecting cube in skybox
+import * as objectlist from "./others/objectlist";                     // baseapp derivative: show bouncing guy node tree
+import * as drawinstanced from "./others/drawinstanced";               // baseapp derivative: show texture space navigator
+import * as canvas3dtexture from "./others/canvas3dtexture";           // baseapp derivative: show 3d on texture
+import * as skeleton from "./others/skeleton"                          // baseapp derivative: bone model (single object)
+import * as fishanimation from "./others/fishanimation"                // baseapp derivative: bone model (multiple objects)
+import * as drawimagespace from "./others/drawimagespace"              // baseapp derivative: image space texture
 
-import * as drawimagespace from "./others/drawimagespace"                     // baseapp derivative: image space texture
 import * as animation1 from "./animation1"                             // baseapp derivative: scene container
-import * as skyboxcube from "./others/skyboxcube"                             // baseapp derivative: show reflecting cube in skybox
-import * as objectlist from "./others/objectlist";                            // baseapp derivative: show bouncing guy node tree
-import * as drawinstanced from "./others/drawinstanced";                      // baseapp derivative: show texture space navigator
-import * as canvas3dtexture from "./others/canvas3dtexture";                  // baseapp derivative: show 3d on texture
+import * as animation2 from "./animation2"                             // baseapp derivative: scene container
 
-import * as skeleton from "./others/skeleton"                       // baseapp derivative: bone model (single)
-import * as skeletonscene from "./scene/skeletonscene"                       // baseapp derivative: bone model (single)
-import * as fishanimationscene from "./scene/fishanimationscene"                       // baseapp derivative: bone model (single)
-import * as fishanimation from "./others/fishanimation"                      // baseapp derivative: bone model (flock)
-//import * as objmtlimportapp from "./others/objmtlimportapp"                      // baseapp derivative: bone model (flock)
+import * as scene from "./scene/scene";                                // interface to implement for scenes
 
-import * as scene from "./scene/scene";                                // scene: interface to implement
+import * as skyboxscene from "./scene/skyboxscene";                    // scene: show skybox only (empty scene)
 import * as manytexturescene from "./scene/manytexturescene"           // scene: many textures / objects
 import * as rotatingcubescene from "./scene/mixedtexturescene";        // scene: two textures alpha-mixed
 import * as lightscene from "./scene/lightscene";                      // scene: lights directed, point, spot
 import * as objectlistscene from "./scene/objectlistscene";            // scene: show bouncing guy node tree
 import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";  // scene: show 3d on texture
 import * as drawinstancedscene from "./scene/drawinstancedscene";      // scene: show texture space navigator
-import * as skyboxscene from "./scene/skyboxscene";                    // scene: show skybox only (empty scene)
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
-import * as matobjscene from "./scene/matobjscene";            // scene: show reflecting cube in skybox
+import * as matobjscene from "./scene/matobjscene";                    // scene: show textured objects from .obj/.mtl
+import * as skeletonscene from "./scene/skeletonscene"                 // scene: bone model (single object)
+import * as fishanimationscene from "./scene/fishanimationscene"       // scene: bone model (multiple objects)
 
-import * as baseapp from "./baseapp/baseapp"
+
+var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
+var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117, shininess:11.0, fov: 60 };
 
 const ShowOBJMTL     = 1;
 const ShowFish       = 3; 
@@ -76,15 +78,25 @@ function preparedefaultparameters(dictPars: Map<string,string>)
         default: return;
   }
 }
-
-var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
-var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117,  shininess:11.0, fov: 60 };
  
 function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation1.Animation1
 {
   document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
    
   var mta1 = new animation1.Animation1(gl, app, scene, dictPars!, cdiv);
+
+  mta1.main(gl, dictPars!);
+  if (scene.sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
+    else if (dictPars?.get("backcolorchoice")!=undefined) mta1.doShowBackgroundColorChoice = ((+dictPars?.get("backcolorchoice")!)>0);
+  mta1.initGUI(defaultParameters);
+  return mta1;
+}
+
+function initAnimation2Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation2.Animation2
+{
+  document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
+   
+  var mta1 = new animation2.Animation2(gl, app, scene, dictPars!, cdiv);
 
   mta1.main(gl, dictPars!);
   if (scene.sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
@@ -114,7 +126,6 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
   } 
   else if (dictPars?.get("variousfishapp")!=undefined)
   {  
-
     var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
     var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
     fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
@@ -128,54 +139,53 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
     sbc.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
     return sbc;
   } 
-   else
-   if(dictPars?.get("canvas3dtexture")!=undefined)
-   {
-     var mtat = new canvas3dtexture.Canvas3dTexture();
-     mtat.main(gl);
-     return undefined;
-   }
-   else if (dictPars?.get("objectlist")!=undefined)
-   {
-     var mtao = new objectlist.ObjectList();
-     mtao.main(gl);
-     return undefined;
-   } 
-   else if (dictPars?.get("drawinstanced")!=undefined)
-   {
-     var mtai = new drawinstanced.DrawInstanced();
-     mtai.main(gl);
-     return undefined;
-   } 
+  else
+  if(dictPars?.get("canvas3dtexture")!=undefined)
+  {
+    var mtat = new canvas3dtexture.Canvas3dTexture();
+    mtat.main(gl);
+    return undefined;
+  }
+  else if (dictPars?.get("objectlist")!=undefined)
+  {
+    var mtao = new objectlist.ObjectList();
+    mtao.main(gl);
+    return undefined;
+  } 
+  else if (dictPars?.get("drawinstanced")!=undefined)
+  {
+    var mtai = new drawinstanced.DrawInstanced();
+    mtai.main(gl);
+    return undefined;
+  } 
   //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
-    return initSkyboxScene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
+    return initAnimation2Scene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
   }    
 }
 
 
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
 {
-  // Default parameters for all Animation1 scenes
- 
+   
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
   if (dictPars?.get("animation4")!=undefined)
    {
-     var mta1 = initSkyboxScene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
+     var mta1 = initAnimation2Scene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
      (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!; // background texture is needed for reflection
      console.log("assigned "+mta1.skyboxtexture!+" to scene reflection texture");
    } 
-    else if (dictPars?.get("animation7")!=undefined)  initSkyboxScene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
-    else if (dictPars?.get("animation1")!=undefined)  initSkyboxScene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
-    else if (dictPars?.get("animation3")!=undefined)  initSkyboxScene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
-    else if (dictPars?.get("animation0")!=undefined)  initSkyboxScene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
-    else if (dictPars?.get("animation5")!=undefined)  initSkyboxScene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
-    else if (dictPars?.get("animation6")!=undefined)  initSkyboxScene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
-    else if (dictPars?.get("animation8")!=undefined)  initSkyboxScene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
-    else if (dictPars?.get("whales")!=undefined)      initSkyboxScene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
-    else if (dictPars?.get("variousfish")!=undefined) initSkyboxScene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
+    else if (dictPars?.get("animation7")!=undefined)  initAnimation2Scene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
+    else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
+    else if (dictPars?.get("animation5")!=undefined)  initAnimation2Scene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
+    else if (dictPars?.get("animation3")!=undefined)  initAnimation2Scene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
+    else if (dictPars?.get("animation0")!=undefined)  initAnimation2Scene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
+    else if (dictPars?.get("animation6")!=undefined)  initAnimation2Scene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
+    else if (dictPars?.get("whales")!=undefined)      initAnimation2Scene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
+    else if (dictPars?.get("variousfish")!=undefined) initAnimation2Scene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
+    else if (dictPars?.get("animation8")!=undefined)  initAnimation2Scene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
    
   else showOtherAnimations(gl, app, dictPars );
 }

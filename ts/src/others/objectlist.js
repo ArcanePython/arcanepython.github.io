@@ -23,8 +23,7 @@ exports.ObjectList = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const objectnode = __importStar(require("./../scene/objectnode"));
-class ObjectList //extends twglbaseapp.twglbaseapp
- {
+class ObjectList {
     constructor() {
         this.vs = `#version 300 es
 

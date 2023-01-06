@@ -30,7 +30,7 @@ export interface SceneInterface
   sceneenv:number;
   twglprograminfo: twgl.ProgramInfo[]|null;
   animationParameters: TAnimation1Parameters | undefined;
-  positionLocation: number | undefined; // WebGLUniformLocation | undefined;
+  positionLocation: number | undefined;
   cameraPosition: [number,number,number] | undefined
 
   vertexShaderSource: string;

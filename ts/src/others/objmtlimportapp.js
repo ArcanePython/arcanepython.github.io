@@ -143,7 +143,6 @@ void main() {
   outColor[3] = 1.0;
   glFragColor = outColor;
  }`;
-        twgl.setAttributePrefix("a_");
         var gl = this.gl;
         console.log("=> Constructor - create programInfo");
         var pi = this.twglprograminfo[0];

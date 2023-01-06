@@ -13,8 +13,8 @@ export class DrawInstancedScene implements scene.SceneInterface
 // https://webgl2fundamentals.org/webgl/lessons/webgl-instanced-drawing.html
 {
     twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-    scenesize=115;
-    sceneenv=-1;
+    scenesize=15;
+    sceneenv=1;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;
@@ -30,16 +30,20 @@ in vec4 a_position;
 in vec4 color;
 in mat4 matrix;
 uniform mat4 projection;
+uniform mat4 viewprojection;
 uniform mat4 view;
 
 out vec4 v_color;
 
 void main() {
+
   // Multiply the position by the matrix.
-  gl_Position = projection * view * matrix * a_position;
+ // gl_Position = projection * view * matrix * a_position;
+  gl_Position = viewprojection * matrix * a_position;
 
   // Pass the vertex color to the fragment shader.
   v_color = color;
+
 }
 `;
 
@@ -59,6 +63,7 @@ void main() {
 program: WebGLProgram | undefined;
 projectionLoc: WebGLUniformLocation | undefined;
 viewLoc: WebGLUniformLocation | undefined;
+viewprojectionLoc: WebGLUniformLocation | undefined;
 vao: WebGLVertexArrayObject | undefined;
 
 numVertices:number = 12;
@@ -70,15 +75,11 @@ matrixData: Float32Array| undefined;
 public constructor(gl: WebGL2RenderingContext)
 {
   this.twglprograminfo=new Array(2);   
-  console.log("=> scene constructor instanced")
   this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-  console.log("<= scene constructor instanced")
 }
 
   initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
   {
-    twgl.setAttributePrefix("a_");
-  
     this.gl = gl;
     this.program = p.program;
     //const programInfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
@@ -89,40 +90,41 @@ public constructor(gl: WebGL2RenderingContext)
     const positionLoc = gl.getAttribLocation(this.program, 'a_position');
     const colorLoc = gl.getAttribLocation(this.program, 'color');
     const matrixLoc = gl.getAttribLocation(this.program, 'matrix');
+    this.viewprojectionLoc = gl.getUniformLocation(this.program, 'viewprojection')!;
     this.projectionLoc = gl.getUniformLocation(this.program, 'projection')!;
     this.viewLoc = gl.getUniformLocation(this.program, 'view')!;
 
     // Create a vertex array object (attribute state)
     this.vao = gl.createVertexArray()!;
 
-    // and make it the one we're currently working with
-    gl.bindVertexArray(this.vao);
-
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-      
-                      -0.1,  0.4,
-                      -0.1, -0.4,
-                        0.1, -0.4,
-                      -0.1,  0.4,
-                      0.1, -0.4,
-                      0.1,  0.4, 
-                      -0.4, -0.1,
-                      0.4, -0.1,
-                      -0.4,  0.1,
-                      -0.4,  0.1,
-                        0.4, -0.1,
-                        0.4,  0.1, 
-                
-      ]), gl.STATIC_DRAW);
-    this.numVertices = 12;
+    const posdim = 3;
+    var fa = new Float32Array([    
+      -0.1,  0.4, 0.6,
+      -0.1, -0.4, 0.6,
+       0.1, -0.4, 0.6,
+      -0.1,  0.4, 0.6,
+       0.1, -0.4, 0.6,
+       0.1,  0.4, 0.6,
+      -0.4, -0.1, 0,
+       0.4, -0.1, 0,
+      -0.4,  0.1, 0,
+      -0.4,  0.1, 0,
+       0.4, -0.1, 0,
+       0.4,  0.1, 0]);
+
+    gl.bufferData(gl.ARRAY_BUFFER,fa, gl.STATIC_DRAW);
+    this.numVertices = fa.length/posdim;
+ 
+    // and make it the one we're currently working with
+    gl.bindVertexArray(this.vao);
 
     // setup the position attribute
     gl.enableVertexAttribArray(positionLoc);
     gl.vertexAttribPointer(
         positionLoc,  // location
-        2,            // size (num values to pull from buffer per iteration)
+        posdim,            // size (num values to pull from buffer per iteration)
         gl.FLOAT,     // type of data in buffer
         false,        // normalize
         0,            // stride (0 = compute from size and type above)
@@ -206,16 +208,24 @@ public constructor(gl: WebGL2RenderingContext)
     // set the view and projection matrices since
     // they are shared by all instances
     const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
-    gl.uniformMatrix4fv(this.projectionLoc!, false, m4.ortho(-aspect, aspect, -1, 1, -1, 1));
-    gl.uniformMatrix4fv(this.viewLoc!, false, m4.axisRotation([0,0,1],time * .1));
 
+    var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
+    var m2=m4.axisRotation([0,0,1],time * .1);
+
+   // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
+   // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
+
+    //var m3 = m4.multiply(m1,m2);
+    var m3 = cam!.viewProjection;
+    gl.uniformMatrix4fv(this.viewprojectionLoc!, false, m3);
+  
     // setup all attributes
     gl.bindVertexArray(this.vao!);
 
     // update all the matrices
     this.matrices.forEach((mat, ndx) => {
-      m4.translation([-0.5 + ndx * 0.25, 0, 0], mat);
-      m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
+      m4.translation([-0.5 + ndx * 0.25,0, 0.01*ndx], mat);
+     if(this.animationParameters?.b.move) m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
     });
 
     // upload the new matrix data

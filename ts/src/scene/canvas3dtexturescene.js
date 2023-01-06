@@ -27,8 +27,9 @@ class Canvas3dTextureScene {
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 60;
         this.sceneenv = 2;
-        this.targetTextureWidth = 512;
-        this.targetTextureHeight = 512;
+        this.widthTextureToRenderOn = 512;
+        this.heighttextureToRenderOn = 512;
+        this.fieldOfViewRadians = (60 * Math.PI / 180);
         this.vertexShaderSource = `#version 300 es
 
     // an attribute is an input (in) to a vertex shader.
@@ -36,8 +37,10 @@ class Canvas3dTextureScene {
     in vec4 a_position;
     in vec2 a_texcoord;
 
-    // A matrix to transform the positions by
-    uniform mat4 u_matrix;
+    // default matrices
+    uniform mat4 u_worldViewProjection;
+    uniform mat4 u_world;
+    uniform mat4 u_worldInverseTranspose;
 
     // a varying to pass the texture coordinates to the fragment shader
     out vec2 v_texcoord;
@@ -45,7 +48,7 @@ class Canvas3dTextureScene {
     // all shaders have a main function
     void main() {
       // Multiply the position by the matrix.
-      gl_Position = u_matrix * a_position;
+      gl_Position = u_worldViewProjection * a_position;
 
       // Pass the texcoord to the fragment shader.
       v_texcoord = a_texcoord;
@@ -69,7 +72,6 @@ class Canvas3dTextureScene {
       outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult;
     }
     `;
-        this.fieldOfViewRadians = (60 * Math.PI / 180);
         this.ctime = 0;
         this.modelXRotationRadians = 0;
         this.modelYRotationRadians = 0;
@@ -108,16 +110,16 @@ class Canvas3dTextureScene {
         }
         console.log("=> canvas3dtexturescene.initScene()");
         // Use our boilerplate utils to compile the shaders and link into a program
-        this.program = p.program;
+        //this.program = p.program;
         // twgl.createProgramFromSources(gl,
         //    [this.vertexShaderSource, this.fragmentShaderSource]);
         // look up where the vertex data needs to go.
-        this.positionAttributeLocation = gl.getAttribLocation(this.program, "a_position");
-        var texcoordAttributeLocation = gl.getAttribLocation(this.program, "a_texcoord");
+        this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
+        var texcoordAttributeLocation = gl.getAttribLocation(p.program, "a_texcoord");
         // look up uniform locations
-        this.matrixLocation = gl.getUniformLocation(this.program, "u_matrix");
-        this.textureLocation = gl.getUniformLocation(this.program, "u_texture");
-        this.colorMultLocation = gl.getUniformLocation(this.program, "u_colorMult");
+        this.worldViewProjectionLocation = gl.getUniformLocation(p.program, "u_worldViewProjection");
+        this.textureLocation = gl.getUniformLocation(p.program, "u_texture");
+        this.colorMultLocation = gl.getUniformLocation(p.program, "u_colorMult");
         // Create a buffer
         this.positionBuffer = gl.createBuffer();
         // Create a vertex array object (attribute state)
@@ -157,11 +159,11 @@ class Canvas3dTextureScene {
         var offset = 0; // start at the beginning of the buffer
         gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
         // Create a texture.
-        this.texture = gl.createTexture();
+        this.textureOn3DCube = gl.createTexture();
         // use texture unit 0
         gl.activeTexture(gl.TEXTURE0 + 0);
         // bind to the TEXTURE_2D bind point of texture unit 0
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
         // fill texture with 3x2 pixels
         {
             const level = 0;
@@ -186,8 +188,8 @@ class Canvas3dTextureScene {
         // Create a texture to render to
         //const targetTextureWidth = 256;
         //const targetTextureHeight = 256;
-        this.targetTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.targetTexture);
+        this.textureToRenderOn = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
         {
             // define size and format of level 0
             const level = 0;
@@ -196,7 +198,7 @@ class Canvas3dTextureScene {
             const format = gl.RGBA;
             const type = gl.UNSIGNED_BYTE;
             const data = null;
-            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, this.targetTextureWidth, this.targetTextureHeight, border, format, type, data);
+            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, this.widthTextureToRenderOn, this.heighttextureToRenderOn, border, format, type, data);
             // set the filtering so we don't need mips
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -208,7 +210,7 @@ class Canvas3dTextureScene {
         // attach the texture as the first color attachment
         const attachmentPoint = gl.COLOR_ATTACHMENT0;
         const level = 0;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.targetTexture, level);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.textureToRenderOn, level);
         // create a depth texture
         const depthTexture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, depthTexture);
@@ -221,7 +223,7 @@ class Canvas3dTextureScene {
             const format = gl.DEPTH_COMPONENT;
             const type = gl.UNSIGNED_INT;
             const data = null;
-            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, this.targetTextureWidth, this.targetTextureHeight, border, format, type, data);
+            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, this.widthTextureToRenderOn, this.heighttextureToRenderOn, border, format, type, data);
             // set the filtering so we don't need mips
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -234,21 +236,21 @@ class Canvas3dTextureScene {
         //  var modelYRotationRadians = (0);
         // Get the starting time.
         // var then = 0;
-        this.gl = gl;
+        //this.gl = gl;
         this.ctime = 0.0;
         console.log("<= canvas3dtexturescene.initScene()");
         sceneReadyCallback(-1);
         //  requestAnimationFrame((time)=>this.drawScene(time));
         //  requestAnimationFrame(drawScene);
     }
-    drawCube(aspect, cam) {
+    drawCube(gl, program, aspect, cam) {
         // Tell it to use our program (pair of shaders)
-        var gl = this.gl;
-        var program = this.program;
+        //var gl = this.gl!;
+        //var program= this.program!;
         gl.useProgram(program);
         // Bind the attribute/buffer set we want.
         gl.bindVertexArray(this.vao);
-        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        //  this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
         // Compute the projection matrix
         var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
         var viewProjectionMatrix = twgl_js_1.m4.identity();
@@ -284,7 +286,7 @@ class Canvas3dTextureScene {
             matrix = twgl_js_1.m4.axisRotate(matrix, [1, 0, 0], this.modelXRotationRadians * x);
             matrix = twgl_js_1.m4.axisRotate(matrix, [0, 1, 0], this.modelYRotationRadians * x);
             // Set the matrix.
-            gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
+            gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
             // Tell the shader to use texture unit 0 for u_texture
             gl.uniform1i(this.textureLocation, 0);
             const c = x * .1 + .5;
@@ -312,27 +314,27 @@ class Canvas3dTextureScene {
             // render to our targetTexture by binding the framebuffer
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
             // render cube with our 3x2 texture
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
             // Tell WebGL how to convert from clip space to pixels
-            gl.viewport(0, 0, this.targetTextureWidth, this.targetTextureHeight);
+            gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
             // Clear the canvas AND the depth buffer.
             gl.clearColor(.5, .7, 1, 1); // clear to blue
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            const aspect = this.targetTextureWidth / this.targetTextureHeight;
-            this.drawCube(aspect, null);
+            const aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
+            this.drawCube(gl, this.twglprograminfo[1].program, aspect, null);
         }
         {
             // render to the canvas
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             // render the cube with the texture we just rendered to
-            gl.bindTexture(gl.TEXTURE_2D, this.targetTexture);
+            gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
             // Tell WebGL how to convert from clip space to pixels
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             // Clear the canvas AND the depth buffer.
             //    gl.clearColor(1, 1, 1, 1);   // clear to white
             //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-            this.drawCube(aspect, cam);
+            this.drawCube(gl, this.twglprograminfo[1].program, aspect, cam);
         }
         //requestAnimationFrame((time)=>this.drawScene(time));
     }

@@ -47,7 +47,6 @@ class SkeletonScene {
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
         // super(cgl, capp, dictpar, cdiv);
-        twgl.setAttributePrefix("a_");
         SkeletonScene.instance = this;
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
@@ -73,69 +72,9 @@ class SkeletonScene {
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
         this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
         textureReadyCallback(0);
-        //    this.cam=camhandler.Camera.createCamera(gl,dictpar!, camhandler.Camera.CamZUp, 50.0, cap);
-        //      this.cam.zoominVelocity = 0.5;
-        //      requestAnimationFrame(() => this.render(time0));   
     }
-    //------------------------------------------------------------------------------------------------------------
-    //  gui: datgui.GUI|null=null;
-    onChangeColorValue(value) {
-        //console.log("we are in color=["+value+"]");
-        /*    var thisinstance = SkeletonScene.instance!;
-            if (thisinstance.gl!=null)
-            {
-              var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
-              var ccd= (cc as HTMLDivElement);
-              ccd.style.backgroundColor =  value;
-            }
-            */
-    }
-    /*
-        public initGUI(parameters: {move:boolean, movetail:boolean,speed:number, texture:string, color0:string})
-        {
-          this.skeletonParameters = parameters;
-    
-          var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
-          var ccd= (cc as HTMLDivElement);
-          ccd.style.backgroundColor =  this.skeletonParameters.color0;
-      
-          // park the dat.gui box in the linksdiv below the links, in closed state
-          var gui = new datgui.GUI( { autoPlace: false } );
-          gui.domElement.id = 'gui_drawimagespace';
-          document.getElementById("linksdiv")!.append( gui.domElement);
-          gui.close();
-    
-          // connect viewmodel
-          gui.remember(parameters); //this.fishAnimationParameters);
-        
-          // Checkbox forward move animation on/off
-          gui.add(parameters, 'move'); //this.fishAnimationParameters, 'move');
-          // Checkbox tail animation on/off
-          gui.add(parameters, 'movetail');
-        
-          // Slider for animation speed
-          gui.add(parameters, 'speed').min(0.02).max(0.1).step(0.002);
-      
-          // Color dialog sets background color
-          var cel3 = gui.addColor(parameters, 'color0');
-          cel3.onChange( this.onChangeColorValue);
-            
-          gui.updateDisplay();
-          return gui;
-        }
-      */
     //------------------------------------------------------------------------------------------------------------------------------------
     drawScene(gl, cam, time) {
-        /*   var gl = this.gl!;
-           gl.useProgram(this.twglprograminfo![1].program);
-           twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
-           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
-           gl.enable(gl.DEPTH_TEST);
-           gl.enable(gl.CULL_FACE);
-         
-           var cam: camhandler.Camera = this.cam!;
-           cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);
-        */
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
@@ -156,7 +95,6 @@ class SkeletonScene {
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [-50.0, 5.0, -10.0]); // draw a fish
         twgl.setUniforms(this.twglprograminfo[1], uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        //  requestAnimationFrame(() => this.render(++time));       
     }
 }
 exports.SkeletonScene = SkeletonScene;

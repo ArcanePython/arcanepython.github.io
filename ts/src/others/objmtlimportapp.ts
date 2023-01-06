@@ -69,7 +69,6 @@ export class MatObjApp extends baseapp.BaseApp
   constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictPar:Map<string,string>)
   {
     super(cgl, capp, dictPar,"c");  
-    twgl.setAttributePrefix("a_");
     var gl =this.gl!;
     console.log("=> Constructor - create programInfo");
     var pi = this.twglprograminfo![0];

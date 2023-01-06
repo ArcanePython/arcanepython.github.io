@@ -69,7 +69,6 @@ export class MatObjScene implements scene.SceneInterface
     
   constructor( gl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictPar:Map<string,string>)
   {
-    twgl.setAttributePrefix("a_");
     console.log("=> Constructor MatObjScene - create programInfo");
     this.twglprograminfo=new Array(3);
     this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vs, this.fs]);
@@ -122,55 +121,10 @@ export class MatObjScene implements scene.SceneInterface
     }); // getfiles then({})
   }
 
-  
-
-/*  onChangeColorValue(value? : any)
-  {
-    //console.log("we are in color=["+value+"]");
-    var thisinstance = baseapp.instance!;
-    if (thisinstance.gl!=null)
-    {
-      var cc = (thisinstance.gl!.canvas as HTMLCanvasElement).parentNode;
-      var ccd= (cc as HTMLDivElement);
-      ccd.style.backgroundColor =  value;
-    }
-  }
-*/
   public extendGUI(gui: datgui.GUI)
-//  public initGUI(parameters: {move:boolean, speed:number, texture:string, color0:string})
   {
-  /*  this.objMtlImportParameters=parameters;
-    var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
-    var ccd= (cc as HTMLDivElement);
-    ccd.style.backgroundColor =  this.objMtlImportParameters.color0;
-
-      // park the dat.gui box in the linksdiv below the links, in closed state
-      var gui = new datgui.GUI( { autoPlace: false } );
-      gui.domElement.id = 'gui_drawimagespace';
-      document.getElementById("linksdiv")!.append( gui.domElement);
-      gui.close();
-
-      // connect viewmodel
-      gui.remember(this.objMtlImportParameters);
-   */ 
-      // Checkbox for animation on/off
-  //    gui.add(this.objMtlImportParameters, 'move');
-     
-      // Slider for animation speed
-   //   gui.add(this.objMtlImportParameters, 'speed').min(0.2).max(1).step(0.005);
-   
-      // Color dialog sets background color
-  /*    var cel3 = gui.addColor(this.animationParameters!, 'color0');
-      cel3.onChange( this.onChangeColorValue);
-     
-      // Combobox texture from accepted values
-   //   var cel2 = gui.add(this.objMtlImportParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker' ] );
-   //   cel2.onChange( this.onChangeTextureCombo);
-         
-      gui.updateDisplay();
-    //  return gui;
-    */
-    }
+    gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+ }
 
 //------------------------------------------------------------------------
 

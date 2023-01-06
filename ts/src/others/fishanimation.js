@@ -61,7 +61,6 @@ class FishAnimation extends baseapp.BaseApp {
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     main(gl, dictpar) {
-        twgl.setAttributePrefix("a_");
         var gl = this.gl;
         var nFish = 0;
         var time0 = 0;

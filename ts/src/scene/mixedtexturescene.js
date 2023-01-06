@@ -109,7 +109,6 @@ class MixedTextureScene {
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
         this.animationParameters = cap;
         // Define shader syntax for attributes
-        twgl.setAttributePrefix("a_");
         // Camera: prepare vs-fs transformation
         this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
         // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
@@ -209,8 +208,6 @@ class MixedTextureScene {
         matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
         // Set projection matrix
         gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
-        // Bind the attribute/buffer set we want.
-        //gl.bindVertexArray(this.vao!);              
         // Draw the geometry.
         var primitiveType = gl.TRIANGLES;
         var offset = 0;

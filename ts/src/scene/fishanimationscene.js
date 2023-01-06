@@ -62,16 +62,15 @@ class FishAnimationScene {
         this.clock = new animationclock.AnimationClock();
         //  super(cgl, capp, dictpar, cdiv);
         FishAnimationScene.instance = this;
-        twgl.setAttributePrefix("a_");
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) { }
-    extendGUI(gui) { }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
+    }
     initScene(gl, cap, dictpar, p, textureReadyCallback) {
-        //twgl.setAttributePrefix("a_");
-        //var gl = this.gl!;
         var nFish = 0;
         var time0 = 0;
         this.fish.forEach((afish) => {

@@ -43,7 +43,6 @@ export class SkyBoxScene implements scene.SceneInterface
     extendGUI(gui: datgui.GUI)
     { 
         gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
- 
     }
   
     drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 

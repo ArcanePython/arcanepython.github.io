@@ -130,7 +130,6 @@ export class MixedTextureScene implements scene.SceneInterface
     {
       this.animationParameters = cap;
       // Define shader syntax for attributes
-      twgl.setAttributePrefix("a_");
       
       // Camera: prepare vs-fs transformation
       this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix")!;
@@ -251,10 +250,7 @@ export class MixedTextureScene implements scene.SceneInterface
       
       // Set projection matrix
       gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
-      
-      // Bind the attribute/buffer set we want.
-      //gl.bindVertexArray(this.vao!);              
-     
+       
       // Draw the geometry.
       var primitiveType = gl.TRIANGLES;
       var offset = 0;

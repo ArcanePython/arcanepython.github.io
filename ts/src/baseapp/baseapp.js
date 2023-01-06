@@ -75,6 +75,7 @@ class BaseApp {
          {
             this.gl = cgl;
             this.app = capp;
+            twgl.setAttributePrefix("a_");
             this.twglprograminfo = new Array(1);
             this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [this.vsEnvironmentMap, this.fsEnvironmentMap]);
             document.getElementById('cdiv').innerHTML = "cdiv environment shaders initialized";

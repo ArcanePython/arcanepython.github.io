@@ -25,23 +25,27 @@ const twgl_js_1 = require("twgl.js");
 class DrawInstancedScene {
     constructor(gl) {
         this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 115;
-        this.sceneenv = -1;
+        this.scenesize = 15;
+        this.sceneenv = 1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
 in mat4 matrix;
 uniform mat4 projection;
+uniform mat4 viewprojection;
 uniform mat4 view;
 
 out vec4 v_color;
 
 void main() {
+
   // Multiply the position by the matrix.
-  gl_Position = projection * view * matrix * a_position;
+ // gl_Position = projection * view * matrix * a_position;
+  gl_Position = viewprojection * matrix * a_position;
 
   // Pass the vertex color to the fragment shader.
   v_color = color;
+
 }
 `;
         this.fragmentShaderSource = `#version 300 es
@@ -60,15 +64,12 @@ void main() {
         this.numInstances = 6;
         this.matrices = [];
         this.twglprograminfo = new Array(2);
-        console.log("=> scene constructor instanced");
         this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-        console.log("<= scene constructor instanced");
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) { }
     defaultCamera(gl, cam) { }
     initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        twgl.setAttributePrefix("a_");
         this.gl = gl;
         this.program = p.program;
         //const programInfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
@@ -77,33 +78,36 @@ void main() {
         const positionLoc = gl.getAttribLocation(this.program, 'a_position');
         const colorLoc = gl.getAttribLocation(this.program, 'color');
         const matrixLoc = gl.getAttribLocation(this.program, 'matrix');
+        this.viewprojectionLoc = gl.getUniformLocation(this.program, 'viewprojection');
         this.projectionLoc = gl.getUniformLocation(this.program, 'projection');
         this.viewLoc = gl.getUniformLocation(this.program, 'view');
         // Create a vertex array object (attribute state)
         this.vao = gl.createVertexArray();
-        // and make it the one we're currently working with
-        gl.bindVertexArray(this.vao);
         const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            -0.1, 0.4,
-            -0.1, -0.4,
-            0.1, -0.4,
-            -0.1, 0.4,
-            0.1, -0.4,
-            0.1, 0.4,
-            -0.4, -0.1,
-            0.4, -0.1,
-            -0.4, 0.1,
-            -0.4, 0.1,
-            0.4, -0.1,
-            0.4, 0.1,
-        ]), gl.STATIC_DRAW);
-        this.numVertices = 12;
+        const posdim = 3;
+        var fa = new Float32Array([
+            -0.1, 0.4, 0.6,
+            -0.1, -0.4, 0.6,
+            0.1, -0.4, 0.6,
+            -0.1, 0.4, 0.6,
+            0.1, -0.4, 0.6,
+            0.1, 0.4, 0.6,
+            -0.4, -0.1, 0,
+            0.4, -0.1, 0,
+            -0.4, 0.1, 0,
+            -0.4, 0.1, 0,
+            0.4, -0.1, 0,
+            0.4, 0.1, 0
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, fa, gl.STATIC_DRAW);
+        this.numVertices = fa.length / posdim;
+        // and make it the one we're currently working with
+        gl.bindVertexArray(this.vao);
         // setup the position attribute
         gl.enableVertexAttribArray(positionLoc);
         gl.vertexAttribPointer(positionLoc, // location
-        2, // size (num values to pull from buffer per iteration)
+        posdim, // size (num values to pull from buffer per iteration)
         gl.FLOAT, // type of data in buffer
         false, // normalize
         0, // stride (0 = compute from size and type above)
@@ -165,14 +169,21 @@ void main() {
         // set the view and projection matrices since
         // they are shared by all instances
         const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        gl.uniformMatrix4fv(this.projectionLoc, false, twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1));
-        gl.uniformMatrix4fv(this.viewLoc, false, twgl_js_1.m4.axisRotation([0, 0, 1], time * .1));
+        var m1 = twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1);
+        var m2 = twgl_js_1.m4.axisRotation([0, 0, 1], time * .1);
+        // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
+        // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
+        //var m3 = m4.multiply(m1,m2);
+        var m3 = cam.viewProjection;
+        gl.uniformMatrix4fv(this.viewprojectionLoc, false, m3);
         // setup all attributes
         gl.bindVertexArray(this.vao);
         // update all the matrices
         this.matrices.forEach((mat, ndx) => {
-            twgl_js_1.m4.translation([-0.5 + ndx * 0.25, 0, 0], mat);
-            twgl_js_1.m4.axisRotate(mat, [0, 0, 1], time * (0.1 + 0.1 * ndx), mat);
+            var _a;
+            twgl_js_1.m4.translation([-0.5 + ndx * 0.25, 0, 0.01 * ndx], mat);
+            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)
+                twgl_js_1.m4.axisRotate(mat, [0, 0, 1], time * (0.1 + 0.1 * ndx), mat);
         });
         // upload the new matrix data
         gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);

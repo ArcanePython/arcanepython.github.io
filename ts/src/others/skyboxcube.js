@@ -113,8 +113,6 @@ class skyboxcube extends baseapp.BaseApp {
         if (b)
             this.skyboxCubeParameters.angVelocityCube = +b;
         // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
-        // super.maininfos(gl, dictpar, [ {vs:this.vsEnvironmentMap, fs:this.fsEnvironmentMap}, {vs:this.vsMirrorCube,fs:this.fsMirrorCube}]);
-        twgl.setAttributePrefix("a_"); // naming convention for vertex positions and normals in shaders used when twgl will organize uniforms
         this.createReflectingCubeGeo(gl);
         this.createEnvironmentMapGeoTwgl(gl);
         this.skyboxtexture = this.createEnvironmentMapTexture(gl, 1, this.textureReadyCallback);

@@ -59,7 +59,6 @@ export class FishAnimation extends baseapp.BaseApp
 
     main(gl:WebGL2RenderingContext, dictpar:Map<string,string>)
     {
-      twgl.setAttributePrefix("a_");
       var gl = this.gl!;
       var nFish: number = 0;
       var time0: number = 0;

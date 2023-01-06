@@ -11,7 +11,7 @@ export interface NodeJson {
   children: NodeJson[];
 }
 
-export class ObjectList //extends twglbaseapp.twglbaseapp
+export class ObjectList
 {
   scene:objectnode.Node |undefined;
   gl: WebGL2RenderingContext | undefined;

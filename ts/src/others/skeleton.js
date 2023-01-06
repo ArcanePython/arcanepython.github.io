@@ -30,8 +30,6 @@ const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
 const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
 const datgui = __importStar(require("dat.gui"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-twgl.setAttributePrefix("a_");
 class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);

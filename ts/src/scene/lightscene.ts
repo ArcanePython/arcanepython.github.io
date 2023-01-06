@@ -113,23 +113,6 @@ export class LightScene extends BaseScene implements scene.SceneInterface
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
 
-    public restorePositionAttributeContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
-    {
-      // ==> 2023-03-01 restore this part to solve the clear error
-        // 1. Bind the buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        //var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT;   // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0;        // start at the beginning of the buffer
-        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
-        // 3. Enable this
-        gl.enableVertexAttribArray(posAttributeLocation);
-        // <==
-    }
- 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
         var deltaTime = time - this.ctime;
@@ -139,7 +122,7 @@ export class LightScene extends BaseScene implements scene.SceneInterface
         this.renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime);
 
         // Restore position attribute context for this program (2023-01-03 solve clear issue)
-        this.restorePositionAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
+     //   this.restorePositionAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 3); 
  
         // Set the color to use for light
         gl.uniform4fv(this.colorLocation!, [1.0, 0, 0.2, 1]); // red
@@ -480,14 +463,22 @@ export class LightScene extends BaseScene implements scene.SceneInterface
   in vec4 a_position;
   in vec3 a_normal;
   
+  // position of light
   uniform vec3 u_lightWorldPosition;
-  uniform vec3 u_viewWorldPosition;
+
+  // position of camera
+  uniform vec3 u_viewWorldPosition;  
   
-  uniform mat4 u_world;
+  // projection matrix object->pixels
   uniform mat4 u_worldViewProjection;
+
+  // object matrix
+  uniform mat4 u_world;
+
+  // inverse transpose of object matrix, turn normals before applying light
   uniform mat4 u_worldInverseTranspose;
   
-  // varyings to pass values to the fragment shader
+  // pass calculated values to the fragment shader
   out vec3 v_normal;
   out vec3 v_surfaceToLight;
   out vec3 v_surfaceToView;
