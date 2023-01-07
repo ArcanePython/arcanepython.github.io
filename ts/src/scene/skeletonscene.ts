@@ -45,17 +45,13 @@ export class SkeletonScene implements scene.SceneInterface
       positionLocation: number | undefined;
       resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
       defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) {}
-      extendGUI(gui: datgui.GUI) {}
-
-  skeletonParameters = {
-    move: false,
-    movetail: true,
-    speed: 0.4,
-    texture: 'geotriangle2',
-    color0: "#00A000",
-  };          
-   
-//    cam: camhandler.Camera|undefined;
+     
+      extendGUI(gui: datgui.GUI)
+      {
+        gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+        gui.add(this.animationParameters!, 'movetail'); 
+      }
+      
     uniforms: Tuniforms | undefined;
     bufferInfo: twgl.BufferInfo | null = null;
     skinVAO: WebGLVertexArrayObject | null = null;
@@ -84,7 +80,7 @@ export class SkeletonScene implements scene.SceneInterface
       if ((spar=dictpar!.get("phase2"))!=undefined) this.phase0= +spar!;
     
       this.afish = new FishVTranslated (1.0,0.2,0.3,  0.0, 1.0, 0.005,0.5,2.5, "zelenskyy");
-      this.afish.forwardspeed=(this.skeletonParameters.move)?0.06:0.0;
+      this.afish.forwardspeed=0.0; //(this.skeletonParameters.move)?0.06:0.0;
       this.afish.prepareSurfaceTextures(gl, "zelenskyy");
       this.afish.mesh = this.afish.prepareMesh(gl, dictpar!, 1.0);   
       this.afish.numBones = (this.afish.mesh!.type==gl.TRIANGLE_STRIP)? (this.afish.mesh!.nsegments / this.afish.mesh!.bonediv) : this.afish.mesh!.nsegments; 
@@ -107,8 +103,8 @@ export class SkeletonScene implements scene.SceneInterface
   
         gl.bindVertexArray(this.skinVAO);
     
-        this.afish!.forwardspeed=(this.skeletonParameters.move)?(this.skeletonParameters.speed):0.0;
-        this.afish!.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish!.forwardspeed=0.0; //(this.skeletonParameters!.move)?(this.animationParameters!.b.speed):0.0;
+        this.afish!.computeBone(time, false, this.animationParameters!.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2); 
        
         uniforms.world = m4.translate(m4.identity(), [20.0, -20.0, 0.0]);  // draw a fish
@@ -119,7 +115,7 @@ export class SkeletonScene implements scene.SceneInterface
         twgl.setUniforms(this.twglprograminfo![1], uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
   
-        this.afish!.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish!.computeBone(time, false, this.animationParameters!.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2);
 
         uniforms.world = m4.translate(m4.identity(), [50.0, -10.0, 10.0]); // draw a fish    

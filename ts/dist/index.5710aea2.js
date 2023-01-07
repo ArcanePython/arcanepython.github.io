@@ -636,7 +636,7 @@ function preparedefaultparameters(dictPars) {
             return;
     }
 }
-function initSkyboxScene(gl, app, dictPars, scene, heighttop) {
+function initAnimation1Scene(gl, app, dictPars, scene, heighttop) {
     document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
@@ -15700,7 +15700,8 @@ uniform sampler2D surfaceTexture;
 
 void main () {
   vec4 cColor =  texture(surfaceTexture, v_texCoord);
-  outColor=cColor * vec4(0.5,0.5,0.5,1);
+  outColor=cColor; 
+  // * vec4(0.5,0.5,0.5,1);
 }
 `;
 class BoneAnimation {
@@ -24679,21 +24680,17 @@ void main() {
         sceneReadyCallback(0);
     }
     drawScene(gl, cam, time) {
-        var gl = this.gl;
+        //  var gl = this.gl!;
         time *= 0.001; // seconds
         //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         // Tell WebGL how to convert from clip space to pixels
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        //  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         //  gl.useProgram(this.program!);
         // set the view and projection matrices since
         // they are shared by all instances
-        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        var m1 = twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1);
-        var m2 = twgl_js_1.m4.axisRotation([
-            0,
-            0,
-            1
-        ], time * .1);
+        // const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+        //  var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
+        //  var m2=m4.axisRotation([0,0,1],time * .1);
         // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
         // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
         //var m3 = m4.multiply(m1,m2);
@@ -26101,13 +26098,6 @@ class SkeletonScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
-        this.skeletonParameters = {
-            move: false,
-            movetail: true,
-            speed: 0.4,
-            texture: "geotriangle2",
-            color0: "#00A000"
-        };
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
@@ -26123,7 +26113,10 @@ class SkeletonScene {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
     defaultCamera(gl, cam) {}
-    extendGUI(gui) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+        gui.add(this.animationParameters, "movetail");
+    }
     // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
     initScene(gl, cap, dictpar, p, textureReadyCallback) {
         var time0 = 0;
@@ -26131,7 +26124,7 @@ class SkeletonScene {
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
         this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
+        this.afish.forwardspeed = 0.0; //(this.skeletonParameters.move)?0.06:0.0;
         this.afish.prepareSurfaceTextures(gl, "zelenskyy");
         this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
         this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
@@ -26147,8 +26140,8 @@ class SkeletonScene {
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.forwardspeed = 0.0; //(this.skeletonParameters!.move)?(this.animationParameters!.b.speed):0.0;
+        this.afish.computeBone(time, false, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             20.0,
@@ -26164,7 +26157,7 @@ class SkeletonScene {
         ]); // draw a fish
         twgl.setUniforms(this.twglprograminfo[1], uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.computeBone(time, false, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             50.0,
@@ -26315,12 +26308,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.FishAnimationScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
+const animationclock = __importStar(require("../baseapp/animationclock"));
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
 const fishv = __importStar(require("./../bonemodel/fishv"));
 const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
 const fishvtranslated = __importStar(require("./../bonemodel/fishvtranslated"));
-const animationclock = __importStar(require("../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FishAnimationScene {
     constructor(cgl, capp, dictpar, cdiv){
@@ -26329,13 +26322,7 @@ class FishAnimationScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null;
-        /* fishAnimationParameters = {
-           b: this.baseappParameters,
-           movetail: true,
-           texture: 'geotriangle2',
-           sling: 117,
-         };
-     */ this.fish = [
+        this.fish = [
             new fishvtranslated.FishVTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
             new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
                 0.0,
@@ -26390,9 +26377,7 @@ class FishAnimationScene {
                 ]
             ]
         ];
-        // cam: camhandler.Camera|undefined;
         this.clock = new animationclock.AnimationClock();
-        //  super(cgl, capp, dictpar, cdiv);
         FishAnimationScene.instance = this;
         this.twglprograminfo = new Array(2);
         this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
@@ -26406,6 +26391,7 @@ class FishAnimationScene {
     defaultCamera(gl, cam) {}
     extendGUI(gui) {
         gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+        gui.add(this.animationParameters, "movetail");
     }
     initScene(gl, cap, dictpar, p, textureReadyCallback) {
         var nFish = 0;
@@ -26422,46 +26408,8 @@ class FishAnimationScene {
             nFish++;
             if (nFish == this.fish.length) textureReadyCallback(0);
         });
-    // this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamZUp, 30.0, this.app!);
-    // this.cam.zoominVelocity = 0.5;
-    // requestAnimationFrame(() => this.render(time0));    
     }
-    /*   onChangeColorValue(value? : any)
-       {
-         //console.log("we are in color=["+value+"]");
-         var thisinstance = FishAnimationScene.instance!;
-         if (thisinstance.gl!=null)
-         {
-           var cc = (thisinstance.gl!.canvas  as HTMLCanvasElement).parentNode;
-           var ccd= (cc as HTMLDivElement);
-           ccd.style.backgroundColor =  value;
-         }
-       }
-   
-       public initGUI(parameters: { b: {color0: string, move: boolean,  speed: number}, movetail:boolean, texture:string,  sling:number}): datgui.GUI
-       {
-         this.fishAnimationParameters= parameters;
-       
-         // The base GUI provides checkboxes for move and move of objects,
-         // a color dialog to choose background, Slider for animation speed
-         var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
-         
-         // add a slider for sling
-         gui.add(this.fishAnimationParameters, 'sling').min(9).max(120).step(1);
-      
-         gui.updateDisplay();
-         return gui;
-       }
-    */ //render(time: number) 
     drawScene(gl, cam, time) {
-        //  var gl = this.gl!;
-        //  gl.useProgram(this.twglprograminfo![1].program);
-        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-        //  gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
-        //  gl.enable(gl.DEPTH_TEST);
-        //  gl.enable(gl.CULL_FACE);
-        //var cam: camhandler.Camera = this.cam;
-        //cam.CamHandlingZUp(gl, this.app!, 1.0, -1.0);     
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
             gl.bindVertexArray(this.fish[fishtype].skinVAO);
@@ -26490,11 +26438,10 @@ class FishAnimationScene {
                 this.fish[fishtype].ampl = ampl0;
             }
         }
-    //   requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));   
     }
 }
 exports.FishAnimationScene = FishAnimationScene;
 
-},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishvtranslated":"40Zci","../baseapp/animationclock":"4nsaS"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
+},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishvtranslated":"40Zci"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
 
 //# sourceMappingURL=index.5710aea2.js.map

@@ -83,7 +83,7 @@ function preparedefaultparameters(dictPars) {
         default: return;
     }
 }
-function initSkyboxScene(gl, app, dictPars, scene, heighttop) {
+function initAnimation1Scene(gl, app, dictPars, scene, heighttop) {
     document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);

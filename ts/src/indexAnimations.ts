@@ -79,7 +79,7 @@ function preparedefaultparameters(dictPars: Map<string,string>)
   }
 }
  
-function initSkyboxScene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation1.Animation1
+function initAnimation1Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation1.Animation1
 {
   document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
    

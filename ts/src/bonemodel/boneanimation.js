@@ -74,7 +74,8 @@ uniform sampler2D surfaceTexture;
 
 void main () {
   vec4 cColor =  texture(surfaceTexture, v_texCoord);
-  outColor=cColor * vec4(0.5,0.5,0.5,1);
+  outColor=cColor; 
+  // * vec4(0.5,0.5,0.5,1);
 }
 `;
 class BoneAnimation {

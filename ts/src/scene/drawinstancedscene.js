@@ -163,17 +163,17 @@ void main() {
         sceneReadyCallback(0);
     }
     drawScene(gl, cam, time) {
-        var gl = this.gl;
+        //  var gl = this.gl!;
         time *= 0.001; // seconds
         //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
         // Tell WebGL how to convert from clip space to pixels
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        //  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         //  gl.useProgram(this.program!);
         // set the view and projection matrices since
         // they are shared by all instances
-        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        var m1 = twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1);
-        var m2 = twgl_js_1.m4.axisRotation([0, 0, 1], time * .1);
+        // const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+        //  var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
+        //  var m2=m4.axisRotation([0,0,1],time * .1);
         // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
         // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
         //var m3 = m4.multiply(m1,m2);

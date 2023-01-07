@@ -200,22 +200,22 @@ public constructor(gl: WebGL2RenderingContext)
   public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
   {
 
-    var gl = this.gl!;
+  //  var gl = this.gl!;
     time *= 0.001; // seconds
 
   //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
 
     // Tell WebGL how to convert from clip space to pixels
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  //  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   //  gl.useProgram(this.program!);
 
     // set the view and projection matrices since
     // they are shared by all instances
-    const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
+   // const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
 
-    var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
-    var m2=m4.axisRotation([0,0,1],time * .1);
+  //  var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
+  //  var m2=m4.axisRotation([0,0,1],time * .1);
 
    // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
    // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
@@ -229,8 +229,8 @@ public constructor(gl: WebGL2RenderingContext)
 
     // update all the matrices
     this.matrices.forEach((mat, ndx) => {
-      m4.translation([-0.5 + ndx * 0.25,0, 0.01*ndx], mat);
-     if(this.animationParameters?.movetail) m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
+      m4.translation([-0.5 + ndx * 0.25, 0, 0.01*ndx], mat);
+      if(this.animationParameters?.movetail) m4.axisRotate(mat, [0,0,1],time * (0.1 + 0.1 * ndx), mat);
     });
 
     // upload the new matrix data
