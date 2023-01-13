@@ -1,5 +1,6 @@
 import * as baseapp from "./baseapp/baseapp"                           // baseapp providing environment skybox
 import * as mtls from "./baseapp/mouselistener";                       // baseapp connects events for mouse click, move and wheel to an app object
+import * as twgl from "twgl.js"; 
 
 import * as skyboxcube from "./others/skyboxcube"                      // baseapp derivative: show reflecting cube in skybox
 import * as objectlist from "./others/objectlist";                     // baseapp derivative: show bouncing guy node tree
@@ -26,6 +27,8 @@ import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene:
 import * as matobjscene from "./scene/matobjscene";                    // scene: show textured objects from .obj/.mtl
 import * as skeletonscene from "./scene/skeletonscene"                 // scene: bone model (single object)
 import * as fishanimationscene from "./scene/fishanimationscene"       // scene: bone model (multiple objects)
+
+import * as clothsim from "./cloth/clothsim"
 
 var defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
@@ -106,7 +109,17 @@ function initAnimation2Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener
 
 function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListener,dictPars: Map<string,string> | undefined ): baseapp.BaseApp | undefined
 {
-  if (dictPars?.get("drawimagespace")!=undefined)
+  if (dictPars?.get("cloth")!=undefined)
+  {
+    let accuracy = 5;
+    let gravity = -0.02;
+    let friction = 0.99;
+    let bounce = 0.5;
+    var cs= new clothsim.ClothSim(gl,gl.POINTS, accuracy,gravity,friction,bounce);
+    cs.main(gl);
+    return undefined;
+  }
+  else if (dictPars?.get("drawimagespace")!=undefined)
   {
     var ims = new drawimagespace.drawimagespace(gl,app,dictPars,cdiv); 
     console.log("imscreated.");
@@ -161,7 +174,7 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
   //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
-    return initAnimation2Scene(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars!)],170); 
+    return  initAnimation2Scene(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars!)],170); 
   }    
 }
 
@@ -174,7 +187,8 @@ function show2(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Ma
 
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
 {
-   
+  console.log("=> show");
+
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
   if (dictPars?.get("animation4")!=undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
@@ -183,8 +197,20 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
      (mta1.scene[0] as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!;
      return;
    } 
-
-   if(show2(gl,app,dictPars!,"animation7",[new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)],70)) return;     // Blockguy chased by plane
+   var a: scene.SceneInterface[]|undefined;
+   var s: string|undefined;
+   if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
+   if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
+   if (dictPars?.get("animation1")!=undefined) a = [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)];
+   if (dictPars?.get("animation2")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
+   if (dictPars?.get("whales")!=undefined) a = [new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)];
+   if (dictPars?.get("animation5")!=undefined) a = [new manytexturescene.ManyTexturesScene(gl)];
+   if (dictPars?.get("animation4")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
+   if (dictPars?.get("animation9")!=undefined) a = [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
+   if (a!=undefined) initAnimation2Scene(gl, app, dictPars, a, 70);
+    else  showOtherAnimations(gl, app, dictPars );
+/*
+   if(show2(gl,app,dictPars!,"animation7",a7,70)) return;     // Blockguy chased by plane
    if(show2(gl,app,dictPars!,"animation3",[new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)],70)) return;             // Lighted F with 3dcubes
    if(show2(gl,app,dictPars!,"animation1",[new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)],70)) return;  // Cube placed on grid
    if(show2(gl,app,dictPars!,"animation2",[new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)],70)) return;  // Blockguy chasing 3dcubes
@@ -192,8 +218,8 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
    if(show2(gl,app,dictPars!,"animation5",[new manytexturescene.ManyTexturesScene(gl)],70)) return;                                                  // Many textures scene
    if(show2(gl,app,dictPars!,"animation4",[new skyboxcubescene.SkyBoxCubeScene(gl)],70)) return;                                                     // Skycube scene
    if(show2(gl,app,dictPars!,"animation9",[ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70)) return;
-
-
+*/
+//   console.log("<= show");
 
    /*
     else if (dictPars?.get("animation7")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)],70);
@@ -209,7 +235,10 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
     else if (dictPars?.get("animation8")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70); 
     else if (dictPars?.get("animation9")!=undefined)  initAnimation2Scene(gl, app, dictPars, [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70); 
    */
-  else showOtherAnimations(gl, app, dictPars );
+
+ 
+//  console.log("<<= show");
+
 }
 
 //=== ENTRY MAIN ===============================================================================================================================
@@ -218,6 +247,8 @@ function main()
 {   
  // var canvas: HTMLCanvasElement = document.querySelector("#c")!;
   var canvas: HTMLCanvasElement = document.querySelector("#c")!;
+  twgl.resizeCanvasToDisplaySize(canvas  as HTMLCanvasElement,1.0);
+   
   var gl: WebGL2RenderingContext|null = canvas.getContext("webgl2", {premultipliedAlpha: false });//, preserveDrawingBuffer: true}); // { preserveDrawingBuffer: true }); //,{ premultipliedAlpha: false, powerPreference: 'high-performance' } );
   if (canvas && gl)
   {
