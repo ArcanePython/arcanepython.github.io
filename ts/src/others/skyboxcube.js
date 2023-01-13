@@ -84,15 +84,12 @@ class skyboxcube extends baseapp.BaseApp {
       outColor = texture(u_texture, direction);
     }
     `;
-        var pi = this.twglprograminfo[0];
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[0] = pi;
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [this.vsMirrorCube, this.fsMirrorCube]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [this.vsMirrorCube, this.fsMirrorCube]);
     }
     //  fieldOfViewRadians : number = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
     createReflectingCubeGeo(gl) {
         this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);
+        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.reflectingCubeBufferInfo);
     }
     main(gl, dictpar) {
         // http://127.0.0.1:1234/index.html?skyboxcube&fov=22&movecube=true&moveenv=true
@@ -181,7 +178,7 @@ class skyboxcube extends baseapp.BaseApp {
         else
             this.worldMatrix = twgl.m4.translation([0, 0, 0]); // twgl.m4.identity();
         // draw the environment
-        gl.useProgram(this.twglprograminfo[0].program);
+        //  gl.useProgram(this.twglprograminfo![0].program);
         this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture);
         /*
                 gl.bindVertexArray(this.vaoEnvironment!);
@@ -203,10 +200,10 @@ class skyboxcube extends baseapp.BaseApp {
             this.viewMatrix = twgl.m4.identity();
         if (this.projectionMatrix == undefined)
             this.projectionMatrix = twgl.m4.identity();
-        gl.useProgram(this.twglprograminfo[1].program);
+        gl.useProgram(this.twglprograminfo.program);
         //  gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube);
-        twgl.setUniforms(this.twglprograminfo[1], {
+        twgl.setUniforms(this.twglprograminfo, {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,
             u_projection: this.projectionMatrix,

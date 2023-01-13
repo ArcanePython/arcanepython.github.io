@@ -31,7 +31,6 @@ class MatObjScene {
         this.sceneenv = 2;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
         this.time = 0;
         this.dtime = 0.01;
         this.vertexPositionAttributeLocation = 0; // address of positions buffer in shader
@@ -139,12 +138,20 @@ void main() {
   glFragColor = outColor;
  }`;
         console.log("=> Constructor MatObjScene - create programInfo");
-        this.twglprograminfo = new Array(3);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vs, this.fs]);
+        //this.twglprograminfo=new Array(3);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) {
         // Create a camera
+        if (mobj == undefined || mobj == null) {
+            console.log("ERROR: object mesh not ready");
+            return;
+        }
+        if (mobj.meshMinMax == undefined || mobj.meshMinMax == null) {
+            console.log("ERROR: object range not ready");
+            return;
+        }
         var szx = mobj.meshMinMax.maxx - mobj.meshMinMax.minx;
         var szy = mobj.meshMinMax.maxy - mobj.meshMinMax.miny;
         var szz = mobj.meshMinMax.maxz - mobj.meshMinMax.minz;
@@ -153,14 +160,15 @@ void main() {
         cam.translateTarget([(mobj.meshMinMax.maxx + mobj.meshMinMax.minx) / 2, (mobj.meshMinMax.maxy + mobj.meshMinMax.miny) / 2, (mobj.meshMinMax.maxz + mobj.meshMinMax.minz) / 2]);
         cam.zoominVelocity = szobj / 40.0;
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         this.getFiles(dictpar).then(() => // Fetch obj/mtl content
          {
             var cc = gl.canvas.parentNode;
             var ccd = cc;
-            ccd.style.backgroundColor = this.animationParameters.b.color0;
+            ccd.style.backgroundColor = this.animationParameters.color0;
             if (mobj.mesh) {
-                var program = this.twglprograminfo[1].program;
                 this.vertexPositionAttributeLocation = gl.getAttribLocation(program, "position");
                 gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
                 this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
@@ -304,10 +312,13 @@ void main() {
                 }
                 console.log("Prepare - texture itemSize=" + mobj.meshWithBuffers.textureBuffer.itemSize);
                 console.log("Prepare - finish, there are " + istr + " file textures");
-                sceneReadyCallback(1);
                 this.time = 0;
                 twgl.resizeCanvasToDisplaySize(gl.canvas);
                 //!      requestAnimationFrame(() => this.render(0));  
+                if (sceneReadyCallback != undefined) {
+                    console.log("call matobjscene.sceneReadyCallback");
+                    sceneReadyCallback(0);
+                }
             }); // return from LoadImages()       
         }
         else // no textures
@@ -315,7 +326,8 @@ void main() {
             console.log("Prepare - no textures, > requestAnimationFrame()");
             this.time = 0;
             twgl.resizeCanvasToDisplaySize(gl.canvas);
-            sceneReadyCallback(1);
+            if (sceneReadyCallback != undefined)
+                sceneReadyCallback(1);
             //!    requestAnimationFrame(() => this.render(0));      
         }
         console.log("Prepare - return");
@@ -361,8 +373,10 @@ void main() {
         // var dtime = time - this.ctime;
         this.ctime = time;
         // this.time+=dtime;
-        if (cam == undefined || this.twglprograminfo[1].program == undefined)
+        if (cam == undefined || this.twglprograminfo == undefined)
             return;
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         // var program = this.twglprograminfo![1].program; 
         this.uniforms.u_lightWorldPos = cam.lightpos;
         this.uniforms.u_difflightintensity = cam.difflightintensity;
@@ -377,8 +391,8 @@ void main() {
             if (this.mats[i] != undefined) {
                 var ctexture = this.prepareMaterial(i);
                 // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
-                twgl.setUniforms(this.twglprograminfo[1], this.uniforms);
-                twgl.setUniforms(this.twglprograminfo[1], {
+                twgl.setUniforms(this.twglprograminfo, this.uniforms);
+                twgl.setUniforms(this.twglprograminfo, {
                     u_viewInverse: cam.lookAt,
                     u_world: world,
                     u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),

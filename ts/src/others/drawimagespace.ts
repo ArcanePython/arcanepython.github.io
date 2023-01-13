@@ -45,6 +45,8 @@ export class drawimagespace extends baseapp.BaseApp
 
       static instance: drawimagespace;
       
+      private twglprograminfo: twgl.ProgramInfo|undefined;  // there are 2 sets of shaders defined here.
+ 
       // textures repository
       
       private textures: {[key: string]: WebGLTexture} | null =null;
@@ -98,8 +100,7 @@ export class drawimagespace extends baseapp.BaseApp
         {
           super(cgl, capp, dictpar, cdiv);
           drawimagespace.instance = this;
-          this.twglprograminfo=new Array(2);
-          this.twglprograminfo![1] = twgl.createProgramInfo(cgl!, [this.vs, this.fs]);  
+          this.twglprograminfo = twgl.createProgramInfo(cgl!, [this.vs, this.fs]);  
         }
   
         public prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
@@ -231,16 +232,16 @@ export class drawimagespace extends baseapp.BaseApp
       { 
       //  super.main(gl, dictpar,"","");
       //  if (this.program && this.gl && this.program[0])
-        {
+          var program = this.twglprograminfo!.program;
+          gl.useProgram(program);
           this.prepareSurfaceTextures(gl, "zelenskyy")!;
           gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
           this.txtaspect = this.textureaspects.get("geotriangle2")!;
           this.ny=1.0;
 
-          console.log("this.twglprograminfo.length="+this.twglprograminfo?.length);
-
-          var program = this.twglprograminfo![1].program;
+        
+        
           console.log("<assigned program");
 
           this.diffuseLocation = gl.getUniformLocation(program, 'diffuse')!;
@@ -256,7 +257,7 @@ export class drawimagespace extends baseapp.BaseApp
          // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
           requestAnimationFrame(() => this.render(0)); 
-        } //else
+         //else
         //console.log("initprogram program[0] fails.");
       }
       
@@ -278,9 +279,11 @@ export class drawimagespace extends baseapp.BaseApp
         if (this.textures!=null)
         {       
             var gl: WebGL2RenderingContext = this.gl!;
-            twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
+            var program = this.twglprograminfo!.program;
+            gl.useProgram(program);
+             twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
     
-            gl.useProgram(this.twglprograminfo![1].program);
+          //  gl.useProgram(this.twglprograminfo![1].program);
             gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
 
             var texture = this.textures[this.currentTexture];

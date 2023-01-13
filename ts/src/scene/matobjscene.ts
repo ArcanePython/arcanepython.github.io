@@ -10,9 +10,11 @@ import * as mtls from "../baseapp/mouselistener";     // connect events for butt
 import * as camhandler from "../baseapp/camhandler"   // camera projection
 
 import  * as datgui from "dat.gui";
-import * as  baseapp from "../baseapp/baseapp";
+//import * as  baseapp from "../baseapp/baseapp";
 
 import * as scene from "./scene"
+
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
 type matObjUniforms = {
     u_lightWorldPos: number[]
@@ -31,10 +33,10 @@ export class MatObjScene implements scene.SceneInterface
       // SceneInterface only, skybox is shown in animation container (now animation1.ts)
       scenesize: number = 40;
       sceneenv: number = 2;
-      animationParameters: scene.TAnimation1Parameters | undefined;
+      animationParameters: TAnimation1Parameters | undefined;
       vertexShaderSource = ``;
       fragmentShaderSource = ``; 
-      twglprograminfo: twgl.ProgramInfo[]|null=null;
+      twglprograminfo: twgl.ProgramInfo|undefined;
       cameraPosition: [number,number,number] | undefined
       positionLocation: number | undefined;
       resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
@@ -70,13 +72,15 @@ export class MatObjScene implements scene.SceneInterface
   constructor( gl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictPar:Map<string,string>)
   {
     console.log("=> Constructor MatObjScene - create programInfo");
-    this.twglprograminfo=new Array(3);
-    this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vs, this.fs]);
+    //this.twglprograminfo=new Array(3);
+    this.twglprograminfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
   }
 
   public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera)
   {
        // Create a camera
+       if (mobj==undefined || mobj==null) { console.log("ERROR: object mesh not ready"); return; }
+       if (mobj.meshMinMax==undefined || mobj.meshMinMax==null) { console.log("ERROR: object range not ready"); return; }
        var szx=mobj.meshMinMax.maxx-mobj.meshMinMax.minx;
        var szy=mobj.meshMinMax.maxy-mobj.meshMinMax.miny;
        var szz=mobj.meshMinMax.maxz-mobj.meshMinMax.minz;
@@ -88,19 +92,21 @@ export class MatObjScene implements scene.SceneInterface
 
   }
 
-  initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+  initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,cam: camhandler.Camera, dictpar:Map<string,string>,   sceneReadyCallback: undefined | ((a:any)=>void))
   {
     
+    var program = this.twglprograminfo!.program;
+    gl.useProgram(program);
+
     this.getFiles(dictpar).then(() =>  // Fetch obj/mtl content
     { 
       var cc = (gl.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
-      ccd.style.backgroundColor =  this.animationParameters!.b.color0;
+      ccd.style.backgroundColor =  this.animationParameters!.color0;
    
       if (mobj.mesh)
       {
      
-        var program = this.twglprograminfo![1].program;
         this.vertexPositionAttributeLocation = gl.getAttribLocation(program,  "position");
         gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
         this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
@@ -185,7 +191,7 @@ export class MatObjScene implements scene.SceneInterface
   
   //--------------------------------------------------------------------
 
-  Prepare(gl: WebGL2RenderingContext, sceneReadyCallback: (a:any)=>void | undefined)
+  Prepare(gl: WebGL2RenderingContext, sceneReadyCallback: undefined | ((a:any)=>void))
   {  
    //   var gl: WebGL2RenderingContext;
    //   gl= this.gl!;
@@ -248,18 +254,19 @@ export class MatObjScene implements scene.SceneInterface
         }
         console.log("Prepare - texture itemSize="+mobj.meshWithBuffers.textureBuffer.itemSize);
         console.log("Prepare - finish, there are "+istr+" file textures");   
-        sceneReadyCallback(1);
          this.time = 0; 
         twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);   
   //!      requestAnimationFrame(() => this.render(0));  
-  
+        if(sceneReadyCallback!=undefined)          
+           { console.log("call matobjscene.sceneReadyCallback"); sceneReadyCallback(0); }
+
     });  // return from LoadImages()       
   } else // no textures
   {
       console.log("Prepare - no textures, > requestAnimationFrame()");
       this.time = 0; 
       twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-      sceneReadyCallback(1);
+      if(sceneReadyCallback!=undefined) sceneReadyCallback(1);
        
   //!    requestAnimationFrame(() => this.render(0));      
   }
@@ -319,8 +326,11 @@ export class MatObjScene implements scene.SceneInterface
     this.ctime = time;
    // this.time+=dtime;
     
-    if (cam==undefined ||this.twglprograminfo![1].program==undefined) return;   
+    if (cam==undefined ||this.twglprograminfo==undefined) return;   
 
+    var program = this.twglprograminfo!.program;
+    gl.useProgram(program);
+  
    // var program = this.twglprograminfo![1].program; 
     this.uniforms.u_lightWorldPos= cam.lightpos;
     this.uniforms.u_difflightintensity=  cam.difflightintensity;
@@ -338,8 +348,8 @@ export class MatObjScene implements scene.SceneInterface
       {
         var ctexture = this.prepareMaterial(i);
        // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
-        twgl.setUniforms(this.twglprograminfo![1], this.uniforms);
-        twgl.setUniforms(this.twglprograminfo![1], {
+        twgl.setUniforms(this.twglprograminfo, this.uniforms);
+        twgl.setUniforms(this.twglprograminfo, {
           u_viewInverse: cam.lookAt,
           u_world: world,
           u_worldInverseTranspose: m4.transpose(m4.inverse(world)),

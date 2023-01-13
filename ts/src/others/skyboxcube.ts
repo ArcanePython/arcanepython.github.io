@@ -7,13 +7,12 @@ import  * as datgui from "dat.gui";
 
 export class skyboxcube extends baseapp.BaseApp
 {
+  private twglprograminfo: twgl.ProgramInfo|undefined;  // there are 2 sets of shaders defined here.
+  
     public constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv: string)
     {
         super(cgl, capp, dictpar, cdiv);
-        var pi = this.twglprograminfo![0];
-        this.twglprograminfo=new Array(2);
-        this.twglprograminfo[0] = pi;
-        this.twglprograminfo![1] = twgl.createProgramInfo(cgl!, [this.vsMirrorCube, this.fsMirrorCube]);  
+        this.twglprograminfo = twgl.createProgramInfo(cgl!, [this.vsMirrorCube, this.fsMirrorCube]);  
     }
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -43,7 +42,7 @@ export class skyboxcube extends baseapp.BaseApp
     protected createReflectingCubeGeo(gl: WebGL2RenderingContext)
     {
       this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-      this.vaoCube = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo![1], this.reflectingCubeBufferInfo)!;
+      this.vaoCube = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo!, this.reflectingCubeBufferInfo)!;
     }
 
     public main(gl: WebGL2RenderingContext, dictpar:Map<string,string>) 
@@ -152,7 +151,7 @@ export class skyboxcube extends baseapp.BaseApp
         // draw the environment
 
         
-        gl.useProgram(this.twglprograminfo![0].program);
+      //  gl.useProgram(this.twglprograminfo![0].program);
 
         this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture!);
 /*
@@ -175,10 +174,10 @@ export class skyboxcube extends baseapp.BaseApp
         // draw the mirror cube
         if (this.viewMatrix==undefined)this.viewMatrix=twgl.m4.identity();
         if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
-        gl.useProgram(this.twglprograminfo![1].program);      
+        gl.useProgram(this.twglprograminfo!.program);      
       //  gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube!);  
-        twgl.setUniforms(this.twglprograminfo![1]!, {
+        twgl.setUniforms(this.twglprograminfo!, {
           u_world: this.worldMatrix,
           u_view: this.viewMatrix,
           u_projection: this.projectionMatrix,

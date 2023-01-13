@@ -9,13 +9,15 @@ import * as scene from "./scene"
 
 import { BaseScene } from "./basescene";
 
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
+
 export class LightScene extends BaseScene implements scene.SceneInterface
 {
     vertexShaderSource: string;   // =vertexShaderSourceSpotLight
     fragmentShaderSource: string; // =fragmentShaderSourceSpotLight
 
     // shaders to merge (here: none)
-    twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
+    private twglprograminfo: twgl.ProgramInfo|undefined;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
     // interface
     sceneenv:number = 1;
@@ -45,7 +47,7 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     innerLimit : number;
     outerLimit : number;
   
-    animationParameters: scene.TAnimation1Parameters | undefined;
+    animationParameters: TAnimation1Parameters | undefined;
 
     public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
 
@@ -62,8 +64,8 @@ export class LightScene extends BaseScene implements scene.SceneInterface
       this.fragmentShaderSource = this.fragmentShaderSourceSpotLight;
     //  constructor(gl: WebGL2RenderingContext)
 
-      this.twglprograminfo=new Array(3);   
-      this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
+      //this.twglprograminfo=new Array(3);   
+      this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
 
       this.fieldOfViewRadians = 60* Math.PI / 180;
       this.fRotationRadians = 0;
@@ -93,9 +95,11 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     }
 
 
-    public initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters, dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,cam: camhandler.Camera, dictpar:Map<string,string>,   sceneReadyCallback: undefined| ((a:any)=>void))
     {
-        var program = p.program;
+        var program = this.twglprograminfo!.program;
+        gl.useProgram(program);
+
         this.animationParameters = cap;
  
         this.viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition")!;
@@ -115,6 +119,8 @@ export class LightScene extends BaseScene implements scene.SceneInterface
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
+      gl.useProgram(this.twglprograminfo!.program);
+
         var deltaTime = time - this.ctime;
         this.ctime = time;
 
@@ -308,8 +314,11 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     // We could do by changing all the values above but I'm lazy.
     // We could also do it with a matrix at draw time but you should
     // never do stuff at draw time if you can do it at init time.
-    var matrix = m4.axisRotation([1,0,0],Math.PI);
-    matrix = m4.translate(matrix, [-50, -75, -15]);
+    var matrix = m4.scaling([0.1,0.1,0.1]);
+    matrix = m4.axisRotate(matrix,[1,0,0],Math.PI);
+    //var matrix = m4.axisRotation([1,0,0],Math.PI);
+    matrix = m4.translate(matrix, [-5, -7.5, 10.5]);
+    //matrix = m4.scale(matrix, [0.1,0.1,0.1]);
   
     for (var ii = 0; ii < positions.length; ii += 3) {
       var vector = m4.transformPoint(matrix, [positions[ii + 0], positions[ii + 1], positions[ii + 2], 1]);

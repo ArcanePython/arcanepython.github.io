@@ -25,7 +25,6 @@ const twgl_js_1 = require("twgl.js");
 const objectnode = __importStar(require("./objectnode"));
 class ObjectListScene {
     constructor(gl) {
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 60;
         this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
@@ -200,8 +199,7 @@ class ObjectListScene {
     }
   ]
 }`;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     extendGUI(gui) { }
@@ -212,12 +210,13 @@ class ObjectListScene {
         var enc = new TextDecoder("utf-8");
         return enc.decode(b);
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         this.gl = gl;
+        gl.useProgram(this.twglprograminfo.program);
         this.animationParameters = (this.animationParameters == undefined) ? cap : this.animationParameters;
         if (dictpar === null || dictpar === void 0 ? void 0 : dictpar.has("speed")) {
-            this.animationParameters.b.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
-            console.log("specified: speedpreset=" + this.animationParameters.b.speed);
+            this.animationParameters.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
+            console.log("specified: speedpreset=" + this.animationParameters.speed);
         }
         else
             console.log("not specified: speedpreset");
@@ -227,14 +226,19 @@ class ObjectListScene {
         // spheres
         // var cBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
         this.nodeInfosByName = undefined;
-        var nodefact = new objectnode.NodesProducer(p, cBufferInfo);
-        var parcls = require('./../resources/blockguy.json');
+        var nodefact = new objectnode.NodesProducer(this.twglprograminfo, cBufferInfo);
+        //var parcls=require('./../resources/blockguy.json');
         var nodedescriptions = JSON.parse(this.sjson);
         this.scenetree = nodefact.makeNode(nodedescriptions); // -Math.PI/4.0);
         this.objects = nodefact.objects;
         this.objectsToDraw = nodefact.objectsToDraw;
         this.nodeInfosByName = nodefact.nodeInfosByName;
-        sceneReadyCallback(0);
+        if (sceneReadyCallback != undefined) {
+            console.log("call objlistscene scenereadycallback");
+            sceneReadyCallback(0);
+        }
+        else
+            console.log("skip scenereadycallback");
         /*
         this.FetchText(parcls).then ((s: string)=> {
              var nodedescriptions: NodeJson = JSON.parse(s);
@@ -252,6 +256,7 @@ class ObjectListScene {
     }
     drawScene(gl, cam, time) {
         var _a;
+        gl.useProgram(this.twglprograminfo.program);
         var speed = 1;
         var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
         // Animation

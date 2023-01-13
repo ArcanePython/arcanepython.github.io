@@ -26,18 +26,21 @@ const datgui = __importStar(require("dat.gui"));
 exports.instance = null;
 class BaseApp {
     constructor(cgl, capp, dictpar, divname) {
-        this.baseappParameters = {
-            move: false,
-            speed: 0.04,
-            color0: "#00A000"
-        };
+        /*   baseappParameters: TbaseappParameters = {
+               texture: 'geotriangle2',
+               fov: 60,
+               move: false,
+               speed: 0.04,
+               color0: "#00A000"
+             };
+       */
         this.gl = null;
         this.app = null;
         // programs
-        this.twglprograminfo = null; // there can be several
+        // protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
         // environment skybox camera
         this.cameraTarget = [0, 0, 0];
-        this.cameraPosition = [4, 0, 0];
+        this.cameraPosition = [0, 0, 0];
         this.doShowBackgroundColorChoice = false;
         //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
         this.vsEnvironmentMap = `#version 300 es
@@ -76,11 +79,10 @@ class BaseApp {
             this.gl = cgl;
             this.app = capp;
             twgl.setAttributePrefix("a_");
-            this.twglprograminfo = new Array(1);
-            this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [this.vsEnvironmentMap, this.fsEnvironmentMap]);
+            this.envPrograminfo = twgl.createProgramInfo(cgl, [this.vsEnvironmentMap, this.fsEnvironmentMap]);
             document.getElementById('cdiv').innerHTML = "cdiv environment shaders initialized";
-            this.skyboxLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_skybox");
-            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_viewDirectionProjectionInverse");
+            this.skyboxLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_skybox");
+            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
             document.getElementById('cdiv').innerHTML = "BaseApp: skybox perspective prepared";
         }
     }
@@ -92,7 +94,7 @@ class BaseApp {
             ccd.style.backgroundColor = value;
         }
     }
-    createGUI(parameters, instanceParameters) {
+    createGUI(parameters) {
         //     console.log("=> baseApp initGUI "+parameters);
         this.baseappParameters = parameters;
         var cc = this.gl.canvas.parentNode;
@@ -104,7 +106,7 @@ class BaseApp {
         document.getElementById("linksdiv").append(gui.domElement);
         gui.close();
         // connect viewmodel
-        gui.remember(parameters, instanceParameters);
+        gui.remember(parameters); //, instanceParameters);
         // Checkbox forward move animation on/off
         gui.add(parameters, 'move');
         // Slider for animation speed
@@ -167,10 +169,11 @@ class BaseApp {
         }
     }
     createEnvironmentMapGeo(gl) {
+        gl.useProgram(this.envPrograminfo.program);
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray();
         gl.bindVertexArray(this.vaoEnvironment);
-        this.positionAttributeLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo.program, "a_position");
         // Create a buffer for positions
         this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
@@ -266,38 +269,6 @@ class BaseApp {
         //!  this.texture= mytexture!;
         return mytexture;
     }
-    /*
-    private requestCORSIfNotSameOrigin(img: HTMLImageElement, url: string) {
-        if ((new URL(url, window.location.href)).origin !== window.location.origin) {
-        img.crossOrigin = "";
-        }
-    }
-    */
-    /*
-        public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
-        // env map
-        {
-            // Build a projection matrix.
-            var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
-            this.projectionMatrix = m4.perspective(fov, aspect, 1, 2000);
-          
-            // Build a view matrix.
-            var up = [0, 1, 0];
-            var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
-            this.viewMatrix = m4.inverse(cameraMatrix);
-           
-            // viewDirectionMatrix is viewMatrix without translation (direction only)
-            this.viewDirectionMatrix = m4.copy(this.viewMatrix);
-            this.viewDirectionMatrix[12] = 0;
-            this.viewDirectionMatrix[13] = 0;
-            this.viewDirectionMatrix[14] = 0;
-            //
-            this.viewDirectionProjectionMatrix =  m4.multiply( this.projectionMatrix!, this.viewDirectionMatrix!);
-    
-            return this.viewDirectionProjectionMatrix;
-            //
-        }
-    */
     computeprojectionmatrices(gl, fov) {
         // Build a projection matrix.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -332,6 +303,7 @@ class BaseApp {
         // <==
     }
     renderenvironmentmap(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
         var invproj = this.viewDirectionProjectionInverseLocation;
         var loc = this.skyboxLocation;
         gl.bindVertexArray(this.vaoEnvironment);
@@ -345,11 +317,13 @@ class BaseApp {
         //gl.bindVertexArray(null);
     }
     createEnvironmentMapGeoTwgl(gl) {
+        gl.useProgram(this.envPrograminfo.program);
         this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
-        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.envPrograminfo, this.environmentBufferInfo);
         gl.bindVertexArray(this.vaoEnvironment);
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
         var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
         // Rotate the cube around the x axis
         //   if (this.skyboxCubeParameters.movecube)
@@ -360,7 +334,7 @@ class BaseApp {
         //     gl.useProgram(this.twglprograminfo![0].program);
         gl.bindVertexArray(this.vaoEnvironment);
         //  this.restoreContext(gl,this.positionBuffer!,this.positionAttributeLocation!, 2);
-        twgl.setUniforms(this.twglprograminfo[0], {
+        twgl.setUniforms(this.envPrograminfo, {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
             u_skybox: texture,
         });

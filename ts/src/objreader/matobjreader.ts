@@ -69,7 +69,9 @@ var indexBuffers: ExtendedGLBuffer[] = [];
 export function renderIndexBuffer(gl: WebGLRenderingContext, vertexPositionAttribute: number, normalAttribute: number, texCoordAttribute: number, offset: number, 
                                   texItemSize:number, tex: WebGLTexture )
 {
-  gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.vertexBuffer);
+  if ( indexBuffers[offset]!=undefined)
+  {
+    gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.vertexBuffer);
     gl.vertexAttribPointer(vertexPositionAttribute, meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.normalBuffer);
     gl.vertexAttribPointer(normalAttribute, meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);  
@@ -79,6 +81,7 @@ export function renderIndexBuffer(gl: WebGLRenderingContext, vertexPositionAttri
     gl.bindBuffer(gl.ARRAY_BUFFER, meshWithBuffers.textureBuffer);
     gl.vertexAttribPointer(texCoordAttribute, texItemSize, gl.FLOAT, false, 0, 0);
     gl.drawElements(gl.TRIANGLES,mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
+  }
 }
 
 export function PrepareIndexBuffers(gl: WebGLRenderingContext )
@@ -152,7 +155,7 @@ export async function asyncFetchObjMtl(cobjname: string, cmatname: string)
   if (matlib)
     {
       var l = matlib.materials["Material"];
-      if (l!=undefined) console.log("ambient="+l.ambient+" diffuse="+l.diffuse+" specular="+l.specular);     
+      if (l!=undefined) console.log("->asyncFetchObjMtlambient="+l.ambient+" diffuse="+l.diffuse+" specular="+l.specular);     
       var cMeshOptions =  {           
           enableWTextureCoord: false,
           calcTangentsAndBitangents: false,
@@ -165,8 +168,9 @@ export async function asyncFetchObjMtl(cobjname: string, cmatname: string)
           const mydiv: HTMLDivElement = document.querySelector("#cdiv")!;
           var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
           if (mydiv) mydiv.innerHTML = cstyle+"<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:600px'>"+rv.smatreport +"</td><td style='vertical-align:top'>"+rv.smeshreport+"</td></tr></tbody></table>";     
-       } else  console.log("object file  "+cobjname+" could not be read.");
-     } else console.log("materials file "+cmatname+" could not be read"); 
+          console.log("<- asyncFetchObjMtl");
+        } else  console.log("ERROR: object file  "+cobjname+" could not be read.");
+     } else console.log("ERROR: materials file "+cmatname+" could not be read"); 
 }
 
 //===========================================================================================================================================

@@ -575,30 +575,27 @@ const fishanimation = __importStar(require("./others/fishanimation")); // baseap
 const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation1 = __importStar(require("./animation1")); // baseapp derivative: scene container
 const animation2 = __importStar(require("./animation2")); // baseapp derivative: scene container
-const skyboxscene = __importStar(require("./scene/skyboxscene")); // scene: show skybox only (empty scene)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
 const lightscene = __importStar(require("./scene/lightscene")); // scene: lights directed, point, spot
 const objectlistscene = __importStar(require("./scene/objectlistscene")); // scene: show bouncing guy node tree
 const canvas3dtexturescene = __importStar(require("./scene/canvas3dtexturescene")); // scene: show 3d on texture
+const canvas3dtexturescene2 = __importStar(require("./scene/canvas3dtexturescene2")); // scene: show 3d on texture
 const drawinstancedscene = __importStar(require("./scene/drawinstancedscene")); // scene: show texture space navigator
 const skyboxcubescene = __importStar(require("./scene/skyboxcubescene")); // scene: show reflecting cube in skybox
 const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show textured objects from .obj/.mtl
 const skeletonscene = __importStar(require("./scene/skeletonscene")); // scene: bone model (single object)
 const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // scene: bone model (multiple objects)
-var baseapppars = {
+var defaultParameters = {
     move: true,
     speed: 0.01,
-    color0: "#A0A0A0"
-};
-var defaultParameters = {
-    b: baseapppars,
-    movetail: true,
+    color0: "#A0A0A0",
     texture: "geotriangle2",
+    fov: 60,
+    movetail: true,
     typelight: "point light",
     sling: 117,
-    shininess: 11.0,
-    fov: 60
+    shininess: 11.0
 };
 const ShowOBJMTL = 1;
 const ShowFish = 3;
@@ -649,9 +646,9 @@ function initAnimation2Scene(gl, app, dictPars, scene, heighttop) {
     document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
     var mta1 = new animation2.Animation2(gl, app, scene, dictPars, cdiv);
     mta1.main(gl, dictPars);
-    if (scene.sceneenv < 0) mta1.doShowBackgroundColorChoice = true;
+    if (scene[0].sceneenv < 0) mta1.doShowBackgroundColorChoice = true;
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) != undefined) mta1.doShowBackgroundColorChoice = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) > 0;
-    mta1.initGUI(defaultParameters);
+    mta1.initGUI(defaultParameters, 0);
     return mta1;
 }
 function showOtherAnimations(gl, app, dictPars) {
@@ -670,33 +667,21 @@ function showOtherAnimations(gl, app, dictPars) {
         return ims;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
         var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
-        var baseapppars = {
-            move: true,
-            speed: 0.4,
-            color0: "#A0A0A0"
-        };
-        sk.initGUI({
-            move: false,
-            movetail: true,
-            speed: 0.06,
-            texture: "zelenskyy",
-            color0: "#afb9af"
-        });
+        //var baseapppars = {move: true, speed: 0.4, texture:"zelenskyy",fov:number,color0:"#A0A0A0"};
+        //sk.initGUI({b: baseapppars, move:false,movetail:true, speed:0.06,color0:"#afb9af" });
+        sk.initGUI(defaultParameters);
         sk.main(gl, dictPars);
         return sk;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
-        var baseapppars = {
+        var baseapppars1 = {
             move: true,
             speed: 0.4,
-            color0: "#A0A0A0"
-        };
-        fa.initGUI({
-            b: baseapppars,
-            movetail: true,
+            color0: "#A0A0A0",
             texture: "geotriangle2",
-            sling: 117
-        });
+            fov: 60
+        };
+        fa.initGUI(defaultParameters);
         fa.main(gl, dictPars);
         return fa;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
@@ -723,23 +708,54 @@ function showOtherAnimations(gl, app, dictPars) {
         var mtai = new drawinstanced.DrawInstanced();
         mtai.main(gl);
         return undefined;
-    } else return initAnimation2Scene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars), 170);
+    } else return initAnimation2Scene(gl, app, dictPars, [
+        new matobjscene.MatObjScene(gl, app, dictPars)
+    ], 170);
+}
+function show2(gl, app, dictPars, urlPar, scenes, heighttop) {
+    var b = (dictPars === null || dictPars === void 0 ? void 0 : dictPars.get(urlPar)) != undefined;
+    if (b) initAnimation2Scene(gl, app, dictPars, scenes, heighttop);
+    return b;
 }
 function show(gl, app, dictPars) {
     //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) {
-        var mta1 = initAnimation2Scene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl), 70);
-        mta1.scene.texture = mta1.skyboxtexture; // background texture is needed for reflection
-        console.log("assigned " + mta1.skyboxtexture + " to scene reflection texture");
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) initAnimation2Scene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined) initAnimation2Scene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) initAnimation2Scene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined) initAnimation2Scene(gl, app, dictPars, new lightscene.LightScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation0")) != undefined) initAnimation2Scene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl, dictPars), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) initAnimation2Scene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) initAnimation2Scene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfish")) != undefined) initAnimation2Scene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"), 70);
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) initAnimation2Scene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl), 70);
+        var mta1 = initAnimation2Scene(gl, app, dictPars, [
+            new skyboxcubescene.SkyBoxCubeScene(gl)
+        ], 70);
+        mta1.scene[0].texture = mta1.skyboxtexture;
+        return;
+    }
+    if (show2(gl, app, dictPars, "animation7", [
+        new objectlistscene.ObjectListScene(gl),
+        new matobjscene.MatObjScene(gl, app, dictPars)
+    ], 70)) return; // Blockguy chased by plane
+    if (show2(gl, app, dictPars, "animation3", [
+        new canvas3dtexturescene.Canvas3dTextureScene(gl),
+        new lightscene.LightScene(gl)
+    ], 70)) return; // Lighted F with 3dcubes
+    if (show2(gl, app, dictPars, "animation1", [
+        new rotatingcubescene.MixedTextureScene(gl),
+        new drawinstancedscene.DrawInstancedScene(gl)
+    ], 70)) return; // Cube placed on grid
+    if (show2(gl, app, dictPars, "animation2", [
+        new canvas3dtexturescene.Canvas3dTextureScene(gl),
+        new objectlistscene.ObjectListScene(gl)
+    ], 70)) return; // Blockguy chasing 3dcubes
+    if (show2(gl, app, dictPars, "whales", [
+        new skeletonscene.SkeletonScene(gl),
+        new fishanimationscene.FishAnimationScene(gl)
+    ], 70)) return; // Zelensky patrol
+    if (show2(gl, app, dictPars, "animation5", [
+        new manytexturescene.ManyTexturesScene(gl)
+    ], 70)) return; // Many textures scene
+    if (show2(gl, app, dictPars, "animation4", [
+        new skyboxcubescene.SkyBoxCubeScene(gl)
+    ], 70)) return; // Skycube scene
+    if (show2(gl, app, dictPars, "animation9", [
+        new canvas3dtexturescene.Canvas3dTextureScene(gl),
+        new canvas3dtexturescene2.Canvas3dTextureScene2(gl)
+    ], 70)) return;
     else showOtherAnimations(gl, app, dictPars);
 }
 //=== ENTRY MAIN ===============================================================================================================================
@@ -802,7 +818,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/skeleton":"8B1KF","./others/fishanimation":"2homp","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./animation2":"9igw0","./scene/skyboxscene":"kcBXj","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/drawinstancedscene":"aeXif","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/skeletonscene":"6mdLk","./scene/fishanimationscene":"7ZHPR"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/skeleton":"8B1KF","./others/fishanimation":"2homp","./others/drawimagespace":"fDS7w","./animation1":"5jcfD","./animation2":"9igw0","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/mixedtexturescene":"lQx96","./scene/objectlistscene":"ZXdmK","./scene/drawinstancedscene":"aeXif","./scene/canvas3dtexturescene":"euPH5","./scene/manytexturescene":"fJWn9","./scene/skeletonscene":"6mdLk","./scene/fishanimationscene":"7ZHPR","./scene/lightscene":"bnNYj","./scene/canvas3dtexturescene2":"kMwgT"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -1012,10 +1028,7 @@ class skyboxcube extends baseapp.BaseApp {
       outColor = texture(u_texture, direction);
     }
     `;
-        var pi = this.twglprograminfo[0];
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[0] = pi;
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
             this.vsMirrorCube,
             this.fsMirrorCube
         ]);
@@ -1023,7 +1036,7 @@ class skyboxcube extends baseapp.BaseApp {
     //  fieldOfViewRadians : number = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
     createReflectingCubeGeo(gl) {
         this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);
+        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.reflectingCubeBufferInfo);
     }
     main(gl, dictpar) {
         // http://127.0.0.1:1234/index.html?skyboxcube&fov=22&movecube=true&moveenv=true
@@ -1125,7 +1138,7 @@ class skyboxcube extends baseapp.BaseApp {
             0
         ]); // twgl.m4.identity();
         // draw the environment
-        gl.useProgram(this.twglprograminfo[0].program);
+        //  gl.useProgram(this.twglprograminfo![0].program);
         this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture);
         /*
                 gl.bindVertexArray(this.vaoEnvironment!);
@@ -1148,10 +1161,10 @@ class skyboxcube extends baseapp.BaseApp {
         // draw the mirror cube
         if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
         if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
-        gl.useProgram(this.twglprograminfo[1].program);
+        gl.useProgram(this.twglprograminfo.program);
         //  gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube);
-        twgl.setUniforms(this.twglprograminfo[1], {
+        twgl.setUniforms(this.twglprograminfo, {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,
             u_projection: this.projectionMatrix,
@@ -11259,15 +11272,17 @@ const datgui = __importStar(require("dat.gui"));
 exports.instance = null;
 class BaseApp {
     constructor(cgl, capp, dictpar, divname){
-        this.baseappParameters = {
-            move: false,
-            speed: 0.04,
-            color0: "#00A000"
-        };
-        this.gl = null;
+        /*   baseappParameters: TbaseappParameters = {
+               texture: 'geotriangle2',
+               fov: 60,
+               move: false,
+               speed: 0.04,
+               color0: "#00A000"
+             };
+       */ this.gl = null;
         this.app = null;
         // programs
-        this.twglprograminfo = null; // there can be several
+        // protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
         // environment skybox camera
         this.cameraTarget = [
             0,
@@ -11275,7 +11290,7 @@ class BaseApp {
             0
         ];
         this.cameraPosition = [
-            4,
+            0,
             0,
             0
         ];
@@ -11314,14 +11329,13 @@ class BaseApp {
             this.gl = cgl;
             this.app = capp;
             twgl.setAttributePrefix("a_");
-            this.twglprograminfo = new Array(1);
-            this.twglprograminfo[0] = twgl.createProgramInfo(cgl, [
+            this.envPrograminfo = twgl.createProgramInfo(cgl, [
                 this.vsEnvironmentMap,
                 this.fsEnvironmentMap
             ]);
             document.getElementById("cdiv").innerHTML = "cdiv environment shaders initialized";
-            this.skyboxLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_skybox");
-            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.twglprograminfo[0].program, "u_viewDirectionProjectionInverse");
+            this.skyboxLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_skybox");
+            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
             document.getElementById("cdiv").innerHTML = "BaseApp: skybox perspective prepared";
         }
     }
@@ -11333,7 +11347,7 @@ class BaseApp {
             ccd.style.backgroundColor = value;
         }
     }
-    createGUI(parameters, instanceParameters) {
+    createGUI(parameters) {
         //     console.log("=> baseApp initGUI "+parameters);
         this.baseappParameters = parameters;
         var cc = this.gl.canvas.parentNode;
@@ -11347,7 +11361,7 @@ class BaseApp {
         document.getElementById("linksdiv").append(gui.domElement);
         gui.close();
         // connect viewmodel
-        gui.remember(parameters, instanceParameters);
+        gui.remember(parameters); //, instanceParameters);
         // Checkbox forward move animation on/off
         gui.add(parameters, "move");
         // Slider for animation speed
@@ -11400,10 +11414,11 @@ class BaseApp {
         }
     }
     createEnvironmentMapGeo(gl) {
+        gl.useProgram(this.envPrograminfo.program);
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray();
         gl.bindVertexArray(this.vaoEnvironment);
-        this.positionAttributeLocation = gl.getAttribLocation(this.twglprograminfo[0].program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo.program, "a_position");
         // Create a buffer for positions
         this.positionBuffer = gl.createBuffer();
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
@@ -11520,37 +11535,7 @@ class BaseApp {
         //!  this.texture= mytexture!;
         return mytexture;
     }
-    /*
-    private requestCORSIfNotSameOrigin(img: HTMLImageElement, url: string) {
-        if ((new URL(url, window.location.href)).origin !== window.location.origin) {
-        img.crossOrigin = "";
-        }
-    }
-    */ /*
-        public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
-        // env map
-        {
-            // Build a projection matrix.
-            var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
-            this.projectionMatrix = m4.perspective(fov, aspect, 1, 2000);
-          
-            // Build a view matrix.
-            var up = [0, 1, 0];
-            var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
-            this.viewMatrix = m4.inverse(cameraMatrix);
-           
-            // viewDirectionMatrix is viewMatrix without translation (direction only)
-            this.viewDirectionMatrix = m4.copy(this.viewMatrix);
-            this.viewDirectionMatrix[12] = 0;
-            this.viewDirectionMatrix[13] = 0;
-            this.viewDirectionMatrix[14] = 0;
-            //
-            this.viewDirectionProjectionMatrix =  m4.multiply( this.projectionMatrix!, this.viewDirectionMatrix!);
-    
-            return this.viewDirectionProjectionMatrix;
-            //
-        }
-    */ computeprojectionmatrices(gl, fov) {
+    computeprojectionmatrices(gl, fov) {
         // Build a projection matrix.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
@@ -11588,6 +11573,7 @@ class BaseApp {
     // <==
     }
     renderenvironmentmap(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
         var invproj = this.viewDirectionProjectionInverseLocation;
         var loc = this.skyboxLocation;
         gl.bindVertexArray(this.vaoEnvironment);
@@ -11601,11 +11587,13 @@ class BaseApp {
     //gl.bindVertexArray(null);
     }
     createEnvironmentMapGeoTwgl(gl) {
+        gl.useProgram(this.envPrograminfo.program);
         this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
-        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[0], this.environmentBufferInfo);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.envPrograminfo, this.environmentBufferInfo);
         gl.bindVertexArray(this.vaoEnvironment);
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
         var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
         // Rotate the cube around the x axis
         //   if (this.skyboxCubeParameters.movecube)
@@ -11616,7 +11604,7 @@ class BaseApp {
         //     gl.useProgram(this.twglprograminfo![0].program);
         gl.bindVertexArray(this.vaoEnvironment);
         //  this.restoreContext(gl,this.positionBuffer!,this.positionAttributeLocation!, 2);
-        twgl.setUniforms(this.twglprograminfo[0], {
+        twgl.setUniforms(this.envPrograminfo, {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
             u_skybox: texture
         });
@@ -14042,6 +14030,7 @@ class Camera {
         // result state to pass to shader
         this.lookAt = twgl_js_1.m4.identity(); // m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.identity(); // projection configured
+        this.camHeight = 0.0;
         //----------------------------------------------------------------
         //local state
         this.zaxis = [
@@ -14122,7 +14111,7 @@ class Camera {
         this.eye = twgl_js_1.m4.transformPoint(t, this.eye);
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
-    // console.log("translate eye "+this.eye);
+        console.log("translate eye " + this.eye);
     }
     translateTarget(v) {
         var t = twgl_js_1.m4.translation(v);
@@ -14170,11 +14159,17 @@ class Camera {
         this.myr = twgl_js_1.m4.identity();
         twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahx, this.myr);
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahy, this.myr);
+        twgl_js_1.m4.translate(this.myr, [
+            0,
+            this.camHeight,
+            0
+        ], this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [
             this.radius,
             0,
             0
         ]);
+        //this.eye[1]+=1; 
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
         this.ReportEye();
@@ -15487,12 +15482,16 @@ const datgui = __importStar(require("dat.gui"));
 class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
-        this.skeletonParameters = {
+        this.animationParameters = {
             move: false,
-            movetail: true,
+            color0: "#00A000",
             speed: 0.4,
             texture: "geotriangle2",
-            color0: "#00A000"
+            fov: 60,
+            movetail: true,
+            sling: 140,
+            shininess: 0.5,
+            typelight: "point light"
         };
         this.bufferInfo = null;
         this.skinVAO = null;
@@ -15500,19 +15499,20 @@ class Skeleton extends baseapp.BaseApp {
         //------------------------------------------------------------------------------------------------------------
         this.gui = null;
         Skeleton.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
             boneanimation.vsSkeleton,
             boneanimation.fsSkeleton
         ]);
     }
     main(gl, dictpar) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         var time0 = 0;
         // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
         this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = this.skeletonParameters.move ? 0.06 : 0.0;
+        this.afish.forwardspeed = this.animationParameters.move ? 0.06 : 0.0;
         this.afish.prepareSurfaceTextures(gl, "zelenskyy");
         this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
         this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
@@ -15520,7 +15520,7 @@ class Skeleton extends baseapp.BaseApp {
         this.afish.createSurfaceTexture(gl);
         this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.bufferInfo);
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
         this.cam.zoominVelocity = 0.5;
         requestAnimationFrame(()=>this.render(time0));
@@ -15535,10 +15535,10 @@ class Skeleton extends baseapp.BaseApp {
         }
     }
     initGUI(parameters) {
-        this.skeletonParameters = parameters;
+        this.animationParameters = parameters;
         var cc = this.gl.canvas.parentNode;
         var ccd = cc;
-        ccd.style.backgroundColor = this.skeletonParameters.color0;
+        ccd.style.backgroundColor = this.animationParameters.color0;
         // park the dat.gui box in the linksdiv below the links, in closed state
         var gui = new datgui.GUI({
             autoPlace: false
@@ -15563,7 +15563,9 @@ class Skeleton extends baseapp.BaseApp {
     //------------------------------------------------------------------------------------------------------------------------------------
     render(time) {
         var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        //gl.useProgram(this.twglprograminfo![1].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
@@ -15573,38 +15575,38 @@ class Skeleton extends baseapp.BaseApp {
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = this.skeletonParameters.move ? this.skeletonParameters.speed : 0.0;
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.forwardspeed = this.animationParameters.move ? this.animationParameters.speed : 0.0;
+        this.afish.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             20.0,
             -20,
             0.0
         ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             0.0,
             0.0,
             0.0
         ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             50.0,
             -20,
             10.0
         ]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
             -10,
             5.0,
             -10
         ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         requestAnimationFrame(()=>this.render(++time));
     }
@@ -16662,12 +16664,6 @@ const animationclock = __importStar(require("../baseapp/animationclock"));
 class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
-        this.fishAnimationParameters = {
-            b: this.baseappParameters,
-            movetail: true,
-            texture: "geotriangle2",
-            sling: 117
-        };
         this.fish = [
             new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
             new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
@@ -16725,14 +16721,14 @@ class FishAnimation extends baseapp.BaseApp {
         ];
         this.clock = new animationclock.AnimationClock();
         FishAnimation.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
             boneanimation.vsSkeleton,
             boneanimation.fsSkeleton
         ]);
     }
     main(gl, dictpar) {
         var gl = this.gl;
+        gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;
         this.fish.forEach((afish)=>{
@@ -16743,7 +16739,7 @@ class FishAnimation extends baseapp.BaseApp {
             afish.createSurfaceTexture(gl);
             afish.uniforms = afish.createUniforms(gl, dictpar);
             afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
         });
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 30.0, this.app);
@@ -16763,7 +16759,7 @@ class FishAnimation extends baseapp.BaseApp {
         this.fishAnimationParameters = parameters;
         // The base GUI provides checkboxes for move and move of objects,
         // a color dialog to choose background, Slider for animation speed
-        var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+        var gui = super.createGUI(this.fishAnimationParameters);
         // add a slider for sling
         gui.add(this.fishAnimationParameters, "sling").min(9).max(120).step(1);
         gui.updateDisplay();
@@ -16771,7 +16767,7 @@ class FishAnimation extends baseapp.BaseApp {
     }
     render(time) {
         var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
+        gl.useProgram(this.twglprograminfo.program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
@@ -16779,27 +16775,28 @@ class FishAnimation extends baseapp.BaseApp {
         var cam = this.cam;
         cam.CamHandlingZUp(gl, this.app, 1.0, -1);
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
+        var par = this.fishAnimationParameters;
         for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
             gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move ? this.fishAnimationParameters.b.speed : 0.0;
+            this.fish[fishtype].forwardspeed = par.move ? par.speed : 0.0;
             if (this.fishjointcounts[fishtype] == 1) {
-                this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                this.fish[fishtype].computeBone(time, par.move, par.movetail);
                 this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
                 this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
-                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
                 twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
             } else {
                 var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
                 var ampl0 = this.fish[fishtype].ampl;
-                var sling = this.fishAnimationParameters.sling;
+                var sling = par.sling;
                 for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
                     var timeoffs = i * sling;
                     var nx = i / this.fishjointcounts[fishtype];
                     this.fish[fishtype].ampl = ampl0 * nx;
-                    this.fish[fishtype].computeBone(time - timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                    this.fish[fishtype].computeBone(time - timeoffs, par.move, par.movetail);
                     this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
                     this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
-                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                    twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
                     twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
                     localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
                 }
@@ -17238,8 +17235,7 @@ class drawimagespace extends baseapp.BaseApp {
         //===================================================================================================
         this.gui = null;
         drawimagespace.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
             this.vs,
             this.fs
         ]);
@@ -17396,13 +17392,14 @@ class drawimagespace extends baseapp.BaseApp {
     }
     //---------------------------------------------------------------------------------------------------------
     main(gl, dictpar) {
-        var _a;
+        //  super.main(gl, dictpar,"","");
+        //  if (this.program && this.gl && this.program[0])
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         this.prepareSurfaceTextures(gl, "zelenskyy");
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         this.txtaspect = this.textureaspects.get("geotriangle2");
         this.ny = 1.0;
-        console.log("this.twglprograminfo.length=" + ((_a = this.twglprograminfo) === null || _a === void 0 ? void 0 : _a.length));
-        var program = this.twglprograminfo[1].program;
         console.log("<assigned program");
         this.diffuseLocation = gl.getUniformLocation(program, "diffuse");
         this.imageSizeLocation = gl.getUniformLocation(program, "u_imageSize");
@@ -17415,6 +17412,7 @@ class drawimagespace extends baseapp.BaseApp {
         // gl.useProgram(this.twglprograminfo![0].program);
         // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
         requestAnimationFrame(()=>this.render(0));
+    //else
     //console.log("initprogram program[0] fails.");
     }
     readcolor(original) {
@@ -17432,8 +17430,10 @@ class drawimagespace extends baseapp.BaseApp {
         var _a;
         if (this.textures != null) {
             var gl = this.gl;
+            var program = this.twglprograminfo.program;
+            gl.useProgram(program);
             twgl.resizeCanvasToDisplaySize(gl.canvas);
-            gl.useProgram(this.twglprograminfo[1].program);
+            //  gl.useProgram(this.twglprograminfo![1].program);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             var texture = this.textures[this.currentTexture];
             if (texture == null || texture == undefined) {
@@ -17568,17 +17568,20 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
-        //=============================================================================
-        // all parameters in any scene
-        this.animation1Parameters = {
-            b: this.baseappParameters,
+        this.defaultParameters = {
+            move: true,
+            speed: 0.01,
+            color0: "#A0A0A0",
             texture: "geotriangle2",
             fov: 60,
+            movetail: true,
             typelight: "point light",
             sling: 117,
-            shininess: 0.1,
-            movetail: true
+            shininess: 11.0
         };
+        //=============================================================================
+        // all parameters in any scene
+        this.animation1Parameters = this.defaultParameters;
         this.ctime = new Date().getTime();
         this.doclear = true;
         this.doTwglEnv = false;
@@ -17588,30 +17591,35 @@ class Animation1 extends baseapp.BaseApp {
     initGUI(parameters) {
         console.log("=> animation1 initGUI " + parameters);
         this.animation1Parameters = parameters;
-        var gui = super.createGUI(this.animation1Parameters.b, this.animation1Parameters);
+        var gui = super.createGUI(this.animation1Parameters);
         this.scene.animationParameters = this.animation1Parameters;
         this.scene.extendGUI(gui);
         return gui;
     }
     main(gl, dictpar) {
         this.dictpars = dictpar;
-        if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
-            var pienv = this.twglprograminfo[0];
-            this.twglprograminfo = new Array(this.scene.twglprograminfo.length);
-            this.twglprograminfo[0] = pienv;
-            for(var j = 0; j < this.scene.twglprograminfo.length; j++)if (this.scene.twglprograminfo[j] != null && this.scene.twglprograminfo[j] != undefined) this.twglprograminfo[j] = this.scene.twglprograminfo[j];
-        }
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene.scenesize, this.app);
+        /*
+            if (this.scene.twglprograminfo!=null && this.scene.twglprograminfo!=undefined)
+               {
+                  var pienv = this.twglprograminfo![0];
+                  this.twglprograminfo = new Array(this.scene.twglprograminfo.length);
+                  this.twglprograminfo[0]=pienv;
+    
+                   for (var j=0; j<this.scene.twglprograminfo.length; j++)
+                       if (this.scene.twglprograminfo[j]!=null && this.scene.twglprograminfo[j]!=undefined)
+                       {
+                         this.twglprograminfo![j]=this.scene.twglprograminfo[j];
+                       }
+               }
+         */ this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene.scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
         if (this.scene.sceneenv > 0) {
-            gl.useProgram(this.twglprograminfo[0].program);
+            //gl.useProgram(this.twglprograminfo![0].program);
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
             else this.createEnvironmentMapGeo(gl);
             this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback);
-        } else {
-            gl.useProgram(this.twglprograminfo[0].program);
-            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo[1], this.sceneReadyCallback);
-        }
+        } else // gl.useProgram(this.twglprograminfo![1].program);     
+        this.scene.initScene(gl, this.animation1Parameters, this.cam, dictpar, this.sceneReadyCallback);
     }
     sceneReadyCallback(err) {
         var thisinstance = baseapp.instance;
@@ -17625,7 +17633,7 @@ class Animation1 extends baseapp.BaseApp {
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
         console.log("textureEnvReadyCallback executes initScene");
-        ainstance.scene.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.dictpars, ainstance.twglprograminfo[1], ainstance.sceneReadyCallback);
+        ainstance.scene.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.cam, ainstance.dictpars, ainstance.sceneReadyCallback);
     }
     render(time) {
         var _a, _b;
@@ -17645,33 +17653,30 @@ class Animation1 extends baseapp.BaseApp {
         // render skybox                                                                          
         if (this.scene.sceneenv > 0) {
             // set skybox camera
-            if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
+            if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move)) this.cameraPosition = [
                 cam === null || cam === void 0 ? void 0 : cam.Position()[0],
                 cam === null || cam === void 0 ? void 0 : cam.Position()[1],
                 cam === null || cam === void 0 ? void 0 : cam.Position()[2]
             ];
-            else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.b.move) ? [
-                Math.cos(time * 0.005 * this.scene.animationParameters.b.speed),
-                0,
-                Math.sin(time * 0.005 * this.scene.animationParameters.b.speed)
+            else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [
+                Math.cos(time * 0.005 * this.scene.animationParameters.speed),
+                0.0,
+                Math.sin(time * 0.005 * this.scene.animationParameters.speed)
             ] : [
                 1.0,
                 0.0,
                 0.0
             ];
-            gl.useProgram(this.twglprograminfo[0].program);
+            //gl.useProgram(this.twglprograminfo![0].program);
             gl.disable(gl.CULL_FACE);
             gl.depthFunc(gl.LEQUAL);
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             else this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
         }
-        // render scene
-        if (this.twglprograminfo[1] != undefined && this.twglprograminfo[1] != null) {
-            gl.useProgram(this.twglprograminfo[1].program);
-            gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
-            gl.enable(gl.CULL_FACE); // only show left-turned triangles
-            this.scene.drawScene(gl, cam, time);
-        }
+        //gl.useProgram(this.twglprograminfo![1].program);
+        gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
+        gl.enable(gl.CULL_FACE); // only show left-turned triangles
+        this.scene.drawScene(gl, cam, time);
         // request next frame
         requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
     }
@@ -17719,134 +17724,144 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation2 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
-        //=============================================================================
-        // all parameters in any scene
-        this.animation1Parameters = {
-            b: this.baseappParameters,
+        this.defaultParameters = {
+            move: true,
+            speed: 0.01,
+            color0: "#A0A0A0",
             texture: "geotriangle2",
             fov: 60,
+            movetail: true,
             typelight: "point light",
             sling: 117,
-            shininess: 0.1,
-            movetail: true
+            shininess: 11.0
         };
+        //=============================================================================
+        // all parameters in any scene
+        this.animation1Parameters = this.defaultParameters;
         this.ctime = new Date().getTime();
-        this.doclear = true;
-        this.doTwglEnv = false;
+        this.doclear = false;
+        this.doTwglEnv = false; // when true, background is drawn with twgl.drawBufferInfo, which does not work with any scenery using twgl.DrawBufferInfo
         Animation2.instance = this;
         this.scene = cscene;
         this.clock = new animationclock.AnimationClock();
     }
     onChangeTextureCombo(value) {
         var thisinstance = Animation2.instance;
-        console.log("we choose texture=[" + value + "] thisinstance.scene.sceneenv=" + thisinstance.scene.sceneenv);
-        if (value == "None") thisinstance.scene.sceneenv = -1; // result is chosen color0 div  background  
+        console.log("we choose texture=[" + value + "] thisinstance.scene.sceneenv=" + thisinstance.scene[0].sceneenv);
         if (value == "Black") thisinstance.skyboxtexture = undefined; // result is a black background  
-        if (value == "Yokohama") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.scene.sceneenv = 1, (p1, p2)=>{});
-        if (value == "Stockholm") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.scene.sceneenv = 2, (p1, p2)=>{});
+        if (value == "Yokohama") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 1, (p1, p2)=>{});
+        if (value == "Stockholm") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 2, (p1, p2)=>{});
+        this.scene.forEach((s)=>{
+            if (value == "None") s.sceneenv = -1; // result is chosen color0 div  background  
+            if (value == "Black") s.sceneenv = 0; //thisinstance.skyboxtexture = undefined; // result is a black background  
+            if (value == "Yokohama") s.sceneenv = 1; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=1, (p1,p2)=>{})!;    
+            if (value == "Stockholm") s.sceneenv = 2; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=2, (p1,p2)=>{})!; 
+        });
     }
-    initGUI(parameters) {
+    initGUI(parameters, cscene) {
         console.log("=> animation1 initGUI " + parameters);
         this.animation1Parameters = parameters;
-        var gui = super.createGUI(this.animation1Parameters.b, this.animation1Parameters);
-        this.scene.animationParameters = this.animation1Parameters;
-        // Combobox texture from accepted values
-        var cel2 = gui.add(this.animation1Parameters, "texture", [
-            "None",
-            "Black",
-            "Yokohama",
-            "Stockholm"
-        ]);
-        cel2.onChange(this.onChangeTextureCombo);
-        this.scene.extendGUI(gui);
+        for(var ii = 0; ii < this.scene.length; ii++)this.scene[ii].animationParameters = this.animation1Parameters;
+        var gui = super.createGUI(this.animation1Parameters);
+        this.scene[cscene].extendGUI(gui);
         return gui;
+    }
+    initScenes() {
+        var n = 0;
+        var ainstance = baseapp.instance;
+        ainstance.scene.forEach((s)=>{
+            s.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.cam, ainstance.dictpars, ainstance.scene.length == n + 1 ? ainstance.sceneReadyCallback : undefined);
+            n++;
+        });
     }
     main(gl, dictpar) {
         this.dictpars = dictpar;
-        if (this.scene.twglprograminfo != null && this.scene.twglprograminfo != undefined) {
-            var pienv = this.twglprograminfo[0];
-            this.twglprograminfo = new Array(this.scene.twglprograminfo.length);
-            this.twglprograminfo[0] = pienv;
-            for(var j = 0; j < this.scene.twglprograminfo.length; j++)if (this.scene.twglprograminfo[j] != null && this.scene.twglprograminfo[j] != undefined) this.twglprograminfo[j] = this.scene.twglprograminfo[j];
-        }
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene.scenesize, this.app);
+        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
-        if (this.scene.sceneenv > 0) {
-            gl.useProgram(this.twglprograminfo[0].program);
+        if (this.scene[0].sceneenv > 0) {
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
             else this.createEnvironmentMapGeo(gl);
-            this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback);
-        } else {
-            gl.useProgram(this.twglprograminfo[0].program);
-            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo[1], this.sceneReadyCallback);
-        }
+            this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene[0].sceneenv, this.textureEnvReadyCallback);
+        } else this.initScenes();
     }
     sceneReadyCallback(err) {
+        console.log("-> sceneReadyCallback");
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
-        ainstance.scene.defaultCamera(ainstance.gl, ainstance.cam);
-        ainstance.scene.resizeCanvas(ainstance.gl);
-        console.log("sceneReadyCallback requests first frame");
+        ainstance.scene[0].defaultCamera(ainstance.gl, ainstance.cam);
+        ainstance.scene[0].resizeCanvas(ainstance.gl);
+        console.log("-> sceneReadyCallback request first frame");
         requestAnimationFrame(()=>ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
     }
     textureEnvReadyCallback(err, texture) {
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
-        console.log("textureEnvReadyCallback executes initScene");
-        ainstance.scene.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.dictpars, ainstance.twglprograminfo[1], ainstance.sceneReadyCallback);
+        //    var n: number=0;
+        ainstance.initScenes();
+    //    ainstance.scene.forEach((s)=>{ s.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,
+    //                                               (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
     }
     render(time) {
-        var _a, _b;
-        // prepare context and canvas
         var gl = this.gl;
+        /*  if (this.doclear)
+          {
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          }
+         // scene.resizeCanvas(gl);
+          gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
+         */ var gl = this.gl;
         if (this.doclear) {
             gl.clear(gl.DEPTH_BUFFER_BIT);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
-        this.scene.resizeCanvas(gl);
+        //  scene.resizeCanvas(gl);  
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        // prepare camera
         var cam = this.cam;
         cam.CamHandlingYUp(gl, this.app, 1.0, -1);
+        this.scene.forEach((s)=>{
+            this.renderscene(gl, time, s, cam);
+        });
+        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
+    }
+    renderscene(gl, time, scene, cam) {
+        // var scene = this.scene[cscene];
+        var _a, _b;
+        // prepare camera
         // set current scene parameters
-        this.scene.animationParameters = this.animation1Parameters;
+        scene.animationParameters = this.animation1Parameters;
         // render skybox                                                                          
-        if (this.scene.sceneenv > 0) {
+        if (scene.sceneenv > 0) {
             // set skybox camera
-            if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.b.move)) this.cameraPosition = [
+            if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move)) this.cameraPosition = [
                 cam === null || cam === void 0 ? void 0 : cam.Position()[0],
                 cam === null || cam === void 0 ? void 0 : cam.Position()[1],
                 cam === null || cam === void 0 ? void 0 : cam.Position()[2]
             ];
-            else this.cameraPosition = ((_b = this.scene.animationParameters) === null || _b === void 0 ? void 0 : _b.b.move) ? [
-                Math.cos(time * 0.005 * this.scene.animationParameters.b.speed),
-                0,
-                Math.sin(time * 0.005 * this.scene.animationParameters.b.speed)
+            else this.cameraPosition = ((_b = scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [
+                Math.cos(time * 0.005 * scene.animationParameters.speed),
+                0.0,
+                Math.sin(time * 0.005 * scene.animationParameters.speed)
             ] : [
-                1.0,
+                4.0,
                 0.0,
                 0.0
             ];
-            gl.useProgram(this.twglprograminfo[0].program);
             gl.disable(gl.CULL_FACE);
             gl.depthFunc(gl.LEQUAL);
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             else this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
         }
         // render scene
-        if (this.twglprograminfo[1] != undefined && this.twglprograminfo[1] != null) {
-            gl.useProgram(this.twglprograminfo[1].program);
-            gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
-            gl.enable(gl.CULL_FACE); // only show left-turned triangles
-            this.scene.drawScene(gl, cam, time);
-        }
-        // request next frame
-        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
+        gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
+        gl.enable(gl.CULL_FACE); // only show left-turned triangles
+        scene.drawScene(gl, cam, time);
+    // request next frame
     }
 }
 exports.Animation2 = Animation2;
 
-},{"./baseapp/animationclock":"4nsaS","./baseapp/camhandler":"1ZnlU","./baseapp/baseapp":"9lZ4F"}],"kcBXj":[function(require,module,exports) {
+},{"./baseapp/animationclock":"4nsaS","./baseapp/camhandler":"1ZnlU","./baseapp/baseapp":"9lZ4F"}],"aFl5l":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -17880,38 +17895,2978 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.SkyBoxScene = void 0;
+exports.SkyBoxCubeScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-class SkyBoxScene {
-    constructor(gl, dictPars){
+class SkyBoxCubeScene {
+    constructor(gl){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
         this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        this.speedpreset = 0.05;
-        if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
-            this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
-            console.log("specified: speedpreset=" + this.speedpreset);
-        // no shaders (this scene does not have a context)
+        //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
+        this.vsMirrorCube = `#version 300 es
+    
+        in vec4 a_position;
+        in vec3 a_normal;
+        
+        uniform mat4 u_projection;
+        uniform mat4 u_view;
+        uniform mat4 u_world;
+        
+        out vec3 v_worldPosition;
+        out vec3 v_worldNormal;
+        
+        void main() {
+          // Multiply the position by the matrix.
+          gl_Position = u_projection * u_view * u_world * a_position;
+        
+          // send the view position to the fragment shader
+          v_worldPosition = (u_world * a_position).xyz;
+        
+          // orient the normals and pass to the fragment shader
+          v_worldNormal = mat3(u_world) * a_normal;
         }
+        `;
+        this.fsMirrorCube = `#version 300 es
+        precision highp float;
+        
+        // Passed in from the vertex shader.
+        in vec3 v_worldPosition;
+        in vec3 v_worldNormal;
+        
+        // The texture.
+        uniform samplerCube u_texture;
+        
+        // The position of the camera
+        uniform vec3 u_worldCameraPosition;
+        
+        // we need to declare an output for the fragment shader
+        out vec4 outColor;
+        
+        void main() {
+          vec3 worldNormal = normalize(v_worldNormal);
+          vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
+          vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+        
+          outColor = texture(u_texture, direction);
+        }
+        `;
+        this.vertexShaderSource = this.vsMirrorCube;
+        this.fragmentShaderSource = this.fsMirrorCube;
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vsMirrorCube,
+            this.fsMirrorCube
+        ]);
+        this.fieldOfViewRadians = 60 * Math.PI / 180;
     }
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
     defaultCamera(gl, cam) {}
-    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
-        this.animationParameters = this.animationParameters == undefined ? cap : this.animationParameters;
-        if (this.speedpreset) this.animationParameters.b.speed = this.speedpreset;
+    createReflectingCubeGeo(gl) {
+        this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
+        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.reflectingCubeBufferInfo);
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
+        this.parameters = cap;
+        this.parameters.move = false;
+        this.createReflectingCubeGeo(gl);
+        // console.log("dictpar[r0]="+dictpar.get('radius0'));          
         sceneReadyCallback(0);
     }
     extendGUI(gui) {
         gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
     }
-    drawScene(gl, cam, time) {}
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    drawScene(gl, cam, time) {
+        var _a;
+        this.cameraTarget = [
+            0,
+            0,
+            0
+        ];
+        this.cameraPosition = [
+            0.1 * cam.Position()[0],
+            0.1 * cam.Position()[1],
+            0.1 * cam.Position()[2]
+        ];
+        gl.useProgram(this.twglprograminfo.program);
+        // Build a view matrix for the mirror cube.
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        this.projectionMatrix = twgl.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
+        // Build a view matrix.
+        var up = [
+            0,
+            1,
+            0
+        ];
+        var cameraMatrix = twgl.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        this.viewMatrix = twgl.m4.inverse(cameraMatrix);
+        var movecube = (_a = this.parameters) === null || _a === void 0 ? void 0 : _a.movetail;
+        var angVelocityCube = 0.005;
+        // Rotate the cube around the x axis
+        if (movecube) this.worldMatrix = twgl.m4.axisRotation([
+            0,
+            1,
+            0
+        ], this.parameters.speed * (time + 0.1) * angVelocityCube);
+        else this.worldMatrix = twgl.m4.translation([
+            0,
+            0,
+            0
+        ]); // twgl.m4.identity();
+        // draw the mirror cube
+        if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
+        if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
+        //  gl.useProgram(this.twglprograminfo![1].program);      
+        gl.depthFunc(gl.LESS); // use the default depth test
+        gl.bindVertexArray(this.vaoCube);
+        //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
+        //  var bb=this.reflectingCubeBufferInfo!.indices;
+        //  if (bb!=null) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bb);
+        //var bb=this.reflectingCubeBufferInfo!.attribs![""]!;
+        //foreach(()=>)
+        twgl.setUniforms(this.twglprograminfo, {
+            u_world: this.worldMatrix,
+            u_view: this.viewMatrix,
+            u_projection: this.projectionMatrix,
+            u_texture: this.texture,
+            u_worldCameraPosition: this.cameraPosition
+        });
+        twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo);
+        gl.flush();
+    }
 }
-exports.SkyBoxScene = SkyBoxScene;
+exports.SkyBoxCubeScene = SkyBoxCubeScene;
+
+},{"twgl.js":"3uqAP"}],"6Rbvi":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.MatObjScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work (lib)
+const twgl_js_1 = require("twgl.js"); // Greg's work (lib)
+const mobj = __importStar(require("./../objreader/matobjreader")); // read geometry from .obj / .mtl files (interface)
+const mobjfiles = __importStar(require("./../objreader/matobjfiles")); // read geometry from .obj / .mtl files (resources)
+class MatObjScene {
+    constructor(gl, capp, dictPar){
+        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
+        this.scenesize = 40;
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.time = 0;
+        this.dtime = 0.01;
+        this.vertexPositionAttributeLocation = 0; // address of positions buffer in shader
+        this.normalAttributeLocation = 0; // address of normals buffer in shader
+        this.texCoordAttributeLocation = 0; // address of texture coords in shader
+        this.texs = [];
+        this.uniforms = {
+            u_lightWorldPos: [
+                0,
+                0,
+                0
+            ],
+            u_ambient: [
+                0,
+                0,
+                0,
+                1
+            ],
+            u_specular: [
+                0,
+                0,
+                0,
+                1
+            ],
+            u_emissive: [
+                0,
+                0,
+                0,
+                1
+            ],
+            u_shininess: 0,
+            u_specularFactor: 0.0,
+            u_diffuse: this.texs[0],
+            u_difflightintensity: 0,
+            u_speclightintensity: 0
+        };
+        this.resolvedfilenames = new Map();
+        this.resolvedtextures = new Map();
+        this.imgs = [];
+        this.imgsa = [];
+        this.ctime = 0;
+        //--- SHADERS ------------------------------------------------------------------------------------------------------
+        this.vs = `#version 300 es
+uniform mat4 u_worldViewProjection;
+uniform vec3 u_lightWorldPos;
+uniform mat4 u_world;
+uniform mat4 u_viewInverse;
+uniform mat4 u_worldInverseTranspose;
+
+// ES3 convention
+//layout(location=0) in vec4 position;
+//layout(location=1) in vec3 normal;
+//layout(location=2) in vec2 texcoord;
+
+in vec4 position;
+in vec3 normal;
+in vec2 texcoord;
+
+// out, not varying
+out vec4 v_position;
+out  vec2 v_texCoord;
+out  vec3 v_normal;
+out  vec3 v_surfaceToLight;
+out  vec3 v_surfaceToView;
+
+void main() {
+  v_texCoord = texcoord;
+  v_position = u_worldViewProjection * position;
+  v_normal = (u_worldInverseTranspose * vec4(normal, 0)).xyz;
+  v_surfaceToLight = u_lightWorldPos - (u_world * position).xyz;
+  v_surfaceToView = (u_viewInverse[3] - (u_world * position)).xyz;
+  gl_Position = v_position;
+}
+`;
+        this.fs = `#version 300 es
+ precision mediump float;
+
+ in vec4 v_position;
+ in vec2 v_texCoord;
+ in vec3 v_normal;
+ in vec3 v_surfaceToLight;
+ in vec3 v_surfaceToView;
+
+ uniform vec3 u_lightDirection;
+ uniform vec4 u_ambient;
+ uniform sampler2D u_diffuse;
+ uniform vec4 u_specular;
+ uniform vec4 u_emissive;
+ uniform float u_shininess;
+ uniform float u_specularFactor;
+ uniform float u_difflightintensity;
+ uniform float u_speclightintensity;
+
+
+ vec4 lit(float l ,float h, float m) {
+   return vec4(1.0,
+               max(l, 0.0),
+               (l > 0.0) ? pow(max(0.0, h), m) : 0.0,
+               1.0);
+ }
+
+ out vec4 glFragColor;
+
+ void main() {
+  
+    vec3 normal = normalize(v_normal);
+    vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+    vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
+
+    float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
+    float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
+
+
+  vec4 diffuseColor = texture(u_diffuse, v_texCoord);
+  float lightIntensity = dot(normalize(v_normal), normalize(v_surfaceToLight)); 
+  lightIntensity = clamp( lightIntensity,0.0,u_difflightintensity);
+  vec4 ambientColor = u_ambient * 0.25;
+  diffuseColor = diffuseColor * lightIntensity;
+  float shininess = clamp(u_shininess / 10.0, 0.,u_speclightintensity);
+  vec4 emissiveColor = normalize(u_emissive) * shininess;
+  vec4 specColor = specularLight * u_specular;
+  vec4 outColor = diffuseColor + emissiveColor + specColor + ambientColor;
+  outColor[3] = 1.0;
+  glFragColor = outColor;
+ }`;
+        console.log("=> Constructor MatObjScene - create programInfo");
+        //this.twglprograminfo=new Array(3);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vs,
+            this.fs
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {
+        // Create a camera
+        if (mobj == undefined || mobj == null) {
+            console.log("ERROR: object mesh not ready");
+            return;
+        }
+        if (mobj.meshMinMax == undefined || mobj.meshMinMax == null) {
+            console.log("ERROR: object range not ready");
+            return;
+        }
+        var szx = mobj.meshMinMax.maxx - mobj.meshMinMax.minx;
+        var szy = mobj.meshMinMax.maxy - mobj.meshMinMax.miny;
+        var szz = mobj.meshMinMax.maxz - mobj.meshMinMax.minz;
+        var szobj = Math.sqrt(szx * szx + szy * szy + szz * szz);
+        //   this.cam = camhandler.Camera.createCamera(gl,dictpar!,camhandler.Camera.CamYUp, szobj*2, cap);
+        cam.translateTarget([
+            (mobj.meshMinMax.maxx + mobj.meshMinMax.minx) / 2,
+            (mobj.meshMinMax.maxy + mobj.meshMinMax.miny) / 2,
+            (mobj.meshMinMax.maxz + mobj.meshMinMax.minz) / 2
+        ]);
+        cam.zoominVelocity = szobj / 40.0;
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        this.getFiles(dictpar).then(()=>{
+            var cc = gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = this.animationParameters.color0;
+            if (mobj.mesh) {
+                this.vertexPositionAttributeLocation = gl.getAttribLocation(program, "position");
+                gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
+                this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
+                gl.enableVertexAttribArray(this.normalAttributeLocation);
+                this.texCoordAttributeLocation = gl.getAttribLocation(program, "texcoord");
+                gl.enableVertexAttribArray(this.texCoordAttributeLocation);
+                // Prepare obj mesh for display
+                console.log("obj/mtl mesh read ok");
+                mobj.CreateMeshWithBuffers(gl); // unpack index and positions
+                mobj.PrepareIndexBuffers(gl); // for each material, set up an index buffer
+                console.log("<= Prepare obj/mtl mesh <= buffers ok");
+                // Fetch file texture content, start rendering when all textures read
+                this.Prepare(gl, sceneReadyCallback);
+            } else console.log("ERROR: obj/mtl no mesh could be created.");
+        }); // getfiles then({})
+    }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+    }
+    //------------------------------------------------------------------------
+    async getFiles(UrlPars) {
+        const useInMemoryObj = false;
+        if (useInMemoryObj) mobj.GetDeclaredObjMtl();
+        else {
+            var cresolvedfilepair = mobjfiles.getFileNamesCube();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("koenigsegg")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("building")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair2")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("cat")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("plane")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("rubik")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("stone")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("greenhouse")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+            console.log("=> await " + cresolvedfilepair.cobjname + " " + cresolvedfilepair.cmatname);
+            await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
+            if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length > 0) {
+                console.log("<= await result");
+                console.log("see resolved files: " + cresolvedfilepair.cfiles.length);
+                cresolvedfilepair.cfiles.forEach(({ fName , fNameResolved  })=>{
+                    this.resolvedfilenames.set(fName, fNameResolved);
+                    console.log("reg: " + fName + " => " + fNameResolved);
+                });
+            } else console.log("<= await no result");
+        }
+    }
+    //--------------------------------------------------------------------
+    LoadImage(gl, url, onload) {
+        var img = new Image();
+        img.src = url;
+        img.onload = function() {
+            onload(gl, img);
+        };
+        return img;
+    }
+    LoadImages(gl, istr, urls, onload) {
+        var img = new Image();
+        img.src = urls[istr];
+        img.onload = ()=>{
+            console.log("load image: [" + urls[istr]);
+            istr = this.imgs.push(img);
+            if (istr < urls.length) this.LoadImages(gl, istr, urls, onload);
+            else onload(gl, istr);
+        };
+        return img;
+    }
+    //--------------------------------------------------------------------
+    Prepare(gl, sceneReadyCallback) {
+        //   var gl: WebGL2RenderingContext;
+        //   gl= this.gl!;
+        console.log("=> Prepare - get materials");
+        this.mats = mobj.mesh.materialsByIndex;
+        if (this.mats == null || this.mats == undefined) return;
+        console.log("=> Prepare - found " + mobj.mesh.materialNames.length + " materials in mtl");
+        for(var i = 0; i < mobj.mesh.materialNames.length; i++){
+            var s1 = this.mats[i];
+            if (s1 != undefined) {
+                console.log("found  material i=" + i + " name=" + mobj.mesh.materialNames[i]);
+                var nn = [];
+                for(var j = 0; j < 4; j++){
+                    nn.push(255 * this.mats[i].diffuse[0]); // create mini texture for diffuse color
+                    nn.push(255 * this.mats[i].diffuse[1]);
+                    nn.push(255 * this.mats[i].diffuse[2]);
+                    nn.push(255);
+                }
+                this.texs.push(twgl.createTexture(gl, {
+                    min: gl.NEAREST,
+                    mag: gl.NEAREST,
+                    src: nn
+                }));
+                var sfile = this.mats[i].mapDiffuse;
+                if (sfile.filename != undefined && sfile.filename != "") console.log("Prepare - found material texture file reference: [" + sfile.filename + "]");
+            }
+        }
+        var imageUrls = [];
+        var imageUrlKeys = [];
+        if (this.resolvedfilenames.keys != undefined) this.resolvedfilenames.forEach((value, key)=>{
+            console.log("Prepare " + key + " set texture file load: " + value);
+            imageUrls.push(value);
+            imageUrlKeys.push(key);
+        });
+        if (imageUrls.length > 0) // ok await FetchImage(imageUrls[0]).then((value:ArrayBuffer)=>imgsa.push(value));
+        // ok console.log("fetched image 0, byteLength="+imgsa[0].byteLength);
+        this.LoadImages(gl, 0, imageUrls, (gl, istr)=>{
+            console.log("Found " + istr + " file textures, expect " + imageUrls.length);
+            for(var i = 0; i < istr; i++){
+                var texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                //  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                //  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGB8, this.imgs[i].width, this.imgs[i].height);
+                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, this.imgs[i]);
+                this.resolvedtextures.set(imageUrlKeys[i], texture);
+                console.log("Prepare - register resolved texture " + i + " " + imageUrlKeys[i] + " width=" + this.imgs[i].width + " height=" + this.imgs[i].height);
+            }
+            console.log("Prepare - texture itemSize=" + mobj.meshWithBuffers.textureBuffer.itemSize);
+            console.log("Prepare - finish, there are " + istr + " file textures");
+            this.time = 0;
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            //!      requestAnimationFrame(() => this.render(0));  
+            if (sceneReadyCallback != undefined) {
+                console.log("call matobjscene.sceneReadyCallback");
+                sceneReadyCallback(0);
+            }
+        }); // return from LoadImages()       
+        else {
+            console.log("Prepare - no textures, > requestAnimationFrame()");
+            this.time = 0;
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            if (sceneReadyCallback != undefined) sceneReadyCallback(1);
+        //!    requestAnimationFrame(() => this.render(0));      
+        }
+        console.log("Prepare - return");
+    }
+    //--- render function ------------------------------------------------------------
+    prepareMaterial(i) {
+        var ctexture = this.texs[i]; // for each material there is one preset diffuse texture
+        var cmaterial = this.mats[i];
+        var srep = "";
+        if (cmaterial.mapDiffuse == undefined) {
+            srep = "UNDEFINED TEXTURE";
+            console.log(srep);
+        //    this.uniforms.u_diffuse = ctexture; 
+        } else if (cmaterial.mapDiffuse.filename.length > 0) {
+            var tx = this.resolvedtextures.get(cmaterial.mapDiffuse.filename);
+            if (tx == undefined || tx == null) this.uniforms.u_diffuse = ctexture;
+            else this.uniforms.u_diffuse = ctexture = tx; // file texture
+        } else this.uniforms.u_diffuse = ctexture = this.texs[i]; // diffuse color texture
+        this.uniforms.u_emissive = [
+            cmaterial.emissive[0],
+            cmaterial.emissive[1],
+            cmaterial.emissive[2],
+            1
+        ];
+        this.uniforms.u_ambient = [
+            cmaterial.ambient[0],
+            cmaterial.ambient[1],
+            cmaterial.ambient[2],
+            1
+        ];
+        this.uniforms.u_specular = [
+            cmaterial.specular[0],
+            cmaterial.specular[1],
+            cmaterial.specular[2],
+            1
+        ];
+        this.uniforms.u_shininess = cmaterial.illumination;
+        this.uniforms.u_difflightintensity = 1.0;
+        //  console.log(srep+", ambient="+uniforms.u_ambient.toString()+" specular="+uniforms.u_specular.toString()+" emissive="+uniforms.u_emissive.toString()+" shininess="+uniforms.u_shininess);
+        return ctexture;
+    }
+    drawScene(gl, cam, time) {
+        // var gl: WebGL2RenderingContext = this.gl!;
+        // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        // gl.enable(gl.DEPTH_TEST);
+        // gl.enable(gl.CULL_FACE);
+        // var dtime = time - this.ctime;
+        this.ctime = time;
+        // this.time+=dtime;
+        if (cam == undefined || this.twglprograminfo == undefined) return;
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        // var program = this.twglprograminfo![1].program; 
+        this.uniforms.u_lightWorldPos = cam.lightpos;
+        this.uniforms.u_difflightintensity = cam.difflightintensity;
+        this.uniforms.u_speclightintensity = cam.speclightintensity;
+        var world = twgl_js_1.m4.identity();
+        // this.gl.clearColor(this.objMtlImportParameters.color0. 0.0, 0.0, 0.0, 1.0);      
+        // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        // this.cam.CamHandlingYUp(gl, this.app!, 1.0, 1.0);   
+        // gl.useProgram(program);
+        // console.log("this.texs.length="+this.texs.length);
+        for(var i = 0; i < this.texs.length; i++)if (this.mats[i] != undefined) {
+            var ctexture = this.prepareMaterial(i);
+            // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
+            twgl.setUniforms(this.twglprograminfo, this.uniforms);
+            twgl.setUniforms(this.twglprograminfo, {
+                u_viewInverse: cam.lookAt,
+                u_world: world,
+                u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),
+                u_worldViewProjection: twgl_js_1.m4.multiply(cam.viewProjection, world)
+            });
+            mobj.renderIndexBuffer(gl, this.vertexPositionAttributeLocation, this.normalAttributeLocation, this.texCoordAttributeLocation, i, 2, ctexture);
+        } else console.log("undefined material i=" + i);
+         // for
+    //!   requestAnimationFrame(() => this.render(this.dtime)); 
+    }
+}
+exports.MatObjScene = MatObjScene;
+
+},{"twgl.js":"3uqAP","./../objreader/matobjreader":"bBSvh","./../objreader/matobjfiles":"cdQWH"}],"bBSvh":[function(require,module,exports) {
+"use strict";
+// https://www.npmjs.com/package/webgl-obj-loader
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.GetDeclaredObjMtl = exports.asyncFetchObjMtl = exports.FetchImage = exports.PrepareIndexBuffers = exports.renderIndexBuffer = exports.render = exports.NumElements = exports.CreateMeshWithBuffers = exports.meshWithBuffers = exports.meshMinMax = exports.mesh = void 0;
+const webglobjloader = __importStar(require("webgl-obj-loader"));
+const webgl_obj_loader_1 = require("webgl-obj-loader");
+function CreateMeshWithBuffers(gl) {
+    exports.meshWithBuffers = webglobjloader.initMeshBuffers(gl, exports.mesh); // use lib
+    console.log("meshWithBuffers.vertexBuffer.numItems=" + exports.meshWithBuffers.vertexBuffer.numItems);
+    console.log("meshWithBuffers.vertexBuffer.vertices.length=" + exports.meshWithBuffers.vertices.values.length);
+    console.log("meshWithBuffers.vertexBuffer.vertices.values.length=" + exports.meshWithBuffers.vertices.values.length);
+    console.log("meshWithBuffers.normalBuffer.numItems=" + exports.meshWithBuffers.normalBuffer.numItems);
+    console.log("meshWithBuffers.indices.length=" + exports.meshWithBuffers.indices.length);
+    console.log("meshWithBuffers.indexBuffer.numItems=" + exports.meshWithBuffers.indexBuffer.numItems);
+    console.log("meshWithBuffers.textureBuffer.numItems=" + exports.meshWithBuffers.textureBuffer.numItems);
+}
+exports.CreateMeshWithBuffers = CreateMeshWithBuffers;
+function NumElements() {
+    return exports.meshWithBuffers === null || exports.meshWithBuffers === void 0 ? void 0 : exports.meshWithBuffers.indexBuffer.numItems;
+}
+exports.NumElements = NumElements;
+function buildBuffer(gl, type, data, itemSize) {
+    const buffer = gl.createBuffer();
+    const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
+    gl.bindBuffer(type, buffer);
+    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
+    buffer.itemSize = itemSize;
+    buffer.numItems = data.length / itemSize;
+    return buffer;
+}
+function render(gl, vertexPositionAttribute, normalAttribute, texCoordAttribute, offset) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
+    gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
+    gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    var cindexBuffer = buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, exports.mesh.indicesPerMaterial[offset], 1);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cindexBuffer);
+    if (!exports.mesh.textures.length) gl.disableVertexAttribArray(texCoordAttribute);
+    else {
+        gl.enableVertexAttribArray(texCoordAttribute);
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
+        gl.vertexAttribPointer(texCoordAttribute, exports.meshWithBuffers.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    }
+    gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
+}
+exports.render = render;
+//===============================================================================================================================================================
+var matlib;
+var indexBuffers = [];
+function renderIndexBuffer(gl, vertexPositionAttribute, normalAttribute, texCoordAttribute, offset, texItemSize, tex) {
+    if (indexBuffers[offset] != undefined) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
+        gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
+        gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffers[offset]);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.enableVertexAttribArray(texCoordAttribute);
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
+        gl.vertexAttribPointer(texCoordAttribute, texItemSize, gl.FLOAT, false, 0, 0);
+        gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
+    }
+}
+exports.renderIndexBuffer = renderIndexBuffer;
+function PrepareIndexBuffers(gl) {
+    for(var i = 0; i < exports.mesh.materialNames.length; i++)indexBuffers.push(buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, exports.mesh.indicesPerMaterial[i], 1));
+}
+exports.PrepareIndexBuffers = PrepareIndexBuffers;
+function MeshMinMax() {
+    var minx = 1e8;
+    var maxx = -100000000;
+    var miny = 1e8;
+    var maxy = -100000000;
+    var minz = 1e8;
+    var maxz = -100000000;
+    var i;
+    for(i = 0; i < exports.mesh.vertices.length; i += 3){
+        if (exports.mesh.vertices[i + 0] < minx) minx = exports.mesh.vertices[i + 0];
+        if (exports.mesh.vertices[i + 1] < miny) miny = exports.mesh.vertices[i + 1];
+        if (exports.mesh.vertices[i + 2] < minz) minz = exports.mesh.vertices[i + 2];
+        if (exports.mesh.vertices[i + 0] > maxx) maxx = exports.mesh.vertices[i + 0];
+        if (exports.mesh.vertices[i + 1] > maxy) maxy = exports.mesh.vertices[i + 1];
+        if (exports.mesh.vertices[i + 2] > maxz) maxz = exports.mesh.vertices[i + 2];
+    }
+    return {
+        minx,
+        maxx,
+        miny,
+        maxy,
+        minz,
+        maxz
+    };
+}
+function meshReport() {
+    var rv = {
+        smatreport: "",
+        smeshreport: ""
+    };
+    rv.smeshreport += "mesh.indices.length=" + exports.mesh.indices.length + " mesh.vertices.length=" + exports.mesh.vertices.length + " mesh.vertexNormals.length=" + exports.mesh.vertexNormals.length + "<br />";
+    rv.smeshreport += "mesh.vertexMaterialIndices.length=" + exports.mesh.vertexMaterialIndices.length; //+" vertices.length="+mesh.vertices.length+" vertexNormals.length="+mesh.vertexNormals.length);
+    var mats = matlib.materials;
+    for(let key in mats){
+        var value = mats[key];
+        rv.smatreport += value.name + " dif=" + value.diffuse + " amb=" + value.ambient + " emis=" + value.emissive + " spec=" + value.specular + " mapamb=" + value.mapDiffuse.filename + " ill=" + value.illumination + "<br/>";
+    }
+    exports.meshMinMax = MeshMinMax();
+    rv.smeshreport += "<br/>";
+    rv.smeshreport += "minx=" + exports.meshMinMax.minx + ", maxx=" + exports.meshMinMax.maxx + "<br />";
+    rv.smeshreport += "miny=" + exports.meshMinMax.miny + ", maxy=" + exports.meshMinMax.maxy + "<br />";
+    rv.smeshreport += "minz=" + exports.meshMinMax.minz + ", maxz=" + exports.meshMinMax.maxz + "<br />";
+    return rv;
+}
+//--- FETCH OBJ+MTL --------------------------------------------------------------------------------------
+async function FetchText(cparcelname) {
+    const res = await fetch(cparcelname);
+    var b = await res.arrayBuffer();
+    var enc = new TextDecoder("utf-8");
+    return enc.decode(b);
+}
+async function FetchImage(cparcelname) {
+    const res = await fetch(cparcelname);
+    return res.arrayBuffer();
+}
+exports.FetchImage = FetchImage;
+async function asyncFetchObjMtl(cobjname, cmatname) {
+    var abobj = await FetchText(cobjname);
+    var abmtl = await FetchText(cmatname);
+    matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
+    if (matlib) {
+        var l = matlib.materials["Material"];
+        if (l != undefined) console.log("->asyncFetchObjMtlambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular);
+        var cMeshOptions = {
+            enableWTextureCoord: false,
+            calcTangentsAndBitangents: false,
+            materials: matlib.materials
+        };
+        exports.mesh = new webgl_obj_loader_1.Mesh(abobj, cMeshOptions);
+        if (exports.mesh) {
+            exports.mesh.addMaterialLibrary(matlib);
+            var rv = meshReport();
+            const mydiv = document.querySelector("#cdiv");
+            var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
+            if (mydiv) mydiv.innerHTML = cstyle + "<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:600px'>" + rv.smatreport + "</td><td style='vertical-align:top'>" + rv.smeshreport + "</td></tr></tbody></table>";
+            console.log("<- asyncFetchObjMtl");
+        } else console.log("ERROR: object file  " + cobjname + " could not be read.");
+    } else console.log("ERROR: materials file " + cmatname + " could not be read");
+}
+exports.asyncFetchObjMtl = asyncFetchObjMtl;
+//===========================================================================================================================================
+//===========================================================================================================================================
+function GetDeclaredObjMtl() {
+    console.log("strings fetched");
+    var abobj = cubegeo;
+    var abmtl = cubemat;
+    //const arr = abobj.toString().replace(/\r\n/g,'\n').split('\n');
+    if (webglobjloader) {
+        matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
+        if (matlib) {
+            var l = matlib.materials["Material"];
+            console.log("Found material: " + l);
+            if (l != undefined) console.log("ambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular + " l.illum=" + l.illumination);
+            var cMeshOptions = {
+                enableWTextureCoord: false,
+                calcTangentsAndBitangents: false,
+                materials: matlib.materials
+            };
+            exports.mesh = new webgl_obj_loader_1.Mesh(abobj, cMeshOptions);
+            if (exports.mesh) {
+                exports.mesh.addMaterialLibrary(matlib);
+                var rv = meshReport();
+                const mydiv = document.querySelector("#cdiv");
+                var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
+                if (mydiv) mydiv.innerHTML = cstyle + "<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:auto'>" + rv.smatreport + "</td><td style='width:600px;vertical-align:top'>" + rv.smeshreport + "</td></tr></tbody></table>";
+            } else console.log("Cube obj in memory could not be read.");
+        } else console.log("Cube obj materials could not be read");
+    } else console.log("OBJ import library not accessible");
+}
+exports.GetDeclaredObjMtl = GetDeclaredObjMtl;
+//========================================================================================================================================================
+/*
+  function* triangulate(elements: string[]) {
+    if (elements.length <= 3) {
+        yield elements;
+    } else if (elements.length === 4) {
+        yield [elements[0], elements[1], elements[2]];
+        yield [elements[2], elements[3], elements[0]];
+    } else {
+        for (let i = 1; i < elements.length - 1; i++) {
+            yield [elements[0], elements[i], elements[i + 1]];
+        }
+    }
+}
+   //--- my own converter for  the obj
+   const currentMaterialIndex = 0;
+   const currentObjectByMaterialIndex = 0;
+   const enableWTextureCoord=false;
+   const verts = [];
+   const vertNormals = [];
+   const textures = [];
+   const faces = [];
+   const unpackedverts = [];
+   const unpackedtextures = [];
+   const unpackednorms = [];
+   const unpackedhashindices: { [k: string]: number } = {}
+   const unpackedindices: number[][] = [];
+   var unpackedindex = 0;
+   unpackedindices.push([]);
+   for(let s of arr) {
+    const elements = s.split(' ');
+    elements.shift();
+    if (s.startsWith('v '))
+         verts.push(...elements);
+       else
+       if (s.startsWith('vt '))
+         textures.push(...elements);
+       else
+       if (s.startsWith('vn '))
+         vertNormals.push(...elements);
+       else
+       if (s.startsWith('f '))
+       {
+        const triangles = triangulate(elements);
+        for (let e of elements) console.log("["+e+"] ");
+        var ntr=0;
+        for (const triangle of triangles) {
+            var srep = "";
+            for (const trianglepoint of triangle)
+            {
+              const hash = trianglepoint + "," + currentMaterialIndex;
+              if (hash in unpackedhashindices) {
+                unpackedindices[currentObjectByMaterialIndex].push(unpackedhashindices[hash]);
+                srep+="{ Ref: "+hash+" },";
+               } else
+                  {
+                   const vertex = trianglepoint.split("/");
+                   var v1 = +verts[(+vertex[0] - 1) * 3 + 0];
+                   var v2 = +verts[(+vertex[0] - 1) * 3 + 1];
+                   var v3 = +verts[(+vertex[0] - 1) * 3 + 2];
+                   unpackedverts.push(v1);
+                   unpackedverts.push(v2);
+                   unpackedverts.push(v3);
+                   srep+="{ V["+v1+","+v2+","+v3+"], ";
+                   if (textures.length) {
+                     const stride = enableWTextureCoord ? 3 : 2;
+                     var t1=+textures[(+vertex[1] - 1) * stride + 0];
+                     var t2=+textures[(+vertex[1] - 1) * stride + 1];
+                     unpackedtextures.push(t1);
+                     unpackedtextures.push(t2);
+                     srep+="T["+t1+","+t2+"], ";
+                     if (enableWTextureCoord) {
+                       unpackedtextures.push(+textures[(+vertex[1] - 1) * stride + 2]);
+                      }
+                   }
+                   const normalIndex = vertex.length - 1;
+                   var n1 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 0];
+                   var n2 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 1];
+                   var n3 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 2];
+                   unpackednorms.push(n1);
+                   unpackednorms.push(n2);
+                   unpackednorms.push(n3);
+                   srep+="N["+n1+","+n2+","+n3+"] }, ";
+                   unpackedhashindices[hash] = unpackedindex;
+                   unpackedindices[currentObjectByMaterialIndex].push(unpackedhashindices[hash]);
+                   unpackedindex += 1;
+                  }
+            }
+            console.log("Tr: { "+srep + "}") ;
+            ntr+=triangle.length;
+          }
+        console.log("ntr="+ntr);
+        faces.push(...elements);
+       }
+    
+  }
+*/ /*
+  console.log("Indices found:");
+  unpackedindices[currentObjectByMaterialIndex].forEach((num)=>{console.log(num+" "); });
+  console.log("Norms found:");
+  unpackednorms.forEach((num)=>{console.log(num+" "); });
+  console.log("Vertices found:");
+  unpackedverts.forEach((num)=>{console.log(num+" "); });
+*/ //========================================================================================================================================================
+const cubemat = `# Blender MTL File: 'None'
+# Material Count: 11
+
+newmtl Material
+Ns 323.999994
+Ka 1.000000 1.000000 0.000000
+Kd 0.500000 0.500000 1.000000
+Ks 0.500000 0.500000 1.000000
+Ke 0.0 1.0 0.0
+Ni 1.000000
+d 1.000000
+illum 6
+
+newmtl Material2
+Ns 323.999994
+Ka 0.000000 1.000000 0.000000
+Kd 1.000000 0.500000 1.000000
+Ks 1.000000 1.000000 0.000000
+Ke 0.0 1.0 0.0
+Ni 1.000000
+d 1.000000
+illum 6
+`;
+const cubegeo = `# Blender v2.80 (sub 75) OBJ File: ''
+# www.blender.org
+mtllib cube2.mtl
+o Cube
+v 1.000000 1.000000 -1.000000
+v 1.000000 -1.000000 -1.000000
+v 1.000000 1.000000 1.000000
+v 1.000000 -1.000000 1.000000
+v -1.000000 1.000000 -1.000000
+v -1.000000 -1.000000 -1.000000
+v -1.000000 1.000000 1.000000
+v -1.000000 -1.000000 1.000000
+v 4.000000 1.000000 -1.000000
+v 4.000000 -1.000000 -1.000000
+v 4.000000 1.000000 1.000000
+v 4.000000 -1.000000 1.000000
+v 3.000000 1.000000 -1.000000
+v 3.000000 -1.000000 -1.000000
+v 3.000000 1.000000 1.000000
+v 3.000000 -1.000000 1.000000
+vt 0.375000 0.000000
+vt 0.625000 0.000000
+vt 0.625000 0.250000
+vt 0.375000 0.250000
+vt 0.375000 0.250000
+vt 0.625000 0.250000
+vt 0.625000 0.500000
+vt 0.375000 0.500000
+vt 0.625000 0.750000
+vt 0.375000 0.750000
+vt 0.625000 0.750000
+vt 0.625000 1.000000
+vt 0.375000 1.000000
+vt 0.125000 0.500000
+vt 0.375000 0.500000
+vt 0.375000 0.750000
+vt 0.125000 0.750000
+vt 0.625000 0.500000
+vt 0.875000 0.500000
+vt 0.875000 0.750000
+vn 0.0000 1.0000 0.0000
+vn 0.0000 0.0000 1.0000
+vn -1.0000 0.0000 0.0000
+vn 0.0000 -1.0000 0.0000
+vn 1.0000 0.0000 0.0000
+vn 0.0000 0.0000 -1.0000
+usemtl Material
+s off
+f 1/1/1 5/2/1 7/3/1 3/4/1
+f 4/5/2 3/6/2 7/7/2 8/8/2
+f 8/8/3 7/7/3 5/9/3 6/10/3
+f 6/10/4 2/11/4 4/12/4 8/13/4
+f 2/14/5 1/15/5 3/16/5 4/17/5
+f 6/18/6 5/19/6 1/20/6 2/11/6
+usemtl Material2
+f 9/1/1 13/2/1 15/3/1 11/4/1
+f 12/5/2 11/6/2 15/7/2 16/8/2
+f 16/8/3 15/7/3 13/9/3 14/10/3
+f 14/10/4 10/11/4 12/12/4 16/13/4
+f 10/14/5 9/15/5 11/16/5 12/17/5
+f 14/18/6 13/19/6 9/20/6 10/11/6
+`;
+
+},{"webgl-obj-loader":"d2ssq"}],"d2ssq":[function(require,module,exports) {
+!function(e, t) {
+    var n, a;
+    module.exports = t();
+}("undefined" != typeof self ? self : this, function() {
+    return function(e) {
+        var t = {};
+        function n(a) {
+            if (t[a]) return t[a].exports;
+            var s = t[a] = {
+                i: a,
+                l: !1,
+                exports: {}
+            };
+            return e[a].call(s.exports, s, s.exports, n), s.l = !0, s.exports;
+        }
+        return n.m = e, n.c = t, n.d = function(e, t, a) {
+            n.o(e, t) || Object.defineProperty(e, t, {
+                enumerable: !0,
+                get: a
+            });
+        }, n.r = function(e) {
+            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, {
+                value: "Module"
+            }), Object.defineProperty(e, "__esModule", {
+                value: !0
+            });
+        }, n.t = function(e, t) {
+            if (1 & t && (e = n(e)), 8 & t) return e;
+            if (4 & t && "object" == typeof e && e && e.__esModule) return e;
+            var a = Object.create(null);
+            if (n.r(a), Object.defineProperty(a, "default", {
+                enumerable: !0,
+                value: e
+            }), 2 & t && "string" != typeof e) for(var s in e)n.d(a, s, (function(t) {
+                return e[t];
+            }).bind(null, s));
+            return a;
+        }, n.n = function(e) {
+            var t = e && e.__esModule ? function() {
+                return e.default;
+            } : function() {
+                return e;
+            };
+            return n.d(t, "a", t), t;
+        }, n.o = function(e, t) {
+            return Object.prototype.hasOwnProperty.call(e, t);
+        }, n.p = "/", n(n.s = 0);
+    }({
+        "./src/index.ts": /*!**********************!*\
+  !*** ./src/index.ts ***!
+  \**********************/ /*! exports provided: OBJ, Attribute, DuplicateAttributeException, Layout, Material, MaterialLibrary, Mesh, TYPES, downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers, version */ function(module, __webpack_exports__, __webpack_require__) {
+            "use strict";
+            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJ", function() { return OBJ; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "version", function() { return version; });\n/* harmony import */ var _mesh__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mesh */ "./src/mesh.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Mesh", function() { return _mesh__WEBPACK_IMPORTED_MODULE_0__["default"]; });\n\n/* harmony import */ var _material__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./material */ "./src/material.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Material", function() { return _material__WEBPACK_IMPORTED_MODULE_1__["Material"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MaterialLibrary", function() { return _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"]; });\n\n/* harmony import */ var _layout__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./layout */ "./src/layout.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Attribute", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["Attribute"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DuplicateAttributeException", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["DuplicateAttributeException"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Layout", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["Layout"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TYPES", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["TYPES"]; });\n\n/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils */ "./src/utils.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "downloadModels", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["downloadModels"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "downloadMeshes", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["downloadMeshes"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "initMeshBuffers", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["initMeshBuffers"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "deleteMeshBuffers", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["deleteMeshBuffers"]; });\n\n\n\n\n\nconst version = "2.0.3";\nconst OBJ = {\n    Attribute: _layout__WEBPACK_IMPORTED_MODULE_2__["Attribute"],\n    DuplicateAttributeException: _layout__WEBPACK_IMPORTED_MODULE_2__["DuplicateAttributeException"],\n    Layout: _layout__WEBPACK_IMPORTED_MODULE_2__["Layout"],\n    Material: _material__WEBPACK_IMPORTED_MODULE_1__["Material"],\n    MaterialLibrary: _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"],\n    Mesh: _mesh__WEBPACK_IMPORTED_MODULE_0__["default"],\n    TYPES: _layout__WEBPACK_IMPORTED_MODULE_2__["TYPES"],\n    downloadModels: _utils__WEBPACK_IMPORTED_MODULE_3__["downloadModels"],\n    downloadMeshes: _utils__WEBPACK_IMPORTED_MODULE_3__["downloadMeshes"],\n    initMeshBuffers: _utils__WEBPACK_IMPORTED_MODULE_3__["initMeshBuffers"],\n    deleteMeshBuffers: _utils__WEBPACK_IMPORTED_MODULE_3__["deleteMeshBuffers"],\n    version,\n};\n/**\n * @namespace\n */\n\n\n\n//# sourceURL=webpack:///./src/index.ts?');
+        },
+        "./src/layout.ts": /*!***********************!*\
+  !*** ./src/layout.ts ***!
+  \***********************/ /*! exports provided: TYPES, DuplicateAttributeException, Attribute, Layout */ function(module, __webpack_exports__, __webpack_require__) {
+            "use strict";
+            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TYPES", function() { return TYPES; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DuplicateAttributeException", function() { return DuplicateAttributeException; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Attribute", function() { return Attribute; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Layout", function() { return Layout; });\nvar TYPES;\n(function (TYPES) {\n    TYPES["BYTE"] = "BYTE";\n    TYPES["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";\n    TYPES["SHORT"] = "SHORT";\n    TYPES["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";\n    TYPES["FLOAT"] = "FLOAT";\n})(TYPES || (TYPES = {}));\n/**\n * An exception for when two or more of the same attributes are found in the\n * same layout.\n * @private\n */\nclass DuplicateAttributeException extends Error {\n    /**\n     * Create a DuplicateAttributeException\n     * @param {Attribute} attribute - The attribute that was found more than\n     *        once in the {@link Layout}\n     */\n    constructor(attribute) {\n        super(`found duplicate attribute: ${attribute.key}`);\n    }\n}\n/**\n * Represents how a vertex attribute should be packed into an buffer.\n * @private\n */\nclass Attribute {\n    /**\n     * Create an attribute. Do not call this directly, use the predefined\n     * constants.\n     * @param {string} key - The name of this attribute as if it were a key in\n     *        an Object. Use the camel case version of the upper snake case\n     *        const name.\n     * @param {number} size - The number of components per vertex attribute.\n     *        Must be 1, 2, 3, or 4.\n     * @param {string} type - The data type of each component for this\n     *        attribute. Possible values:<br/>\n     *        "BYTE": signed 8-bit integer, with values in [-128, 127]<br/>\n     *        "SHORT": signed 16-bit integer, with values in\n     *            [-32768, 32767]<br/>\n     *        "UNSIGNED_BYTE": unsigned 8-bit integer, with values in\n     *            [0, 255]<br/>\n     *        "UNSIGNED_SHORT": unsigned 16-bit integer, with values in\n     *            [0, 65535]<br/>\n     *        "FLOAT": 32-bit floating point number\n     * @param {boolean} normalized - Whether integer data values should be\n     *        normalized when being casted to a float.<br/>\n     *        If true, signed integers are normalized to [-1, 1].<br/>\n     *        If true, unsigned integers are normalized to [0, 1].<br/>\n     *        For type "FLOAT", this parameter has no effect.\n     */\n    constructor(key, size, type, normalized = false) {\n        this.key = key;\n        this.size = size;\n        this.type = type;\n        this.normalized = normalized;\n        switch (type) {\n            case "BYTE":\n            case "UNSIGNED_BYTE":\n                this.sizeOfType = 1;\n                break;\n            case "SHORT":\n            case "UNSIGNED_SHORT":\n                this.sizeOfType = 2;\n                break;\n            case "FLOAT":\n                this.sizeOfType = 4;\n                break;\n            default:\n                throw new Error(`Unknown gl type: ${type}`);\n        }\n        this.sizeInBytes = this.sizeOfType * size;\n    }\n}\n/**\n * A class to represent the memory layout for a vertex attribute array. Used by\n * {@link Mesh}\'s TBD(...) method to generate a packed array from mesh data.\n * <p>\n * Layout can sort of be thought of as a C-style struct declaration.\n * {@link Mesh}\'s TBD(...) method will use the {@link Layout} instance to\n * pack an array in the given attribute order.\n * <p>\n * Layout also is very helpful when calling a WebGL context\'s\n * <code>vertexAttribPointer</code> method. If you\'ve created a buffer using\n * a Layout instance, then the same Layout instance can be used to determine\n * the size, type, normalized, stride, and offset parameters for\n * <code>vertexAttribPointer</code>.\n * <p>\n * For example:\n * <pre><code>\n *\n * const index = glctx.getAttribLocation(shaderProgram, "pos");\n * glctx.vertexAttribPointer(\n *   layout.position.size,\n *   glctx[layout.position.type],\n *   layout.position.normalized,\n *   layout.position.stride,\n *   layout.position.offset);\n * </code></pre>\n * @see {@link Mesh}\n */\nclass Layout {\n    /**\n     * Create a Layout object. This constructor will throw if any duplicate\n     * attributes are given.\n     * @param {Array} ...attributes - An ordered list of attributes that\n     *        describe the desired memory layout for each vertex attribute.\n     *        <p>\n     *\n     * @see {@link Mesh}\n     */\n    constructor(...attributes) {\n        this.attributes = attributes;\n        this.attributeMap = {};\n        let offset = 0;\n        let maxStrideMultiple = 0;\n        for (const attribute of attributes) {\n            if (this.attributeMap[attribute.key]) {\n                throw new DuplicateAttributeException(attribute);\n            }\n            // Add padding to satisfy WebGL\'s requirement that all\n            // vertexAttribPointer calls have an offset that is a multiple of\n            // the type size.\n            if (offset % attribute.sizeOfType !== 0) {\n                offset += attribute.sizeOfType - (offset % attribute.sizeOfType);\n                console.warn("Layout requires padding before " + attribute.key + " attribute");\n            }\n            this.attributeMap[attribute.key] = {\n                attribute: attribute,\n                size: attribute.size,\n                type: attribute.type,\n                normalized: attribute.normalized,\n                offset: offset,\n            };\n            offset += attribute.sizeInBytes;\n            maxStrideMultiple = Math.max(maxStrideMultiple, attribute.sizeOfType);\n        }\n        // Add padding to the end to satisfy WebGL\'s requirement that all\n        // vertexAttribPointer calls have a stride that is a multiple of the\n        // type size. Because we\'re putting differently sized attributes into\n        // the same buffer, it must be padded to a multiple of the largest\n        // type size.\n        if (offset % maxStrideMultiple !== 0) {\n            offset += maxStrideMultiple - (offset % maxStrideMultiple);\n            console.warn("Layout requires padding at the back");\n        }\n        this.stride = offset;\n        for (const attribute of attributes) {\n            this.attributeMap[attribute.key].stride = this.stride;\n        }\n    }\n}\n// Geometry attributes\n/**\n * Attribute layout to pack a vertex\'s x, y, & z as floats\n *\n * @see {@link Layout}\n */\nLayout.POSITION = new Attribute("position", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s x, y, & z as floats\n *\n * @see {@link Layout}\n */\nLayout.NORMAL = new Attribute("normal", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s x, y, & z as floats.\n * <p>\n * This value will be computed on-the-fly based on the texture coordinates.\n * If no texture coordinates are available, the generated value will default to\n * 0, 0, 0.\n *\n * @see {@link Layout}\n */\nLayout.TANGENT = new Attribute("tangent", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s bitangent x, y, & z as floats.\n * <p>\n * This value will be computed on-the-fly based on the texture coordinates.\n * If no texture coordinates are available, the generated value will default to\n * 0, 0, 0.\n * @see {@link Layout}\n */\nLayout.BITANGENT = new Attribute("bitangent", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s texture coordinates\' u & v as floats\n *\n * @see {@link Layout}\n */\nLayout.UV = new Attribute("uv", 2, TYPES.FLOAT);\n// Material attributes\n/**\n * Attribute layout to pack an unsigned short to be interpreted as a the index\n * into a {@link Mesh}\'s materials list.\n * <p>\n * The intention of this value is to send all of the {@link Mesh}\'s materials\n * into multiple shader uniforms and then reference the current one by this\n * vertex attribute.\n * <p>\n * example glsl code:\n *\n * <pre><code>\n *  // this is bound using MATERIAL_INDEX\n *  attribute int materialIndex;\n *\n *  struct Material {\n *    vec3 diffuse;\n *    vec3 specular;\n *    vec3 specularExponent;\n *  };\n *\n *  uniform Material materials[MAX_MATERIALS];\n *\n *  // ...\n *\n *  vec3 diffuse = materials[materialIndex];\n *\n * </code></pre>\n * TODO: More description & test to make sure subscripting by attributes even\n * works for webgl\n *\n * @see {@link Layout}\n */\nLayout.MATERIAL_INDEX = new Attribute("materialIndex", 1, TYPES.SHORT);\nLayout.MATERIAL_ENABLED = new Attribute("materialEnabled", 1, TYPES.UNSIGNED_SHORT);\nLayout.AMBIENT = new Attribute("ambient", 3, TYPES.FLOAT);\nLayout.DIFFUSE = new Attribute("diffuse", 3, TYPES.FLOAT);\nLayout.SPECULAR = new Attribute("specular", 3, TYPES.FLOAT);\nLayout.SPECULAR_EXPONENT = new Attribute("specularExponent", 3, TYPES.FLOAT);\nLayout.EMISSIVE = new Attribute("emissive", 3, TYPES.FLOAT);\nLayout.TRANSMISSION_FILTER = new Attribute("transmissionFilter", 3, TYPES.FLOAT);\nLayout.DISSOLVE = new Attribute("dissolve", 1, TYPES.FLOAT);\nLayout.ILLUMINATION = new Attribute("illumination", 1, TYPES.UNSIGNED_SHORT);\nLayout.REFRACTION_INDEX = new Attribute("refractionIndex", 1, TYPES.FLOAT);\nLayout.SHARPNESS = new Attribute("sharpness", 1, TYPES.FLOAT);\nLayout.MAP_DIFFUSE = new Attribute("mapDiffuse", 1, TYPES.SHORT);\nLayout.MAP_AMBIENT = new Attribute("mapAmbient", 1, TYPES.SHORT);\nLayout.MAP_SPECULAR = new Attribute("mapSpecular", 1, TYPES.SHORT);\nLayout.MAP_SPECULAR_EXPONENT = new Attribute("mapSpecularExponent", 1, TYPES.SHORT);\nLayout.MAP_DISSOLVE = new Attribute("mapDissolve", 1, TYPES.SHORT);\nLayout.ANTI_ALIASING = new Attribute("antiAliasing", 1, TYPES.UNSIGNED_SHORT);\nLayout.MAP_BUMP = new Attribute("mapBump", 1, TYPES.SHORT);\nLayout.MAP_DISPLACEMENT = new Attribute("mapDisplacement", 1, TYPES.SHORT);\nLayout.MAP_DECAL = new Attribute("mapDecal", 1, TYPES.SHORT);\nLayout.MAP_EMISSIVE = new Attribute("mapEmissive", 1, TYPES.SHORT);\n\n\n//# sourceURL=webpack:///./src/layout.ts?');
+        },
+        "./src/material.ts": /*!*************************!*\
+  !*** ./src/material.ts ***!
+  \*************************/ /*! exports provided: Material, MaterialLibrary */ function(module, __webpack_exports__, __webpack_require__) {
+            "use strict";
+            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Material", function() { return Material; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MaterialLibrary", function() { return MaterialLibrary; });\n/**\n * The Material class.\n */\nclass Material {\n    constructor(name) {\n        this.name = name;\n        /**\n         * Constructor\n         * @param {String} name the unique name of the material\n         */\n        // The values for the following attibutes\n        // are an array of R, G, B normalized values.\n        // Ka - Ambient Reflectivity\n        this.ambient = [0, 0, 0];\n        // Kd - Defuse Reflectivity\n        this.diffuse = [0, 0, 0];\n        // Ks\n        this.specular = [0, 0, 0];\n        // Ke\n        this.emissive = [0, 0, 0];\n        // Tf\n        this.transmissionFilter = [0, 0, 0];\n        // d\n        this.dissolve = 0;\n        // valid range is between 0 and 1000\n        this.specularExponent = 0;\n        // either d or Tr; valid values are normalized\n        this.transparency = 0;\n        // illum - the enum of the illumination model to use\n        this.illumination = 0;\n        // Ni - Set to "normal" (air).\n        this.refractionIndex = 1;\n        // sharpness\n        this.sharpness = 0;\n        // map_Kd\n        this.mapDiffuse = emptyTextureOptions();\n        // map_Ka\n        this.mapAmbient = emptyTextureOptions();\n        // map_Ks\n        this.mapSpecular = emptyTextureOptions();\n        // map_Ns\n        this.mapSpecularExponent = emptyTextureOptions();\n        // map_d\n        this.mapDissolve = emptyTextureOptions();\n        // map_aat\n        this.antiAliasing = false;\n        // map_bump or bump\n        this.mapBump = emptyTextureOptions();\n        // disp\n        this.mapDisplacement = emptyTextureOptions();\n        // decal\n        this.mapDecal = emptyTextureOptions();\n        // map_Ke\n        this.mapEmissive = emptyTextureOptions();\n        // refl - when the reflection type is a cube, there will be multiple refl\n        //        statements for each side of the cube. If it\'s a spherical\n        //        reflection, there should only ever be one.\n        this.mapReflections = [];\n    }\n}\nconst SENTINEL_MATERIAL = new Material("sentinel");\n/**\n * https://en.wikipedia.org/wiki/Wavefront_.obj_file\n * http://paulbourke.net/dataformats/mtl/\n */\nclass MaterialLibrary {\n    constructor(data) {\n        this.data = data;\n        /**\n         * Constructs the Material Parser\n         * @param mtlData the MTL file contents\n         */\n        this.currentMaterial = SENTINEL_MATERIAL;\n        this.materials = {};\n        this.parse();\n    }\n    /* eslint-disable camelcase */\n    /* the function names here disobey camelCase conventions\n     to make parsing/routing easier. see the parse function\n     documentation for more information. */\n    /**\n     * Creates a new Material object and adds to the registry.\n     * @param tokens the tokens associated with the directive\n     */\n    parse_newmtl(tokens) {\n        const name = tokens[0];\n        // console.info(\'Parsing new Material:\', name);\n        this.currentMaterial = new Material(name);\n        this.materials[name] = this.currentMaterial;\n    }\n    /**\n     * See the documenation for parse_Ka below for a better understanding.\n     *\n     * Given a list of possible color tokens, returns an array of R, G, and B\n     * color values.\n     *\n     * @param tokens the tokens associated with the directive\n     * @return {*} a 3 element array containing the R, G, and B values\n     * of the color.\n     */\n    parseColor(tokens) {\n        if (tokens[0] == "spectral") {\n            throw new Error("The MTL parser does not support spectral curve files. You will " +\n                "need to convert the MTL colors to either RGB or CIEXYZ.");\n        }\n        if (tokens[0] == "xyz") {\n            throw new Error("The MTL parser does not currently support XYZ colors. Either convert the " +\n                "XYZ values to RGB or create an issue to add support for XYZ");\n        }\n        // from my understanding of the spec, RGB values at this point\n        // will either be 3 floats or exactly 1 float, so that\'s the check\n        // that i\'m going to perform here\n        if (tokens.length == 3) {\n            const [x, y, z] = tokens;\n            return [parseFloat(x), parseFloat(y), parseFloat(z)];\n        }\n        // Since tokens at this point has a length of 3, we\'re going to assume\n        // it\'s exactly 1, skipping the check for 2.\n        const value = parseFloat(tokens[0]);\n        // in this case, all values are equivalent\n        return [value, value, value];\n    }\n    /**\n     * Parse the ambient reflectivity\n     *\n     * A Ka directive can take one of three forms:\n     *   - Ka r g b\n     *   - Ka spectral file.rfl\n     *   - Ka xyz x y z\n     * These three forms are mutually exclusive in that only one\n     * declaration can exist per material. It is considered a syntax\n     * error otherwise.\n     *\n     * The "Ka" form specifies the ambient reflectivity using RGB values.\n     * The "g" and "b" values are optional. If only the "r" value is\n     * specified, then the "g" and "b" values are assigned the value of\n     * "r". Values are normally in the range 0.0 to 1.0. Values outside\n     * of this range increase or decrease the reflectivity accordingly.\n     *\n     * The "Ka spectral" form specifies the ambient reflectivity using a\n     * spectral curve. "file.rfl" is the name of the ".rfl" file containing\n     * the curve data. "factor" is an optional argument which is a multiplier\n     * for the values in the .rfl file and defaults to 1.0 if not specified.\n     *\n     * The "Ka xyz" form specifies the ambient reflectivity using CIEXYZ values.\n     * "x y z" are the values of the CIEXYZ color space. The "y" and "z" arguments\n     * are optional and take on the value of the "x" component if only "x" is\n     * specified. The "x y z" values are normally in the range of 0.0 to 1.0 and\n     * increase or decrease ambient reflectivity accordingly outside of that\n     * range.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ka(tokens) {\n        this.currentMaterial.ambient = this.parseColor(tokens);\n    }\n    /**\n     * Diffuse Reflectivity\n     *\n     * Similar to the Ka directive. Simply replace "Ka" with "Kd" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Kd(tokens) {\n        this.currentMaterial.diffuse = this.parseColor(tokens);\n    }\n    /**\n     * Spectral Reflectivity\n     *\n     * Similar to the Ka directive. Simply replace "Ks" with "Kd" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ks(tokens) {\n        this.currentMaterial.specular = this.parseColor(tokens);\n    }\n    /**\n     * Emissive\n     *\n     * The amount and color of light emitted by the object.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ke(tokens) {\n        this.currentMaterial.emissive = this.parseColor(tokens);\n    }\n    /**\n     * Transmission Filter\n     *\n     * Any light passing through the object is filtered by the transmission\n     * filter, which only allows specific colors to pass through. For example, Tf\n     * 0 1 0 allows all of the green to pass through and filters out all of the\n     * red and blue.\n     *\n     * Similar to the Ka directive. Simply replace "Ks" with "Tf" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Tf(tokens) {\n        this.currentMaterial.transmissionFilter = this.parseColor(tokens);\n    }\n    /**\n     * Specifies the dissolve for the current material.\n     *\n     * Statement: d [-halo] `factor`\n     *\n     * Example: "d 0.5"\n     *\n     * The factor is the amount this material dissolves into the background. A\n     * factor of 1.0 is fully opaque. This is the default when a new material is\n     * created. A factor of 0.0 is fully dissolved (completely transparent).\n     *\n     * Unlike a real transparent material, the dissolve does not depend upon\n     * material thickness nor does it have any spectral character. Dissolve works\n     * on all illumination models.\n     *\n     * The dissolve statement allows for an optional "-halo" flag which indicates\n     * that a dissolve is dependent on the surface orientation relative to the\n     * viewer. For example, a sphere with the following dissolve, "d -halo 0.0",\n     * will be fully dissolved at its center and will appear gradually more opaque\n     * toward its edge.\n     *\n     * "factor" is the minimum amount of dissolve applied to the material. The\n     * amount of dissolve will vary between 1.0 (fully opaque) and the specified\n     * "factor". The formula is:\n     *\n     *    dissolve = 1.0 - (N*v)(1.0-factor)\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_d(tokens) {\n        // this ignores the -halo option as I can\'t find any documentation on what\n        // it\'s supposed to be.\n        this.currentMaterial.dissolve = parseFloat(tokens.pop() || "0");\n    }\n    /**\n     * The "illum" statement specifies the illumination model to use in the\n     * material. Illumination models are mathematical equations that represent\n     * various material lighting and shading effects.\n     *\n     * The illumination number can be a number from 0 to 10. The following are\n     * the list of illumination enumerations and their summaries:\n     * 0. Color on and Ambient off\n     * 1. Color on and Ambient on\n     * 2. Highlight on\n     * 3. Reflection on and Ray trace on\n     * 4. Transparency: Glass on, Reflection: Ray trace on\n     * 5. Reflection: Fresnel on and Ray trace on\n     * 6. Transparency: Refraction on, Reflection: Fresnel off and Ray trace on\n     * 7. Transparency: Refraction on, Reflection: Fresnel on and Ray trace on\n     * 8. Reflection on and Ray trace off\n     * 9. Transparency: Glass on, Reflection: Ray trace off\n     * 10. Casts shadows onto invisible surfaces\n     *\n     * Example: "illum 2" to specify the "Highlight on" model\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_illum(tokens) {\n        this.currentMaterial.illumination = parseInt(tokens[0]);\n    }\n    /**\n     * Optical Density (AKA Index of Refraction)\n     *\n     * Statement: Ni `index`\n     *\n     * Example: Ni 1.0\n     *\n     * Specifies the optical density for the surface. `index` is the value\n     * for the optical density. The values can range from 0.001 to 10.  A value of\n     * 1.0 means that light does not bend as it passes through an object.\n     * Increasing the optical_density increases the amount of bending. Glass has\n     * an index of refraction of about 1.5. Values of less than 1.0 produce\n     * bizarre results and are not recommended\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ni(tokens) {\n        this.currentMaterial.refractionIndex = parseFloat(tokens[0]);\n    }\n    /**\n     * Specifies the specular exponent for the current material. This defines the\n     * focus of the specular highlight.\n     *\n     * Statement: Ns `exponent`\n     *\n     * Example: "Ns 250"\n     *\n     * `exponent` is the value for the specular exponent. A high exponent results\n     * in a tight, concentrated highlight. Ns Values normally range from 0 to\n     * 1000.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ns(tokens) {\n        this.currentMaterial.specularExponent = parseInt(tokens[0]);\n    }\n    /**\n     * Specifies the sharpness of the reflections from the local reflection map.\n     *\n     * Statement: sharpness `value`\n     *\n     * Example: "sharpness 100"\n     *\n     * If a material does not have a local reflection map defined in its material\n     * defintions, sharpness will apply to the global reflection map defined in\n     * PreView.\n     *\n     * `value` can be a number from 0 to 1000. The default is 60. A high value\n     * results in a clear reflection of objects in the reflection map.\n     *\n     * Tip: sharpness values greater than 100 introduce aliasing effects in\n     * flat surfaces that are viewed at a sharp angle.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_sharpness(tokens) {\n        this.currentMaterial.sharpness = parseInt(tokens[0]);\n    }\n    /**\n     * Parses the -cc flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -cc flag\n     * @param options the Object of all image options\n     */\n    parse_cc(values, options) {\n        options.colorCorrection = values[0] == "on";\n    }\n    /**\n     * Parses the -blendu flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -blendu flag\n     * @param options the Object of all image options\n     */\n    parse_blendu(values, options) {\n        options.horizontalBlending = values[0] == "on";\n    }\n    /**\n     * Parses the -blendv flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -blendv flag\n     * @param options the Object of all image options\n     */\n    parse_blendv(values, options) {\n        options.verticalBlending = values[0] == "on";\n    }\n    /**\n     * Parses the -boost flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -boost flag\n     * @param options the Object of all image options\n     */\n    parse_boost(values, options) {\n        options.boostMipMapSharpness = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -mm flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -mm flag\n     * @param options the Object of all image options\n     */\n    parse_mm(values, options) {\n        options.modifyTextureMap.brightness = parseFloat(values[0]);\n        options.modifyTextureMap.contrast = parseFloat(values[1]);\n    }\n    /**\n     * Parses and sets the -o, -s, and -t  u, v, and w values\n     *\n     * @param values the values passed to the -o, -s, -t flag\n     * @param {Object} option the Object of either the -o, -s, -t option\n     * @param {Integer} defaultValue the Object of all image options\n     */\n    parse_ost(values, option, defaultValue) {\n        while (values.length < 3) {\n            values.push(defaultValue.toString());\n        }\n        option.u = parseFloat(values[0]);\n        option.v = parseFloat(values[1]);\n        option.w = parseFloat(values[2]);\n    }\n    /**\n     * Parses the -o flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -o flag\n     * @param options the Object of all image options\n     */\n    parse_o(values, options) {\n        this.parse_ost(values, options.offset, 0);\n    }\n    /**\n     * Parses the -s flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -s flag\n     * @param options the Object of all image options\n     */\n    parse_s(values, options) {\n        this.parse_ost(values, options.scale, 1);\n    }\n    /**\n     * Parses the -t flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -t flag\n     * @param options the Object of all image options\n     */\n    parse_t(values, options) {\n        this.parse_ost(values, options.turbulence, 0);\n    }\n    /**\n     * Parses the -texres flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -texres flag\n     * @param options the Object of all image options\n     */\n    parse_texres(values, options) {\n        options.textureResolution = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -clamp flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -clamp flag\n     * @param options the Object of all image options\n     */\n    parse_clamp(values, options) {\n        options.clamp = values[0] == "on";\n    }\n    /**\n     * Parses the -bm flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -bm flag\n     * @param options the Object of all image options\n     */\n    parse_bm(values, options) {\n        options.bumpMultiplier = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -imfchan flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -imfchan flag\n     * @param options the Object of all image options\n     */\n    parse_imfchan(values, options) {\n        options.imfChan = values[0];\n    }\n    /**\n     * This only exists for relection maps and denotes the type of reflection.\n     *\n     * @param values the values passed to the -type flag\n     * @param options the Object of all image options\n     */\n    parse_type(values, options) {\n        options.reflectionType = values[0];\n    }\n    /**\n     * Parses the texture\'s options and returns an options object with the info\n     *\n     * @param tokens all of the option tokens to pass to the texture\n     * @return {Object} a complete object of objects to apply to the texture\n     */\n    parseOptions(tokens) {\n        const options = emptyTextureOptions();\n        let option;\n        let values;\n        const optionsToValues = {};\n        tokens.reverse();\n        while (tokens.length) {\n            // token is guaranteed to exists here, hence the explicit "as"\n            const token = tokens.pop();\n            if (token.startsWith("-")) {\n                option = token.substr(1);\n                optionsToValues[option] = [];\n            }\n            else if (option) {\n                optionsToValues[option].push(token);\n            }\n        }\n        for (option in optionsToValues) {\n            if (!optionsToValues.hasOwnProperty(option)) {\n                continue;\n            }\n            values = optionsToValues[option];\n            const optionMethod = this[`parse_${option}`];\n            if (optionMethod) {\n                optionMethod.bind(this)(values, options);\n            }\n        }\n        return options;\n    }\n    /**\n     * Parses the given texture map line.\n     *\n     * @param tokens all of the tokens representing the texture\n     * @return a complete object of objects to apply to the texture\n     */\n    parseMap(tokens) {\n        // according to wikipedia:\n        // (https://en.wikipedia.org/wiki/Wavefront_.obj_file#Vendor_specific_alterations)\n        // there is at least one vendor that places the filename before the options\n        // rather than after (which is to spec). All options start with a \'-\'\n        // so if the first token doesn\'t start with a \'-\', we\'re going to assume\n        // it\'s the name of the map file.\n        let optionsString;\n        let filename = "";\n        if (!tokens[0].startsWith("-")) {\n            [filename, ...optionsString] = tokens;\n        }\n        else {\n            filename = tokens.pop();\n            optionsString = tokens;\n        }\n        const options = this.parseOptions(optionsString);\n        options.filename = filename.replace(/\\\\/g, "/");\n        return options;\n    }\n    /**\n     * Parses the ambient map.\n     *\n     * @param tokens list of tokens for the map_Ka direcive\n     */\n    parse_map_Ka(tokens) {\n        this.currentMaterial.mapAmbient = this.parseMap(tokens);\n    }\n    /**\n     * Parses the diffuse map.\n     *\n     * @param tokens list of tokens for the map_Kd direcive\n     */\n    parse_map_Kd(tokens) {\n        this.currentMaterial.mapDiffuse = this.parseMap(tokens);\n    }\n    /**\n     * Parses the specular map.\n     *\n     * @param tokens list of tokens for the map_Ks direcive\n     */\n    parse_map_Ks(tokens) {\n        this.currentMaterial.mapSpecular = this.parseMap(tokens);\n    }\n    /**\n     * Parses the emissive map.\n     *\n     * @param tokens list of tokens for the map_Ke direcive\n     */\n    parse_map_Ke(tokens) {\n        this.currentMaterial.mapEmissive = this.parseMap(tokens);\n    }\n    /**\n     * Parses the specular exponent map.\n     *\n     * @param tokens list of tokens for the map_Ns direcive\n     */\n    parse_map_Ns(tokens) {\n        this.currentMaterial.mapSpecularExponent = this.parseMap(tokens);\n    }\n    /**\n     * Parses the dissolve map.\n     *\n     * @param tokens list of tokens for the map_d direcive\n     */\n    parse_map_d(tokens) {\n        this.currentMaterial.mapDissolve = this.parseMap(tokens);\n    }\n    /**\n     * Parses the anti-aliasing option.\n     *\n     * @param tokens list of tokens for the map_aat direcive\n     */\n    parse_map_aat(tokens) {\n        this.currentMaterial.antiAliasing = tokens[0] == "on";\n    }\n    /**\n     * Parses the bump map.\n     *\n     * @param tokens list of tokens for the map_bump direcive\n     */\n    parse_map_bump(tokens) {\n        this.currentMaterial.mapBump = this.parseMap(tokens);\n    }\n    /**\n     * Parses the bump map.\n     *\n     * @param tokens list of tokens for the bump direcive\n     */\n    parse_bump(tokens) {\n        this.parse_map_bump(tokens);\n    }\n    /**\n     * Parses the disp map.\n     *\n     * @param tokens list of tokens for the disp direcive\n     */\n    parse_disp(tokens) {\n        this.currentMaterial.mapDisplacement = this.parseMap(tokens);\n    }\n    /**\n     * Parses the decal map.\n     *\n     * @param tokens list of tokens for the map_decal direcive\n     */\n    parse_decal(tokens) {\n        this.currentMaterial.mapDecal = this.parseMap(tokens);\n    }\n    /**\n     * Parses the refl map.\n     *\n     * @param tokens list of tokens for the refl direcive\n     */\n    parse_refl(tokens) {\n        this.currentMaterial.mapReflections.push(this.parseMap(tokens));\n    }\n    /**\n     * Parses the MTL file.\n     *\n     * Iterates line by line parsing each MTL directive.\n     *\n     * This function expects the first token in the line\n     * to be a valid MTL directive. That token is then used\n     * to try and run a method on this class. parse_[directive]\n     * E.g., the `newmtl` directive would try to call the method\n     * parse_newmtl. Each parsing function takes in the remaining\n     * list of tokens and updates the currentMaterial class with\n     * the attributes provided.\n     */\n    parse() {\n        const lines = this.data.split(/\\r?\\n/);\n        for (let line of lines) {\n            line = line.trim();\n            if (!line || line.startsWith("#")) {\n                continue;\n            }\n            const [directive, ...tokens] = line.split(/\\s/);\n            const parseMethod = this[`parse_${directive}`];\n            if (!parseMethod) {\n                console.warn(`Don\'t know how to parse the directive: "${directive}"`);\n                continue;\n            }\n            // console.log(`Parsing "${directive}" with tokens: ${tokens}`);\n            parseMethod.bind(this)(tokens);\n        }\n        // some cleanup. These don\'t need to be exposed as public data.\n        delete this.data;\n        this.currentMaterial = SENTINEL_MATERIAL;\n    }\n}\nfunction emptyTextureOptions() {\n    return {\n        colorCorrection: false,\n        horizontalBlending: true,\n        verticalBlending: true,\n        boostMipMapSharpness: 0,\n        modifyTextureMap: {\n            brightness: 0,\n            contrast: 1,\n        },\n        offset: { u: 0, v: 0, w: 0 },\n        scale: { u: 1, v: 1, w: 1 },\n        turbulence: { u: 0, v: 0, w: 0 },\n        clamp: false,\n        textureResolution: null,\n        bumpMultiplier: 1,\n        imfChan: null,\n        filename: "",\n    };\n}\n\n\n//# sourceURL=webpack:///./src/material.ts?');
+        },
+        "./src/mesh.ts": /*!*********************!*\
+  !*** ./src/mesh.ts ***!
+  \*********************/ /*! exports provided: default */ function(module, __webpack_exports__, __webpack_require__) {
+            "use strict";
+            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Mesh; });\n/* harmony import */ var _layout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./layout */ "./src/layout.ts");\n\n/**\n * The main Mesh class. The constructor will parse through the OBJ file data\n * and collect the vertex, vertex normal, texture, and face information. This\n * information can then be used later on when creating your VBOs. See\n * OBJ.initMeshBuffers for an example of how to use the newly created Mesh\n */\nclass Mesh {\n    /**\n     * Create a Mesh\n     * @param {String} objectData - a string representation of an OBJ file with\n     *     newlines preserved.\n     * @param {Object} options - a JS object containing valid options. See class\n     *     documentation for options.\n     * @param {bool} options.enableWTextureCoord - Texture coordinates can have\n     *     an optional "w" coordinate after the u and v coordinates. This extra\n     *     value can be used in order to perform fancy transformations on the\n     *     textures themselves. Default is to truncate to only the u an v\n     *     coordinates. Passing true will provide a default value of 0 in the\n     *     event that any or all texture coordinates don\'t provide a w value.\n     *     Always use the textureStride attribute in order to determine the\n     *     stride length of the texture coordinates when rendering the element\n     *     array.\n     * @param {bool} options.calcTangentsAndBitangents - Calculate the tangents\n     *     and bitangents when loading of the OBJ is completed. This adds two new\n     *     attributes to the Mesh instance: `tangents` and `bitangents`.\n     */\n    constructor(objectData, options) {\n        this.name = "";\n        this.indicesPerMaterial = [];\n        this.materialsByIndex = {};\n        this.tangents = [];\n        this.bitangents = [];\n        options = options || {};\n        options.materials = options.materials || {};\n        options.enableWTextureCoord = !!options.enableWTextureCoord;\n        // the list of unique vertex, normal, texture, attributes\n        this.vertexNormals = [];\n        this.textures = [];\n        // the indicies to draw the faces\n        this.indices = [];\n        this.textureStride = options.enableWTextureCoord ? 3 : 2;\n        /*\n        The OBJ file format does a sort of compression when saving a model in a\n        program like Blender. There are at least 3 sections (4 including textures)\n        within the file. Each line in a section begins with the same string:\n          * \'v\': indicates vertex section\n          * \'vn\': indicates vertex normal section\n          * \'f\': indicates the faces section\n          * \'vt\': indicates vertex texture section (if textures were used on the model)\n        Each of the above sections (except for the faces section) is a list/set of\n        unique vertices.\n\n        Each line of the faces section contains a list of\n        (vertex, [texture], normal) groups.\n\n        **Note:** The following documentation will use a capital "V" Vertex to\n        denote the above (vertex, [texture], normal) groups whereas a lowercase\n        "v" vertex is used to denote an X, Y, Z coordinate.\n\n        Some examples:\n            // the texture index is optional, both formats are possible for models\n            // without a texture applied\n            f 1/25 18/46 12/31\n            f 1//25 18//46 12//31\n\n            // A 3 vertex face with texture indices\n            f 16/92/11 14/101/22 1/69/1\n\n            // A 4 vertex face\n            f 16/92/11 40/109/40 38/114/38 14/101/22\n\n        The first two lines are examples of a 3 vertex face without a texture applied.\n        The second is an example of a 3 vertex face with a texture applied.\n        The third is an example of a 4 vertex face. Note: a face can contain N\n        number of vertices.\n\n        Each number that appears in one of the groups is a 1-based index\n        corresponding to an item from the other sections (meaning that indexing\n        starts at one and *not* zero).\n\n        For example:\n            `f 16/92/11` is saying to\n              - take the 16th element from the [v] vertex array\n              - take the 92nd element from the [vt] texture array\n              - take the 11th element from the [vn] normal array\n            and together they make a unique vertex.\n        Using all 3+ unique Vertices from the face line will produce a polygon.\n\n        Now, you could just go through the OBJ file and create a new vertex for\n        each face line and WebGL will draw what appears to be the same model.\n        However, vertices will be overlapped and duplicated all over the place.\n\n        Consider a cube in 3D space centered about the origin and each side is\n        2 units long. The front face (with the positive Z-axis pointing towards\n        you) would have a Top Right vertex (looking orthogonal to its normal)\n        mapped at (1,1,1) The right face would have a Top Left vertex (looking\n        orthogonal to its normal) at (1,1,1) and the top face would have a Bottom\n        Right vertex (looking orthogonal to its normal) at (1,1,1). Each face\n        has a vertex at the same coordinates, however, three distinct vertices\n        will be drawn at the same spot.\n\n        To solve the issue of duplicate Vertices (the `(vertex, [texture], normal)`\n        groups), while iterating through the face lines, when a group is encountered\n        the whole group string (\'16/92/11\') is checked to see if it exists in the\n        packed.hashindices object, and if it doesn\'t, the indices it specifies\n        are used to look up each attribute in the corresponding attribute arrays\n        already created. The values are then copied to the corresponding unpacked\n        array (flattened to play nice with WebGL\'s ELEMENT_ARRAY_BUFFER indexing),\n        the group string is added to the hashindices set and the current unpacked\n        index is used as this hashindices value so that the group of elements can\n        be reused. The unpacked index is incremented. If the group string already\n        exists in the hashindices object, its corresponding value is the index of\n        that group and is appended to the unpacked indices array.\n       */\n        const verts = [];\n        const vertNormals = [];\n        const textures = [];\n        const materialNamesByIndex = [];\n        const materialIndicesByName = {};\n        // keep track of what material we\'ve seen last\n        let currentMaterialIndex = -1;\n        let currentObjectByMaterialIndex = 0;\n        // unpacking stuff\n        const unpacked = {\n            verts: [],\n            norms: [],\n            textures: [],\n            hashindices: {},\n            indices: [[]],\n            materialIndices: [],\n            index: 0,\n        };\n        const VERTEX_RE = /^v\\s/;\n        const NORMAL_RE = /^vn\\s/;\n        const TEXTURE_RE = /^vt\\s/;\n        const FACE_RE = /^f\\s/;\n        const WHITESPACE_RE = /\\s+/;\n        const USE_MATERIAL_RE = /^usemtl/;\n        // array of lines separated by the newline\n        const lines = objectData.split("\\n");\n        for (let line of lines) {\n            line = line.trim();\n            if (!line || line.startsWith("#")) {\n                continue;\n            }\n            const elements = line.split(WHITESPACE_RE);\n            elements.shift();\n            if (VERTEX_RE.test(line)) {\n                // if this is a vertex\n                verts.push(...elements);\n            }\n            else if (NORMAL_RE.test(line)) {\n                // if this is a vertex normal\n                vertNormals.push(...elements);\n            }\n            else if (TEXTURE_RE.test(line)) {\n                let coords = elements;\n                // by default, the loader will only look at the U and V\n                // coordinates of the vt declaration. So, this truncates the\n                // elements to only those 2 values. If W texture coordinate\n                // support is enabled, then the texture coordinate is\n                // expected to have three values in it.\n                if (elements.length > 2 && !options.enableWTextureCoord) {\n                    coords = elements.slice(0, 2);\n                }\n                else if (elements.length === 2 && options.enableWTextureCoord) {\n                    // If for some reason W texture coordinate support is enabled\n                    // and only the U and V coordinates are given, then we supply\n                    // the default value of 0 so that the stride length is correct\n                    // when the textures are unpacked below.\n                    coords.push("0");\n                }\n                textures.push(...coords);\n            }\n            else if (USE_MATERIAL_RE.test(line)) {\n                const materialName = elements[0];\n                // check to see if we\'ve ever seen it before\n                if (!(materialName in materialIndicesByName)) {\n                    // new material we\'ve never seen\n                    materialNamesByIndex.push(materialName);\n                    materialIndicesByName[materialName] = materialNamesByIndex.length - 1;\n                    // push new array into indices\n                    // already contains an array at index zero, don\'t add\n                    if (materialIndicesByName[materialName] > 0) {\n                        unpacked.indices.push([]);\n                    }\n                }\n                // keep track of the current material index\n                currentMaterialIndex = materialIndicesByName[materialName];\n                // update current index array\n                currentObjectByMaterialIndex = currentMaterialIndex;\n            }\n            else if (FACE_RE.test(line)) {\n                // if this is a face\n                /*\n                split this face into an array of Vertex groups\n                for example:\n                   f 16/92/11 14/101/22 1/69/1\n                becomes:\n                  [\'16/92/11\', \'14/101/22\', \'1/69/1\'];\n                */\n                const triangles = triangulate(elements);\n                for (const triangle of triangles) {\n                    for (let j = 0, eleLen = triangle.length; j < eleLen; j++) {\n                        const hash = triangle[j] + "," + currentMaterialIndex;\n                        if (hash in unpacked.hashindices) {\n                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);\n                        }\n                        else {\n                            /*\n                        Each element of the face line array is a Vertex which has its\n                        attributes delimited by a forward slash. This will separate\n                        each attribute into another array:\n                            \'19/92/11\'\n                        becomes:\n                            Vertex = [\'19\', \'92\', \'11\'];\n                        where\n                            Vertex[0] is the vertex index\n                            Vertex[1] is the texture index\n                            Vertex[2] is the normal index\n                         Think of faces having Vertices which are comprised of the\n                         attributes location (v), texture (vt), and normal (vn).\n                         */\n                            const vertex = triangle[j].split("/");\n                            // it\'s possible for faces to only specify the vertex\n                            // and the normal. In this case, vertex will only have\n                            // a length of 2 and not 3 and the normal will be the\n                            // second item in the list with an index of 1.\n                            const normalIndex = vertex.length - 1;\n                            /*\n                         The verts, textures, and vertNormals arrays each contain a\n                         flattend array of coordinates.\n\n                         Because it gets confusing by referring to Vertex and then\n                         vertex (both are different in my descriptions) I will explain\n                         what\'s going on using the vertexNormals array:\n\n                         vertex[2] will contain the one-based index of the vertexNormals\n                         section (vn). One is subtracted from this index number to play\n                         nice with javascript\'s zero-based array indexing.\n\n                         Because vertexNormal is a flattened array of x, y, z values,\n                         simple pointer arithmetic is used to skip to the start of the\n                         vertexNormal, then the offset is added to get the correct\n                         component: +0 is x, +1 is y, +2 is z.\n\n                         This same process is repeated for verts and textures.\n                         */\n                            // Vertex position\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);\n                            // Vertex textures\n                            if (textures.length) {\n                                const stride = options.enableWTextureCoord ? 3 : 2;\n                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);\n                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);\n                                if (options.enableWTextureCoord) {\n                                    unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);\n                                }\n                            }\n                            // Vertex normals\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);\n                            // Vertex material indices\n                            unpacked.materialIndices.push(currentMaterialIndex);\n                            // add the newly created Vertex to the list of indices\n                            unpacked.hashindices[hash] = unpacked.index;\n                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);\n                            // increment the counter\n                            unpacked.index += 1;\n                        }\n                    }\n                }\n            }\n        }\n        this.vertices = unpacked.verts;\n        this.vertexNormals = unpacked.norms;\n        this.textures = unpacked.textures;\n        this.vertexMaterialIndices = unpacked.materialIndices;\n        this.indices = unpacked.indices[currentObjectByMaterialIndex];\n        this.indicesPerMaterial = unpacked.indices;\n        this.materialNames = materialNamesByIndex;\n        this.materialIndices = materialIndicesByName;\n        this.materialsByIndex = {};\n        if (options.calcTangentsAndBitangents) {\n            this.calculateTangentsAndBitangents();\n        }\n    }\n    /**\n     * Calculates the tangents and bitangents of the mesh that forms an orthogonal basis together with the\n     * normal in the direction of the texture coordinates. These are useful for setting up the TBN matrix\n     * when distorting the normals through normal maps.\n     * Method derived from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/\n     *\n     * This method requires the normals and texture coordinates to be parsed and set up correctly.\n     * Adds the tangents and bitangents as members of the class instance.\n     */\n    calculateTangentsAndBitangents() {\n        console.assert(!!(this.vertices &&\n            this.vertices.length &&\n            this.vertexNormals &&\n            this.vertexNormals.length &&\n            this.textures &&\n            this.textures.length), "Missing attributes for calculating tangents and bitangents");\n        const unpacked = {\n            tangents: [...new Array(this.vertices.length)].map(_ => 0),\n            bitangents: [...new Array(this.vertices.length)].map(_ => 0),\n        };\n        // Loop through all faces in the whole mesh\n        const indices = this.indices;\n        const vertices = this.vertices;\n        const normals = this.vertexNormals;\n        const uvs = this.textures;\n        for (let i = 0; i < indices.length; i += 3) {\n            const i0 = indices[i + 0];\n            const i1 = indices[i + 1];\n            const i2 = indices[i + 2];\n            const x_v0 = vertices[i0 * 3 + 0];\n            const y_v0 = vertices[i0 * 3 + 1];\n            const z_v0 = vertices[i0 * 3 + 2];\n            const x_uv0 = uvs[i0 * 2 + 0];\n            const y_uv0 = uvs[i0 * 2 + 1];\n            const x_v1 = vertices[i1 * 3 + 0];\n            const y_v1 = vertices[i1 * 3 + 1];\n            const z_v1 = vertices[i1 * 3 + 2];\n            const x_uv1 = uvs[i1 * 2 + 0];\n            const y_uv1 = uvs[i1 * 2 + 1];\n            const x_v2 = vertices[i2 * 3 + 0];\n            const y_v2 = vertices[i2 * 3 + 1];\n            const z_v2 = vertices[i2 * 3 + 2];\n            const x_uv2 = uvs[i2 * 2 + 0];\n            const y_uv2 = uvs[i2 * 2 + 1];\n            const x_deltaPos1 = x_v1 - x_v0;\n            const y_deltaPos1 = y_v1 - y_v0;\n            const z_deltaPos1 = z_v1 - z_v0;\n            const x_deltaPos2 = x_v2 - x_v0;\n            const y_deltaPos2 = y_v2 - y_v0;\n            const z_deltaPos2 = z_v2 - z_v0;\n            const x_uvDeltaPos1 = x_uv1 - x_uv0;\n            const y_uvDeltaPos1 = y_uv1 - y_uv0;\n            const x_uvDeltaPos2 = x_uv2 - x_uv0;\n            const y_uvDeltaPos2 = y_uv2 - y_uv0;\n            const rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;\n            const r = 1.0 / Math.abs(rInv < 0.0001 ? 1.0 : rInv);\n            // Tangent\n            const x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;\n            const y_tangent = (y_deltaPos1 * y_uvDeltaPos2 - y_deltaPos2 * y_uvDeltaPos1) * r;\n            const z_tangent = (z_deltaPos1 * y_uvDeltaPos2 - z_deltaPos2 * y_uvDeltaPos1) * r;\n            // Bitangent\n            const x_bitangent = (x_deltaPos2 * x_uvDeltaPos1 - x_deltaPos1 * x_uvDeltaPos2) * r;\n            const y_bitangent = (y_deltaPos2 * x_uvDeltaPos1 - y_deltaPos1 * x_uvDeltaPos2) * r;\n            const z_bitangent = (z_deltaPos2 * x_uvDeltaPos1 - z_deltaPos1 * x_uvDeltaPos2) * r;\n            // Gram-Schmidt orthogonalize\n            //t = glm::normalize(t - n * glm:: dot(n, t));\n            const x_n0 = normals[i0 * 3 + 0];\n            const y_n0 = normals[i0 * 3 + 1];\n            const z_n0 = normals[i0 * 3 + 2];\n            const x_n1 = normals[i1 * 3 + 0];\n            const y_n1 = normals[i1 * 3 + 1];\n            const z_n1 = normals[i1 * 3 + 2];\n            const x_n2 = normals[i2 * 3 + 0];\n            const y_n2 = normals[i2 * 3 + 1];\n            const z_n2 = normals[i2 * 3 + 2];\n            // Tangent\n            const n0_dot_t = x_tangent * x_n0 + y_tangent * y_n0 + z_tangent * z_n0;\n            const n1_dot_t = x_tangent * x_n1 + y_tangent * y_n1 + z_tangent * z_n1;\n            const n2_dot_t = x_tangent * x_n2 + y_tangent * y_n2 + z_tangent * z_n2;\n            const x_resTangent0 = x_tangent - x_n0 * n0_dot_t;\n            const y_resTangent0 = y_tangent - y_n0 * n0_dot_t;\n            const z_resTangent0 = z_tangent - z_n0 * n0_dot_t;\n            const x_resTangent1 = x_tangent - x_n1 * n1_dot_t;\n            const y_resTangent1 = y_tangent - y_n1 * n1_dot_t;\n            const z_resTangent1 = z_tangent - z_n1 * n1_dot_t;\n            const x_resTangent2 = x_tangent - x_n2 * n2_dot_t;\n            const y_resTangent2 = y_tangent - y_n2 * n2_dot_t;\n            const z_resTangent2 = z_tangent - z_n2 * n2_dot_t;\n            const magTangent0 = Math.sqrt(x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0);\n            const magTangent1 = Math.sqrt(x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1);\n            const magTangent2 = Math.sqrt(x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2);\n            // Bitangent\n            const n0_dot_bt = x_bitangent * x_n0 + y_bitangent * y_n0 + z_bitangent * z_n0;\n            const n1_dot_bt = x_bitangent * x_n1 + y_bitangent * y_n1 + z_bitangent * z_n1;\n            const n2_dot_bt = x_bitangent * x_n2 + y_bitangent * y_n2 + z_bitangent * z_n2;\n            const x_resBitangent0 = x_bitangent - x_n0 * n0_dot_bt;\n            const y_resBitangent0 = y_bitangent - y_n0 * n0_dot_bt;\n            const z_resBitangent0 = z_bitangent - z_n0 * n0_dot_bt;\n            const x_resBitangent1 = x_bitangent - x_n1 * n1_dot_bt;\n            const y_resBitangent1 = y_bitangent - y_n1 * n1_dot_bt;\n            const z_resBitangent1 = z_bitangent - z_n1 * n1_dot_bt;\n            const x_resBitangent2 = x_bitangent - x_n2 * n2_dot_bt;\n            const y_resBitangent2 = y_bitangent - y_n2 * n2_dot_bt;\n            const z_resBitangent2 = z_bitangent - z_n2 * n2_dot_bt;\n            const magBitangent0 = Math.sqrt(x_resBitangent0 * x_resBitangent0 +\n                y_resBitangent0 * y_resBitangent0 +\n                z_resBitangent0 * z_resBitangent0);\n            const magBitangent1 = Math.sqrt(x_resBitangent1 * x_resBitangent1 +\n                y_resBitangent1 * y_resBitangent1 +\n                z_resBitangent1 * z_resBitangent1);\n            const magBitangent2 = Math.sqrt(x_resBitangent2 * x_resBitangent2 +\n                y_resBitangent2 * y_resBitangent2 +\n                z_resBitangent2 * z_resBitangent2);\n            unpacked.tangents[i0 * 3 + 0] += x_resTangent0 / magTangent0;\n            unpacked.tangents[i0 * 3 + 1] += y_resTangent0 / magTangent0;\n            unpacked.tangents[i0 * 3 + 2] += z_resTangent0 / magTangent0;\n            unpacked.tangents[i1 * 3 + 0] += x_resTangent1 / magTangent1;\n            unpacked.tangents[i1 * 3 + 1] += y_resTangent1 / magTangent1;\n            unpacked.tangents[i1 * 3 + 2] += z_resTangent1 / magTangent1;\n            unpacked.tangents[i2 * 3 + 0] += x_resTangent2 / magTangent2;\n            unpacked.tangents[i2 * 3 + 1] += y_resTangent2 / magTangent2;\n            unpacked.tangents[i2 * 3 + 2] += z_resTangent2 / magTangent2;\n            unpacked.bitangents[i0 * 3 + 0] += x_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i0 * 3 + 1] += y_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i0 * 3 + 2] += z_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i1 * 3 + 0] += x_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i1 * 3 + 1] += y_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i1 * 3 + 2] += z_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i2 * 3 + 0] += x_resBitangent2 / magBitangent2;\n            unpacked.bitangents[i2 * 3 + 1] += y_resBitangent2 / magBitangent2;\n            unpacked.bitangents[i2 * 3 + 2] += z_resBitangent2 / magBitangent2;\n            // TODO: check handedness\n        }\n        this.tangents = unpacked.tangents;\n        this.bitangents = unpacked.bitangents;\n    }\n    /**\n     * @param layout - A {@link Layout} object that describes the\n     * desired memory layout of the generated buffer\n     * @return The packed array in the ... TODO\n     */\n    makeBufferData(layout) {\n        const numItems = this.vertices.length / 3;\n        const buffer = new ArrayBuffer(layout.stride * numItems);\n        buffer.numItems = numItems;\n        const dataView = new DataView(buffer);\n        for (let i = 0, vertexOffset = 0; i < numItems; i++) {\n            vertexOffset = i * layout.stride;\n            // copy in the vertex data in the order and format given by the\n            // layout param\n            for (const attribute of layout.attributes) {\n                const offset = vertexOffset + layout.attributeMap[attribute.key].offset;\n                switch (attribute.key) {\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].POSITION.key:\n                        dataView.setFloat32(offset, this.vertices[i * 3], true);\n                        dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);\n                        dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].UV.key:\n                        dataView.setFloat32(offset, this.textures[i * 2], true);\n                        dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].NORMAL.key:\n                        dataView.setFloat32(offset, this.vertexNormals[i * 3], true);\n                        dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);\n                        dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].MATERIAL_INDEX.key:\n                        dataView.setInt16(offset, this.vertexMaterialIndices[i], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].AMBIENT.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.ambient[0], true);\n                        dataView.setFloat32(offset + 4, material.ambient[1], true);\n                        dataView.setFloat32(offset + 8, material.ambient[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].DIFFUSE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.diffuse[0], true);\n                        dataView.setFloat32(offset + 4, material.diffuse[1], true);\n                        dataView.setFloat32(offset + 8, material.diffuse[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SPECULAR.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.specular[0], true);\n                        dataView.setFloat32(offset + 4, material.specular[1], true);\n                        dataView.setFloat32(offset + 8, material.specular[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SPECULAR_EXPONENT.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.specularExponent, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].EMISSIVE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.emissive[0], true);\n                        dataView.setFloat32(offset + 4, material.emissive[1], true);\n                        dataView.setFloat32(offset + 8, material.emissive[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].TRANSMISSION_FILTER.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.transmissionFilter[0], true);\n                        dataView.setFloat32(offset + 4, material.transmissionFilter[1], true);\n                        dataView.setFloat32(offset + 8, material.transmissionFilter[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].DISSOLVE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.dissolve, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].ILLUMINATION.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setInt16(offset, material.illumination, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].REFRACTION_INDEX.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.refractionIndex, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SHARPNESS.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.sharpness, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].ANTI_ALIASING.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setInt16(offset, material.antiAliasing ? 1 : 0, true);\n                        break;\n                    }\n                }\n            }\n        }\n        return buffer;\n    }\n    makeIndexBufferData() {\n        const buffer = new Uint16Array(this.indices);\n        buffer.numItems = this.indices.length;\n        return buffer;\n    }\n    makeIndexBufferDataForMaterials(...materialIndices) {\n        const indices = new Array().concat(...materialIndices.map(mtlIdx => this.indicesPerMaterial[mtlIdx]));\n        const buffer = new Uint16Array(indices);\n        buffer.numItems = indices.length;\n        return buffer;\n    }\n    addMaterialLibrary(mtl) {\n        for (const name in mtl.materials) {\n            if (!(name in this.materialIndices)) {\n                // This material is not referenced by the mesh\n                continue;\n            }\n            const material = mtl.materials[name];\n            // Find the material index for this material\n            const materialIndex = this.materialIndices[material.name];\n            // Put the material into the materialsByIndex object at the right\n            // spot as determined when the obj file was parsed\n            this.materialsByIndex[materialIndex] = material;\n        }\n    }\n}\nfunction* triangulate(elements) {\n    if (elements.length <= 3) {\n        yield elements;\n    }\n    else if (elements.length === 4) {\n        yield [elements[0], elements[1], elements[2]];\n        yield [elements[2], elements[3], elements[0]];\n    }\n    else {\n        for (let i = 1; i < elements.length - 1; i++) {\n            yield [elements[0], elements[i], elements[i + 1]];\n        }\n    }\n}\n\n\n//# sourceURL=webpack:///./src/mesh.ts?');
+        },
+        "./src/utils.ts": /*!**********************!*\
+  !*** ./src/utils.ts ***!
+  \**********************/ /*! exports provided: downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers */ function(module, __webpack_exports__, __webpack_require__) {
+            "use strict";
+            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "downloadModels", function() { return downloadModels; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "downloadMeshes", function() { return downloadMeshes; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "initMeshBuffers", function() { return initMeshBuffers; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deleteMeshBuffers", function() { return deleteMeshBuffers; });\n/* harmony import */ var _mesh__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mesh */ "./src/mesh.ts");\n/* harmony import */ var _material__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./material */ "./src/material.ts");\n\n\nfunction downloadMtlTextures(mtl, root) {\n    const mapAttributes = [\n        "mapDiffuse",\n        "mapAmbient",\n        "mapSpecular",\n        "mapDissolve",\n        "mapBump",\n        "mapDisplacement",\n        "mapDecal",\n        "mapEmissive",\n    ];\n    if (!root.endsWith("/")) {\n        root += "/";\n    }\n    const textures = [];\n    for (const materialName in mtl.materials) {\n        if (!mtl.materials.hasOwnProperty(materialName)) {\n            continue;\n        }\n        const material = mtl.materials[materialName];\n        for (const attr of mapAttributes) {\n            const mapData = material[attr];\n            if (!mapData || !mapData.filename) {\n                continue;\n            }\n            const url = root + mapData.filename;\n            textures.push(fetch(url)\n                .then(response => {\n                if (!response.ok) {\n                    throw new Error();\n                }\n                return response.blob();\n            })\n                .then(function (data) {\n                const image = new Image();\n                image.src = URL.createObjectURL(data);\n                mapData.texture = image;\n                return new Promise(resolve => (image.onload = resolve));\n            })\n                .catch(() => {\n                console.error(`Unable to download texture: ${url}`);\n            }));\n        }\n    }\n    return Promise.all(textures);\n}\nfunction getMtl(modelOptions) {\n    if (!(typeof modelOptions.mtl === "string")) {\n        return modelOptions.obj.replace(/\\.obj$/, ".mtl");\n    }\n    return modelOptions.mtl;\n}\n/**\n * Accepts a list of model request objects and returns a Promise that\n * resolves when all models have been downloaded and parsed.\n *\n * The list of model objects follow this interface:\n * {\n *  obj: \'path/to/model.obj\',\n *  mtl: true | \'path/to/model.mtl\',\n *  downloadMtlTextures: true | false\n *  mtlTextureRoot: \'/models/suzanne/maps\'\n *  name: \'suzanne\'\n * }\n *\n * The `obj` attribute is required and should be the path to the\n * model\'s .obj file relative to the current repo (absolute URLs are\n * suggested).\n *\n * The `mtl` attribute is optional and can either be a boolean or\n * a path to the model\'s .mtl file relative to the current URL. If\n * the value is `true`, then the path and basename given for the `obj`\n * attribute is used replacing the .obj suffix for .mtl\n * E.g.: {obj: \'models/foo.obj\', mtl: true} would search for \'models/foo.mtl\'\n *\n * The `name` attribute is optional and is a human friendly name to be\n * included with the parsed OBJ and MTL files. If not given, the base .obj\n * filename will be used.\n *\n * The `downloadMtlTextures` attribute is a flag for automatically downloading\n * any images found in the MTL file and attaching them to each Material\n * created from that file. For example, if material.mapDiffuse is set (there\n * was data in the MTL file), then material.mapDiffuse.texture will contain\n * the downloaded image. This option defaults to `true`. By default, the MTL\'s\n * URL will be used to determine the location of the images.\n *\n * The `mtlTextureRoot` attribute is optional and should point to the location\n * on the server that this MTL\'s texture files are located. The default is to\n * use the MTL file\'s location.\n *\n * @returns {Promise} the result of downloading the given list of models. The\n * promise will resolve with an object whose keys are the names of the models\n * and the value is its Mesh object. Each Mesh object will automatically\n * have its addMaterialLibrary() method called to set the given MTL data (if given).\n */\nfunction downloadModels(models) {\n    const finished = [];\n    for (const model of models) {\n        if (!model.obj) {\n            throw new Error(\'"obj" attribute of model object not set. The .obj file is required to be set \' +\n                "in order to use downloadModels()");\n        }\n        const options = {\n            indicesPerMaterial: !!model.indicesPerMaterial,\n            calcTangentsAndBitangents: !!model.calcTangentsAndBitangents,\n        };\n        // if the name is not provided, dervive it from the given OBJ\n        let name = model.name;\n        if (!name) {\n            const parts = model.obj.split("/");\n            name = parts[parts.length - 1].replace(".obj", "");\n        }\n        const namePromise = Promise.resolve(name);\n        const meshPromise = fetch(model.obj)\n            .then(response => response.text())\n            .then(data => {\n            return new _mesh__WEBPACK_IMPORTED_MODULE_0__["default"](data, options);\n        });\n        let mtlPromise;\n        // Download MaterialLibrary file?\n        if (model.mtl) {\n            const mtl = getMtl(model);\n            mtlPromise = fetch(mtl)\n                .then(response => response.text())\n                .then((data) => {\n                const material = new _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"](data);\n                if (model.downloadMtlTextures !== false) {\n                    let root = model.mtlTextureRoot;\n                    if (!root) {\n                        // get the directory of the MTL file as default\n                        root = mtl.substr(0, mtl.lastIndexOf("/"));\n                    }\n                    // downloadMtlTextures returns a Promise that\n                    // is resolved once all of the images it\n                    // contains are downloaded. These are then\n                    // attached to the map data objects\n                    return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);\n                }\n                return Promise.all([Promise.resolve(material), undefined]);\n            })\n                .then((value) => {\n                return value[0];\n            });\n        }\n        const parsed = [namePromise, meshPromise, mtlPromise];\n        finished.push(Promise.all(parsed));\n    }\n    return Promise.all(finished).then(ms => {\n        // the "finished" promise is a list of name, Mesh instance,\n        // and MaterialLibary instance. This unpacks and returns an\n        // object mapping name to Mesh (Mesh points to MTL).\n        const models = {};\n        for (const model of ms) {\n            const [name, mesh, mtl] = model;\n            mesh.name = name;\n            if (mtl) {\n                mesh.addMaterialLibrary(mtl);\n            }\n            models[name] = mesh;\n        }\n        return models;\n    });\n}\n/**\n * Takes in an object of `mesh_name`, `\'/url/to/OBJ/file\'` pairs and a callback\n * function. Each OBJ file will be ajaxed in and automatically converted to\n * an OBJ.Mesh. When all files have successfully downloaded the callback\n * function provided will be called and passed in an object containing\n * the newly created meshes.\n *\n * **Note:** In order to use this function as a way to download meshes, a\n * webserver of some sort must be used.\n *\n * @param {Object} nameAndAttrs an object where the key is the name of the mesh and the value is the url to that mesh\'s OBJ file\n *\n * @param {Function} completionCallback should contain a function that will take one parameter: an object array where the keys will be the unique object name and the value will be a Mesh object\n *\n * @param {Object} meshes In case other meshes are loaded separately or if a previously declared variable is desired to be used, pass in a (possibly empty) json object of the pattern: { \'<mesh_name>\': OBJ.Mesh }\n *\n */\nfunction downloadMeshes(nameAndURLs, completionCallback, meshes) {\n    if (meshes === undefined) {\n        meshes = {};\n    }\n    const completed = [];\n    for (const mesh_name in nameAndURLs) {\n        if (!nameAndURLs.hasOwnProperty(mesh_name)) {\n            continue;\n        }\n        const url = nameAndURLs[mesh_name];\n        completed.push(fetch(url)\n            .then(response => response.text())\n            .then(data => {\n            return [mesh_name, new _mesh__WEBPACK_IMPORTED_MODULE_0__["default"](data)];\n        }));\n    }\n    Promise.all(completed).then(ms => {\n        for (const [name, mesh] of ms) {\n            meshes[name] = mesh;\n        }\n        return completionCallback(meshes);\n    });\n}\nfunction _buildBuffer(gl, type, data, itemSize) {\n    const buffer = gl.createBuffer();\n    const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;\n    gl.bindBuffer(type, buffer);\n    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);\n    buffer.itemSize = itemSize;\n    buffer.numItems = data.length / itemSize;\n    return buffer;\n}\n/**\n * Takes in the WebGL context and a Mesh, then creates and appends the buffers\n * to the mesh object as attributes.\n *\n * @param {WebGLRenderingContext} gl the `canvas.getContext(\'webgl\')` context instance\n * @param {Mesh} mesh a single `OBJ.Mesh` instance\n *\n * The newly created mesh attributes are:\n *\n * Attrbute | Description\n * :--- | ---\n * **normalBuffer**       |contains the model&#39;s Vertex Normals\n * normalBuffer.itemSize  |set to 3 items\n * normalBuffer.numItems  |the total number of vertex normals\n * |\n * **textureBuffer**      |contains the model&#39;s Texture Coordinates\n * textureBuffer.itemSize |set to 2 items\n * textureBuffer.numItems |the number of texture coordinates\n * |\n * **vertexBuffer**       |contains the model&#39;s Vertex Position Coordinates (does not include w)\n * vertexBuffer.itemSize  |set to 3 items\n * vertexBuffer.numItems  |the total number of vertices\n * |\n * **indexBuffer**        |contains the indices of the faces\n * indexBuffer.itemSize   |is set to 1\n * indexBuffer.numItems   |the total number of indices\n *\n * A simple example (a lot of steps are missing, so don\'t copy and paste):\n *\n *     const gl   = canvas.getContext(\'webgl\'),\n *         mesh = OBJ.Mesh(obj_file_data);\n *     // compile the shaders and create a shader program\n *     const shaderProgram = gl.createProgram();\n *     // compilation stuff here\n *     ...\n *     // make sure you have vertex, vertex normal, and texture coordinate\n *     // attributes located in your shaders and attach them to the shader program\n *     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");\n *     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);\n *\n *     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");\n *     gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);\n *\n *     shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");\n *     gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *\n *     // create and initialize the vertex, vertex normal, and texture coordinate buffers\n *     // and save on to the mesh object\n *     OBJ.initMeshBuffers(gl, mesh);\n *\n *     // now to render the mesh\n *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);\n *     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *     // it\'s possible that the mesh doesn\'t contain\n *     // any texture coordinates (e.g. suzanne.obj in the development branch).\n *     // in this case, the texture vertexAttribArray will need to be disabled\n *     // before the call to drawElements\n *     if(!mesh.textures.length){\n *       gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *     }\n *     else{\n *       // if the texture vertexAttribArray has been previously\n *       // disabled, then it needs to be re-enabled\n *       gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *       gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);\n *       gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *     }\n *\n *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);\n *     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *\n *     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);\n *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);\n */\nfunction initMeshBuffers(gl, mesh) {\n    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);\n    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);\n    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);\n    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);\n    return mesh;\n}\nfunction deleteMeshBuffers(gl, mesh) {\n    gl.deleteBuffer(mesh.normalBuffer);\n    gl.deleteBuffer(mesh.textureBuffer);\n    gl.deleteBuffer(mesh.vertexBuffer);\n    gl.deleteBuffer(mesh.indexBuffer);\n}\n\n\n//# sourceURL=webpack:///./src/utils.ts?');
+        },
+        0: /*!****************************!*\
+  !*** multi ./src/index.ts ***!
+  \****************************/ /*! no static exports found */ function(module, exports, __webpack_require__) {
+            eval('module.exports = __webpack_require__(/*! /home/aaron/google_drive/projects/webgl-obj-loader/src/index.ts */"./src/index.ts");\n\n\n//# sourceURL=webpack:///multi_./src/index.ts?');
+        }
+    });
+});
+
+},{}],"cdQWH":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.getFileNamesChair = exports.getFileNamesChair2 = exports.getFileNamesMario = exports.getFileNamesPlane = exports.getFileNamesCube = exports.getFileNamesRubik = exports.getFileNamesCat = exports.getFileNamesGreenhouse = exports.getFileNamesBuilding = exports.getFileNamesStone = exports.getFileNamesKoenigsEgg = void 0;
+function getFileNamesKoenigsEgg() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/koenigsegg/koenigsegg.obj");
+    var cmatname = require("./../resources/models/koenigsegg/koenigsegg.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesKoenigsEgg = getFileNamesKoenigsEgg;
+function getFileNamesStone() {
+    var cfiles = [];
+    cfiles.push({
+        fName: "stone12021_01.jpg",
+        fNameResolved: require("./../resources/models/stone/stone12021_01.jpg")
+    });
+    var cobjname = require("./../resources/models/stone/stone12021_01.obj");
+    var cmatname = require("./../resources/models/stone/stone12021_01.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesStone = getFileNamesStone;
+function getFileNamesBuilding() {
+    var cfiles = [];
+    cfiles.push({
+        fName: "stone12021_01.png",
+        fNameResolved: require("./../resources/models/stone/stone12021_01.png")
+    });
+    var cobjname = require("./../resources/models/building/building_04a.obj");
+    var cmatname = require("./../resources/models/building/building_04.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesBuilding = getFileNamesBuilding;
+function getFileNamesGreenhouse() {
+    var cfiles = [];
+    cfiles.push({
+        fName: "greenhouse_flooring.png",
+        fNameResolved: require("./../resources/models/greenhouse/greenhouse_flooring.png")
+    });
+    var cobjname = require("./../resources/models/greenhouse/greenhouse.obj");
+    var cmatname = require("./../resources/models/greenhouse/greenhouse.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesGreenhouse = getFileNamesGreenhouse;
+function getFileNamesCat() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/cat/12221_Cat_v1_l3.obj");
+    var cmatname = require("./../resources/models/cat/12221_Cat_v1_l3.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesCat = getFileNamesCat;
+function getFileNamesRubik() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/rubik/xrubik.obj");
+    var cmatname = require("./../resources/models/rubik/xrubik.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesRubik = getFileNamesRubik;
+function getFileNamesCube() {
+    var cfiles = [];
+    cfiles.push({
+        fName: "clover.jpg",
+        fNameResolved: require("./../resources/models/stone/clover.jpg")
+    });
+    cfiles.push({
+        fName: "Di-3d.png",
+        fNameResolved: require("./../resources/models/stone/Di-3d.png")
+    });
+    cfiles.push({
+        fName: "stone12021_01.png",
+        fNameResolved: require("./../resources/models/stone/stone12021_01.png")
+    });
+    cfiles.push({
+        fName: "zelenskyycube.jpg",
+        fNameResolved: require("./../resources/models/stone/zelenskyycube.jpg")
+    });
+    var cobjname = require("./../resources/models/cube/cube2.obj");
+    var cmatname = require("./../resources/models/cube/cube2.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesCube = getFileNamesCube;
+function getFileNamesPlane() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/plane/plane.obj");
+    var cmatname = require("./../resources/models/plane/plane.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesPlane = getFileNamesPlane;
+function getFileNamesMario() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/mario/mario-sculpture.obj");
+    var cmatname = require("./../resources/models/mario/mario-sculpture.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesMario = getFileNamesMario;
+function getFileNamesChair2() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/chair/willisau_riale.obj");
+    var cmatname = require("./../resources/models/chair/willisau_riale.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesChair2 = getFileNamesChair2;
+function getFileNamesChair() {
+    var cfiles = [];
+    var cobjname = require("./../resources/models/chair/chair.obj");
+    var cmatname = require("./../resources/models/chair/chair.mtl");
+    return {
+        cobjname,
+        cmatname,
+        cfiles
+    };
+}
+exports.getFileNamesChair = getFileNamesChair;
+
+},{"./../resources/models/koenigsegg/koenigsegg.obj":"1xJq5","./../resources/models/koenigsegg/koenigsegg.mtl":"7l8tN","./../resources/models/stone/stone12021_01.jpg":"Z9Rjf","./../resources/models/stone/stone12021_01.obj":"dIAFL","./../resources/models/stone/stone12021_01.mtl":"jqwyh","./../resources/models/stone/stone12021_01.png":"gVMOm","./../resources/models/building/building_04a.obj":"bp1la","./../resources/models/building/building_04.mtl":"8zC3u","./../resources/models/greenhouse/greenhouse_flooring.png":"gigXQ","./../resources/models/greenhouse/greenhouse.obj":"dl1xS","./../resources/models/greenhouse/greenhouse.mtl":"acdEn","./../resources/models/cat/12221_Cat_v1_l3.obj":"jTKAI","./../resources/models/cat/12221_Cat_v1_l3.mtl":"3zKC9","./../resources/models/rubik/xrubik.obj":"fZxyN","./../resources/models/rubik/xrubik.mtl":"bguwy","./../resources/models/stone/clover.jpg":"cS5ze","./../resources/models/stone/Di-3d.png":"hG8vP","./../resources/models/stone/zelenskyycube.jpg":"0393A","./../resources/models/cube/cube2.obj":"kgQxU","./../resources/models/cube/cube2.mtl":"ldq2n","./../resources/models/plane/plane.obj":"aq2Ph","./../resources/models/plane/plane.mtl":"l5PEl","./../resources/models/mario/mario-sculpture.obj":"gIudg","./../resources/models/mario/mario-sculpture.mtl":"9zmWL","./../resources/models/chair/willisau_riale.obj":"lg9C7","./../resources/models/chair/willisau_riale.mtl":"cJdff","./../resources/models/chair/chair.obj":"hDYgj","./../resources/models/chair/chair.mtl":"cDjVC"}],"1xJq5":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "koenigsegg.551b58eb.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"7l8tN":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "koenigsegg.d37e8707.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"Z9Rjf":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.a78720f3.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"dIAFL":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.44d0fbe0.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"jqwyh":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.3cb81356.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gVMOm":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.78afeac0.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"bp1la":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "building_04a.71b1527a.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"8zC3u":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "building_04.9c45643c.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gigXQ":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse_flooring.e7aae741.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"dl1xS":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse.99847e95.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"acdEn":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse.35793745.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"jTKAI":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "12221_Cat_v1_l3.553c92a2.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"3zKC9":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "12221_Cat_v1_l3.0bc61995.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"fZxyN":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "xrubik.77a38852.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"bguwy":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "xrubik.f01b8af1.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cS5ze":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "clover.0da21259.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"hG8vP":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "Di-3d.ab5d1a68.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"0393A":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "zelenskyycube.d98da9c1.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"kgQxU":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "cube2.8c63359a.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"ldq2n":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "cube2.5d66a165.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"aq2Ph":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.20cdb81a.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"l5PEl":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.2ea8e87c.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gIudg":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.0c0037de.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"9zmWL":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.e2a0597d.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lg9C7":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "willisau_riale.ac5452da.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cJdff":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "willisau_riale.c31a390c.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"hDYgj":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.05726ad2.obj" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cDjVC":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.a0644976.mtl" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lQx96":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.MixedTextureScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class MixedTextureScene {
+    constructor(gl){
+        this.sceneenv = 2;
+        this.matrixLocation = 0;
+        this.textureLocation1 = 0;
+        this.textureLocation2 = 0;
+        this.modelXRotationRadians = 0;
+        this.modelYRotationRadians = 0;
+        this.ctime = 0;
+        this.scenesize = 40;
+        this.vertexShaderSource = `#version 300 es
+    
+    // an attribute is an input (in) to a vertex shader.
+    // It will receive data from a buffer
+    in vec4 a_position;
+    in vec2 a_texcoord;
+
+    // A matrix to transform the positions by
+    uniform mat4 u_matrix;
+
+    // a varying to pass the texture coordinates to the fragment shader
+    out vec2 v_texcoord;
+
+    // all shaders have a main function
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_matrix * a_position;
+
+      // Pass the texcoord to the fragment shader.
+      v_texcoord = a_texcoord;
+    }
+    `;
+        this.fragmentShaderSource = `#version 300 es
+
+    precision highp float;
+
+    // Passed in from the vertex shader.
+    in vec2 v_texcoord;
+
+    // The texture.
+    uniform sampler2D u_texture1;
+    uniform sampler2D u_texture2;
+
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+
+    void main() {
+      outColor = texture(u_texture1, v_texcoord)/2. + texture(u_texture2, v_texcoord)/2.;
+      //outColor = texture(u_texture2, v_texcoord);
+    }
+    `;
+        //this.twglprograminfo=new Array(2);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        // Slider for sling speed
+        gui.add(this.animationParameters, "movetail");
+        gui.add(this.animationParameters, "sling").min(9).max(120).step(1);
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+        gui.remember(this.animationParameters);
+        // Slider for shininess
+        //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+        gui.updateDisplay();
+    }
+    static degToRad(d) {
+        return d * Math.PI / 180;
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        console.log("-> initScene MixedTextureScene");
+        var p = this.twglprograminfo;
+        gl.useProgram(p.program);
+        this.animationParameters = cap;
+        // Define shader syntax for attributes
+        // Camera: prepare vs-fs transformation
+        this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
+        // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
+        this.positionBuffer = gl.createBuffer();
+        this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
+        this.vao = gl.createVertexArray();
+        gl.bindVertexArray(this.vao);
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+          gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
+          // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+          var size = 3;          // 3 components per iteration
+          var type = gl.FLOAT;   // the data is 32bit floats
+          var normalize = false; // don't normalize the data
+          var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+          var offset = 0;        // start at the beginning of the buffer
+          gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
+    */ // => Put setGeometry() result into position buffer 
+        gl.bufferData(gl.ARRAY_BUFFER, this.setGeometry(gl), gl.STATIC_DRAW);
+        // Create the texcoord buffer, make it the current ARRAY_BUFFER and copy in the texcoord values ---------------
+        var texcoordBuffer1 = gl.createBuffer();
+        var texcoordAttributeLocation = gl.getAttribLocation(p.program, "a_texcoord");
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer1);
+        gl.enableVertexAttribArray(texcoordAttributeLocation); // turn on
+        // => Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
+        var size = 2; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floating point values
+        var normalize = true; // convert from 0-255 to 0.0-1.0
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
+        // => Put setTexCoords() result into texcoord  buffer 
+        gl.bufferData(gl.ARRAY_BUFFER, this.setTexcoords(gl), gl.STATIC_DRAW);
+        // Create textures ----------------------------------------------------------------------------------------------------
+        // => fill texture1 with 3x2 pixels red checkerboard
+        this.texture1 = gl.createTexture();
+        this.textureLocation1 = gl.getUniformLocation(p.program, "u_texture1");
+        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
+        const level = 0;
+        const internalFormat = gl.R8;
+        const width = 3;
+        const height = 2;
+        const border = 0;
+        const format = gl.RED;
+        const ttype = gl.UNSIGNED_BYTE;
+        const data = new Uint8Array([
+            128,
+            64,
+            128,
+            0,
+            192,
+            0
+        ]);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, ttype, data);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // => fill texture2 with clover jpg
+        this.texture2 = gl.createTexture();
+        this.textureLocation2 = gl.getUniformLocation(p.program, "u_texture2");
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
+        console.log("=> Load texture bitmap");
+        var fNameParcel = require("./../resources/models/stone/clover.jpg");
+        //this.image = undefined;
+        this.readimage = new Image();
+        this.readimage.src = fNameParcel;
+        this.readimage.onload = ()=>{
+            //  this.image = this.readimage!;
+            //  console.log("finished loading clover texture "+this.image.width+","+ this.image.height);
+            var mipLevel = 0; // the largest mip
+            var internalFormat = gl.RGBA; // format we want in the texture
+            var srcFormat = gl.RGBA; // format of data we are supplying
+            var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+            gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, this.readimage);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            console.log("<- initScene MixedTextureScene texture read");
+            if (sceneReadyCallback != undefined) sceneReadyCallback(0);
+        };
+    }
+    drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
+        gl.bindVertexArray(this.vao); //this always comes first !
+        // 2023-01-03 prevent clear issues
+        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        gl.activeTexture(gl.TEXTURE0 + 0);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
+        gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
+        gl.activeTexture(gl.TEXTURE0 + 1);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
+        gl.uniform1i(this.textureLocation2, 1); // GPU will address unit 1 to find texture2
+        // Time elapsed
+        var deltaTime = time - this.ctime;
+        this.ctime = time;
+        // Set world
+        var world = twgl_js_1.m4.identity();
+        world = twgl_js_1.m4.translation([
+            0,
+            10.0,
+            0
+        ]);
+        // Animate the rotation
+        if (this.animationParameters.movetail) {
+            this.modelYRotationRadians += 0.1 * this.animationParameters.speed * deltaTime;
+            this.modelXRotationRadians += 0.005 * this.animationParameters.speed * this.animationParameters.sling * deltaTime;
+        }
+        var matrix = twgl_js_1.m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
+        matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
+        matrix = twgl_js_1.m4.multiply(matrix, world);
+        // Set projection matrix
+        gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
+        // Draw the geometry.
+        var primitiveType = gl.TRIANGLES;
+        var offset = 0;
+        var count = 36;
+        gl.drawArrays(primitiveType, offset, count);
+    }
+    //================================================================================
+    setGeometry(gl) {
+        var positions = new Float32Array([
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0,
+            -10,
+            10.0,
+            10.0,
+            10.0, 
+        ]);
+        return positions;
+    }
+    // Fill the buffer with texture coordinates the cube.
+    setTexcoords(gl) {
+        return new Float32Array([
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1, 
+        ]);
+    }
+}
+exports.MixedTextureScene = MixedTextureScene;
+
+},{"twgl.js":"3uqAP","./../resources/models/stone/clover.jpg":"cS5ze"}],"ZXdmK":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.ObjectListScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const objectnode = __importStar(require("./objectnode"));
+class ObjectListScene {
+    constructor(gl){
+        this.scenesize = 60;
+        this.sceneenv = 2;
+        this.vertexShaderSource = `#version 300 es
+
+    in vec4 a_position;
+    in vec4 a_color;
+    
+    uniform mat4 u_matrix;
+    
+    out vec4 v_color;
+    
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_matrix * a_position;
+    
+      // Pass the color to the fragment shader.
+      v_color = a_color;
+    }
+  `;
+        this.fragmentShaderSource = `#version 300 es
+    precision highp float;
+    
+    // Passed in from the vertex shader.
+    in vec4 v_color;
+    
+    uniform vec4 u_colorMult;
+    uniform vec4 u_colorOffset;
+    
+    out vec4 outColor;
+    
+    void main() {
+        outColor = v_color * u_colorMult + u_colorOffset;
+    }
+  `;
+        this.objectsToDraw = [];
+        this.objects = [];
+        this.speedpreset = 0.02;
+        // state
+        this.cx = 0;
+        this.cy = 0;
+        this.cz = 10;
+        this.vx = 0.0;
+        this.vy = 0;
+        this.vz = 0.0;
+        this.sjson = `{
+  "draw": false,
+  "name": "point between feet",
+  "scaling": [1,1,1],
+  "translation":[0,0,0],
+  "children": [
+    {
+       "draw": true,
+       "name": "waist",
+       "scaling": [1,1,1],
+       "translation": [0, 0, 0],
+       "children": [
+         {
+           "draw": true,
+           "name": "torso",
+           "scaling": [1,1,1],
+           "translation": [0, 2, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "neck",
+               "scaling": [1,1,1],
+               "translation": [0, 1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "head",
+                   "scaling": [1,1,1],
+                   "translation": [0, 1, 0],
+                   "children": []
+                 }
+               ]
+             },
+             {
+               "draw": true,
+               "name": "left-arm",
+               "scaling": [1,1,1],
+               "translation": [-1, 0, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "left-forearm",
+                   "scaling": [1,1,1],
+                   "translation": [-1, 0, 0],
+                   "children": [
+                     {
+                       "draw": true,
+                       "name": "left-hand",
+                       "scaling": [1,1,1],
+                       "translation": [-1, 0, 0],
+                       "children":[]
+                     }
+                   ]
+                 }
+               ]
+             },
+             {
+               "draw": true,
+               "name": "right-arm",
+               "scaling": [1,1,1],
+               "translation": [1, 0, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "right-forearm",
+                   "scaling": [1,1,1],
+                   "translation": [1, 0, 0],
+                   "children": [
+                     {
+                       "draw": true,
+                       "name": "right-hand",
+                       "scaling": [1,1,1],
+                       "translation": [1, 0, 0],
+                       "children":[]
+                     }
+                   ]
+                 }
+               ]
+             }
+           ]
+         },
+         {
+           "draw": true,
+           "name": "left-leg",
+           "translation": [-1, -1, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "left-calf",
+               "scaling": [1,1,1],
+               "translation": [0, -1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "left-foot",
+                   "scaling": [1,1,1],
+                   "translation": [0, -1, 0],
+                   "children": []
+                 }
+               ]
+             }
+           ]
+         },
+         {
+           "draw": true,
+           "name": "right-leg",
+           "scaling": [1,1,1],
+           "translation": [1, -1, 0],
+           "children": [
+             {
+               "draw": true,
+               "name": "right-calf",
+               "scaling": [1,1,1],
+               "translation": [0, -1, 0],
+               "children": [
+                 {
+                   "draw": true,
+                   "name": "right-foot",
+                   "scaling": [1,1,1],
+                   "translation": [0, -1, 0],
+                   "children": []
+                 }
+               ]
+             }
+           ]
+         }
+       ]
+    }
+  ]
+}`;
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    extendGUI(gui) {}
+    defaultCamera(gl, cam) {}
+    async FetchText(cparcelname) {
+        const res = await fetch(cparcelname);
+        var b = await res.arrayBuffer();
+        var enc = new TextDecoder("utf-8");
+        return enc.decode(b);
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        this.gl = gl;
+        gl.useProgram(this.twglprograminfo.program);
+        this.animationParameters = this.animationParameters == undefined ? cap : this.animationParameters;
+        if (dictpar === null || dictpar === void 0 ? void 0 : dictpar.has("speed")) {
+            this.animationParameters.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
+            console.log("specified: speedpreset=" + this.animationParameters.speed);
+        } else console.log("not specified: speedpreset");
+        // if (this.speedpreset) this.animationParameters!.b.speed = this.speedpreset!;
+        this.fieldOfViewRadians = 60.0 * Math.PI / 180;
+        var cBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
+        // spheres
+        // var cBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
+        this.nodeInfosByName = undefined;
+        var nodefact = new objectnode.NodesProducer(this.twglprograminfo, cBufferInfo);
+        //var parcls=require('./../resources/blockguy.json');
+        var nodedescriptions = JSON.parse(this.sjson);
+        this.scenetree = nodefact.makeNode(nodedescriptions); // -Math.PI/4.0);
+        this.objects = nodefact.objects;
+        this.objectsToDraw = nodefact.objectsToDraw;
+        this.nodeInfosByName = nodefact.nodeInfosByName;
+        if (sceneReadyCallback != undefined) {
+            console.log("call objlistscene scenereadycallback");
+            sceneReadyCallback(0);
+        } else console.log("skip scenereadycallback");
+    /*
+        this.FetchText(parcls).then ((s: string)=> {
+             var nodedescriptions: NodeJson = JSON.parse(s);
+              this.scenetree = nodefact.makeNode(nodedescriptions);
+              this.objects = nodefact.objects;
+              this.objectsToDraw = nodefact.objectsToDraw;
+              this.nodeInfosByName= nodefact.nodeInfosByName;
+              sceneReadyCallback(0);
+            });
+          */ }
+    setRotationAdjust(ni, name, axis, adjust) {
+        if (ni[name] != undefined) ni[name].trs.rotation[axis] = adjust;
+    }
+    drawScene(gl, cam, time) {
+        var _a;
+        gl.useProgram(this.twglprograminfo.program);
+        var speed = 1;
+        var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
+        // Animation
+        var adjust;
+        var c = time * 0.003 * speed;
+        adjust = Math.abs(Math.sin(c));
+        var nodeInfosByName = this.nodeInfosByName;
+        nodeInfosByName["point between feet"].trs.translation[1] = adjust;
+        this.setRotationAdjust(nodeInfosByName, "point between feet", 1, 0.0); //Math.atan2(this.vx, this.vz));
+        adjust = Math.sin(c);
+        this.setRotationAdjust(nodeInfosByName, "left-leg", 0, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-leg", 0, -adjust);
+        adjust = Math.sin(c + 0.1) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "left-calf", 0, -adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-calf", 0, adjust);
+        adjust = Math.sin(c + 0.1) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "left-foot", 0, -adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-foot", 0, adjust);
+        adjust = Math.sin(c) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "left-arm", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-arm", 2, adjust);
+        adjust = Math.sin(c + 0.1) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "left-forearm", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-forearm", 2, adjust);
+        adjust = Math.sin(c - 0.1) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "left-hand", 2, adjust);
+        this.setRotationAdjust(nodeInfosByName, "right-hand", 2, adjust);
+        adjust = Math.sin(c) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "waist", 1, adjust);
+        adjust = Math.sin(c) * 0.2;
+        this.setRotationAdjust(nodeInfosByName, "torso", 1, adjust);
+        adjust = Math.sin(c + 0.25) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "neck", 1, adjust);
+        adjust = Math.sin(c + 0.5) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "head", 1, adjust);
+        adjust = Math.cos(c * 2) * 0.4;
+        this.setRotationAdjust(nodeInfosByName, "head", 0, adjust);
+        // Update all world matrices in the scene graph
+        var currentTranslation = twgl_js_1.m4.translation([
+            this.cx,
+            this.cy,
+            this.cz
+        ]);
+        this.scenetree.updateWorldMatrix(currentTranslation);
+        this.cx += this.vx * speed / 4.0;
+        this.cy += this.vy * speed / 4.0;
+        this.cz += this.vz * speed / 4.0;
+        // Compute all the matrices for rendering
+        this.objects.forEach((object)=>{
+            object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
+        });
+        // Draw the objects using Gregg's drawObjectList (this will clear the background)
+        twgl.drawObjectList(gl, this.objectsToDraw);
+        var init, i, d;
+        //
+        // below code to spell out drawObjectList to find the cause of the clear issue
+        //
+        return;
+    }
+}
+exports.ObjectListScene = ObjectListScene;
+
+},{"twgl.js":"3uqAP","./objectnode":"kGgzx"}],"aeXif":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.DrawInstancedScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class DrawInstancedScene {
+    constructor(gl){
+        //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
+        this.scenesize = 50;
+        this.sceneenv = 1;
+        this.vertexShaderSource = `#version 300 es
+in vec4 a_position;
+in vec4 color;
+in mat4 matrix;
+uniform mat4 world;
+uniform mat4 viewprojection;
+uniform mat4 view;
+
+out vec4 v_color;
+
+void main() {
+  gl_Position = viewprojection * world * matrix * a_position;
+  v_color = color;
+}
+`;
+        this.fragmentShaderSource = `#version 300 es
+precision highp float;
+
+// Passed in from the vertex shader.
+in vec4 v_color;
+
+out vec4 outColor;
+
+void main() {
+  outColor = v_color;
+}
+`;
+        this.numVertices = 0;
+        this.numInstances = 0;
+        this.matrices = [];
+        // this.twglprograminfo=new Array(2);   
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        // Checkbox forward move animation on/off
+        gui.add(this.animationParameters, "movetail");
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        console.log("-> initScene DrawInstancedScene");
+        this.gl = gl;
+        gl.useProgram(this.twglprograminfo.program);
+        cam.camHeight = 0.0;
+        cam.setYUpEye();
+        this.animationParameters = cap;
+        cap.move = false;
+        cap.movetail = false;
+        var p = this.twglprograminfo;
+        const positionLoc = gl.getAttribLocation(p.program, "a_position");
+        const colorLoc = gl.getAttribLocation(p.program, "color");
+        const matrixLoc = gl.getAttribLocation(p.program, "matrix");
+        this.viewprojectionLoc = gl.getUniformLocation(p.program, "viewprojection");
+        this.worldloc = gl.getUniformLocation(p.program, "world");
+        //this.viewLoc = gl.getUniformLocation(p.program, 'view')!;
+        //=========================================================================
+        // each grid line is an instance
+        this.numInstances = 62;
+        // setup Float32Array matrix buffer, one per instance
+        this.matrixData = new Float32Array(this.numInstances * 16);
+        for(let i = 0; i < this.numInstances; ++i){
+            const byteOffsetToMatrix = i * 64;
+            const numFloatsForView = 16;
+            this.matrices.push(new Float32Array(this.matrixData.buffer, byteOffsetToMatrix, numFloatsForView));
+        }
+        // define positions 2d (2) or 3d (3)
+        const posdim = 3;
+        // define grid
+        var tr = [
+            0,
+            0,
+            0
+        ];
+        var interspace = 0.5;
+        var cx = 0.05;
+        var cz = interspace * (this.numInstances - 2);
+        var cy = 0.0;
+        var crgb = [
+            1.0,
+            0,
+            0,
+            1.0
+        ];
+        // update the positions
+        var positions = new Float32Array([
+            -cx,
+            cy,
+            0.0,
+            -cx,
+            cy,
+            cz,
+            cx,
+            cy,
+            0.0,
+            cx,
+            cy,
+            0.0,
+            -cx,
+            cy,
+            cz,
+            cx,
+            cy,
+            cz, 
+        ]);
+        // update the matrices
+        for(var ii = 0; ii < this.numInstances; ii++){
+            var mat = this.matrices[ii];
+            // uneven instances are Y-direction, even instances are X-direction
+            if (ii % 2 == 1) {
+                twgl_js_1.m4.axisRotation([
+                    0,
+                    1,
+                    0
+                ], -Math.PI / 2.0, mat);
+                twgl_js_1.m4.translate(mat, [
+                    tr[0] + 2 * Math.floor(ii / 2) * interspace,
+                    tr[1],
+                    tr[2]
+                ], mat);
+            } else {
+                twgl_js_1.m4.axisRotation([
+                    0,
+                    1,
+                    0
+                ], 0.0, mat);
+                twgl_js_1.m4.translate(mat, [
+                    tr[0] - 2 * Math.floor(ii / 2) * interspace,
+                    tr[1],
+                    tr[2]
+                ], mat);
+            }
+        }
+        // update the colors
+        var colors = new Float32Array(this.numInstances * 4);
+        for(var ii = 0; ii < this.numInstances; ii++){
+            colors[ii * 4] = crgb[0];
+            colors[ii * 4 + 1] = crgb[1];
+            colors[ii * 4 + 2] = crgb[2];
+            colors[ii * 4 + 3] = crgb[3];
+        }
+        //==============================================================================================================================
+        // Create a vertex array object (attribute state)
+        this.vao = gl.createVertexArray();
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        this.numVertices = positions.length / posdim;
+        // and make it the one we're currently working with
+        gl.bindVertexArray(this.vao);
+        // setup attribute for the position
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, posdim, gl.FLOAT, false, 0, 0);
+        this.matrixBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
+        // just allocate the buffer
+        gl.bufferData(gl.ARRAY_BUFFER, this.matrixData.byteLength, gl.DYNAMIC_DRAW);
+        // set attribute for matrices in gpu as vec4*4
+        const bytesPerMatrix = 64;
+        for(let i1 = 0; i1 < 4; ++i1){
+            const loc = matrixLoc + i1;
+            gl.enableVertexAttribArray(loc);
+            // note the stride and offset
+            const offset = i1 * 16; // 4 floats per row, 4 bytes per float
+            gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, bytesPerMatrix, offset);
+            // this line says this attribute only changes for each 1 instance
+            gl.vertexAttribDivisor(loc, 1);
+        }
+        // setup colors in gpu
+        const colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+        // set attribute for color in gpu
+        gl.enableVertexAttribArray(colorLoc);
+        gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
+        // this line says this attribute only changes for each 1 instance
+        gl.vertexAttribDivisor(colorLoc, 1);
+        console.log("<- initScene DrawInstancedScene");
+        if (sceneReadyCallback != undefined) sceneReadyCallback(0);
+    }
+    drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
+        var world = twgl_js_1.m4.identity();
+        world = twgl_js_1.m4.translation([
+            15,
+            0,
+            -15
+        ]); // m4.translation([16,-8,-16]);
+        gl.uniformMatrix4fv(this.worldloc, false, world);
+        var m3 = cam.viewProjection;
+        gl.uniformMatrix4fv(this.viewprojectionLoc, false, m3);
+        gl.bindVertexArray(this.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.matrixData);
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.numVertices, this.numInstances);
+    }
+}
+exports.DrawInstancedScene = DrawInstancedScene;
+
+},{"twgl.js":"3uqAP"}],"euPH5":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Canvas3dTextureScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class Canvas3dTextureScene {
+    constructor(gl){
+        this.scenesize = 60;
+        this.sceneenv = 2;
+        this.widthTextureToRenderOn = 512;
+        this.heighttextureToRenderOn = 512;
+        this.fieldOfViewRadians = 60 * Math.PI / 180;
+        this.vertexShaderSource = `#version 300 es
+
+    // an attribute is an input (in) to a vertex shader.
+    // It will receive data from a buffer
+    in vec4 a_position;
+    in vec2 a_texcoord;
+
+    // default matrices
+    uniform mat4 u_worldViewProjection;
+    uniform mat4 u_world;
+    uniform mat4 u_worldInverseTranspose;
+
+    // a varying to pass the texture coordinates to the fragment shader
+    out vec2 v_texcoord;
+
+    // all shaders have a main function
+    void main() {
+      // Multiply the position by the matrix.
+      gl_Position = u_worldViewProjection * a_position;
+
+      // Pass the texcoord to the fragment shader.
+      v_texcoord = a_texcoord;
+    }
+    `;
+        this.fragmentShaderSource = `#version 300 es
+
+    precision highp float;
+
+    // Passed in from the vertex shader.
+    in vec2 v_texcoord;
+
+    // The texture.
+    uniform sampler2D u_texture;
+    uniform vec4 u_colorMult;
+
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+
+    void main() {
+      outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult;
+    }
+    `;
+        this.ctime = 0;
+        this.modelXRotationRadians = 0;
+        this.modelYRotationRadians = 0;
+        console.log("=> scene constructor 3dtexture");
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+        console.log("<= scene constructor 3dtexture");
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+    }
+    defaultCamera(gl, cam) {}
+    restoreContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        /** @type {HTMLCanvasElement} */ var canvas = gl.canvas; // document.querySelector("#canvas");
+        //var gl = canvas.getContext("webgl2");
+        if (!gl) {
+            console.log("ERROR: gl found null in canvas3dtexturescene.initScene()");
+            return;
+        }
+        var p = this.twglprograminfo;
+        console.log("=> canvas3dtexturescene.initScene()");
+        // Use our boilerplate utils to compile the shaders and link into a program
+        //this.program = p.program;
+        // twgl.createProgramFromSources(gl,
+        //    [this.vertexShaderSource, this.fragmentShaderSource]);
+        // look up where the vertex data needs to go.
+        this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
+        var texcoordAttributeLocation = gl.getAttribLocation(p.program, "a_texcoord");
+        // look up uniform locations
+        this.worldViewProjectionLocation = gl.getUniformLocation(p.program, "u_worldViewProjection");
+        this.textureLocation = gl.getUniformLocation(p.program, "u_texture");
+        this.colorMultLocation = gl.getUniformLocation(p.program, "u_colorMult");
+        // Create a buffer
+        this.positionBuffer = gl.createBuffer();
+        // Create a vertex array object (attribute state)
+        this.vao = gl.createVertexArray();
+        // and make it the one we're currently working with
+        gl.bindVertexArray(this.vao);
+        this.restoreContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
+        /*
+        // Turn on the attribute
+        gl.enableVertexAttribArray(this.positionAttributeLocation);
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+        // Set Geometry.
+        // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 3;          // 3 components per iteration
+        var type = gl.FLOAT;   // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer( this.positionAttributeLocation, size, type, normalize, stride, offset);
+      */ var positions = this.setGeometry(gl);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+        // create the texcoord buffer, make it the current ARRAY_BUFFER
+        // and copy in the texcoord values
+        var texcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        var texbuffer = this.setTexcoords(gl);
+        gl.bufferData(gl.ARRAY_BUFFER, texbuffer, gl.STATIC_DRAW);
+        // Turn on the attribute
+        gl.enableVertexAttribArray(texcoordAttributeLocation);
+        // Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
+        var size = 2; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floating point values
+        var normalize = true; // convert from 0-255 to 0.0-1.0
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
+        // Create a texture.
+        this.textureOn3DCube = gl.createTexture();
+        // use texture unit 0
+        gl.activeTexture(gl.TEXTURE0 + 0);
+        // bind to the TEXTURE_2D bind point of texture unit 0
+        gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
+        // fill texture with 3x2 pixels
+        {
+            const level = 0;
+            const internalFormat = gl.R8;
+            const width = 3;
+            const height = 2;
+            const border = 0;
+            const format = gl.RED;
+            const type1 = gl.UNSIGNED_BYTE;
+            const data = new Uint8Array([
+                128,
+                64,
+                128,
+                0,
+                192,
+                0, 
+            ]);
+            gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, type1, data);
+        }
+        // set the filtering so we don't need mips
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // Create a texture to render to
+        //const targetTextureWidth = 256;
+        //const targetTextureHeight = 256;
+        this.textureToRenderOn = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
+        {
+            // define size and format of level 0
+            const level1 = 0;
+            const internalFormat1 = gl.RGBA;
+            const border1 = 0;
+            const format1 = gl.RGBA;
+            const type2 = gl.UNSIGNED_BYTE;
+            const data1 = null;
+            gl.texImage2D(gl.TEXTURE_2D, level1, internalFormat1, this.widthTextureToRenderOn, this.heighttextureToRenderOn, border1, format1, type2, data1);
+            // set the filtering so we don't need mips
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        }
+        // Create and bind the framebuffer
+        this.fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+        // attach the texture as the first color attachment
+        const attachmentPoint = gl.COLOR_ATTACHMENT0;
+        const level2 = 0;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, this.textureToRenderOn, level2);
+        // create a depth texture
+        const depthTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+        // make a depth buffer and the same size as the targetTexture
+        {
+            // define size and format of level 0
+            const level3 = 0;
+            const internalFormat2 = gl.DEPTH_COMPONENT24;
+            const border2 = 0;
+            const format2 = gl.DEPTH_COMPONENT;
+            const type3 = gl.UNSIGNED_INT;
+            const data2 = null;
+            gl.texImage2D(gl.TEXTURE_2D, level3, internalFormat2, this.widthTextureToRenderOn, this.heighttextureToRenderOn, border2, format2, type3, data2);
+            // set the filtering so we don't need mips
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            // attach the depth texture to the framebuffer
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, level3);
+        }
+        //  var modelXRotationRadians = (0);
+        //  var modelYRotationRadians = (0);
+        // Get the starting time.
+        // var then = 0;
+        //this.gl = gl;
+        this.ctime = 0.0;
+        console.log("<= canvas3dtexturescene.initScene()");
+        if (sceneReadyCallback != undefined) sceneReadyCallback(-1);
+    //  requestAnimationFrame((time)=>this.drawScene(time));
+    //  requestAnimationFrame(drawScene);
+    }
+    drawCube(gl, program, aspect, cam) {
+        // Tell it to use our program (pair of shaders)
+        //var gl = this.gl!;
+        //var program= this.program!;
+        gl.useProgram(program);
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(this.vao);
+        //if(cam!=null)  this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
+        // Compute the projection matrix
+        var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
+        var viewProjectionMatrix = twgl_js_1.m4.identity();
+        if (cam == null) {
+            var cameraPosition = [
+                0,
+                0,
+                15
+            ];
+            var up = [
+                0,
+                1,
+                0
+            ];
+            var target = [
+                0,
+                0,
+                0
+            ];
+            // Compute the camera's matrix using look at.
+            var cameraMatrix = twgl_js_1.m4.lookAt(cameraPosition, target, up);
+            // Make a view matrix from the camera matrix.
+            var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+            viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
+        } else {
+            //---Camera - Compute the matrix
+            var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+            var zNear = 1;
+            var zFar = 2000;
+            var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, zNear, zFar);
+            // Compute the camera's matrix
+            var camera = cam.Position();
+            var cameraMatrix = cam.lookAt; // Lx delegate task elsewhere m4.lookAt(camera, target, up);
+            // Make a view matrix from the camera matrix.
+            var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+            // create a viewProjection matrix. This will both apply perspective
+            // AND move the world so that the camera is effectively the origin
+            viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
+        }
+        if (cam == null) {
+            var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
+                0,
+                0,
+                0
+            ]); // [x * .9, 0, 0]);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [
+                1,
+                0,
+                0
+            ], this.modelXRotationRadians * 1.0);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [
+                0,
+                1,
+                0
+            ], this.modelYRotationRadians * 1.0);
+            // Set the matrix.
+            gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
+            // Tell the shader to use texture unit 0 for u_texture
+            gl.uniform1i(this.textureLocation, 0);
+            var c = 0;
+            gl.uniform4fv(this.colorMultLocation, [
+                c * .5 + .5,
+                1,
+                1 - c,
+                1
+            ]);
+            // Draw the geometry.
+            var primitiveType = gl.TRIANGLES;
+            var offset = 0;
+            var count = 36;
+            gl.drawArrays(primitiveType, offset, count);
+        } else {
+            var x = 1;
+            for(let x1 = -1; x1 <= 1; ++x1){
+                var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
+                    0,
+                    0,
+                    0
+                ]); // [x * .9, 0, 0]);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [
+                    1,
+                    0,
+                    0
+                ], this.modelXRotationRadians * x1);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [
+                    0,
+                    1,
+                    0
+                ], this.modelYRotationRadians * x1);
+                if (cam != null) matrix = twgl_js_1.m4.translate(matrix, [
+                    x1 * 10.0,
+                    0,
+                    0
+                ]);
+                // Set the matrix.
+                gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
+                // Tell the shader to use texture unit 0 for u_texture
+                gl.uniform1i(this.textureLocation, 0);
+                var c = x1 * .1 + .5;
+                gl.uniform4fv(this.colorMultLocation, [
+                    c * .5 + .5,
+                    1,
+                    1 - c,
+                    1
+                ]);
+                // Draw the geometry.
+                var primitiveType = gl.TRIANGLES;
+                var offset = 0;
+                var count = 36;
+                gl.drawArrays(primitiveType, offset, count);
+            }
+        }
+    }
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    // Draw the scene.
+    drawScene(gl, cam, time) {
+        // convert to seconds
+        time *= 0.001;
+        // Subtract the previous time from the current time
+        var deltaTime = time - this.ctime;
+        // Remember the current time for the next frame.
+        this.ctime = time;
+        // Animate the rotation
+        this.modelYRotationRadians += -0.7 * deltaTime;
+        this.modelXRotationRadians += -0.4 * deltaTime;
+        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+        gl.useProgram(this.twglprograminfo.program);
+        // render to our targetTexture by binding the framebuffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+        // render cube with our 3x2 texture
+        gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
+        // Clear the canvas AND the depth buffer.
+        gl.clearColor(.5, .7, 1, 1); // clear to blue
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        var aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, null);
+        // render to the canvas
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // render the cube with the texture we just rendered to
+        gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        // Clear the canvas AND the depth buffer.
+        // gl.clearColor(1, 1, 1, 1);   // clear to white
+        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, cam);
+    //console.log("<- scene1");
+    //requestAnimationFrame((time)=>this.drawScene(time));
+    }
+    // Fill the buffer with the values that define a cube.
+    setGeometry(gl) {
+        var positions = new Float32Array([
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0, 
+        ]);
+        // 
+        return positions;
+    }
+    // Fill the buffer with texture coordinates the cube.
+    setTexcoords(gl) {
+        //
+        //   
+        return new Float32Array([
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1, 
+        ]);
+    //),
+    //gl.STATIC_DRAW);
+    }
+}
+exports.Canvas3dTextureScene = Canvas3dTextureScene;
 
 },{"twgl.js":"3uqAP"}],"fJWn9":[function(require,module,exports) {
 "use strict";
@@ -18352,7 +21307,7 @@ class ManyTexturesScene {
             console.log("<= createAllTextures");
         } // return in main thread (earlier)
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         this.Prepare(gl, sceneReadyCallback);
     }
     drawScene(gl, cam, time) {
@@ -18372,9 +21327,9 @@ class ManyTexturesScene {
             const world = twgl_js_1.m4.identity(); // local worlds turn
             twgl_js_1.m4.translate(world, obj.obj.translation, world);
             if (this.animationParameters != null) {
-                if (this.animationParameters.b.move) {
-                    twgl_js_1.m4.rotateY(world, this.animationParameters.b.speed * time * 0.05 * obj.obj.ySpeed, world);
-                    twgl_js_1.m4.rotateZ(world, this.animationParameters.b.speed * time * 0.05 * obj.obj.zSpeed, world);
+                if (this.animationParameters.move) {
+                    twgl_js_1.m4.rotateY(world, this.animationParameters.speed * time * 0.05 * obj.obj.ySpeed, world);
+                    twgl_js_1.m4.rotateZ(world, this.animationParameters.speed * time * 0.05 * obj.obj.zSpeed, world);
                 }
             }
             uni.u_world = world; // this object's world     
@@ -22037,7 +24992,137 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "hft-ic
 },{"./helpers/bundle-url":"lgJ39"}],"6fjXi":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "goldengate.6c41bdba.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"lQx96":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"6mdLk":[function(require,module,exports) {
+"use strict";
+//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
+//import { m4 } from "./../node_modules/twgl.js";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.SkeletonScene = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+//import { FishV } from "../bonemodel/fishv";
+const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
+class SkeletonScene {
+    constructor(cgl){
+        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
+        this.scenesize = 40;
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.bufferInfo = null;
+        this.skinVAO = null;
+        this.phase0 = 0.0; //2.0; // 143 degrees 
+        // super(cgl, capp, dictpar, cdiv);
+        SkeletonScene.instance = this;
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+        gui.add(this.animationParameters, "movetail");
+    }
+    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
+        var time0 = 0;
+        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
+        var spar;
+        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
+        this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
+        this.afish.forwardspeed = 0.0; //(this.skeletonParameters.move)?0.06:0.0;
+        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
+        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
+        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
+        this.afish.createBoneTexture(gl, time0, dictpar);
+        this.afish.createSurfaceTexture(gl);
+        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
+        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.bufferInfo);
+        if (textureReadyCallback != undefined) textureReadyCallback(0);
+    }
+    //------------------------------------------------------------------------------------------------------------------------------------
+    drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
+        var uniforms = this.uniforms;
+        uniforms.viewprojection = cam.viewProjection;
+        gl.bindVertexArray(this.skinVAO);
+        this.afish.forwardspeed = 0.0; //(this.skeletonParameters!.move)?(this.animationParameters!.b.speed):0.0;
+        this.afish.computeBone(time, false, this.animationParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            20.0,
+            -20,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo, uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            -15,
+            0.0,
+            0.0
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo, uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        this.afish.computeBone(time, false, this.animationParameters.movetail);
+        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            50.0,
+            -10,
+            10.0
+        ]); // draw a fish    
+        twgl.setUniforms(this.twglprograminfo, uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
+            -50,
+            5.0,
+            -10
+        ]); // draw a fish
+        twgl.setUniforms(this.twglprograminfo, uniforms);
+        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
+    }
+}
+exports.SkeletonScene = SkeletonScene;
+
+},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishvtranslated":"40Zci"}],"40Zci":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22071,410 +25156,251 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.MixedTextureScene = void 0;
+exports.FishVTranslated = void 0;
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const fish = __importStar(require("./fish"));
+class FishVTranslated extends fish.Fish {
+    prepareMesh(gl, dictpar, scale) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = tsmesh.getFishVPositions();
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = trmesh.getFishVPositions();
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    computeBoneMatrices(bones, di) {
+        /*
+         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
+         for (var i = 0; i < bones.length; i++)
+         {
+             m4.translate(m4.identity(),[this.px,
+                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
+                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
+                            bones[i]);
+            this.py+=0.0;
+            this.pz+=0.00000;
+            amp+=this.scale*damp;
+            
+         }
+         */ var amp = 0.0;
+        var damp = this.ampl / bones.length;
+        var arange = this.arange * 2.0 * Math.PI;
+        for(var i = 0; i < bones.length; i++){
+            var m = twgl_js_1.m4.identity();
+            var normx = i;
+            normx = normx / bones.length;
+            var ay = arange * (normx * di);
+            var az = arange * (normx * di);
+            twgl_js_1.m4.translate(m, [
+                this.px,
+                this.py + amp * 10.0 * Math.cos(0.5 * ay),
+                this.pz + amp * Math.sin(1.0 * az)
+            ], bones[i]);
+            this.py += 0.0;
+            this.pz += 0.00000;
+            amp += this.size * damp;
+        }
+    //   this.px+=-this.forwardspeed; // * bones.length;      
+    }
+}
+exports.FishVTranslated = FishVTranslated;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"7ZHPR":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishAnimationScene = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-class MixedTextureScene {
-    constructor(gl){
-        this.twglprograminfo = null; // (not used in this animation)
-        this.sceneenv = 2;
-        this.matrixLocation = 0;
-        this.textureLocation1 = 0;
-        this.textureLocation2 = 0;
-        this.modelXRotationRadians = 0;
-        this.modelYRotationRadians = 0;
-        this.ctime = 0;
+const animationclock = __importStar(require("../baseapp/animationclock"));
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
+const fishv = __importStar(require("./../bonemodel/fishv"));
+const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
+const fishvtranslated = __importStar(require("./../bonemodel/fishvtranslated"));
+const fishhtranslated = __importStar(require("./../bonemodel/fishhtranslated"));
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+class FishAnimationScene {
+    constructor(cgl){
         this.scenesize = 40;
-        this.vertexShaderSource = `#version 300 es
-    
-    // an attribute is an input (in) to a vertex shader.
-    // It will receive data from a buffer
-    in vec4 a_position;
-    in vec2 a_texcoord;
-
-    // A matrix to transform the positions by
-    uniform mat4 u_matrix;
-
-    // a varying to pass the texture coordinates to the fragment shader
-    out vec2 v_texcoord;
-
-    // all shaders have a main function
-    void main() {
-      // Multiply the position by the matrix.
-      gl_Position = u_matrix * a_position;
-
-      // Pass the texcoord to the fragment shader.
-      v_texcoord = a_texcoord;
-    }
-    `;
-        this.fragmentShaderSource = `#version 300 es
-
-    precision highp float;
-
-    // Passed in from the vertex shader.
-    in vec2 v_texcoord;
-
-    // The texture.
-    uniform sampler2D u_texture1;
-    uniform sampler2D u_texture2;
-
-    // we need to declare an output for the fragment shader
-    out vec4 outColor;
-
-    void main() {
-      outColor = texture(u_texture1, v_texcoord)/2. + texture(u_texture2, v_texcoord)/2.;
-      //outColor = texture(u_texture2, v_texcoord);
-    }
-    `;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
+        this.sceneenv = 2;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.fish = [
+            new fishvtranslated.FishVTranslated(4.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
+                0.0,
+                0.0,
+                1.0
+            ]),
+            new fishhrotated.FishHRotated(0.5, 2.0, 2.0, 0.03, 0.1, 0.045, 0.1, 0.5, "gradient"),
+            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "clover")
+        ];
+        this.fishjointcounts = [
+            1,
+            28,
+            1,
+            1,
+            1
+        ];
+        this.fishpositions = [
+            [
+                [
+                    -60,
+                    10.0,
+                    60.0
+                ]
+            ],
+            [
+                [
+                    -45,
+                    -15,
+                    0
+                ]
+            ],
+            [
+                [
+                    -30,
+                    -15,
+                    -35
+                ]
+            ],
+            [
+                [
+                    -10,
+                    -5,
+                    0.0
+                ],
+                [
+                    20.0,
+                    -5,
+                    0.0
+                ],
+                [
+                    -10,
+                    -5,
+                    -30
+                ]
+            ],
+            [
+                [
+                    -50,
+                    -10,
+                    1.0
+                ]
+            ]
+        ];
+        this.clock = new animationclock.AnimationClock();
+        FishAnimationScene.instance = this;
+        //this.twglprograminfo = new Array(2);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
+            boneanimation.vsSkeleton,
+            boneanimation.fsSkeleton
         ]);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        // Slider for sling speed
-        gui.add(this.animationParameters, "movetail");
-        gui.add(this.animationParameters, "sling").min(9).max(120).step(1);
-        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
-        // Slider for shininess
-        //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
-        gui.updateDisplay();
-    }
-    static degToRad(d) {
-        return d * Math.PI / 180;
     }
     resizeCanvas(gl) {
         twgl.resizeCanvasToDisplaySize(gl.canvas);
     }
-    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
-        // ==> 2023-03-01 restore this part to solve the clear error
-        // 1. Bind the buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        //var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
-        // 3. Enable this
-        gl.enableVertexAttribArray(posAttributeLocation);
-    // <==
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
+        gui.add(this.animationParameters, "movetail");
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        this.animationParameters = cap;
-        // Define shader syntax for attributes
-        // Camera: prepare vs-fs transformation
-        this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
-        // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
-        this.positionBuffer = gl.createBuffer();
-        this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");
-        this.vao = gl.createVertexArray();
-        gl.bindVertexArray(this.vao);
-        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
-        /*  gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-          gl.enableVertexAttribArray(this.positionAttributeLocation);  // turn on
-          // => Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-          var size = 3;          // 3 components per iteration
-          var type = gl.FLOAT;   // the data is 32bit floats
-          var normalize = false; // don't normalize the data
-          var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-          var offset = 0;        // start at the beginning of the buffer
-          gl.vertexAttribPointer(this.positionAttributeLocation, size, type, normalize, stride, offset);
-    */ // => Put setGeometry() result into position buffer 
-        gl.bufferData(gl.ARRAY_BUFFER, this.setGeometry(gl), gl.STATIC_DRAW);
-        // Create the texcoord buffer, make it the current ARRAY_BUFFER and copy in the texcoord values ---------------
-        var texcoordBuffer1 = gl.createBuffer();
-        var texcoordAttributeLocation = gl.getAttribLocation(p.program, "a_texcoord");
-        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer1);
-        gl.enableVertexAttribArray(texcoordAttributeLocation); // turn on
-        // => Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
-        var size = 2; // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floating point values
-        var normalize = true; // convert from 0-255 to 0.0-1.0
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
-        // => Put setTexCoords() result into texcoord  buffer 
-        gl.bufferData(gl.ARRAY_BUFFER, this.setTexcoords(gl), gl.STATIC_DRAW);
-        // Create textures ----------------------------------------------------------------------------------------------------
-        // => fill texture1 with 3x2 pixels red checkerboard
-        this.texture1 = gl.createTexture();
-        this.textureLocation1 = gl.getUniformLocation(p.program, "u_texture1");
-        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
-        const level = 0;
-        const internalFormat = gl.R8;
-        const width = 3;
-        const height = 2;
-        const border = 0;
-        const format = gl.RED;
-        const ttype = gl.UNSIGNED_BYTE;
-        const data = new Uint8Array([
-            128,
-            64,
-            128,
-            0,
-            192,
-            0
-        ]);
-        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-        gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, ttype, data);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        // => fill texture2 with clover jpg
-        this.texture2 = gl.createTexture();
-        this.textureLocation2 = gl.getUniformLocation(p.program, "u_texture2");
-        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
-        console.log("=> Load texture bitmap");
-        var fNameParcel = require("./../resources/models/stone/clover.jpg");
-        //this.image = undefined;
-        this.readimage = new Image();
-        this.readimage.src = fNameParcel;
-        this.readimage.onload = ()=>{
-            //  this.image = this.readimage!;
-            //  console.log("finished loading clover texture "+this.image.width+","+ this.image.height);
-            var mipLevel = 0; // the largest mip
-            var internalFormat = gl.RGBA; // format we want in the texture
-            var srcFormat = gl.RGBA; // format of data we are supplying
-            var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
-            gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, this.readimage);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            sceneReadyCallback(0);
-        };
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
+        var nFish = 0;
+        var time0 = 0;
+        this.fish.forEach((afish)=>{
+            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
+            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+            afish.setNumBones(gl);
+            afish.createBoneTexture(gl, time0, dictpar);
+            afish.createSurfaceTexture(gl);
+            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
+            nFish++;
+            if (nFish == this.fish.length && textureReadyCallback != undefined) textureReadyCallback(0);
+        //  textureReadyCallback(0);
+        });
     }
     drawScene(gl, cam, time) {
-        gl.bindVertexArray(this.vao); //this always comes first !
-        // 2023-01-03 prevent clear issues
-        this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
-        gl.activeTexture(gl.TEXTURE0 + 0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture1);
-        gl.uniform1i(this.textureLocation1, 0); // GPU will address unit 0 to find texture1
-        gl.activeTexture(gl.TEXTURE0 + 1);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
-        gl.uniform1i(this.textureLocation2, 1); // GPU will address unit 1 to find texture2
-        // Time elapsed
-        var deltaTime = time - this.ctime;
-        this.ctime = time;
-        // Animate the rotation
-        if (this.animationParameters.movetail) {
-            this.modelYRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
-            this.modelXRotationRadians += 0.005 * this.animationParameters.b.speed * this.animationParameters.sling * deltaTime;
+        gl.useProgram(this.twglprograminfo.program);
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
+        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
+            gl.bindVertexArray(this.fish[fishtype].skinVAO);
+            this.fish[fishtype].forwardspeed = this.animationParameters.move ? this.animationParameters.speed : 0.0;
+            for(var cfish = 0; cfish < this.fishpositions[fishtype].length; cfish++)if (this.fishjointcounts[fishtype] == 1) {
+                this.fish[fishtype].computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
+                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][cfish]); // draw a fish at some position
+                twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
+                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+            } else {
+                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][cfish]); // start transforming origin of joint #0 to fish position
+                var ampl0 = this.fish[fishtype].ampl;
+                var sling = this.animationParameters.sling;
+                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
+                    var timeoffs = i * sling;
+                    var nx = i / this.fishjointcounts[fishtype];
+                    this.fish[fishtype].ampl = ampl0 * nx;
+                    this.fish[fishtype].computeBone(time - timeoffs, this.animationParameters.move, this.animationParameters.movetail);
+                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
+                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
+                    twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
+                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
+                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
+                }
+                this.fish[fishtype].ampl = ampl0;
+            }
         }
-        var matrix = twgl_js_1.m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
-        matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
-        // Set projection matrix
-        gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
-        // Draw the geometry.
-        var primitiveType = gl.TRIANGLES;
-        var offset = 0;
-        var count = 36;
-        gl.drawArrays(primitiveType, offset, count);
-    }
-    //================================================================================
-    setGeometry(gl) {
-        var positions = new Float32Array([
-            -10,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            -10,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            -10,
-            -10,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            -10,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            10.0,
-            -10,
-            10.0,
-            10.0,
-            10.0, 
-        ]);
-        return positions;
-    }
-    // Fill the buffer with texture coordinates the cube.
-    setTexcoords(gl) {
-        return new Float32Array([
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1, 
-        ]);
     }
 }
-exports.MixedTextureScene = MixedTextureScene;
+exports.FishAnimationScene = FishAnimationScene;
 
-},{"twgl.js":"3uqAP","./../resources/models/stone/clover.jpg":"cS5ze"}],"cS5ze":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "clover.0da21259.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"bnNYj":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishvtranslated":"40Zci","./../bonemodel/fishhtranslated":"XD4rL"}],"bnNYj":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22516,8 +25442,6 @@ const basescene_1 = require("./basescene");
 class LightScene extends basescene_1.BaseScene {
     constructor(gl){
         super();
-        // shaders to merge (here: none)
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         // interface
         this.sceneenv = 1;
         this.ctime = 0;
@@ -22664,8 +25588,8 @@ class LightScene extends basescene_1.BaseScene {
         this.vertexShaderSource = this.vertexShaderSourceSpotLight;
         this.fragmentShaderSource = this.fragmentShaderSourceSpotLight;
         //  constructor(gl: WebGL2RenderingContext)
-        this.twglprograminfo = new Array(3);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
+        //this.twglprograminfo=new Array(3);   
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
             this.vertexShaderSourceSpotLight,
             this.fragmentShaderSourceSpotLight
         ]);
@@ -22703,8 +25627,9 @@ class LightScene extends basescene_1.BaseScene {
         else if (s == "point light") LightScene.instance.typelight = 1; // gl.uniform1i(this.typelightLocation!,1);
         else if (s == "spot light") LightScene.instance.typelight = 2; //gl.uniform1i(this.typelightLocation!,2);
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        var program = p.program;
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         this.animationParameters = cap;
         this.viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
         this.typelightLocation = gl.getUniformLocation(program, "u_typelight");
@@ -22719,6 +25644,7 @@ class LightScene extends basescene_1.BaseScene {
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
     drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
         var deltaTime = time - this.ctime;
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
@@ -23108,16 +26034,23 @@ class LightScene extends basescene_1.BaseScene {
         // We could do by changing all the values above but I'm lazy.
         // We could also do it with a matrix at draw time but you should
         // never do stuff at draw time if you can do it at init time.
-        var matrix = twgl_js_1.m4.axisRotation([
+        var matrix = twgl_js_1.m4.scaling([
+            0.1,
+            0.1,
+            0.1
+        ]);
+        matrix = twgl_js_1.m4.axisRotate(matrix, [
             1,
             0,
             0
         ], Math.PI);
+        //var matrix = m4.axisRotation([1,0,0],Math.PI);
         matrix = twgl_js_1.m4.translate(matrix, [
-            -50,
-            -75,
-            -15
+            -5,
+            -7.5,
+            10.5
         ]);
+        //matrix = m4.scale(matrix, [0.1,0.1,0.1]);
         for(var ii = 0; ii < positions.length; ii += 3){
             var vector = twgl_js_1.m4.transformPoint(matrix, [
                 positions[ii + 0],
@@ -23514,7 +26447,7 @@ class BaseScene {
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
         var offset = 0; // start at the beginning of the buffer
         gl.vertexAttribPointer(normalAttributeLocation, size, type, normalize, stride, offset);
-        sceneReadyCallback(0);
+        if (sceneReadyCallback != undefined) sceneReadyCallback(0);
     }
     renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime) {
         var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
@@ -23522,9 +26455,9 @@ class BaseScene {
         gl.bindVertexArray(this.vaoSingleObject);
     }
     renderMatrixSingleRotatingObjectPrologue(gl, viewProjectionMatrix, deltaTime) {
-        if (this.animationParameters.b.move) {
-            this.modelYRotationRadians += 0.05 * this.animationParameters.b.speed * deltaTime;
-            this.modelXRotationRadians += 0.05 * this.animationParameters.b.speed * deltaTime;
+        if (this.animationParameters.move) {
+            this.modelYRotationRadians += 0.05 * this.animationParameters.speed * deltaTime;
+            this.modelXRotationRadians += 0.05 * this.animationParameters.speed * deltaTime;
         }
         var matrixXRot = twgl_js_1.m4.axisRotation([
             1,
@@ -23548,7 +26481,7 @@ class BaseScene {
 }
 exports.BaseScene = BaseScene;
 
-},{"twgl.js":"3uqAP"}],"ZXdmK":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"kMwgT":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -23582,369 +26515,38 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.ObjectListScene = void 0;
+exports.Canvas3dTextureScene2 = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const objectnode = __importStar(require("./objectnode"));
-class ObjectListScene {
+class Canvas3dTextureScene2 {
     constructor(gl){
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 60;
-        this.sceneenv = 2;
-        this.vertexShaderSource = `#version 300 es
-
-    in vec4 a_position;
-    in vec4 a_color;
-    
-    uniform mat4 u_matrix;
-    
-    out vec4 v_color;
-    
-    void main() {
-      // Multiply the position by the matrix.
-      gl_Position = u_matrix * a_position;
-    
-      // Pass the color to the fragment shader.
-      v_color = a_color;
-    }
-  `;
-        this.fragmentShaderSource = `#version 300 es
-    precision highp float;
-    
-    // Passed in from the vertex shader.
-    in vec4 v_color;
-    
-    uniform vec4 u_colorMult;
-    uniform vec4 u_colorOffset;
-    
-    out vec4 outColor;
-    
-    void main() {
-        outColor = v_color * u_colorMult + u_colorOffset;
-    }
-  `;
-        this.objectsToDraw = [];
-        this.objects = [];
-        this.speedpreset = 0.02;
-        // state
-        this.cx = 0;
-        this.cy = 0;
-        this.cz = 10;
-        this.vx = 0.0;
-        this.vy = 0;
-        this.vz = 0.0;
-        this.sjson = `{
-  "draw": false,
-  "name": "point between feet",
-  "scaling": [1,1,1],
-  "translation":[0,0,0],
-  "children": [
-    {
-       "draw": true,
-       "name": "waist",
-       "scaling": [1,1,1],
-       "translation": [0, 0, 0],
-       "children": [
-         {
-           "draw": true,
-           "name": "torso",
-           "scaling": [1,1,1],
-           "translation": [0, 2, 0],
-           "children": [
-             {
-               "draw": true,
-               "name": "neck",
-               "scaling": [1,1,1],
-               "translation": [0, 1, 0],
-               "children": [
-                 {
-                   "draw": true,
-                   "name": "head",
-                   "scaling": [1,1,1],
-                   "translation": [0, 1, 0],
-                   "children": []
-                 }
-               ]
-             },
-             {
-               "draw": true,
-               "name": "left-arm",
-               "scaling": [1,1,1],
-               "translation": [-1, 0, 0],
-               "children": [
-                 {
-                   "draw": true,
-                   "name": "left-forearm",
-                   "scaling": [1,1,1],
-                   "translation": [-1, 0, 0],
-                   "children": [
-                     {
-                       "draw": true,
-                       "name": "left-hand",
-                       "scaling": [1,1,1],
-                       "translation": [-1, 0, 0],
-                       "children":[]
-                     }
-                   ]
-                 }
-               ]
-             },
-             {
-               "draw": true,
-               "name": "right-arm",
-               "scaling": [1,1,1],
-               "translation": [1, 0, 0],
-               "children": [
-                 {
-                   "draw": true,
-                   "name": "right-forearm",
-                   "scaling": [1,1,1],
-                   "translation": [1, 0, 0],
-                   "children": [
-                     {
-                       "draw": true,
-                       "name": "right-hand",
-                       "scaling": [1,1,1],
-                       "translation": [1, 0, 0],
-                       "children":[]
-                     }
-                   ]
-                 }
-               ]
-             }
-           ]
-         },
-         {
-           "draw": true,
-           "name": "left-leg",
-           "translation": [-1, -1, 0],
-           "children": [
-             {
-               "draw": true,
-               "name": "left-calf",
-               "scaling": [1,1,1],
-               "translation": [0, -1, 0],
-               "children": [
-                 {
-                   "draw": true,
-                   "name": "left-foot",
-                   "scaling": [1,1,1],
-                   "translation": [0, -1, 0],
-                   "children": []
-                 }
-               ]
-             }
-           ]
-         },
-         {
-           "draw": true,
-           "name": "right-leg",
-           "scaling": [1,1,1],
-           "translation": [1, -1, 0],
-           "children": [
-             {
-               "draw": true,
-               "name": "right-calf",
-               "scaling": [1,1,1],
-               "translation": [0, -1, 0],
-               "children": [
-                 {
-                   "draw": true,
-                   "name": "right-foot",
-                   "scaling": [1,1,1],
-                   "translation": [0, -1, 0],
-                   "children": []
-                 }
-               ]
-             }
-           ]
-         }
-       ]
-    }
-  ]
-}`;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    extendGUI(gui) {}
-    defaultCamera(gl, cam) {}
-    async FetchText(cparcelname) {
-        const res = await fetch(cparcelname);
-        var b = await res.arrayBuffer();
-        var enc = new TextDecoder("utf-8");
-        return enc.decode(b);
-    }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        this.gl = gl;
-        this.animationParameters = this.animationParameters == undefined ? cap : this.animationParameters;
-        if (dictpar === null || dictpar === void 0 ? void 0 : dictpar.has("speed")) {
-            this.animationParameters.b.speed = +(dictpar === null || dictpar === void 0 ? void 0 : dictpar.get("speed"));
-            console.log("specified: speedpreset=" + this.animationParameters.b.speed);
-        } else console.log("not specified: speedpreset");
-        // if (this.speedpreset) this.animationParameters!.b.speed = this.speedpreset!;
-        this.fieldOfViewRadians = 60.0 * Math.PI / 180;
-        var cBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
-        // spheres
-        // var cBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
-        this.nodeInfosByName = undefined;
-        var nodefact = new objectnode.NodesProducer(p, cBufferInfo);
-        var parcls = require("./../resources/blockguy.json");
-        var nodedescriptions = JSON.parse(this.sjson);
-        this.scenetree = nodefact.makeNode(nodedescriptions); // -Math.PI/4.0);
-        this.objects = nodefact.objects;
-        this.objectsToDraw = nodefact.objectsToDraw;
-        this.nodeInfosByName = nodefact.nodeInfosByName;
-        sceneReadyCallback(0);
-    /*
-        this.FetchText(parcls).then ((s: string)=> {
-             var nodedescriptions: NodeJson = JSON.parse(s);
-              this.scenetree = nodefact.makeNode(nodedescriptions);
-              this.objects = nodefact.objects;
-              this.objectsToDraw = nodefact.objectsToDraw;
-              this.nodeInfosByName= nodefact.nodeInfosByName;
-              sceneReadyCallback(0);
-            });
-          */ }
-    setRotationAdjust(ni, name, axis, adjust) {
-        if (ni[name] != undefined) ni[name].trs.rotation[axis] = adjust;
-    }
-    drawScene(gl, cam, time) {
-        var _a;
-        var speed = 1;
-        var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
-        // Animation
-        var adjust;
-        var c = time * 0.003 * speed;
-        adjust = Math.abs(Math.sin(c));
-        var nodeInfosByName = this.nodeInfosByName;
-        nodeInfosByName["point between feet"].trs.translation[1] = adjust;
-        this.setRotationAdjust(nodeInfosByName, "point between feet", 1, 0.0); //Math.atan2(this.vx, this.vz));
-        adjust = Math.sin(c);
-        this.setRotationAdjust(nodeInfosByName, "left-leg", 0, adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-leg", 0, -adjust);
-        adjust = Math.sin(c + 0.1) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "left-calf", 0, -adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-calf", 0, adjust);
-        adjust = Math.sin(c + 0.1) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "left-foot", 0, -adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-foot", 0, adjust);
-        adjust = Math.sin(c) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "left-arm", 2, adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-arm", 2, adjust);
-        adjust = Math.sin(c + 0.1) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "left-forearm", 2, adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-forearm", 2, adjust);
-        adjust = Math.sin(c - 0.1) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "left-hand", 2, adjust);
-        this.setRotationAdjust(nodeInfosByName, "right-hand", 2, adjust);
-        adjust = Math.sin(c) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "waist", 1, adjust);
-        adjust = Math.sin(c) * 0.2;
-        this.setRotationAdjust(nodeInfosByName, "torso", 1, adjust);
-        adjust = Math.sin(c + 0.25) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "neck", 1, adjust);
-        adjust = Math.sin(c + 0.5) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "head", 1, adjust);
-        adjust = Math.cos(c * 2) * 0.4;
-        this.setRotationAdjust(nodeInfosByName, "head", 0, adjust);
-        // Update all world matrices in the scene graph
-        var currentTranslation = twgl_js_1.m4.translation([
-            this.cx,
-            this.cy,
-            this.cz
-        ]);
-        this.scenetree.updateWorldMatrix(currentTranslation);
-        this.cx += this.vx * speed / 4.0;
-        this.cy += this.vy * speed / 4.0;
-        this.cz += this.vz * speed / 4.0;
-        // Compute all the matrices for rendering
-        this.objects.forEach((object)=>{
-            object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
-        });
-        // Draw the objects using Gregg's drawObjectList (this will clear the background)
-        twgl.drawObjectList(gl, this.objectsToDraw);
-        var init, i, d;
-        //
-        // below code to spell out drawObjectList to find the cause of the clear issue
-        //
-        return;
-    }
-}
-exports.ObjectListScene = ObjectListScene;
-
-},{"twgl.js":"3uqAP","./objectnode":"kGgzx","./../resources/blockguy.json":"2rYWp"}],"euPH5":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Canvas3dTextureScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-class Canvas3dTextureScene {
-    constructor(gl){
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 60;
-        this.sceneenv = 2;
+        this.sceneenv = 1;
         this.widthTextureToRenderOn = 512;
         this.heighttextureToRenderOn = 512;
         this.fieldOfViewRadians = 60 * Math.PI / 180;
         this.vertexShaderSource = `#version 300 es
 
-    // an attribute is an input (in) to a vertex shader.
-    // It will receive data from a buffer
-    in vec4 a_position;
-    in vec2 a_texcoord;
+        // an attribute is an input (in) to a vertex shader.
+        // It will receive data from a buffer
+        in vec4 a_position;
+        in vec2 a_texcoord;
 
-    // default matrices
-    uniform mat4 u_worldViewProjection;
-    uniform mat4 u_world;
-    uniform mat4 u_worldInverseTranspose;
+        // default matrices
+        uniform mat4 u_worldViewProjection;
+        uniform mat4 u_world;
+        uniform mat4 u_worldInverseTranspose;
 
-    // a varying to pass the texture coordinates to the fragment shader
-    out vec2 v_texcoord;
+        // a varying to pass the texture coordinates to the fragment shader
+        out vec2 v_texcoord;
 
-    // all shaders have a main function
-    void main() {
-      // Multiply the position by the matrix.
-      gl_Position = u_worldViewProjection * a_position;
+        // all shaders have a main function
+        void main() {
+        // Multiply the position by the matrix.
+        gl_Position = u_worldViewProjection * a_position;
 
-      // Pass the texcoord to the fragment shader.
-      v_texcoord = a_texcoord;
+        // Pass the texcoord to the fragment shader.
+        v_texcoord = a_texcoord;
     }
     `;
         this.fragmentShaderSource = `#version 300 es
@@ -23962,15 +26564,14 @@ class Canvas3dTextureScene {
     out vec4 outColor;
 
     void main() {
-      outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult;
+      outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult*2.0;
     }
     `;
         this.ctime = 0;
         this.modelXRotationRadians = 0;
         this.modelYRotationRadians = 0;
-        this.twglprograminfo = new Array(2);
         console.log("=> scene constructor 3dtexture");
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
             this.vertexShaderSource,
             this.fragmentShaderSource
         ]);
@@ -23998,13 +26599,14 @@ class Canvas3dTextureScene {
         gl.enableVertexAttribArray(posAttributeLocation);
     // <==
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         /** @type {HTMLCanvasElement} */ var canvas = gl.canvas; // document.querySelector("#canvas");
         //var gl = canvas.getContext("webgl2");
         if (!gl) {
             console.log("ERROR: gl found null in canvas3dtexturescene.initScene()");
             return;
         }
+        var p = this.twglprograminfo;
         console.log("=> canvas3dtexturescene.initScene()");
         // Use our boilerplate utils to compile the shaders and link into a program
         //this.program = p.program;
@@ -24139,7 +26741,8 @@ class Canvas3dTextureScene {
         //this.gl = gl;
         this.ctime = 0.0;
         console.log("<= canvas3dtexturescene.initScene()");
-        sceneReadyCallback(-1);
+        if (sceneReadyCallback != undefined) sceneReadyCallback(-1);
+    //  sceneReadyCallback(-1);
     //  requestAnimationFrame((time)=>this.drawScene(time));
     //  requestAnimationFrame(drawScene);
     }
@@ -24150,7 +26753,6 @@ class Canvas3dTextureScene {
         gl.useProgram(program);
         // Bind the attribute/buffer set we want.
         gl.bindVertexArray(this.vao);
-        //  this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
         // Compute the projection matrix
         var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
         var viewProjectionMatrix = twgl_js_1.m4.identity();
@@ -24158,7 +26760,7 @@ class Canvas3dTextureScene {
             var cameraPosition = [
                 0,
                 0,
-                2
+                15
             ];
             var up = [
                 0,
@@ -24190,9 +26792,39 @@ class Canvas3dTextureScene {
             // AND move the world so that the camera is effectively the origin
             viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
         }
-        var x = 1;
-        // for (let x = -1; x <= 1; ++x) 
-        {
+        if (cam == null) {
+            var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
+                0,
+                0,
+                0
+            ]); // [x * .9, 0, 0]);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [
+                1,
+                0,
+                0
+            ], this.modelXRotationRadians * 1.0);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [
+                0,
+                1,
+                0
+            ], this.modelYRotationRadians * 1.0);
+            // Set the matrix.
+            gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
+            // Tell the shader to use texture unit 0 for u_texture
+            gl.uniform1i(this.textureLocation, 0);
+            var c = 1;
+            gl.uniform4fv(this.colorMultLocation, [
+                c * .5 + .5,
+                1,
+                0,
+                1
+            ]);
+            // Draw the geometry.
+            var primitiveType = gl.TRIANGLES;
+            var offset = 0;
+            var count = 36;
+            gl.drawArrays(primitiveType, offset, count);
+        } else for(let x = -1; x <= 1; ++x){
             var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
                 0,
                 0,
@@ -24208,15 +26840,20 @@ class Canvas3dTextureScene {
                 1,
                 0
             ], this.modelYRotationRadians * x);
+            if (cam != null) matrix = twgl_js_1.m4.translate(matrix, [
+                -x * 16.0,
+                0,
+                0
+            ]);
             // Set the matrix.
             gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
             // Tell the shader to use texture unit 0 for u_texture
             gl.uniform1i(this.textureLocation, 0);
-            const c = x * .1 + .5;
+            var c = x * .1 + .5;
             gl.uniform4fv(this.colorMultLocation, [
                 c * .5 + .5,
                 1,
-                1 - c,
+                0,
                 1
             ]);
             // Draw the geometry.
@@ -24225,6 +26862,21 @@ class Canvas3dTextureScene {
             var count = 36;
             gl.drawArrays(primitiveType, offset, count);
         }
+    }
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
     }
     // Draw the scene.
     drawScene(gl, cam, time) {
@@ -24238,145 +26890,143 @@ class Canvas3dTextureScene {
         this.modelYRotationRadians += -0.7 * deltaTime;
         this.modelXRotationRadians += -0.4 * deltaTime;
         //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-        {
-            // render to our targetTexture by binding the framebuffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-            // render cube with our 3x2 texture
-            gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
-            // Tell WebGL how to convert from clip space to pixels
-            gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
-            // Clear the canvas AND the depth buffer.
-            gl.clearColor(.5, .7, 1, 1); // clear to blue
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            const aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
-            this.drawCube(gl, this.twglprograminfo[1].program, aspect, null);
-        }
-        {
-            // render to the canvas
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // render the cube with the texture we just rendered to
-            gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
-            // Tell WebGL how to convert from clip space to pixels
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            // Clear the canvas AND the depth buffer.
-            //    gl.clearColor(1, 1, 1, 1);   // clear to white
-            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            const aspect1 = gl.canvas.clientWidth / gl.canvas.clientHeight;
-            this.drawCube(gl, this.twglprograminfo[1].program, aspect1, cam);
-        }
+        gl.useProgram(this.twglprograminfo.program);
+        // render to our targetTexture by binding the framebuffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+        // render cube with our 3x2 texture
+        gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
+        // Clear the canvas AND the depth buffer.
+        gl.clearColor(.5, .7, 1, 1); // clear to blue
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        var aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, null);
+        // render to the canvas
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // render the cube with the texture we just rendered to
+        gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        // Clear the canvas AND the depth buffer.
+        // gl.clearColor(1, 1, 1, 1);   // clear to white
+        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, cam);
+    // console.log("<- scene2");
     //requestAnimationFrame((time)=>this.drawScene(time));
     }
     // Fill the buffer with the values that define a cube.
     setGeometry(gl) {
         var positions = new Float32Array([
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5, 
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0,
+            -3,
+            3.0,
+            3.0,
+            3.0, 
         ]);
         // 
         return positions;
@@ -24463,1985 +27113,8 @@ class Canvas3dTextureScene {
     //gl.STATIC_DRAW);
     }
 }
-exports.Canvas3dTextureScene = Canvas3dTextureScene;
+exports.Canvas3dTextureScene2 = Canvas3dTextureScene2;
 
-},{"twgl.js":"3uqAP"}],"aeXif":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.DrawInstancedScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-class DrawInstancedScene {
-    constructor(gl){
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
-        this.scenesize = 5;
-        this.sceneenv = 1;
-        this.vertexShaderSource = `#version 300 es
-in vec4 a_position;
-in vec4 color;
-in mat4 matrix;
-uniform mat4 projection;
-uniform mat4 viewprojection;
-uniform mat4 view;
-
-out vec4 v_color;
-
-void main() {
-
-  // Multiply the position by the matrix.
- // gl_Position = projection * view * matrix * a_position;
-  gl_Position = viewprojection * matrix * a_position;
-
-  // Pass the vertex color to the fragment shader.
-  v_color = color;
-
-}
-`;
-        this.fragmentShaderSource = `#version 300 es
-precision highp float;
-
-// Passed in from the vertex shader.
-in vec4 v_color;
-
-out vec4 outColor;
-
-void main() {
-  outColor = v_color;
-}
-`;
-        this.numVertices = 12;
-        this.numInstances = 6;
-        this.matrices = [];
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        // Checkbox forward move animation on/off
-        gui.add(this.animationParameters, "movetail");
-    }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        this.gl = gl;
-        this.program = p.program;
-        //const programInfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-        //this.program = programInfo.program;
-        gl.useProgram(this.program);
-        const positionLoc = gl.getAttribLocation(this.program, "a_position");
-        const colorLoc = gl.getAttribLocation(this.program, "color");
-        const matrixLoc = gl.getAttribLocation(this.program, "matrix");
-        this.viewprojectionLoc = gl.getUniformLocation(this.program, "viewprojection");
-        this.projectionLoc = gl.getUniformLocation(this.program, "projection");
-        this.viewLoc = gl.getUniformLocation(this.program, "view");
-        // Create a vertex array object (attribute state)
-        this.vao = gl.createVertexArray();
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        const posdim = 3;
-        var fa = new Float32Array([
-            -0.1,
-            0.4,
-            0.1,
-            -0.1,
-            -0.4,
-            0.1,
-            0.1,
-            -0.4,
-            0.1,
-            -0.1,
-            0.4,
-            0.1,
-            0.1,
-            -0.4,
-            0.1,
-            0.1,
-            0.4,
-            0.1,
-            -0.4,
-            -0.1,
-            0,
-            0.4,
-            -0.1,
-            0,
-            -0.4,
-            0.1,
-            0,
-            -0.4,
-            0.1,
-            0,
-            0.4,
-            -0.1,
-            0,
-            0.4,
-            0.1,
-            0
-        ]);
-        gl.bufferData(gl.ARRAY_BUFFER, fa, gl.STATIC_DRAW);
-        this.numVertices = fa.length / posdim;
-        // and make it the one we're currently working with
-        gl.bindVertexArray(this.vao);
-        // setup the position attribute
-        gl.enableVertexAttribArray(positionLoc);
-        gl.vertexAttribPointer(positionLoc, posdim, gl.FLOAT, false, 0, 0);
-        // setup matrixes, one per instance
-        this.numInstances = 6;
-        // make a typed array with one view per matrix
-        this.matrixData = new Float32Array(this.numInstances * 16);
-        for(let i = 0; i < this.numInstances; ++i){
-            const byteOffsetToMatrix = i * 64;
-            const numFloatsForView = 16;
-            this.matrices.push(new Float32Array(this.matrixData.buffer, byteOffsetToMatrix, numFloatsForView));
-        }
-        this.matrixBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
-        // just allocate the buffer
-        gl.bufferData(gl.ARRAY_BUFFER, this.matrixData.byteLength, gl.DYNAMIC_DRAW);
-        // set all 4 attributes for matrix
-        const bytesPerMatrix = 64;
-        for(let i1 = 0; i1 < 4; ++i1){
-            const loc = matrixLoc + i1;
-            gl.enableVertexAttribArray(loc);
-            // note the stride and offset
-            const offset = i1 * 16; // 4 floats per row, 4 bytes per float
-            gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, bytesPerMatrix, offset);
-            // this line says this attribute only changes for each 1 instance
-            gl.vertexAttribDivisor(loc, 1);
-        }
-        // setup colors, one per instance
-        const colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            1,
-            0,
-            0,
-            0.5,
-            0,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            1,
-            1,
-            0,
-            1,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0.5
-        ]), gl.STATIC_DRAW);
-        // set attribute for color
-        gl.enableVertexAttribArray(colorLoc);
-        gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-        // this line says this attribute only changes for each 1 instance
-        gl.vertexAttribDivisor(colorLoc, 1);
-        sceneReadyCallback(0);
-    }
-    drawScene(gl, cam, time) {
-        //  var gl = this.gl!;
-        time *= 0.001; // seconds
-        //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-        // Tell WebGL how to convert from clip space to pixels
-        //  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        //  gl.useProgram(this.program!);
-        // set the view and projection matrices since
-        // they are shared by all instances
-        // const aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
-        //  var m1=m4.ortho(-aspect, aspect, -1, 1, -1, 1);
-        //  var m2=m4.axisRotation([0,0,1],time * .1);
-        // gl.uniformMatrix4fv(this.projectionLoc!, false, m1);
-        // gl.uniformMatrix4fv(this.viewLoc!, false, m2);
-        //var m3 = m4.multiply(m1,m2);
-        var m3 = cam.viewProjection;
-        gl.uniformMatrix4fv(this.viewprojectionLoc, false, m3);
-        // setup all attributes
-        gl.bindVertexArray(this.vao);
-        // update all the matrices
-        this.matrices.forEach((mat, ndx)=>{
-            var _a;
-            twgl_js_1.m4.translation([
-                -0.5 + ndx * 0.25,
-                0,
-                0.01 * ndx
-            ], mat);
-            if ((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.movetail) twgl_js_1.m4.axisRotate(mat, [
-                0,
-                0,
-                1
-            ], time * (0.1 + 0.1 * ndx), mat);
-        });
-        // upload the new matrix data
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.matrixData);
-        //console.log("draw "+this.numInstances);
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.numVertices, this.numInstances);
-    }
-}
-exports.DrawInstancedScene = DrawInstancedScene;
-
-},{"twgl.js":"3uqAP"}],"aFl5l":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.SkyBoxCubeScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-class SkyBoxCubeScene {
-    constructor(gl){
-        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
-        this.scenesize = 40;
-        this.sceneenv = 1;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
-        this.vsMirrorCube = `#version 300 es
-    
-        in vec4 a_position;
-        in vec3 a_normal;
-        
-        uniform mat4 u_projection;
-        uniform mat4 u_view;
-        uniform mat4 u_world;
-        
-        out vec3 v_worldPosition;
-        out vec3 v_worldNormal;
-        
-        void main() {
-          // Multiply the position by the matrix.
-          gl_Position = u_projection * u_view * u_world * a_position;
-        
-          // send the view position to the fragment shader
-          v_worldPosition = (u_world * a_position).xyz;
-        
-          // orient the normals and pass to the fragment shader
-          v_worldNormal = mat3(u_world) * a_normal;
-        }
-        `;
-        this.fsMirrorCube = `#version 300 es
-        precision highp float;
-        
-        // Passed in from the vertex shader.
-        in vec3 v_worldPosition;
-        in vec3 v_worldNormal;
-        
-        // The texture.
-        uniform samplerCube u_texture;
-        
-        // The position of the camera
-        uniform vec3 u_worldCameraPosition;
-        
-        // we need to declare an output for the fragment shader
-        out vec4 outColor;
-        
-        void main() {
-          vec3 worldNormal = normalize(v_worldNormal);
-          vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
-          vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
-        
-          outColor = texture(u_texture, direction);
-        }
-        `;
-        this.vertexShaderSource = this.vsMirrorCube;
-        this.fragmentShaderSource = this.fsMirrorCube;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
-            this.vsMirrorCube,
-            this.fsMirrorCube
-        ]);
-        this.fieldOfViewRadians = 60 * Math.PI / 180;
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    createReflectingCubeGeo(gl) {
-        this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);
-    }
-    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
-        this.parameters = cap;
-        this.parameters.b.move = false;
-        this.createReflectingCubeGeo(gl);
-        // console.log("dictpar[r0]="+dictpar.get('radius0'));          
-        sceneReadyCallback(0);
-    }
-    extendGUI(gui) {
-        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
-    }
-    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
-        // ==> 2023-03-01 restore this part to solve the clear error
-        // 1. Bind the buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        //var size = 2;          // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
-        // 3. Enable this
-        gl.enableVertexAttribArray(posAttributeLocation);
-    // <==
-    }
-    drawScene(gl, cam, time) {
-        var _a;
-        this.cameraTarget = [
-            0,
-            0,
-            0
-        ];
-        this.cameraPosition = [
-            0.1 * cam.Position()[0],
-            0.1 * cam.Position()[1],
-            0.1 * cam.Position()[2]
-        ];
-        // Build a view matrix for the mirror cube.
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        this.projectionMatrix = twgl.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
-        // Build a view matrix.
-        var up = [
-            0,
-            1,
-            0
-        ];
-        var cameraMatrix = twgl.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
-        this.viewMatrix = twgl.m4.inverse(cameraMatrix);
-        var movecube = (_a = this.parameters) === null || _a === void 0 ? void 0 : _a.movetail;
-        var angVelocityCube = 0.005;
-        // Rotate the cube around the x axis
-        if (movecube) this.worldMatrix = twgl.m4.axisRotation([
-            0,
-            1,
-            0
-        ], this.parameters.b.speed * (time + 0.1) * angVelocityCube);
-        else this.worldMatrix = twgl.m4.translation([
-            0,
-            0,
-            0
-        ]); // twgl.m4.identity();
-        // draw the mirror cube
-        if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
-        if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
-        //  gl.useProgram(this.twglprograminfo![1].program);      
-        gl.depthFunc(gl.LESS); // use the default depth test
-        gl.bindVertexArray(this.vaoCube);
-        //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
-        //  var bb=this.reflectingCubeBufferInfo!.indices;
-        //  if (bb!=null) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bb);
-        //var bb=this.reflectingCubeBufferInfo!.attribs![""]!;
-        //foreach(()=>)
-        twgl.setUniforms(this.twglprograminfo[1], {
-            u_world: this.worldMatrix,
-            u_view: this.viewMatrix,
-            u_projection: this.projectionMatrix,
-            u_texture: this.texture,
-            u_worldCameraPosition: this.cameraPosition
-        });
-        twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo);
-        gl.flush();
-    }
-}
-exports.SkyBoxCubeScene = SkyBoxCubeScene;
-
-},{"twgl.js":"3uqAP"}],"6Rbvi":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.MatObjScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work (lib)
-const twgl_js_1 = require("twgl.js"); // Greg's work (lib)
-const mobj = __importStar(require("./../objreader/matobjreader")); // read geometry from .obj / .mtl files (interface)
-const mobjfiles = __importStar(require("./../objreader/matobjfiles")); // read geometry from .obj / .mtl files (resources)
-class MatObjScene {
-    constructor(gl, capp, dictPar){
-        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
-        this.scenesize = 40;
-        this.sceneenv = 2;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        this.time = 0;
-        this.dtime = 0.01;
-        this.vertexPositionAttributeLocation = 0; // address of positions buffer in shader
-        this.normalAttributeLocation = 0; // address of normals buffer in shader
-        this.texCoordAttributeLocation = 0; // address of texture coords in shader
-        this.texs = [];
-        this.uniforms = {
-            u_lightWorldPos: [
-                0,
-                0,
-                0
-            ],
-            u_ambient: [
-                0,
-                0,
-                0,
-                1
-            ],
-            u_specular: [
-                0,
-                0,
-                0,
-                1
-            ],
-            u_emissive: [
-                0,
-                0,
-                0,
-                1
-            ],
-            u_shininess: 0,
-            u_specularFactor: 0.0,
-            u_diffuse: this.texs[0],
-            u_difflightintensity: 0,
-            u_speclightintensity: 0
-        };
-        this.resolvedfilenames = new Map();
-        this.resolvedtextures = new Map();
-        this.imgs = [];
-        this.imgsa = [];
-        this.ctime = 0;
-        //--- SHADERS ------------------------------------------------------------------------------------------------------
-        this.vs = `#version 300 es
-uniform mat4 u_worldViewProjection;
-uniform vec3 u_lightWorldPos;
-uniform mat4 u_world;
-uniform mat4 u_viewInverse;
-uniform mat4 u_worldInverseTranspose;
-
-// ES3 convention
-//layout(location=0) in vec4 position;
-//layout(location=1) in vec3 normal;
-//layout(location=2) in vec2 texcoord;
-
-in vec4 position;
-in vec3 normal;
-in vec2 texcoord;
-
-// out, not varying
-out vec4 v_position;
-out  vec2 v_texCoord;
-out  vec3 v_normal;
-out  vec3 v_surfaceToLight;
-out  vec3 v_surfaceToView;
-
-void main() {
-  v_texCoord = texcoord;
-  v_position = u_worldViewProjection * position;
-  v_normal = (u_worldInverseTranspose * vec4(normal, 0)).xyz;
-  v_surfaceToLight = u_lightWorldPos - (u_world * position).xyz;
-  v_surfaceToView = (u_viewInverse[3] - (u_world * position)).xyz;
-  gl_Position = v_position;
-}
-`;
-        this.fs = `#version 300 es
- precision mediump float;
-
- in vec4 v_position;
- in vec2 v_texCoord;
- in vec3 v_normal;
- in vec3 v_surfaceToLight;
- in vec3 v_surfaceToView;
-
- uniform vec3 u_lightDirection;
- uniform vec4 u_ambient;
- uniform sampler2D u_diffuse;
- uniform vec4 u_specular;
- uniform vec4 u_emissive;
- uniform float u_shininess;
- uniform float u_specularFactor;
- uniform float u_difflightintensity;
- uniform float u_speclightintensity;
-
-
- vec4 lit(float l ,float h, float m) {
-   return vec4(1.0,
-               max(l, 0.0),
-               (l > 0.0) ? pow(max(0.0, h), m) : 0.0,
-               1.0);
- }
-
- out vec4 glFragColor;
-
- void main() {
-  
-    vec3 normal = normalize(v_normal);
-    vec3 surfaceToViewDirection = normalize(v_surfaceToView);
-    vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
-
-    float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
-    float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
-
-
-  vec4 diffuseColor = texture(u_diffuse, v_texCoord);
-  float lightIntensity = dot(normalize(v_normal), normalize(v_surfaceToLight)); 
-  lightIntensity = clamp( lightIntensity,0.0,u_difflightintensity);
-  vec4 ambientColor = u_ambient * 0.25;
-  diffuseColor = diffuseColor * lightIntensity;
-  float shininess = clamp(u_shininess / 10.0, 0.,u_speclightintensity);
-  vec4 emissiveColor = normalize(u_emissive) * shininess;
-  vec4 specColor = specularLight * u_specular;
-  vec4 outColor = diffuseColor + emissiveColor + specColor + ambientColor;
-  outColor[3] = 1.0;
-  glFragColor = outColor;
- }`;
-        console.log("=> Constructor MatObjScene - create programInfo");
-        this.twglprograminfo = new Array(3);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [
-            this.vs,
-            this.fs
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {
-        // Create a camera
-        var szx = mobj.meshMinMax.maxx - mobj.meshMinMax.minx;
-        var szy = mobj.meshMinMax.maxy - mobj.meshMinMax.miny;
-        var szz = mobj.meshMinMax.maxz - mobj.meshMinMax.minz;
-        var szobj = Math.sqrt(szx * szx + szy * szy + szz * szz);
-        //   this.cam = camhandler.Camera.createCamera(gl,dictpar!,camhandler.Camera.CamYUp, szobj*2, cap);
-        cam.translateTarget([
-            (mobj.meshMinMax.maxx + mobj.meshMinMax.minx) / 2,
-            (mobj.meshMinMax.maxy + mobj.meshMinMax.miny) / 2,
-            (mobj.meshMinMax.maxz + mobj.meshMinMax.minz) / 2
-        ]);
-        cam.zoominVelocity = szobj / 40.0;
-    }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        this.getFiles(dictpar).then(()=>{
-            var cc = gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = this.animationParameters.b.color0;
-            if (mobj.mesh) {
-                var program = this.twglprograminfo[1].program;
-                this.vertexPositionAttributeLocation = gl.getAttribLocation(program, "position");
-                gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
-                this.normalAttributeLocation = gl.getAttribLocation(program, "normal");
-                gl.enableVertexAttribArray(this.normalAttributeLocation);
-                this.texCoordAttributeLocation = gl.getAttribLocation(program, "texcoord");
-                gl.enableVertexAttribArray(this.texCoordAttributeLocation);
-                // Prepare obj mesh for display
-                console.log("obj/mtl mesh read ok");
-                mobj.CreateMeshWithBuffers(gl); // unpack index and positions
-                mobj.PrepareIndexBuffers(gl); // for each material, set up an index buffer
-                console.log("<= Prepare obj/mtl mesh <= buffers ok");
-                // Fetch file texture content, start rendering when all textures read
-                this.Prepare(gl, sceneReadyCallback);
-            } else console.log("ERROR: obj/mtl no mesh could be created.");
-        }); // getfiles then({})
-    }
-    extendGUI(gui) {
-        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
-    }
-    //------------------------------------------------------------------------
-    async getFiles(UrlPars) {
-        const useInMemoryObj = false;
-        if (useInMemoryObj) mobj.GetDeclaredObjMtl();
-        else {
-            var cresolvedfilepair = mobjfiles.getFileNamesCube();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("koenigsegg")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("building")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair2")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("cat")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("plane")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("rubik")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("stone")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("greenhouse")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
-            console.log("=> await " + cresolvedfilepair.cobjname + " " + cresolvedfilepair.cmatname);
-            await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
-            if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length > 0) {
-                console.log("<= await result");
-                console.log("see resolved files: " + cresolvedfilepair.cfiles.length);
-                cresolvedfilepair.cfiles.forEach(({ fName , fNameResolved  })=>{
-                    this.resolvedfilenames.set(fName, fNameResolved);
-                    console.log("reg: " + fName + " => " + fNameResolved);
-                });
-            } else console.log("<= await no result");
-        }
-    }
-    //--------------------------------------------------------------------
-    LoadImage(gl, url, onload) {
-        var img = new Image();
-        img.src = url;
-        img.onload = function() {
-            onload(gl, img);
-        };
-        return img;
-    }
-    LoadImages(gl, istr, urls, onload) {
-        var img = new Image();
-        img.src = urls[istr];
-        img.onload = ()=>{
-            console.log("load image: [" + urls[istr]);
-            istr = this.imgs.push(img);
-            if (istr < urls.length) this.LoadImages(gl, istr, urls, onload);
-            else onload(gl, istr);
-        };
-        return img;
-    }
-    //--------------------------------------------------------------------
-    Prepare(gl, sceneReadyCallback) {
-        //   var gl: WebGL2RenderingContext;
-        //   gl= this.gl!;
-        console.log("=> Prepare - get materials");
-        this.mats = mobj.mesh.materialsByIndex;
-        if (this.mats == null || this.mats == undefined) return;
-        console.log("=> Prepare - found " + mobj.mesh.materialNames.length + " materials in mtl");
-        for(var i = 0; i < mobj.mesh.materialNames.length; i++){
-            var s1 = this.mats[i];
-            if (s1 != undefined) {
-                console.log("found  material i=" + i + " name=" + mobj.mesh.materialNames[i]);
-                var nn = [];
-                for(var j = 0; j < 4; j++){
-                    nn.push(255 * this.mats[i].diffuse[0]); // create mini texture for diffuse color
-                    nn.push(255 * this.mats[i].diffuse[1]);
-                    nn.push(255 * this.mats[i].diffuse[2]);
-                    nn.push(255);
-                }
-                this.texs.push(twgl.createTexture(gl, {
-                    min: gl.NEAREST,
-                    mag: gl.NEAREST,
-                    src: nn
-                }));
-                var sfile = this.mats[i].mapDiffuse;
-                if (sfile.filename != undefined && sfile.filename != "") console.log("Prepare - found material texture file reference: [" + sfile.filename + "]");
-            }
-        }
-        var imageUrls = [];
-        var imageUrlKeys = [];
-        if (this.resolvedfilenames.keys != undefined) this.resolvedfilenames.forEach((value, key)=>{
-            console.log("Prepare " + key + " set texture file load: " + value);
-            imageUrls.push(value);
-            imageUrlKeys.push(key);
-        });
-        if (imageUrls.length > 0) // ok await FetchImage(imageUrls[0]).then((value:ArrayBuffer)=>imgsa.push(value));
-        // ok console.log("fetched image 0, byteLength="+imgsa[0].byteLength);
-        this.LoadImages(gl, 0, imageUrls, (gl, istr)=>{
-            console.log("Found " + istr + " file textures, expect " + imageUrls.length);
-            for(var i = 0; i < istr; i++){
-                var texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                //  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                //  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGB8, this.imgs[i].width, this.imgs[i].height);
-                gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, this.imgs[i]);
-                this.resolvedtextures.set(imageUrlKeys[i], texture);
-                console.log("Prepare - register resolved texture " + i + " " + imageUrlKeys[i] + " width=" + this.imgs[i].width + " height=" + this.imgs[i].height);
-            }
-            console.log("Prepare - texture itemSize=" + mobj.meshWithBuffers.textureBuffer.itemSize);
-            console.log("Prepare - finish, there are " + istr + " file textures");
-            sceneReadyCallback(1);
-            this.time = 0;
-            twgl.resizeCanvasToDisplaySize(gl.canvas);
-        //!      requestAnimationFrame(() => this.render(0));  
-        }); // return from LoadImages()       
-        else {
-            console.log("Prepare - no textures, > requestAnimationFrame()");
-            this.time = 0;
-            twgl.resizeCanvasToDisplaySize(gl.canvas);
-            sceneReadyCallback(1);
-        //!    requestAnimationFrame(() => this.render(0));      
-        }
-        console.log("Prepare - return");
-    }
-    //--- render function ------------------------------------------------------------
-    prepareMaterial(i) {
-        var ctexture = this.texs[i]; // for each material there is one preset diffuse texture
-        var cmaterial = this.mats[i];
-        var srep = "";
-        if (cmaterial.mapDiffuse == undefined) {
-            srep = "UNDEFINED TEXTURE";
-            console.log(srep);
-        //    this.uniforms.u_diffuse = ctexture; 
-        } else if (cmaterial.mapDiffuse.filename.length > 0) {
-            var tx = this.resolvedtextures.get(cmaterial.mapDiffuse.filename);
-            if (tx == undefined || tx == null) this.uniforms.u_diffuse = ctexture;
-            else this.uniforms.u_diffuse = ctexture = tx; // file texture
-        } else this.uniforms.u_diffuse = ctexture = this.texs[i]; // diffuse color texture
-        this.uniforms.u_emissive = [
-            cmaterial.emissive[0],
-            cmaterial.emissive[1],
-            cmaterial.emissive[2],
-            1
-        ];
-        this.uniforms.u_ambient = [
-            cmaterial.ambient[0],
-            cmaterial.ambient[1],
-            cmaterial.ambient[2],
-            1
-        ];
-        this.uniforms.u_specular = [
-            cmaterial.specular[0],
-            cmaterial.specular[1],
-            cmaterial.specular[2],
-            1
-        ];
-        this.uniforms.u_shininess = cmaterial.illumination;
-        this.uniforms.u_difflightintensity = 1.0;
-        //  console.log(srep+", ambient="+uniforms.u_ambient.toString()+" specular="+uniforms.u_specular.toString()+" emissive="+uniforms.u_emissive.toString()+" shininess="+uniforms.u_shininess);
-        return ctexture;
-    }
-    drawScene(gl, cam, time) {
-        // var gl: WebGL2RenderingContext = this.gl!;
-        // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        // gl.enable(gl.DEPTH_TEST);
-        // gl.enable(gl.CULL_FACE);
-        // var dtime = time - this.ctime;
-        this.ctime = time;
-        // this.time+=dtime;
-        if (cam == undefined || this.twglprograminfo[1].program == undefined) return;
-        // var program = this.twglprograminfo![1].program; 
-        this.uniforms.u_lightWorldPos = cam.lightpos;
-        this.uniforms.u_difflightintensity = cam.difflightintensity;
-        this.uniforms.u_speclightintensity = cam.speclightintensity;
-        var world = twgl_js_1.m4.identity();
-        // this.gl.clearColor(this.objMtlImportParameters.color0. 0.0, 0.0, 0.0, 1.0);      
-        // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-        // this.cam.CamHandlingYUp(gl, this.app!, 1.0, 1.0);   
-        // gl.useProgram(program);
-        // console.log("this.texs.length="+this.texs.length);
-        for(var i = 0; i < this.texs.length; i++)if (this.mats[i] != undefined) {
-            var ctexture = this.prepareMaterial(i);
-            // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
-            twgl.setUniforms(this.twglprograminfo[1], this.uniforms);
-            twgl.setUniforms(this.twglprograminfo[1], {
-                u_viewInverse: cam.lookAt,
-                u_world: world,
-                u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),
-                u_worldViewProjection: twgl_js_1.m4.multiply(cam.viewProjection, world)
-            });
-            mobj.renderIndexBuffer(gl, this.vertexPositionAttributeLocation, this.normalAttributeLocation, this.texCoordAttributeLocation, i, 2, ctexture);
-        } else console.log("undefined material i=" + i);
-         // for
-    //!   requestAnimationFrame(() => this.render(this.dtime)); 
-    }
-}
-exports.MatObjScene = MatObjScene;
-
-},{"twgl.js":"3uqAP","./../objreader/matobjreader":"bBSvh","./../objreader/matobjfiles":"cdQWH"}],"bBSvh":[function(require,module,exports) {
-"use strict";
-// https://www.npmjs.com/package/webgl-obj-loader
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.GetDeclaredObjMtl = exports.asyncFetchObjMtl = exports.FetchImage = exports.PrepareIndexBuffers = exports.renderIndexBuffer = exports.render = exports.NumElements = exports.CreateMeshWithBuffers = exports.meshWithBuffers = exports.meshMinMax = exports.mesh = void 0;
-const webglobjloader = __importStar(require("webgl-obj-loader"));
-const webgl_obj_loader_1 = require("webgl-obj-loader");
-function CreateMeshWithBuffers(gl) {
-    exports.meshWithBuffers = webglobjloader.initMeshBuffers(gl, exports.mesh); // use lib
-    console.log("meshWithBuffers.vertexBuffer.numItems=" + exports.meshWithBuffers.vertexBuffer.numItems);
-    console.log("meshWithBuffers.vertexBuffer.vertices.length=" + exports.meshWithBuffers.vertices.values.length);
-    console.log("meshWithBuffers.vertexBuffer.vertices.values.length=" + exports.meshWithBuffers.vertices.values.length);
-    console.log("meshWithBuffers.normalBuffer.numItems=" + exports.meshWithBuffers.normalBuffer.numItems);
-    console.log("meshWithBuffers.indices.length=" + exports.meshWithBuffers.indices.length);
-    console.log("meshWithBuffers.indexBuffer.numItems=" + exports.meshWithBuffers.indexBuffer.numItems);
-    console.log("meshWithBuffers.textureBuffer.numItems=" + exports.meshWithBuffers.textureBuffer.numItems);
-}
-exports.CreateMeshWithBuffers = CreateMeshWithBuffers;
-function NumElements() {
-    return exports.meshWithBuffers === null || exports.meshWithBuffers === void 0 ? void 0 : exports.meshWithBuffers.indexBuffer.numItems;
-}
-exports.NumElements = NumElements;
-function buildBuffer(gl, type, data, itemSize) {
-    const buffer = gl.createBuffer();
-    const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
-    gl.bindBuffer(type, buffer);
-    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
-    buffer.itemSize = itemSize;
-    buffer.numItems = data.length / itemSize;
-    return buffer;
-}
-function render(gl, vertexPositionAttribute, normalAttribute, texCoordAttribute, offset) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
-    gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
-    gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    var cindexBuffer = buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, exports.mesh.indicesPerMaterial[offset], 1);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cindexBuffer);
-    if (!exports.mesh.textures.length) gl.disableVertexAttribArray(texCoordAttribute);
-    else {
-        gl.enableVertexAttribArray(texCoordAttribute);
-        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
-        gl.vertexAttribPointer(texCoordAttribute, exports.meshWithBuffers.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    }
-    gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
-}
-exports.render = render;
-//===============================================================================================================================================================
-var matlib;
-var indexBuffers = [];
-function renderIndexBuffer(gl, vertexPositionAttribute, normalAttribute, texCoordAttribute, offset, texItemSize, tex) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
-    gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
-    gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffers[offset]);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.enableVertexAttribArray(texCoordAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
-    gl.vertexAttribPointer(texCoordAttribute, texItemSize, gl.FLOAT, false, 0, 0);
-    gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
-}
-exports.renderIndexBuffer = renderIndexBuffer;
-function PrepareIndexBuffers(gl) {
-    for(var i = 0; i < exports.mesh.materialNames.length; i++)indexBuffers.push(buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, exports.mesh.indicesPerMaterial[i], 1));
-}
-exports.PrepareIndexBuffers = PrepareIndexBuffers;
-function MeshMinMax() {
-    var minx = 1e8;
-    var maxx = -100000000;
-    var miny = 1e8;
-    var maxy = -100000000;
-    var minz = 1e8;
-    var maxz = -100000000;
-    var i;
-    for(i = 0; i < exports.mesh.vertices.length; i += 3){
-        if (exports.mesh.vertices[i + 0] < minx) minx = exports.mesh.vertices[i + 0];
-        if (exports.mesh.vertices[i + 1] < miny) miny = exports.mesh.vertices[i + 1];
-        if (exports.mesh.vertices[i + 2] < minz) minz = exports.mesh.vertices[i + 2];
-        if (exports.mesh.vertices[i + 0] > maxx) maxx = exports.mesh.vertices[i + 0];
-        if (exports.mesh.vertices[i + 1] > maxy) maxy = exports.mesh.vertices[i + 1];
-        if (exports.mesh.vertices[i + 2] > maxz) maxz = exports.mesh.vertices[i + 2];
-    }
-    return {
-        minx,
-        maxx,
-        miny,
-        maxy,
-        minz,
-        maxz
-    };
-}
-function meshReport() {
-    var rv = {
-        smatreport: "",
-        smeshreport: ""
-    };
-    rv.smeshreport += "mesh.indices.length=" + exports.mesh.indices.length + " mesh.vertices.length=" + exports.mesh.vertices.length + " mesh.vertexNormals.length=" + exports.mesh.vertexNormals.length + "<br />";
-    rv.smeshreport += "mesh.vertexMaterialIndices.length=" + exports.mesh.vertexMaterialIndices.length; //+" vertices.length="+mesh.vertices.length+" vertexNormals.length="+mesh.vertexNormals.length);
-    var mats = matlib.materials;
-    for(let key in mats){
-        var value = mats[key];
-        rv.smatreport += value.name + " dif=" + value.diffuse + " amb=" + value.ambient + " emis=" + value.emissive + " spec=" + value.specular + " mapamb=" + value.mapDiffuse.filename + " ill=" + value.illumination + "<br/>";
-    }
-    exports.meshMinMax = MeshMinMax();
-    rv.smeshreport += "<br/>";
-    rv.smeshreport += "minx=" + exports.meshMinMax.minx + ", maxx=" + exports.meshMinMax.maxx + "<br />";
-    rv.smeshreport += "miny=" + exports.meshMinMax.miny + ", maxy=" + exports.meshMinMax.maxy + "<br />";
-    rv.smeshreport += "minz=" + exports.meshMinMax.minz + ", maxz=" + exports.meshMinMax.maxz + "<br />";
-    return rv;
-}
-//--- FETCH OBJ+MTL --------------------------------------------------------------------------------------
-async function FetchText(cparcelname) {
-    const res = await fetch(cparcelname);
-    var b = await res.arrayBuffer();
-    var enc = new TextDecoder("utf-8");
-    return enc.decode(b);
-}
-async function FetchImage(cparcelname) {
-    const res = await fetch(cparcelname);
-    return res.arrayBuffer();
-}
-exports.FetchImage = FetchImage;
-async function asyncFetchObjMtl(cobjname, cmatname) {
-    var abobj = await FetchText(cobjname);
-    var abmtl = await FetchText(cmatname);
-    matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
-    if (matlib) {
-        var l = matlib.materials["Material"];
-        if (l != undefined) console.log("ambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular);
-        var cMeshOptions = {
-            enableWTextureCoord: false,
-            calcTangentsAndBitangents: false,
-            materials: matlib.materials
-        };
-        exports.mesh = new webgl_obj_loader_1.Mesh(abobj, cMeshOptions);
-        if (exports.mesh) {
-            exports.mesh.addMaterialLibrary(matlib);
-            var rv = meshReport();
-            const mydiv = document.querySelector("#cdiv");
-            var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
-            if (mydiv) mydiv.innerHTML = cstyle + "<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:600px'>" + rv.smatreport + "</td><td style='vertical-align:top'>" + rv.smeshreport + "</td></tr></tbody></table>";
-        } else console.log("object file  " + cobjname + " could not be read.");
-    } else console.log("materials file " + cmatname + " could not be read");
-}
-exports.asyncFetchObjMtl = asyncFetchObjMtl;
-//===========================================================================================================================================
-//===========================================================================================================================================
-function GetDeclaredObjMtl() {
-    console.log("strings fetched");
-    var abobj = cubegeo;
-    var abmtl = cubemat;
-    //const arr = abobj.toString().replace(/\r\n/g,'\n').split('\n');
-    if (webglobjloader) {
-        matlib = new webgl_obj_loader_1.MaterialLibrary(abmtl);
-        if (matlib) {
-            var l = matlib.materials["Material"];
-            console.log("Found material: " + l);
-            if (l != undefined) console.log("ambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular + " l.illum=" + l.illumination);
-            var cMeshOptions = {
-                enableWTextureCoord: false,
-                calcTangentsAndBitangents: false,
-                materials: matlib.materials
-            };
-            exports.mesh = new webgl_obj_loader_1.Mesh(abobj, cMeshOptions);
-            if (exports.mesh) {
-                exports.mesh.addMaterialLibrary(matlib);
-                var rv = meshReport();
-                const mydiv = document.querySelector("#cdiv");
-                var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
-                if (mydiv) mydiv.innerHTML = cstyle + "<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:auto'>" + rv.smatreport + "</td><td style='width:600px;vertical-align:top'>" + rv.smeshreport + "</td></tr></tbody></table>";
-            } else console.log("Cube obj in memory could not be read.");
-        } else console.log("Cube obj materials could not be read");
-    } else console.log("OBJ import library not accessible");
-}
-exports.GetDeclaredObjMtl = GetDeclaredObjMtl;
-//========================================================================================================================================================
-/*
-  function* triangulate(elements: string[]) {
-    if (elements.length <= 3) {
-        yield elements;
-    } else if (elements.length === 4) {
-        yield [elements[0], elements[1], elements[2]];
-        yield [elements[2], elements[3], elements[0]];
-    } else {
-        for (let i = 1; i < elements.length - 1; i++) {
-            yield [elements[0], elements[i], elements[i + 1]];
-        }
-    }
-}
-   //--- my own converter for  the obj
-   const currentMaterialIndex = 0;
-   const currentObjectByMaterialIndex = 0;
-   const enableWTextureCoord=false;
-   const verts = [];
-   const vertNormals = [];
-   const textures = [];
-   const faces = [];
-   const unpackedverts = [];
-   const unpackedtextures = [];
-   const unpackednorms = [];
-   const unpackedhashindices: { [k: string]: number } = {}
-   const unpackedindices: number[][] = [];
-   var unpackedindex = 0;
-   unpackedindices.push([]);
-   for(let s of arr) {
-    const elements = s.split(' ');
-    elements.shift();
-    if (s.startsWith('v '))
-         verts.push(...elements);
-       else
-       if (s.startsWith('vt '))
-         textures.push(...elements);
-       else
-       if (s.startsWith('vn '))
-         vertNormals.push(...elements);
-       else
-       if (s.startsWith('f '))
-       {
-        const triangles = triangulate(elements);
-        for (let e of elements) console.log("["+e+"] ");
-        var ntr=0;
-        for (const triangle of triangles) {
-            var srep = "";
-            for (const trianglepoint of triangle)
-            {
-              const hash = trianglepoint + "," + currentMaterialIndex;
-              if (hash in unpackedhashindices) {
-                unpackedindices[currentObjectByMaterialIndex].push(unpackedhashindices[hash]);
-                srep+="{ Ref: "+hash+" },";
-               } else
-                  {
-                   const vertex = trianglepoint.split("/");
-                   var v1 = +verts[(+vertex[0] - 1) * 3 + 0];
-                   var v2 = +verts[(+vertex[0] - 1) * 3 + 1];
-                   var v3 = +verts[(+vertex[0] - 1) * 3 + 2];
-                   unpackedverts.push(v1);
-                   unpackedverts.push(v2);
-                   unpackedverts.push(v3);
-                   srep+="{ V["+v1+","+v2+","+v3+"], ";
-                   if (textures.length) {
-                     const stride = enableWTextureCoord ? 3 : 2;
-                     var t1=+textures[(+vertex[1] - 1) * stride + 0];
-                     var t2=+textures[(+vertex[1] - 1) * stride + 1];
-                     unpackedtextures.push(t1);
-                     unpackedtextures.push(t2);
-                     srep+="T["+t1+","+t2+"], ";
-                     if (enableWTextureCoord) {
-                       unpackedtextures.push(+textures[(+vertex[1] - 1) * stride + 2]);
-                      }
-                   }
-                   const normalIndex = vertex.length - 1;
-                   var n1 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 0];
-                   var n2 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 1];
-                   var n3 = +vertNormals[(+vertex[normalIndex] - 1) * 3 + 2];
-                   unpackednorms.push(n1);
-                   unpackednorms.push(n2);
-                   unpackednorms.push(n3);
-                   srep+="N["+n1+","+n2+","+n3+"] }, ";
-                   unpackedhashindices[hash] = unpackedindex;
-                   unpackedindices[currentObjectByMaterialIndex].push(unpackedhashindices[hash]);
-                   unpackedindex += 1;
-                  }
-            }
-            console.log("Tr: { "+srep + "}") ;
-            ntr+=triangle.length;
-          }
-        console.log("ntr="+ntr);
-        faces.push(...elements);
-       }
-    
-  }
-*/ /*
-  console.log("Indices found:");
-  unpackedindices[currentObjectByMaterialIndex].forEach((num)=>{console.log(num+" "); });
-  console.log("Norms found:");
-  unpackednorms.forEach((num)=>{console.log(num+" "); });
-  console.log("Vertices found:");
-  unpackedverts.forEach((num)=>{console.log(num+" "); });
-*/ //========================================================================================================================================================
-const cubemat = `# Blender MTL File: 'None'
-# Material Count: 11
-
-newmtl Material
-Ns 323.999994
-Ka 1.000000 1.000000 0.000000
-Kd 0.500000 0.500000 1.000000
-Ks 0.500000 0.500000 1.000000
-Ke 0.0 1.0 0.0
-Ni 1.000000
-d 1.000000
-illum 6
-
-newmtl Material2
-Ns 323.999994
-Ka 0.000000 1.000000 0.000000
-Kd 1.000000 0.500000 1.000000
-Ks 1.000000 1.000000 0.000000
-Ke 0.0 1.0 0.0
-Ni 1.000000
-d 1.000000
-illum 6
-`;
-const cubegeo = `# Blender v2.80 (sub 75) OBJ File: ''
-# www.blender.org
-mtllib cube2.mtl
-o Cube
-v 1.000000 1.000000 -1.000000
-v 1.000000 -1.000000 -1.000000
-v 1.000000 1.000000 1.000000
-v 1.000000 -1.000000 1.000000
-v -1.000000 1.000000 -1.000000
-v -1.000000 -1.000000 -1.000000
-v -1.000000 1.000000 1.000000
-v -1.000000 -1.000000 1.000000
-v 4.000000 1.000000 -1.000000
-v 4.000000 -1.000000 -1.000000
-v 4.000000 1.000000 1.000000
-v 4.000000 -1.000000 1.000000
-v 3.000000 1.000000 -1.000000
-v 3.000000 -1.000000 -1.000000
-v 3.000000 1.000000 1.000000
-v 3.000000 -1.000000 1.000000
-vt 0.375000 0.000000
-vt 0.625000 0.000000
-vt 0.625000 0.250000
-vt 0.375000 0.250000
-vt 0.375000 0.250000
-vt 0.625000 0.250000
-vt 0.625000 0.500000
-vt 0.375000 0.500000
-vt 0.625000 0.750000
-vt 0.375000 0.750000
-vt 0.625000 0.750000
-vt 0.625000 1.000000
-vt 0.375000 1.000000
-vt 0.125000 0.500000
-vt 0.375000 0.500000
-vt 0.375000 0.750000
-vt 0.125000 0.750000
-vt 0.625000 0.500000
-vt 0.875000 0.500000
-vt 0.875000 0.750000
-vn 0.0000 1.0000 0.0000
-vn 0.0000 0.0000 1.0000
-vn -1.0000 0.0000 0.0000
-vn 0.0000 -1.0000 0.0000
-vn 1.0000 0.0000 0.0000
-vn 0.0000 0.0000 -1.0000
-usemtl Material
-s off
-f 1/1/1 5/2/1 7/3/1 3/4/1
-f 4/5/2 3/6/2 7/7/2 8/8/2
-f 8/8/3 7/7/3 5/9/3 6/10/3
-f 6/10/4 2/11/4 4/12/4 8/13/4
-f 2/14/5 1/15/5 3/16/5 4/17/5
-f 6/18/6 5/19/6 1/20/6 2/11/6
-usemtl Material2
-f 9/1/1 13/2/1 15/3/1 11/4/1
-f 12/5/2 11/6/2 15/7/2 16/8/2
-f 16/8/3 15/7/3 13/9/3 14/10/3
-f 14/10/4 10/11/4 12/12/4 16/13/4
-f 10/14/5 9/15/5 11/16/5 12/17/5
-f 14/18/6 13/19/6 9/20/6 10/11/6
-`;
-
-},{"webgl-obj-loader":"d2ssq"}],"d2ssq":[function(require,module,exports) {
-!function(e, t) {
-    var n, a;
-    module.exports = t();
-}("undefined" != typeof self ? self : this, function() {
-    return function(e) {
-        var t = {};
-        function n(a) {
-            if (t[a]) return t[a].exports;
-            var s = t[a] = {
-                i: a,
-                l: !1,
-                exports: {}
-            };
-            return e[a].call(s.exports, s, s.exports, n), s.l = !0, s.exports;
-        }
-        return n.m = e, n.c = t, n.d = function(e, t, a) {
-            n.o(e, t) || Object.defineProperty(e, t, {
-                enumerable: !0,
-                get: a
-            });
-        }, n.r = function(e) {
-            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, {
-                value: "Module"
-            }), Object.defineProperty(e, "__esModule", {
-                value: !0
-            });
-        }, n.t = function(e, t) {
-            if (1 & t && (e = n(e)), 8 & t) return e;
-            if (4 & t && "object" == typeof e && e && e.__esModule) return e;
-            var a = Object.create(null);
-            if (n.r(a), Object.defineProperty(a, "default", {
-                enumerable: !0,
-                value: e
-            }), 2 & t && "string" != typeof e) for(var s in e)n.d(a, s, (function(t) {
-                return e[t];
-            }).bind(null, s));
-            return a;
-        }, n.n = function(e) {
-            var t = e && e.__esModule ? function() {
-                return e.default;
-            } : function() {
-                return e;
-            };
-            return n.d(t, "a", t), t;
-        }, n.o = function(e, t) {
-            return Object.prototype.hasOwnProperty.call(e, t);
-        }, n.p = "/", n(n.s = 0);
-    }({
-        "./src/index.ts": /*!**********************!*\
-  !*** ./src/index.ts ***!
-  \**********************/ /*! exports provided: OBJ, Attribute, DuplicateAttributeException, Layout, Material, MaterialLibrary, Mesh, TYPES, downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers, version */ function(module, __webpack_exports__, __webpack_require__) {
-            "use strict";
-            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJ", function() { return OBJ; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "version", function() { return version; });\n/* harmony import */ var _mesh__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mesh */ "./src/mesh.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Mesh", function() { return _mesh__WEBPACK_IMPORTED_MODULE_0__["default"]; });\n\n/* harmony import */ var _material__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./material */ "./src/material.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Material", function() { return _material__WEBPACK_IMPORTED_MODULE_1__["Material"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MaterialLibrary", function() { return _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"]; });\n\n/* harmony import */ var _layout__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./layout */ "./src/layout.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Attribute", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["Attribute"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DuplicateAttributeException", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["DuplicateAttributeException"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Layout", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["Layout"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TYPES", function() { return _layout__WEBPACK_IMPORTED_MODULE_2__["TYPES"]; });\n\n/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils */ "./src/utils.ts");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "downloadModels", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["downloadModels"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "downloadMeshes", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["downloadMeshes"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "initMeshBuffers", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["initMeshBuffers"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "deleteMeshBuffers", function() { return _utils__WEBPACK_IMPORTED_MODULE_3__["deleteMeshBuffers"]; });\n\n\n\n\n\nconst version = "2.0.3";\nconst OBJ = {\n    Attribute: _layout__WEBPACK_IMPORTED_MODULE_2__["Attribute"],\n    DuplicateAttributeException: _layout__WEBPACK_IMPORTED_MODULE_2__["DuplicateAttributeException"],\n    Layout: _layout__WEBPACK_IMPORTED_MODULE_2__["Layout"],\n    Material: _material__WEBPACK_IMPORTED_MODULE_1__["Material"],\n    MaterialLibrary: _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"],\n    Mesh: _mesh__WEBPACK_IMPORTED_MODULE_0__["default"],\n    TYPES: _layout__WEBPACK_IMPORTED_MODULE_2__["TYPES"],\n    downloadModels: _utils__WEBPACK_IMPORTED_MODULE_3__["downloadModels"],\n    downloadMeshes: _utils__WEBPACK_IMPORTED_MODULE_3__["downloadMeshes"],\n    initMeshBuffers: _utils__WEBPACK_IMPORTED_MODULE_3__["initMeshBuffers"],\n    deleteMeshBuffers: _utils__WEBPACK_IMPORTED_MODULE_3__["deleteMeshBuffers"],\n    version,\n};\n/**\n * @namespace\n */\n\n\n\n//# sourceURL=webpack:///./src/index.ts?');
-        },
-        "./src/layout.ts": /*!***********************!*\
-  !*** ./src/layout.ts ***!
-  \***********************/ /*! exports provided: TYPES, DuplicateAttributeException, Attribute, Layout */ function(module, __webpack_exports__, __webpack_require__) {
-            "use strict";
-            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TYPES", function() { return TYPES; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DuplicateAttributeException", function() { return DuplicateAttributeException; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Attribute", function() { return Attribute; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Layout", function() { return Layout; });\nvar TYPES;\n(function (TYPES) {\n    TYPES["BYTE"] = "BYTE";\n    TYPES["UNSIGNED_BYTE"] = "UNSIGNED_BYTE";\n    TYPES["SHORT"] = "SHORT";\n    TYPES["UNSIGNED_SHORT"] = "UNSIGNED_SHORT";\n    TYPES["FLOAT"] = "FLOAT";\n})(TYPES || (TYPES = {}));\n/**\n * An exception for when two or more of the same attributes are found in the\n * same layout.\n * @private\n */\nclass DuplicateAttributeException extends Error {\n    /**\n     * Create a DuplicateAttributeException\n     * @param {Attribute} attribute - The attribute that was found more than\n     *        once in the {@link Layout}\n     */\n    constructor(attribute) {\n        super(`found duplicate attribute: ${attribute.key}`);\n    }\n}\n/**\n * Represents how a vertex attribute should be packed into an buffer.\n * @private\n */\nclass Attribute {\n    /**\n     * Create an attribute. Do not call this directly, use the predefined\n     * constants.\n     * @param {string} key - The name of this attribute as if it were a key in\n     *        an Object. Use the camel case version of the upper snake case\n     *        const name.\n     * @param {number} size - The number of components per vertex attribute.\n     *        Must be 1, 2, 3, or 4.\n     * @param {string} type - The data type of each component for this\n     *        attribute. Possible values:<br/>\n     *        "BYTE": signed 8-bit integer, with values in [-128, 127]<br/>\n     *        "SHORT": signed 16-bit integer, with values in\n     *            [-32768, 32767]<br/>\n     *        "UNSIGNED_BYTE": unsigned 8-bit integer, with values in\n     *            [0, 255]<br/>\n     *        "UNSIGNED_SHORT": unsigned 16-bit integer, with values in\n     *            [0, 65535]<br/>\n     *        "FLOAT": 32-bit floating point number\n     * @param {boolean} normalized - Whether integer data values should be\n     *        normalized when being casted to a float.<br/>\n     *        If true, signed integers are normalized to [-1, 1].<br/>\n     *        If true, unsigned integers are normalized to [0, 1].<br/>\n     *        For type "FLOAT", this parameter has no effect.\n     */\n    constructor(key, size, type, normalized = false) {\n        this.key = key;\n        this.size = size;\n        this.type = type;\n        this.normalized = normalized;\n        switch (type) {\n            case "BYTE":\n            case "UNSIGNED_BYTE":\n                this.sizeOfType = 1;\n                break;\n            case "SHORT":\n            case "UNSIGNED_SHORT":\n                this.sizeOfType = 2;\n                break;\n            case "FLOAT":\n                this.sizeOfType = 4;\n                break;\n            default:\n                throw new Error(`Unknown gl type: ${type}`);\n        }\n        this.sizeInBytes = this.sizeOfType * size;\n    }\n}\n/**\n * A class to represent the memory layout for a vertex attribute array. Used by\n * {@link Mesh}\'s TBD(...) method to generate a packed array from mesh data.\n * <p>\n * Layout can sort of be thought of as a C-style struct declaration.\n * {@link Mesh}\'s TBD(...) method will use the {@link Layout} instance to\n * pack an array in the given attribute order.\n * <p>\n * Layout also is very helpful when calling a WebGL context\'s\n * <code>vertexAttribPointer</code> method. If you\'ve created a buffer using\n * a Layout instance, then the same Layout instance can be used to determine\n * the size, type, normalized, stride, and offset parameters for\n * <code>vertexAttribPointer</code>.\n * <p>\n * For example:\n * <pre><code>\n *\n * const index = glctx.getAttribLocation(shaderProgram, "pos");\n * glctx.vertexAttribPointer(\n *   layout.position.size,\n *   glctx[layout.position.type],\n *   layout.position.normalized,\n *   layout.position.stride,\n *   layout.position.offset);\n * </code></pre>\n * @see {@link Mesh}\n */\nclass Layout {\n    /**\n     * Create a Layout object. This constructor will throw if any duplicate\n     * attributes are given.\n     * @param {Array} ...attributes - An ordered list of attributes that\n     *        describe the desired memory layout for each vertex attribute.\n     *        <p>\n     *\n     * @see {@link Mesh}\n     */\n    constructor(...attributes) {\n        this.attributes = attributes;\n        this.attributeMap = {};\n        let offset = 0;\n        let maxStrideMultiple = 0;\n        for (const attribute of attributes) {\n            if (this.attributeMap[attribute.key]) {\n                throw new DuplicateAttributeException(attribute);\n            }\n            // Add padding to satisfy WebGL\'s requirement that all\n            // vertexAttribPointer calls have an offset that is a multiple of\n            // the type size.\n            if (offset % attribute.sizeOfType !== 0) {\n                offset += attribute.sizeOfType - (offset % attribute.sizeOfType);\n                console.warn("Layout requires padding before " + attribute.key + " attribute");\n            }\n            this.attributeMap[attribute.key] = {\n                attribute: attribute,\n                size: attribute.size,\n                type: attribute.type,\n                normalized: attribute.normalized,\n                offset: offset,\n            };\n            offset += attribute.sizeInBytes;\n            maxStrideMultiple = Math.max(maxStrideMultiple, attribute.sizeOfType);\n        }\n        // Add padding to the end to satisfy WebGL\'s requirement that all\n        // vertexAttribPointer calls have a stride that is a multiple of the\n        // type size. Because we\'re putting differently sized attributes into\n        // the same buffer, it must be padded to a multiple of the largest\n        // type size.\n        if (offset % maxStrideMultiple !== 0) {\n            offset += maxStrideMultiple - (offset % maxStrideMultiple);\n            console.warn("Layout requires padding at the back");\n        }\n        this.stride = offset;\n        for (const attribute of attributes) {\n            this.attributeMap[attribute.key].stride = this.stride;\n        }\n    }\n}\n// Geometry attributes\n/**\n * Attribute layout to pack a vertex\'s x, y, & z as floats\n *\n * @see {@link Layout}\n */\nLayout.POSITION = new Attribute("position", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s x, y, & z as floats\n *\n * @see {@link Layout}\n */\nLayout.NORMAL = new Attribute("normal", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s x, y, & z as floats.\n * <p>\n * This value will be computed on-the-fly based on the texture coordinates.\n * If no texture coordinates are available, the generated value will default to\n * 0, 0, 0.\n *\n * @see {@link Layout}\n */\nLayout.TANGENT = new Attribute("tangent", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s normal\'s bitangent x, y, & z as floats.\n * <p>\n * This value will be computed on-the-fly based on the texture coordinates.\n * If no texture coordinates are available, the generated value will default to\n * 0, 0, 0.\n * @see {@link Layout}\n */\nLayout.BITANGENT = new Attribute("bitangent", 3, TYPES.FLOAT);\n/**\n * Attribute layout to pack a vertex\'s texture coordinates\' u & v as floats\n *\n * @see {@link Layout}\n */\nLayout.UV = new Attribute("uv", 2, TYPES.FLOAT);\n// Material attributes\n/**\n * Attribute layout to pack an unsigned short to be interpreted as a the index\n * into a {@link Mesh}\'s materials list.\n * <p>\n * The intention of this value is to send all of the {@link Mesh}\'s materials\n * into multiple shader uniforms and then reference the current one by this\n * vertex attribute.\n * <p>\n * example glsl code:\n *\n * <pre><code>\n *  // this is bound using MATERIAL_INDEX\n *  attribute int materialIndex;\n *\n *  struct Material {\n *    vec3 diffuse;\n *    vec3 specular;\n *    vec3 specularExponent;\n *  };\n *\n *  uniform Material materials[MAX_MATERIALS];\n *\n *  // ...\n *\n *  vec3 diffuse = materials[materialIndex];\n *\n * </code></pre>\n * TODO: More description & test to make sure subscripting by attributes even\n * works for webgl\n *\n * @see {@link Layout}\n */\nLayout.MATERIAL_INDEX = new Attribute("materialIndex", 1, TYPES.SHORT);\nLayout.MATERIAL_ENABLED = new Attribute("materialEnabled", 1, TYPES.UNSIGNED_SHORT);\nLayout.AMBIENT = new Attribute("ambient", 3, TYPES.FLOAT);\nLayout.DIFFUSE = new Attribute("diffuse", 3, TYPES.FLOAT);\nLayout.SPECULAR = new Attribute("specular", 3, TYPES.FLOAT);\nLayout.SPECULAR_EXPONENT = new Attribute("specularExponent", 3, TYPES.FLOAT);\nLayout.EMISSIVE = new Attribute("emissive", 3, TYPES.FLOAT);\nLayout.TRANSMISSION_FILTER = new Attribute("transmissionFilter", 3, TYPES.FLOAT);\nLayout.DISSOLVE = new Attribute("dissolve", 1, TYPES.FLOAT);\nLayout.ILLUMINATION = new Attribute("illumination", 1, TYPES.UNSIGNED_SHORT);\nLayout.REFRACTION_INDEX = new Attribute("refractionIndex", 1, TYPES.FLOAT);\nLayout.SHARPNESS = new Attribute("sharpness", 1, TYPES.FLOAT);\nLayout.MAP_DIFFUSE = new Attribute("mapDiffuse", 1, TYPES.SHORT);\nLayout.MAP_AMBIENT = new Attribute("mapAmbient", 1, TYPES.SHORT);\nLayout.MAP_SPECULAR = new Attribute("mapSpecular", 1, TYPES.SHORT);\nLayout.MAP_SPECULAR_EXPONENT = new Attribute("mapSpecularExponent", 1, TYPES.SHORT);\nLayout.MAP_DISSOLVE = new Attribute("mapDissolve", 1, TYPES.SHORT);\nLayout.ANTI_ALIASING = new Attribute("antiAliasing", 1, TYPES.UNSIGNED_SHORT);\nLayout.MAP_BUMP = new Attribute("mapBump", 1, TYPES.SHORT);\nLayout.MAP_DISPLACEMENT = new Attribute("mapDisplacement", 1, TYPES.SHORT);\nLayout.MAP_DECAL = new Attribute("mapDecal", 1, TYPES.SHORT);\nLayout.MAP_EMISSIVE = new Attribute("mapEmissive", 1, TYPES.SHORT);\n\n\n//# sourceURL=webpack:///./src/layout.ts?');
-        },
-        "./src/material.ts": /*!*************************!*\
-  !*** ./src/material.ts ***!
-  \*************************/ /*! exports provided: Material, MaterialLibrary */ function(module, __webpack_exports__, __webpack_require__) {
-            "use strict";
-            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Material", function() { return Material; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MaterialLibrary", function() { return MaterialLibrary; });\n/**\n * The Material class.\n */\nclass Material {\n    constructor(name) {\n        this.name = name;\n        /**\n         * Constructor\n         * @param {String} name the unique name of the material\n         */\n        // The values for the following attibutes\n        // are an array of R, G, B normalized values.\n        // Ka - Ambient Reflectivity\n        this.ambient = [0, 0, 0];\n        // Kd - Defuse Reflectivity\n        this.diffuse = [0, 0, 0];\n        // Ks\n        this.specular = [0, 0, 0];\n        // Ke\n        this.emissive = [0, 0, 0];\n        // Tf\n        this.transmissionFilter = [0, 0, 0];\n        // d\n        this.dissolve = 0;\n        // valid range is between 0 and 1000\n        this.specularExponent = 0;\n        // either d or Tr; valid values are normalized\n        this.transparency = 0;\n        // illum - the enum of the illumination model to use\n        this.illumination = 0;\n        // Ni - Set to "normal" (air).\n        this.refractionIndex = 1;\n        // sharpness\n        this.sharpness = 0;\n        // map_Kd\n        this.mapDiffuse = emptyTextureOptions();\n        // map_Ka\n        this.mapAmbient = emptyTextureOptions();\n        // map_Ks\n        this.mapSpecular = emptyTextureOptions();\n        // map_Ns\n        this.mapSpecularExponent = emptyTextureOptions();\n        // map_d\n        this.mapDissolve = emptyTextureOptions();\n        // map_aat\n        this.antiAliasing = false;\n        // map_bump or bump\n        this.mapBump = emptyTextureOptions();\n        // disp\n        this.mapDisplacement = emptyTextureOptions();\n        // decal\n        this.mapDecal = emptyTextureOptions();\n        // map_Ke\n        this.mapEmissive = emptyTextureOptions();\n        // refl - when the reflection type is a cube, there will be multiple refl\n        //        statements for each side of the cube. If it\'s a spherical\n        //        reflection, there should only ever be one.\n        this.mapReflections = [];\n    }\n}\nconst SENTINEL_MATERIAL = new Material("sentinel");\n/**\n * https://en.wikipedia.org/wiki/Wavefront_.obj_file\n * http://paulbourke.net/dataformats/mtl/\n */\nclass MaterialLibrary {\n    constructor(data) {\n        this.data = data;\n        /**\n         * Constructs the Material Parser\n         * @param mtlData the MTL file contents\n         */\n        this.currentMaterial = SENTINEL_MATERIAL;\n        this.materials = {};\n        this.parse();\n    }\n    /* eslint-disable camelcase */\n    /* the function names here disobey camelCase conventions\n     to make parsing/routing easier. see the parse function\n     documentation for more information. */\n    /**\n     * Creates a new Material object and adds to the registry.\n     * @param tokens the tokens associated with the directive\n     */\n    parse_newmtl(tokens) {\n        const name = tokens[0];\n        // console.info(\'Parsing new Material:\', name);\n        this.currentMaterial = new Material(name);\n        this.materials[name] = this.currentMaterial;\n    }\n    /**\n     * See the documenation for parse_Ka below for a better understanding.\n     *\n     * Given a list of possible color tokens, returns an array of R, G, and B\n     * color values.\n     *\n     * @param tokens the tokens associated with the directive\n     * @return {*} a 3 element array containing the R, G, and B values\n     * of the color.\n     */\n    parseColor(tokens) {\n        if (tokens[0] == "spectral") {\n            throw new Error("The MTL parser does not support spectral curve files. You will " +\n                "need to convert the MTL colors to either RGB or CIEXYZ.");\n        }\n        if (tokens[0] == "xyz") {\n            throw new Error("The MTL parser does not currently support XYZ colors. Either convert the " +\n                "XYZ values to RGB or create an issue to add support for XYZ");\n        }\n        // from my understanding of the spec, RGB values at this point\n        // will either be 3 floats or exactly 1 float, so that\'s the check\n        // that i\'m going to perform here\n        if (tokens.length == 3) {\n            const [x, y, z] = tokens;\n            return [parseFloat(x), parseFloat(y), parseFloat(z)];\n        }\n        // Since tokens at this point has a length of 3, we\'re going to assume\n        // it\'s exactly 1, skipping the check for 2.\n        const value = parseFloat(tokens[0]);\n        // in this case, all values are equivalent\n        return [value, value, value];\n    }\n    /**\n     * Parse the ambient reflectivity\n     *\n     * A Ka directive can take one of three forms:\n     *   - Ka r g b\n     *   - Ka spectral file.rfl\n     *   - Ka xyz x y z\n     * These three forms are mutually exclusive in that only one\n     * declaration can exist per material. It is considered a syntax\n     * error otherwise.\n     *\n     * The "Ka" form specifies the ambient reflectivity using RGB values.\n     * The "g" and "b" values are optional. If only the "r" value is\n     * specified, then the "g" and "b" values are assigned the value of\n     * "r". Values are normally in the range 0.0 to 1.0. Values outside\n     * of this range increase or decrease the reflectivity accordingly.\n     *\n     * The "Ka spectral" form specifies the ambient reflectivity using a\n     * spectral curve. "file.rfl" is the name of the ".rfl" file containing\n     * the curve data. "factor" is an optional argument which is a multiplier\n     * for the values in the .rfl file and defaults to 1.0 if not specified.\n     *\n     * The "Ka xyz" form specifies the ambient reflectivity using CIEXYZ values.\n     * "x y z" are the values of the CIEXYZ color space. The "y" and "z" arguments\n     * are optional and take on the value of the "x" component if only "x" is\n     * specified. The "x y z" values are normally in the range of 0.0 to 1.0 and\n     * increase or decrease ambient reflectivity accordingly outside of that\n     * range.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ka(tokens) {\n        this.currentMaterial.ambient = this.parseColor(tokens);\n    }\n    /**\n     * Diffuse Reflectivity\n     *\n     * Similar to the Ka directive. Simply replace "Ka" with "Kd" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Kd(tokens) {\n        this.currentMaterial.diffuse = this.parseColor(tokens);\n    }\n    /**\n     * Spectral Reflectivity\n     *\n     * Similar to the Ka directive. Simply replace "Ks" with "Kd" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ks(tokens) {\n        this.currentMaterial.specular = this.parseColor(tokens);\n    }\n    /**\n     * Emissive\n     *\n     * The amount and color of light emitted by the object.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ke(tokens) {\n        this.currentMaterial.emissive = this.parseColor(tokens);\n    }\n    /**\n     * Transmission Filter\n     *\n     * Any light passing through the object is filtered by the transmission\n     * filter, which only allows specific colors to pass through. For example, Tf\n     * 0 1 0 allows all of the green to pass through and filters out all of the\n     * red and blue.\n     *\n     * Similar to the Ka directive. Simply replace "Ks" with "Tf" and the rules\n     * are the same\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Tf(tokens) {\n        this.currentMaterial.transmissionFilter = this.parseColor(tokens);\n    }\n    /**\n     * Specifies the dissolve for the current material.\n     *\n     * Statement: d [-halo] `factor`\n     *\n     * Example: "d 0.5"\n     *\n     * The factor is the amount this material dissolves into the background. A\n     * factor of 1.0 is fully opaque. This is the default when a new material is\n     * created. A factor of 0.0 is fully dissolved (completely transparent).\n     *\n     * Unlike a real transparent material, the dissolve does not depend upon\n     * material thickness nor does it have any spectral character. Dissolve works\n     * on all illumination models.\n     *\n     * The dissolve statement allows for an optional "-halo" flag which indicates\n     * that a dissolve is dependent on the surface orientation relative to the\n     * viewer. For example, a sphere with the following dissolve, "d -halo 0.0",\n     * will be fully dissolved at its center and will appear gradually more opaque\n     * toward its edge.\n     *\n     * "factor" is the minimum amount of dissolve applied to the material. The\n     * amount of dissolve will vary between 1.0 (fully opaque) and the specified\n     * "factor". The formula is:\n     *\n     *    dissolve = 1.0 - (N*v)(1.0-factor)\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_d(tokens) {\n        // this ignores the -halo option as I can\'t find any documentation on what\n        // it\'s supposed to be.\n        this.currentMaterial.dissolve = parseFloat(tokens.pop() || "0");\n    }\n    /**\n     * The "illum" statement specifies the illumination model to use in the\n     * material. Illumination models are mathematical equations that represent\n     * various material lighting and shading effects.\n     *\n     * The illumination number can be a number from 0 to 10. The following are\n     * the list of illumination enumerations and their summaries:\n     * 0. Color on and Ambient off\n     * 1. Color on and Ambient on\n     * 2. Highlight on\n     * 3. Reflection on and Ray trace on\n     * 4. Transparency: Glass on, Reflection: Ray trace on\n     * 5. Reflection: Fresnel on and Ray trace on\n     * 6. Transparency: Refraction on, Reflection: Fresnel off and Ray trace on\n     * 7. Transparency: Refraction on, Reflection: Fresnel on and Ray trace on\n     * 8. Reflection on and Ray trace off\n     * 9. Transparency: Glass on, Reflection: Ray trace off\n     * 10. Casts shadows onto invisible surfaces\n     *\n     * Example: "illum 2" to specify the "Highlight on" model\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_illum(tokens) {\n        this.currentMaterial.illumination = parseInt(tokens[0]);\n    }\n    /**\n     * Optical Density (AKA Index of Refraction)\n     *\n     * Statement: Ni `index`\n     *\n     * Example: Ni 1.0\n     *\n     * Specifies the optical density for the surface. `index` is the value\n     * for the optical density. The values can range from 0.001 to 10.  A value of\n     * 1.0 means that light does not bend as it passes through an object.\n     * Increasing the optical_density increases the amount of bending. Glass has\n     * an index of refraction of about 1.5. Values of less than 1.0 produce\n     * bizarre results and are not recommended\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ni(tokens) {\n        this.currentMaterial.refractionIndex = parseFloat(tokens[0]);\n    }\n    /**\n     * Specifies the specular exponent for the current material. This defines the\n     * focus of the specular highlight.\n     *\n     * Statement: Ns `exponent`\n     *\n     * Example: "Ns 250"\n     *\n     * `exponent` is the value for the specular exponent. A high exponent results\n     * in a tight, concentrated highlight. Ns Values normally range from 0 to\n     * 1000.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_Ns(tokens) {\n        this.currentMaterial.specularExponent = parseInt(tokens[0]);\n    }\n    /**\n     * Specifies the sharpness of the reflections from the local reflection map.\n     *\n     * Statement: sharpness `value`\n     *\n     * Example: "sharpness 100"\n     *\n     * If a material does not have a local reflection map defined in its material\n     * defintions, sharpness will apply to the global reflection map defined in\n     * PreView.\n     *\n     * `value` can be a number from 0 to 1000. The default is 60. A high value\n     * results in a clear reflection of objects in the reflection map.\n     *\n     * Tip: sharpness values greater than 100 introduce aliasing effects in\n     * flat surfaces that are viewed at a sharp angle.\n     *\n     * @param tokens the tokens associated with the directive\n     */\n    parse_sharpness(tokens) {\n        this.currentMaterial.sharpness = parseInt(tokens[0]);\n    }\n    /**\n     * Parses the -cc flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -cc flag\n     * @param options the Object of all image options\n     */\n    parse_cc(values, options) {\n        options.colorCorrection = values[0] == "on";\n    }\n    /**\n     * Parses the -blendu flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -blendu flag\n     * @param options the Object of all image options\n     */\n    parse_blendu(values, options) {\n        options.horizontalBlending = values[0] == "on";\n    }\n    /**\n     * Parses the -blendv flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -blendv flag\n     * @param options the Object of all image options\n     */\n    parse_blendv(values, options) {\n        options.verticalBlending = values[0] == "on";\n    }\n    /**\n     * Parses the -boost flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -boost flag\n     * @param options the Object of all image options\n     */\n    parse_boost(values, options) {\n        options.boostMipMapSharpness = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -mm flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -mm flag\n     * @param options the Object of all image options\n     */\n    parse_mm(values, options) {\n        options.modifyTextureMap.brightness = parseFloat(values[0]);\n        options.modifyTextureMap.contrast = parseFloat(values[1]);\n    }\n    /**\n     * Parses and sets the -o, -s, and -t  u, v, and w values\n     *\n     * @param values the values passed to the -o, -s, -t flag\n     * @param {Object} option the Object of either the -o, -s, -t option\n     * @param {Integer} defaultValue the Object of all image options\n     */\n    parse_ost(values, option, defaultValue) {\n        while (values.length < 3) {\n            values.push(defaultValue.toString());\n        }\n        option.u = parseFloat(values[0]);\n        option.v = parseFloat(values[1]);\n        option.w = parseFloat(values[2]);\n    }\n    /**\n     * Parses the -o flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -o flag\n     * @param options the Object of all image options\n     */\n    parse_o(values, options) {\n        this.parse_ost(values, options.offset, 0);\n    }\n    /**\n     * Parses the -s flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -s flag\n     * @param options the Object of all image options\n     */\n    parse_s(values, options) {\n        this.parse_ost(values, options.scale, 1);\n    }\n    /**\n     * Parses the -t flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -t flag\n     * @param options the Object of all image options\n     */\n    parse_t(values, options) {\n        this.parse_ost(values, options.turbulence, 0);\n    }\n    /**\n     * Parses the -texres flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -texres flag\n     * @param options the Object of all image options\n     */\n    parse_texres(values, options) {\n        options.textureResolution = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -clamp flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -clamp flag\n     * @param options the Object of all image options\n     */\n    parse_clamp(values, options) {\n        options.clamp = values[0] == "on";\n    }\n    /**\n     * Parses the -bm flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -bm flag\n     * @param options the Object of all image options\n     */\n    parse_bm(values, options) {\n        options.bumpMultiplier = parseFloat(values[0]);\n    }\n    /**\n     * Parses the -imfchan flag and updates the options object with the values.\n     *\n     * @param values the values passed to the -imfchan flag\n     * @param options the Object of all image options\n     */\n    parse_imfchan(values, options) {\n        options.imfChan = values[0];\n    }\n    /**\n     * This only exists for relection maps and denotes the type of reflection.\n     *\n     * @param values the values passed to the -type flag\n     * @param options the Object of all image options\n     */\n    parse_type(values, options) {\n        options.reflectionType = values[0];\n    }\n    /**\n     * Parses the texture\'s options and returns an options object with the info\n     *\n     * @param tokens all of the option tokens to pass to the texture\n     * @return {Object} a complete object of objects to apply to the texture\n     */\n    parseOptions(tokens) {\n        const options = emptyTextureOptions();\n        let option;\n        let values;\n        const optionsToValues = {};\n        tokens.reverse();\n        while (tokens.length) {\n            // token is guaranteed to exists here, hence the explicit "as"\n            const token = tokens.pop();\n            if (token.startsWith("-")) {\n                option = token.substr(1);\n                optionsToValues[option] = [];\n            }\n            else if (option) {\n                optionsToValues[option].push(token);\n            }\n        }\n        for (option in optionsToValues) {\n            if (!optionsToValues.hasOwnProperty(option)) {\n                continue;\n            }\n            values = optionsToValues[option];\n            const optionMethod = this[`parse_${option}`];\n            if (optionMethod) {\n                optionMethod.bind(this)(values, options);\n            }\n        }\n        return options;\n    }\n    /**\n     * Parses the given texture map line.\n     *\n     * @param tokens all of the tokens representing the texture\n     * @return a complete object of objects to apply to the texture\n     */\n    parseMap(tokens) {\n        // according to wikipedia:\n        // (https://en.wikipedia.org/wiki/Wavefront_.obj_file#Vendor_specific_alterations)\n        // there is at least one vendor that places the filename before the options\n        // rather than after (which is to spec). All options start with a \'-\'\n        // so if the first token doesn\'t start with a \'-\', we\'re going to assume\n        // it\'s the name of the map file.\n        let optionsString;\n        let filename = "";\n        if (!tokens[0].startsWith("-")) {\n            [filename, ...optionsString] = tokens;\n        }\n        else {\n            filename = tokens.pop();\n            optionsString = tokens;\n        }\n        const options = this.parseOptions(optionsString);\n        options.filename = filename.replace(/\\\\/g, "/");\n        return options;\n    }\n    /**\n     * Parses the ambient map.\n     *\n     * @param tokens list of tokens for the map_Ka direcive\n     */\n    parse_map_Ka(tokens) {\n        this.currentMaterial.mapAmbient = this.parseMap(tokens);\n    }\n    /**\n     * Parses the diffuse map.\n     *\n     * @param tokens list of tokens for the map_Kd direcive\n     */\n    parse_map_Kd(tokens) {\n        this.currentMaterial.mapDiffuse = this.parseMap(tokens);\n    }\n    /**\n     * Parses the specular map.\n     *\n     * @param tokens list of tokens for the map_Ks direcive\n     */\n    parse_map_Ks(tokens) {\n        this.currentMaterial.mapSpecular = this.parseMap(tokens);\n    }\n    /**\n     * Parses the emissive map.\n     *\n     * @param tokens list of tokens for the map_Ke direcive\n     */\n    parse_map_Ke(tokens) {\n        this.currentMaterial.mapEmissive = this.parseMap(tokens);\n    }\n    /**\n     * Parses the specular exponent map.\n     *\n     * @param tokens list of tokens for the map_Ns direcive\n     */\n    parse_map_Ns(tokens) {\n        this.currentMaterial.mapSpecularExponent = this.parseMap(tokens);\n    }\n    /**\n     * Parses the dissolve map.\n     *\n     * @param tokens list of tokens for the map_d direcive\n     */\n    parse_map_d(tokens) {\n        this.currentMaterial.mapDissolve = this.parseMap(tokens);\n    }\n    /**\n     * Parses the anti-aliasing option.\n     *\n     * @param tokens list of tokens for the map_aat direcive\n     */\n    parse_map_aat(tokens) {\n        this.currentMaterial.antiAliasing = tokens[0] == "on";\n    }\n    /**\n     * Parses the bump map.\n     *\n     * @param tokens list of tokens for the map_bump direcive\n     */\n    parse_map_bump(tokens) {\n        this.currentMaterial.mapBump = this.parseMap(tokens);\n    }\n    /**\n     * Parses the bump map.\n     *\n     * @param tokens list of tokens for the bump direcive\n     */\n    parse_bump(tokens) {\n        this.parse_map_bump(tokens);\n    }\n    /**\n     * Parses the disp map.\n     *\n     * @param tokens list of tokens for the disp direcive\n     */\n    parse_disp(tokens) {\n        this.currentMaterial.mapDisplacement = this.parseMap(tokens);\n    }\n    /**\n     * Parses the decal map.\n     *\n     * @param tokens list of tokens for the map_decal direcive\n     */\n    parse_decal(tokens) {\n        this.currentMaterial.mapDecal = this.parseMap(tokens);\n    }\n    /**\n     * Parses the refl map.\n     *\n     * @param tokens list of tokens for the refl direcive\n     */\n    parse_refl(tokens) {\n        this.currentMaterial.mapReflections.push(this.parseMap(tokens));\n    }\n    /**\n     * Parses the MTL file.\n     *\n     * Iterates line by line parsing each MTL directive.\n     *\n     * This function expects the first token in the line\n     * to be a valid MTL directive. That token is then used\n     * to try and run a method on this class. parse_[directive]\n     * E.g., the `newmtl` directive would try to call the method\n     * parse_newmtl. Each parsing function takes in the remaining\n     * list of tokens and updates the currentMaterial class with\n     * the attributes provided.\n     */\n    parse() {\n        const lines = this.data.split(/\\r?\\n/);\n        for (let line of lines) {\n            line = line.trim();\n            if (!line || line.startsWith("#")) {\n                continue;\n            }\n            const [directive, ...tokens] = line.split(/\\s/);\n            const parseMethod = this[`parse_${directive}`];\n            if (!parseMethod) {\n                console.warn(`Don\'t know how to parse the directive: "${directive}"`);\n                continue;\n            }\n            // console.log(`Parsing "${directive}" with tokens: ${tokens}`);\n            parseMethod.bind(this)(tokens);\n        }\n        // some cleanup. These don\'t need to be exposed as public data.\n        delete this.data;\n        this.currentMaterial = SENTINEL_MATERIAL;\n    }\n}\nfunction emptyTextureOptions() {\n    return {\n        colorCorrection: false,\n        horizontalBlending: true,\n        verticalBlending: true,\n        boostMipMapSharpness: 0,\n        modifyTextureMap: {\n            brightness: 0,\n            contrast: 1,\n        },\n        offset: { u: 0, v: 0, w: 0 },\n        scale: { u: 1, v: 1, w: 1 },\n        turbulence: { u: 0, v: 0, w: 0 },\n        clamp: false,\n        textureResolution: null,\n        bumpMultiplier: 1,\n        imfChan: null,\n        filename: "",\n    };\n}\n\n\n//# sourceURL=webpack:///./src/material.ts?');
-        },
-        "./src/mesh.ts": /*!*********************!*\
-  !*** ./src/mesh.ts ***!
-  \*********************/ /*! exports provided: default */ function(module, __webpack_exports__, __webpack_require__) {
-            "use strict";
-            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Mesh; });\n/* harmony import */ var _layout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./layout */ "./src/layout.ts");\n\n/**\n * The main Mesh class. The constructor will parse through the OBJ file data\n * and collect the vertex, vertex normal, texture, and face information. This\n * information can then be used later on when creating your VBOs. See\n * OBJ.initMeshBuffers for an example of how to use the newly created Mesh\n */\nclass Mesh {\n    /**\n     * Create a Mesh\n     * @param {String} objectData - a string representation of an OBJ file with\n     *     newlines preserved.\n     * @param {Object} options - a JS object containing valid options. See class\n     *     documentation for options.\n     * @param {bool} options.enableWTextureCoord - Texture coordinates can have\n     *     an optional "w" coordinate after the u and v coordinates. This extra\n     *     value can be used in order to perform fancy transformations on the\n     *     textures themselves. Default is to truncate to only the u an v\n     *     coordinates. Passing true will provide a default value of 0 in the\n     *     event that any or all texture coordinates don\'t provide a w value.\n     *     Always use the textureStride attribute in order to determine the\n     *     stride length of the texture coordinates when rendering the element\n     *     array.\n     * @param {bool} options.calcTangentsAndBitangents - Calculate the tangents\n     *     and bitangents when loading of the OBJ is completed. This adds two new\n     *     attributes to the Mesh instance: `tangents` and `bitangents`.\n     */\n    constructor(objectData, options) {\n        this.name = "";\n        this.indicesPerMaterial = [];\n        this.materialsByIndex = {};\n        this.tangents = [];\n        this.bitangents = [];\n        options = options || {};\n        options.materials = options.materials || {};\n        options.enableWTextureCoord = !!options.enableWTextureCoord;\n        // the list of unique vertex, normal, texture, attributes\n        this.vertexNormals = [];\n        this.textures = [];\n        // the indicies to draw the faces\n        this.indices = [];\n        this.textureStride = options.enableWTextureCoord ? 3 : 2;\n        /*\n        The OBJ file format does a sort of compression when saving a model in a\n        program like Blender. There are at least 3 sections (4 including textures)\n        within the file. Each line in a section begins with the same string:\n          * \'v\': indicates vertex section\n          * \'vn\': indicates vertex normal section\n          * \'f\': indicates the faces section\n          * \'vt\': indicates vertex texture section (if textures were used on the model)\n        Each of the above sections (except for the faces section) is a list/set of\n        unique vertices.\n\n        Each line of the faces section contains a list of\n        (vertex, [texture], normal) groups.\n\n        **Note:** The following documentation will use a capital "V" Vertex to\n        denote the above (vertex, [texture], normal) groups whereas a lowercase\n        "v" vertex is used to denote an X, Y, Z coordinate.\n\n        Some examples:\n            // the texture index is optional, both formats are possible for models\n            // without a texture applied\n            f 1/25 18/46 12/31\n            f 1//25 18//46 12//31\n\n            // A 3 vertex face with texture indices\n            f 16/92/11 14/101/22 1/69/1\n\n            // A 4 vertex face\n            f 16/92/11 40/109/40 38/114/38 14/101/22\n\n        The first two lines are examples of a 3 vertex face without a texture applied.\n        The second is an example of a 3 vertex face with a texture applied.\n        The third is an example of a 4 vertex face. Note: a face can contain N\n        number of vertices.\n\n        Each number that appears in one of the groups is a 1-based index\n        corresponding to an item from the other sections (meaning that indexing\n        starts at one and *not* zero).\n\n        For example:\n            `f 16/92/11` is saying to\n              - take the 16th element from the [v] vertex array\n              - take the 92nd element from the [vt] texture array\n              - take the 11th element from the [vn] normal array\n            and together they make a unique vertex.\n        Using all 3+ unique Vertices from the face line will produce a polygon.\n\n        Now, you could just go through the OBJ file and create a new vertex for\n        each face line and WebGL will draw what appears to be the same model.\n        However, vertices will be overlapped and duplicated all over the place.\n\n        Consider a cube in 3D space centered about the origin and each side is\n        2 units long. The front face (with the positive Z-axis pointing towards\n        you) would have a Top Right vertex (looking orthogonal to its normal)\n        mapped at (1,1,1) The right face would have a Top Left vertex (looking\n        orthogonal to its normal) at (1,1,1) and the top face would have a Bottom\n        Right vertex (looking orthogonal to its normal) at (1,1,1). Each face\n        has a vertex at the same coordinates, however, three distinct vertices\n        will be drawn at the same spot.\n\n        To solve the issue of duplicate Vertices (the `(vertex, [texture], normal)`\n        groups), while iterating through the face lines, when a group is encountered\n        the whole group string (\'16/92/11\') is checked to see if it exists in the\n        packed.hashindices object, and if it doesn\'t, the indices it specifies\n        are used to look up each attribute in the corresponding attribute arrays\n        already created. The values are then copied to the corresponding unpacked\n        array (flattened to play nice with WebGL\'s ELEMENT_ARRAY_BUFFER indexing),\n        the group string is added to the hashindices set and the current unpacked\n        index is used as this hashindices value so that the group of elements can\n        be reused. The unpacked index is incremented. If the group string already\n        exists in the hashindices object, its corresponding value is the index of\n        that group and is appended to the unpacked indices array.\n       */\n        const verts = [];\n        const vertNormals = [];\n        const textures = [];\n        const materialNamesByIndex = [];\n        const materialIndicesByName = {};\n        // keep track of what material we\'ve seen last\n        let currentMaterialIndex = -1;\n        let currentObjectByMaterialIndex = 0;\n        // unpacking stuff\n        const unpacked = {\n            verts: [],\n            norms: [],\n            textures: [],\n            hashindices: {},\n            indices: [[]],\n            materialIndices: [],\n            index: 0,\n        };\n        const VERTEX_RE = /^v\\s/;\n        const NORMAL_RE = /^vn\\s/;\n        const TEXTURE_RE = /^vt\\s/;\n        const FACE_RE = /^f\\s/;\n        const WHITESPACE_RE = /\\s+/;\n        const USE_MATERIAL_RE = /^usemtl/;\n        // array of lines separated by the newline\n        const lines = objectData.split("\\n");\n        for (let line of lines) {\n            line = line.trim();\n            if (!line || line.startsWith("#")) {\n                continue;\n            }\n            const elements = line.split(WHITESPACE_RE);\n            elements.shift();\n            if (VERTEX_RE.test(line)) {\n                // if this is a vertex\n                verts.push(...elements);\n            }\n            else if (NORMAL_RE.test(line)) {\n                // if this is a vertex normal\n                vertNormals.push(...elements);\n            }\n            else if (TEXTURE_RE.test(line)) {\n                let coords = elements;\n                // by default, the loader will only look at the U and V\n                // coordinates of the vt declaration. So, this truncates the\n                // elements to only those 2 values. If W texture coordinate\n                // support is enabled, then the texture coordinate is\n                // expected to have three values in it.\n                if (elements.length > 2 && !options.enableWTextureCoord) {\n                    coords = elements.slice(0, 2);\n                }\n                else if (elements.length === 2 && options.enableWTextureCoord) {\n                    // If for some reason W texture coordinate support is enabled\n                    // and only the U and V coordinates are given, then we supply\n                    // the default value of 0 so that the stride length is correct\n                    // when the textures are unpacked below.\n                    coords.push("0");\n                }\n                textures.push(...coords);\n            }\n            else if (USE_MATERIAL_RE.test(line)) {\n                const materialName = elements[0];\n                // check to see if we\'ve ever seen it before\n                if (!(materialName in materialIndicesByName)) {\n                    // new material we\'ve never seen\n                    materialNamesByIndex.push(materialName);\n                    materialIndicesByName[materialName] = materialNamesByIndex.length - 1;\n                    // push new array into indices\n                    // already contains an array at index zero, don\'t add\n                    if (materialIndicesByName[materialName] > 0) {\n                        unpacked.indices.push([]);\n                    }\n                }\n                // keep track of the current material index\n                currentMaterialIndex = materialIndicesByName[materialName];\n                // update current index array\n                currentObjectByMaterialIndex = currentMaterialIndex;\n            }\n            else if (FACE_RE.test(line)) {\n                // if this is a face\n                /*\n                split this face into an array of Vertex groups\n                for example:\n                   f 16/92/11 14/101/22 1/69/1\n                becomes:\n                  [\'16/92/11\', \'14/101/22\', \'1/69/1\'];\n                */\n                const triangles = triangulate(elements);\n                for (const triangle of triangles) {\n                    for (let j = 0, eleLen = triangle.length; j < eleLen; j++) {\n                        const hash = triangle[j] + "," + currentMaterialIndex;\n                        if (hash in unpacked.hashindices) {\n                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);\n                        }\n                        else {\n                            /*\n                        Each element of the face line array is a Vertex which has its\n                        attributes delimited by a forward slash. This will separate\n                        each attribute into another array:\n                            \'19/92/11\'\n                        becomes:\n                            Vertex = [\'19\', \'92\', \'11\'];\n                        where\n                            Vertex[0] is the vertex index\n                            Vertex[1] is the texture index\n                            Vertex[2] is the normal index\n                         Think of faces having Vertices which are comprised of the\n                         attributes location (v), texture (vt), and normal (vn).\n                         */\n                            const vertex = triangle[j].split("/");\n                            // it\'s possible for faces to only specify the vertex\n                            // and the normal. In this case, vertex will only have\n                            // a length of 2 and not 3 and the normal will be the\n                            // second item in the list with an index of 1.\n                            const normalIndex = vertex.length - 1;\n                            /*\n                         The verts, textures, and vertNormals arrays each contain a\n                         flattend array of coordinates.\n\n                         Because it gets confusing by referring to Vertex and then\n                         vertex (both are different in my descriptions) I will explain\n                         what\'s going on using the vertexNormals array:\n\n                         vertex[2] will contain the one-based index of the vertexNormals\n                         section (vn). One is subtracted from this index number to play\n                         nice with javascript\'s zero-based array indexing.\n\n                         Because vertexNormal is a flattened array of x, y, z values,\n                         simple pointer arithmetic is used to skip to the start of the\n                         vertexNormal, then the offset is added to get the correct\n                         component: +0 is x, +1 is y, +2 is z.\n\n                         This same process is repeated for verts and textures.\n                         */\n                            // Vertex position\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);\n                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);\n                            // Vertex textures\n                            if (textures.length) {\n                                const stride = options.enableWTextureCoord ? 3 : 2;\n                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);\n                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);\n                                if (options.enableWTextureCoord) {\n                                    unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);\n                                }\n                            }\n                            // Vertex normals\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);\n                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);\n                            // Vertex material indices\n                            unpacked.materialIndices.push(currentMaterialIndex);\n                            // add the newly created Vertex to the list of indices\n                            unpacked.hashindices[hash] = unpacked.index;\n                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);\n                            // increment the counter\n                            unpacked.index += 1;\n                        }\n                    }\n                }\n            }\n        }\n        this.vertices = unpacked.verts;\n        this.vertexNormals = unpacked.norms;\n        this.textures = unpacked.textures;\n        this.vertexMaterialIndices = unpacked.materialIndices;\n        this.indices = unpacked.indices[currentObjectByMaterialIndex];\n        this.indicesPerMaterial = unpacked.indices;\n        this.materialNames = materialNamesByIndex;\n        this.materialIndices = materialIndicesByName;\n        this.materialsByIndex = {};\n        if (options.calcTangentsAndBitangents) {\n            this.calculateTangentsAndBitangents();\n        }\n    }\n    /**\n     * Calculates the tangents and bitangents of the mesh that forms an orthogonal basis together with the\n     * normal in the direction of the texture coordinates. These are useful for setting up the TBN matrix\n     * when distorting the normals through normal maps.\n     * Method derived from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/\n     *\n     * This method requires the normals and texture coordinates to be parsed and set up correctly.\n     * Adds the tangents and bitangents as members of the class instance.\n     */\n    calculateTangentsAndBitangents() {\n        console.assert(!!(this.vertices &&\n            this.vertices.length &&\n            this.vertexNormals &&\n            this.vertexNormals.length &&\n            this.textures &&\n            this.textures.length), "Missing attributes for calculating tangents and bitangents");\n        const unpacked = {\n            tangents: [...new Array(this.vertices.length)].map(_ => 0),\n            bitangents: [...new Array(this.vertices.length)].map(_ => 0),\n        };\n        // Loop through all faces in the whole mesh\n        const indices = this.indices;\n        const vertices = this.vertices;\n        const normals = this.vertexNormals;\n        const uvs = this.textures;\n        for (let i = 0; i < indices.length; i += 3) {\n            const i0 = indices[i + 0];\n            const i1 = indices[i + 1];\n            const i2 = indices[i + 2];\n            const x_v0 = vertices[i0 * 3 + 0];\n            const y_v0 = vertices[i0 * 3 + 1];\n            const z_v0 = vertices[i0 * 3 + 2];\n            const x_uv0 = uvs[i0 * 2 + 0];\n            const y_uv0 = uvs[i0 * 2 + 1];\n            const x_v1 = vertices[i1 * 3 + 0];\n            const y_v1 = vertices[i1 * 3 + 1];\n            const z_v1 = vertices[i1 * 3 + 2];\n            const x_uv1 = uvs[i1 * 2 + 0];\n            const y_uv1 = uvs[i1 * 2 + 1];\n            const x_v2 = vertices[i2 * 3 + 0];\n            const y_v2 = vertices[i2 * 3 + 1];\n            const z_v2 = vertices[i2 * 3 + 2];\n            const x_uv2 = uvs[i2 * 2 + 0];\n            const y_uv2 = uvs[i2 * 2 + 1];\n            const x_deltaPos1 = x_v1 - x_v0;\n            const y_deltaPos1 = y_v1 - y_v0;\n            const z_deltaPos1 = z_v1 - z_v0;\n            const x_deltaPos2 = x_v2 - x_v0;\n            const y_deltaPos2 = y_v2 - y_v0;\n            const z_deltaPos2 = z_v2 - z_v0;\n            const x_uvDeltaPos1 = x_uv1 - x_uv0;\n            const y_uvDeltaPos1 = y_uv1 - y_uv0;\n            const x_uvDeltaPos2 = x_uv2 - x_uv0;\n            const y_uvDeltaPos2 = y_uv2 - y_uv0;\n            const rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;\n            const r = 1.0 / Math.abs(rInv < 0.0001 ? 1.0 : rInv);\n            // Tangent\n            const x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;\n            const y_tangent = (y_deltaPos1 * y_uvDeltaPos2 - y_deltaPos2 * y_uvDeltaPos1) * r;\n            const z_tangent = (z_deltaPos1 * y_uvDeltaPos2 - z_deltaPos2 * y_uvDeltaPos1) * r;\n            // Bitangent\n            const x_bitangent = (x_deltaPos2 * x_uvDeltaPos1 - x_deltaPos1 * x_uvDeltaPos2) * r;\n            const y_bitangent = (y_deltaPos2 * x_uvDeltaPos1 - y_deltaPos1 * x_uvDeltaPos2) * r;\n            const z_bitangent = (z_deltaPos2 * x_uvDeltaPos1 - z_deltaPos1 * x_uvDeltaPos2) * r;\n            // Gram-Schmidt orthogonalize\n            //t = glm::normalize(t - n * glm:: dot(n, t));\n            const x_n0 = normals[i0 * 3 + 0];\n            const y_n0 = normals[i0 * 3 + 1];\n            const z_n0 = normals[i0 * 3 + 2];\n            const x_n1 = normals[i1 * 3 + 0];\n            const y_n1 = normals[i1 * 3 + 1];\n            const z_n1 = normals[i1 * 3 + 2];\n            const x_n2 = normals[i2 * 3 + 0];\n            const y_n2 = normals[i2 * 3 + 1];\n            const z_n2 = normals[i2 * 3 + 2];\n            // Tangent\n            const n0_dot_t = x_tangent * x_n0 + y_tangent * y_n0 + z_tangent * z_n0;\n            const n1_dot_t = x_tangent * x_n1 + y_tangent * y_n1 + z_tangent * z_n1;\n            const n2_dot_t = x_tangent * x_n2 + y_tangent * y_n2 + z_tangent * z_n2;\n            const x_resTangent0 = x_tangent - x_n0 * n0_dot_t;\n            const y_resTangent0 = y_tangent - y_n0 * n0_dot_t;\n            const z_resTangent0 = z_tangent - z_n0 * n0_dot_t;\n            const x_resTangent1 = x_tangent - x_n1 * n1_dot_t;\n            const y_resTangent1 = y_tangent - y_n1 * n1_dot_t;\n            const z_resTangent1 = z_tangent - z_n1 * n1_dot_t;\n            const x_resTangent2 = x_tangent - x_n2 * n2_dot_t;\n            const y_resTangent2 = y_tangent - y_n2 * n2_dot_t;\n            const z_resTangent2 = z_tangent - z_n2 * n2_dot_t;\n            const magTangent0 = Math.sqrt(x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0);\n            const magTangent1 = Math.sqrt(x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1);\n            const magTangent2 = Math.sqrt(x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2);\n            // Bitangent\n            const n0_dot_bt = x_bitangent * x_n0 + y_bitangent * y_n0 + z_bitangent * z_n0;\n            const n1_dot_bt = x_bitangent * x_n1 + y_bitangent * y_n1 + z_bitangent * z_n1;\n            const n2_dot_bt = x_bitangent * x_n2 + y_bitangent * y_n2 + z_bitangent * z_n2;\n            const x_resBitangent0 = x_bitangent - x_n0 * n0_dot_bt;\n            const y_resBitangent0 = y_bitangent - y_n0 * n0_dot_bt;\n            const z_resBitangent0 = z_bitangent - z_n0 * n0_dot_bt;\n            const x_resBitangent1 = x_bitangent - x_n1 * n1_dot_bt;\n            const y_resBitangent1 = y_bitangent - y_n1 * n1_dot_bt;\n            const z_resBitangent1 = z_bitangent - z_n1 * n1_dot_bt;\n            const x_resBitangent2 = x_bitangent - x_n2 * n2_dot_bt;\n            const y_resBitangent2 = y_bitangent - y_n2 * n2_dot_bt;\n            const z_resBitangent2 = z_bitangent - z_n2 * n2_dot_bt;\n            const magBitangent0 = Math.sqrt(x_resBitangent0 * x_resBitangent0 +\n                y_resBitangent0 * y_resBitangent0 +\n                z_resBitangent0 * z_resBitangent0);\n            const magBitangent1 = Math.sqrt(x_resBitangent1 * x_resBitangent1 +\n                y_resBitangent1 * y_resBitangent1 +\n                z_resBitangent1 * z_resBitangent1);\n            const magBitangent2 = Math.sqrt(x_resBitangent2 * x_resBitangent2 +\n                y_resBitangent2 * y_resBitangent2 +\n                z_resBitangent2 * z_resBitangent2);\n            unpacked.tangents[i0 * 3 + 0] += x_resTangent0 / magTangent0;\n            unpacked.tangents[i0 * 3 + 1] += y_resTangent0 / magTangent0;\n            unpacked.tangents[i0 * 3 + 2] += z_resTangent0 / magTangent0;\n            unpacked.tangents[i1 * 3 + 0] += x_resTangent1 / magTangent1;\n            unpacked.tangents[i1 * 3 + 1] += y_resTangent1 / magTangent1;\n            unpacked.tangents[i1 * 3 + 2] += z_resTangent1 / magTangent1;\n            unpacked.tangents[i2 * 3 + 0] += x_resTangent2 / magTangent2;\n            unpacked.tangents[i2 * 3 + 1] += y_resTangent2 / magTangent2;\n            unpacked.tangents[i2 * 3 + 2] += z_resTangent2 / magTangent2;\n            unpacked.bitangents[i0 * 3 + 0] += x_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i0 * 3 + 1] += y_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i0 * 3 + 2] += z_resBitangent0 / magBitangent0;\n            unpacked.bitangents[i1 * 3 + 0] += x_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i1 * 3 + 1] += y_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i1 * 3 + 2] += z_resBitangent1 / magBitangent1;\n            unpacked.bitangents[i2 * 3 + 0] += x_resBitangent2 / magBitangent2;\n            unpacked.bitangents[i2 * 3 + 1] += y_resBitangent2 / magBitangent2;\n            unpacked.bitangents[i2 * 3 + 2] += z_resBitangent2 / magBitangent2;\n            // TODO: check handedness\n        }\n        this.tangents = unpacked.tangents;\n        this.bitangents = unpacked.bitangents;\n    }\n    /**\n     * @param layout - A {@link Layout} object that describes the\n     * desired memory layout of the generated buffer\n     * @return The packed array in the ... TODO\n     */\n    makeBufferData(layout) {\n        const numItems = this.vertices.length / 3;\n        const buffer = new ArrayBuffer(layout.stride * numItems);\n        buffer.numItems = numItems;\n        const dataView = new DataView(buffer);\n        for (let i = 0, vertexOffset = 0; i < numItems; i++) {\n            vertexOffset = i * layout.stride;\n            // copy in the vertex data in the order and format given by the\n            // layout param\n            for (const attribute of layout.attributes) {\n                const offset = vertexOffset + layout.attributeMap[attribute.key].offset;\n                switch (attribute.key) {\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].POSITION.key:\n                        dataView.setFloat32(offset, this.vertices[i * 3], true);\n                        dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);\n                        dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].UV.key:\n                        dataView.setFloat32(offset, this.textures[i * 2], true);\n                        dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].NORMAL.key:\n                        dataView.setFloat32(offset, this.vertexNormals[i * 3], true);\n                        dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);\n                        dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].MATERIAL_INDEX.key:\n                        dataView.setInt16(offset, this.vertexMaterialIndices[i], true);\n                        break;\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].AMBIENT.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.ambient[0], true);\n                        dataView.setFloat32(offset + 4, material.ambient[1], true);\n                        dataView.setFloat32(offset + 8, material.ambient[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].DIFFUSE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.diffuse[0], true);\n                        dataView.setFloat32(offset + 4, material.diffuse[1], true);\n                        dataView.setFloat32(offset + 8, material.diffuse[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SPECULAR.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.specular[0], true);\n                        dataView.setFloat32(offset + 4, material.specular[1], true);\n                        dataView.setFloat32(offset + 8, material.specular[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SPECULAR_EXPONENT.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.specularExponent, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].EMISSIVE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.emissive[0], true);\n                        dataView.setFloat32(offset + 4, material.emissive[1], true);\n                        dataView.setFloat32(offset + 8, material.emissive[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].TRANSMISSION_FILTER.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.transmissionFilter[0], true);\n                        dataView.setFloat32(offset + 4, material.transmissionFilter[1], true);\n                        dataView.setFloat32(offset + 8, material.transmissionFilter[2], true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].DISSOLVE.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.dissolve, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].ILLUMINATION.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setInt16(offset, material.illumination, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].REFRACTION_INDEX.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.refractionIndex, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].SHARPNESS.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setFloat32(offset, material.sharpness, true);\n                        break;\n                    }\n                    case _layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].ANTI_ALIASING.key: {\n                        const materialIndex = this.vertexMaterialIndices[i];\n                        const material = this.materialsByIndex[materialIndex];\n                        if (!material) {\n                            console.warn(\'Material "\' +\n                                this.materialNames[materialIndex] +\n                                \'" not found in mesh. Did you forget to call addMaterialLibrary(...)?"\');\n                            break;\n                        }\n                        dataView.setInt16(offset, material.antiAliasing ? 1 : 0, true);\n                        break;\n                    }\n                }\n            }\n        }\n        return buffer;\n    }\n    makeIndexBufferData() {\n        const buffer = new Uint16Array(this.indices);\n        buffer.numItems = this.indices.length;\n        return buffer;\n    }\n    makeIndexBufferDataForMaterials(...materialIndices) {\n        const indices = new Array().concat(...materialIndices.map(mtlIdx => this.indicesPerMaterial[mtlIdx]));\n        const buffer = new Uint16Array(indices);\n        buffer.numItems = indices.length;\n        return buffer;\n    }\n    addMaterialLibrary(mtl) {\n        for (const name in mtl.materials) {\n            if (!(name in this.materialIndices)) {\n                // This material is not referenced by the mesh\n                continue;\n            }\n            const material = mtl.materials[name];\n            // Find the material index for this material\n            const materialIndex = this.materialIndices[material.name];\n            // Put the material into the materialsByIndex object at the right\n            // spot as determined when the obj file was parsed\n            this.materialsByIndex[materialIndex] = material;\n        }\n    }\n}\nfunction* triangulate(elements) {\n    if (elements.length <= 3) {\n        yield elements;\n    }\n    else if (elements.length === 4) {\n        yield [elements[0], elements[1], elements[2]];\n        yield [elements[2], elements[3], elements[0]];\n    }\n    else {\n        for (let i = 1; i < elements.length - 1; i++) {\n            yield [elements[0], elements[i], elements[i + 1]];\n        }\n    }\n}\n\n\n//# sourceURL=webpack:///./src/mesh.ts?');
-        },
-        "./src/utils.ts": /*!**********************!*\
-  !*** ./src/utils.ts ***!
-  \**********************/ /*! exports provided: downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers */ function(module, __webpack_exports__, __webpack_require__) {
-            "use strict";
-            eval('__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "downloadModels", function() { return downloadModels; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "downloadMeshes", function() { return downloadMeshes; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "initMeshBuffers", function() { return initMeshBuffers; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "deleteMeshBuffers", function() { return deleteMeshBuffers; });\n/* harmony import */ var _mesh__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mesh */ "./src/mesh.ts");\n/* harmony import */ var _material__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./material */ "./src/material.ts");\n\n\nfunction downloadMtlTextures(mtl, root) {\n    const mapAttributes = [\n        "mapDiffuse",\n        "mapAmbient",\n        "mapSpecular",\n        "mapDissolve",\n        "mapBump",\n        "mapDisplacement",\n        "mapDecal",\n        "mapEmissive",\n    ];\n    if (!root.endsWith("/")) {\n        root += "/";\n    }\n    const textures = [];\n    for (const materialName in mtl.materials) {\n        if (!mtl.materials.hasOwnProperty(materialName)) {\n            continue;\n        }\n        const material = mtl.materials[materialName];\n        for (const attr of mapAttributes) {\n            const mapData = material[attr];\n            if (!mapData || !mapData.filename) {\n                continue;\n            }\n            const url = root + mapData.filename;\n            textures.push(fetch(url)\n                .then(response => {\n                if (!response.ok) {\n                    throw new Error();\n                }\n                return response.blob();\n            })\n                .then(function (data) {\n                const image = new Image();\n                image.src = URL.createObjectURL(data);\n                mapData.texture = image;\n                return new Promise(resolve => (image.onload = resolve));\n            })\n                .catch(() => {\n                console.error(`Unable to download texture: ${url}`);\n            }));\n        }\n    }\n    return Promise.all(textures);\n}\nfunction getMtl(modelOptions) {\n    if (!(typeof modelOptions.mtl === "string")) {\n        return modelOptions.obj.replace(/\\.obj$/, ".mtl");\n    }\n    return modelOptions.mtl;\n}\n/**\n * Accepts a list of model request objects and returns a Promise that\n * resolves when all models have been downloaded and parsed.\n *\n * The list of model objects follow this interface:\n * {\n *  obj: \'path/to/model.obj\',\n *  mtl: true | \'path/to/model.mtl\',\n *  downloadMtlTextures: true | false\n *  mtlTextureRoot: \'/models/suzanne/maps\'\n *  name: \'suzanne\'\n * }\n *\n * The `obj` attribute is required and should be the path to the\n * model\'s .obj file relative to the current repo (absolute URLs are\n * suggested).\n *\n * The `mtl` attribute is optional and can either be a boolean or\n * a path to the model\'s .mtl file relative to the current URL. If\n * the value is `true`, then the path and basename given for the `obj`\n * attribute is used replacing the .obj suffix for .mtl\n * E.g.: {obj: \'models/foo.obj\', mtl: true} would search for \'models/foo.mtl\'\n *\n * The `name` attribute is optional and is a human friendly name to be\n * included with the parsed OBJ and MTL files. If not given, the base .obj\n * filename will be used.\n *\n * The `downloadMtlTextures` attribute is a flag for automatically downloading\n * any images found in the MTL file and attaching them to each Material\n * created from that file. For example, if material.mapDiffuse is set (there\n * was data in the MTL file), then material.mapDiffuse.texture will contain\n * the downloaded image. This option defaults to `true`. By default, the MTL\'s\n * URL will be used to determine the location of the images.\n *\n * The `mtlTextureRoot` attribute is optional and should point to the location\n * on the server that this MTL\'s texture files are located. The default is to\n * use the MTL file\'s location.\n *\n * @returns {Promise} the result of downloading the given list of models. The\n * promise will resolve with an object whose keys are the names of the models\n * and the value is its Mesh object. Each Mesh object will automatically\n * have its addMaterialLibrary() method called to set the given MTL data (if given).\n */\nfunction downloadModels(models) {\n    const finished = [];\n    for (const model of models) {\n        if (!model.obj) {\n            throw new Error(\'"obj" attribute of model object not set. The .obj file is required to be set \' +\n                "in order to use downloadModels()");\n        }\n        const options = {\n            indicesPerMaterial: !!model.indicesPerMaterial,\n            calcTangentsAndBitangents: !!model.calcTangentsAndBitangents,\n        };\n        // if the name is not provided, dervive it from the given OBJ\n        let name = model.name;\n        if (!name) {\n            const parts = model.obj.split("/");\n            name = parts[parts.length - 1].replace(".obj", "");\n        }\n        const namePromise = Promise.resolve(name);\n        const meshPromise = fetch(model.obj)\n            .then(response => response.text())\n            .then(data => {\n            return new _mesh__WEBPACK_IMPORTED_MODULE_0__["default"](data, options);\n        });\n        let mtlPromise;\n        // Download MaterialLibrary file?\n        if (model.mtl) {\n            const mtl = getMtl(model);\n            mtlPromise = fetch(mtl)\n                .then(response => response.text())\n                .then((data) => {\n                const material = new _material__WEBPACK_IMPORTED_MODULE_1__["MaterialLibrary"](data);\n                if (model.downloadMtlTextures !== false) {\n                    let root = model.mtlTextureRoot;\n                    if (!root) {\n                        // get the directory of the MTL file as default\n                        root = mtl.substr(0, mtl.lastIndexOf("/"));\n                    }\n                    // downloadMtlTextures returns a Promise that\n                    // is resolved once all of the images it\n                    // contains are downloaded. These are then\n                    // attached to the map data objects\n                    return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);\n                }\n                return Promise.all([Promise.resolve(material), undefined]);\n            })\n                .then((value) => {\n                return value[0];\n            });\n        }\n        const parsed = [namePromise, meshPromise, mtlPromise];\n        finished.push(Promise.all(parsed));\n    }\n    return Promise.all(finished).then(ms => {\n        // the "finished" promise is a list of name, Mesh instance,\n        // and MaterialLibary instance. This unpacks and returns an\n        // object mapping name to Mesh (Mesh points to MTL).\n        const models = {};\n        for (const model of ms) {\n            const [name, mesh, mtl] = model;\n            mesh.name = name;\n            if (mtl) {\n                mesh.addMaterialLibrary(mtl);\n            }\n            models[name] = mesh;\n        }\n        return models;\n    });\n}\n/**\n * Takes in an object of `mesh_name`, `\'/url/to/OBJ/file\'` pairs and a callback\n * function. Each OBJ file will be ajaxed in and automatically converted to\n * an OBJ.Mesh. When all files have successfully downloaded the callback\n * function provided will be called and passed in an object containing\n * the newly created meshes.\n *\n * **Note:** In order to use this function as a way to download meshes, a\n * webserver of some sort must be used.\n *\n * @param {Object} nameAndAttrs an object where the key is the name of the mesh and the value is the url to that mesh\'s OBJ file\n *\n * @param {Function} completionCallback should contain a function that will take one parameter: an object array where the keys will be the unique object name and the value will be a Mesh object\n *\n * @param {Object} meshes In case other meshes are loaded separately or if a previously declared variable is desired to be used, pass in a (possibly empty) json object of the pattern: { \'<mesh_name>\': OBJ.Mesh }\n *\n */\nfunction downloadMeshes(nameAndURLs, completionCallback, meshes) {\n    if (meshes === undefined) {\n        meshes = {};\n    }\n    const completed = [];\n    for (const mesh_name in nameAndURLs) {\n        if (!nameAndURLs.hasOwnProperty(mesh_name)) {\n            continue;\n        }\n        const url = nameAndURLs[mesh_name];\n        completed.push(fetch(url)\n            .then(response => response.text())\n            .then(data => {\n            return [mesh_name, new _mesh__WEBPACK_IMPORTED_MODULE_0__["default"](data)];\n        }));\n    }\n    Promise.all(completed).then(ms => {\n        for (const [name, mesh] of ms) {\n            meshes[name] = mesh;\n        }\n        return completionCallback(meshes);\n    });\n}\nfunction _buildBuffer(gl, type, data, itemSize) {\n    const buffer = gl.createBuffer();\n    const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;\n    gl.bindBuffer(type, buffer);\n    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);\n    buffer.itemSize = itemSize;\n    buffer.numItems = data.length / itemSize;\n    return buffer;\n}\n/**\n * Takes in the WebGL context and a Mesh, then creates and appends the buffers\n * to the mesh object as attributes.\n *\n * @param {WebGLRenderingContext} gl the `canvas.getContext(\'webgl\')` context instance\n * @param {Mesh} mesh a single `OBJ.Mesh` instance\n *\n * The newly created mesh attributes are:\n *\n * Attrbute | Description\n * :--- | ---\n * **normalBuffer**       |contains the model&#39;s Vertex Normals\n * normalBuffer.itemSize  |set to 3 items\n * normalBuffer.numItems  |the total number of vertex normals\n * |\n * **textureBuffer**      |contains the model&#39;s Texture Coordinates\n * textureBuffer.itemSize |set to 2 items\n * textureBuffer.numItems |the number of texture coordinates\n * |\n * **vertexBuffer**       |contains the model&#39;s Vertex Position Coordinates (does not include w)\n * vertexBuffer.itemSize  |set to 3 items\n * vertexBuffer.numItems  |the total number of vertices\n * |\n * **indexBuffer**        |contains the indices of the faces\n * indexBuffer.itemSize   |is set to 1\n * indexBuffer.numItems   |the total number of indices\n *\n * A simple example (a lot of steps are missing, so don\'t copy and paste):\n *\n *     const gl   = canvas.getContext(\'webgl\'),\n *         mesh = OBJ.Mesh(obj_file_data);\n *     // compile the shaders and create a shader program\n *     const shaderProgram = gl.createProgram();\n *     // compilation stuff here\n *     ...\n *     // make sure you have vertex, vertex normal, and texture coordinate\n *     // attributes located in your shaders and attach them to the shader program\n *     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");\n *     gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);\n *\n *     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");\n *     gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);\n *\n *     shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");\n *     gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *\n *     // create and initialize the vertex, vertex normal, and texture coordinate buffers\n *     // and save on to the mesh object\n *     OBJ.initMeshBuffers(gl, mesh);\n *\n *     // now to render the mesh\n *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);\n *     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *     // it\'s possible that the mesh doesn\'t contain\n *     // any texture coordinates (e.g. suzanne.obj in the development branch).\n *     // in this case, the texture vertexAttribArray will need to be disabled\n *     // before the call to drawElements\n *     if(!mesh.textures.length){\n *       gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *     }\n *     else{\n *       // if the texture vertexAttribArray has been previously\n *       // disabled, then it needs to be re-enabled\n *       gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);\n *       gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);\n *       gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *     }\n *\n *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);\n *     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);\n *\n *     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);\n *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);\n */\nfunction initMeshBuffers(gl, mesh) {\n    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);\n    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);\n    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);\n    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);\n    return mesh;\n}\nfunction deleteMeshBuffers(gl, mesh) {\n    gl.deleteBuffer(mesh.normalBuffer);\n    gl.deleteBuffer(mesh.textureBuffer);\n    gl.deleteBuffer(mesh.vertexBuffer);\n    gl.deleteBuffer(mesh.indexBuffer);\n}\n\n\n//# sourceURL=webpack:///./src/utils.ts?');
-        },
-        0: /*!****************************!*\
-  !*** multi ./src/index.ts ***!
-  \****************************/ /*! no static exports found */ function(module, exports, __webpack_require__) {
-            eval('module.exports = __webpack_require__(/*! /home/aaron/google_drive/projects/webgl-obj-loader/src/index.ts */"./src/index.ts");\n\n\n//# sourceURL=webpack:///multi_./src/index.ts?');
-        }
-    });
-});
-
-},{}],"cdQWH":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.getFileNamesChair = exports.getFileNamesChair2 = exports.getFileNamesMario = exports.getFileNamesPlane = exports.getFileNamesCube = exports.getFileNamesRubik = exports.getFileNamesCat = exports.getFileNamesGreenhouse = exports.getFileNamesBuilding = exports.getFileNamesStone = exports.getFileNamesKoenigsEgg = void 0;
-function getFileNamesKoenigsEgg() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/koenigsegg/koenigsegg.obj");
-    var cmatname = require("./../resources/models/koenigsegg/koenigsegg.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesKoenigsEgg = getFileNamesKoenigsEgg;
-function getFileNamesStone() {
-    var cfiles = [];
-    cfiles.push({
-        fName: "stone12021_01.jpg",
-        fNameResolved: require("./../resources/models/stone/stone12021_01.jpg")
-    });
-    var cobjname = require("./../resources/models/stone/stone12021_01.obj");
-    var cmatname = require("./../resources/models/stone/stone12021_01.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesStone = getFileNamesStone;
-function getFileNamesBuilding() {
-    var cfiles = [];
-    cfiles.push({
-        fName: "stone12021_01.png",
-        fNameResolved: require("./../resources/models/stone/stone12021_01.png")
-    });
-    var cobjname = require("./../resources/models/building/building_04a.obj");
-    var cmatname = require("./../resources/models/building/building_04.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesBuilding = getFileNamesBuilding;
-function getFileNamesGreenhouse() {
-    var cfiles = [];
-    cfiles.push({
-        fName: "greenhouse_flooring.png",
-        fNameResolved: require("./../resources/models/greenhouse/greenhouse_flooring.png")
-    });
-    var cobjname = require("./../resources/models/greenhouse/greenhouse.obj");
-    var cmatname = require("./../resources/models/greenhouse/greenhouse.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesGreenhouse = getFileNamesGreenhouse;
-function getFileNamesCat() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/cat/12221_Cat_v1_l3.obj");
-    var cmatname = require("./../resources/models/cat/12221_Cat_v1_l3.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesCat = getFileNamesCat;
-function getFileNamesRubik() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/rubik/xrubik.obj");
-    var cmatname = require("./../resources/models/rubik/xrubik.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesRubik = getFileNamesRubik;
-function getFileNamesCube() {
-    var cfiles = [];
-    cfiles.push({
-        fName: "clover.jpg",
-        fNameResolved: require("./../resources/models/stone/clover.jpg")
-    });
-    cfiles.push({
-        fName: "Di-3d.png",
-        fNameResolved: require("./../resources/models/stone/Di-3d.png")
-    });
-    cfiles.push({
-        fName: "stone12021_01.png",
-        fNameResolved: require("./../resources/models/stone/stone12021_01.png")
-    });
-    cfiles.push({
-        fName: "zelenskyycube.jpg",
-        fNameResolved: require("./../resources/models/stone/zelenskyycube.jpg")
-    });
-    var cobjname = require("./../resources/models/cube/cube2.obj");
-    var cmatname = require("./../resources/models/cube/cube2.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesCube = getFileNamesCube;
-function getFileNamesPlane() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/plane/plane.obj");
-    var cmatname = require("./../resources/models/plane/plane.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesPlane = getFileNamesPlane;
-function getFileNamesMario() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/mario/mario-sculpture.obj");
-    var cmatname = require("./../resources/models/mario/mario-sculpture.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesMario = getFileNamesMario;
-function getFileNamesChair2() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/chair/willisau_riale.obj");
-    var cmatname = require("./../resources/models/chair/willisau_riale.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesChair2 = getFileNamesChair2;
-function getFileNamesChair() {
-    var cfiles = [];
-    var cobjname = require("./../resources/models/chair/chair.obj");
-    var cmatname = require("./../resources/models/chair/chair.mtl");
-    return {
-        cobjname,
-        cmatname,
-        cfiles
-    };
-}
-exports.getFileNamesChair = getFileNamesChair;
-
-},{"./../resources/models/koenigsegg/koenigsegg.obj":"1xJq5","./../resources/models/koenigsegg/koenigsegg.mtl":"7l8tN","./../resources/models/stone/stone12021_01.jpg":"Z9Rjf","./../resources/models/stone/stone12021_01.obj":"dIAFL","./../resources/models/stone/stone12021_01.mtl":"jqwyh","./../resources/models/stone/stone12021_01.png":"gVMOm","./../resources/models/building/building_04a.obj":"bp1la","./../resources/models/building/building_04.mtl":"8zC3u","./../resources/models/greenhouse/greenhouse_flooring.png":"gigXQ","./../resources/models/greenhouse/greenhouse.obj":"dl1xS","./../resources/models/greenhouse/greenhouse.mtl":"acdEn","./../resources/models/cat/12221_Cat_v1_l3.obj":"jTKAI","./../resources/models/cat/12221_Cat_v1_l3.mtl":"3zKC9","./../resources/models/rubik/xrubik.obj":"fZxyN","./../resources/models/rubik/xrubik.mtl":"bguwy","./../resources/models/stone/clover.jpg":"cS5ze","./../resources/models/stone/Di-3d.png":"hG8vP","./../resources/models/stone/zelenskyycube.jpg":"0393A","./../resources/models/cube/cube2.obj":"kgQxU","./../resources/models/cube/cube2.mtl":"ldq2n","./../resources/models/plane/plane.obj":"aq2Ph","./../resources/models/plane/plane.mtl":"l5PEl","./../resources/models/mario/mario-sculpture.obj":"gIudg","./../resources/models/mario/mario-sculpture.mtl":"9zmWL","./../resources/models/chair/willisau_riale.obj":"lg9C7","./../resources/models/chair/willisau_riale.mtl":"cJdff","./../resources/models/chair/chair.obj":"hDYgj","./../resources/models/chair/chair.mtl":"cDjVC"}],"1xJq5":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "koenigsegg.551b58eb.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"7l8tN":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "koenigsegg.d37e8707.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"Z9Rjf":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.a78720f3.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"dIAFL":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.44d0fbe0.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"jqwyh":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.3cb81356.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"gVMOm":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "stone12021_01.78afeac0.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"bp1la":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "building_04a.71b1527a.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"8zC3u":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "building_04.9c45643c.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"gigXQ":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse_flooring.e7aae741.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"dl1xS":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse.99847e95.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"acdEn":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "greenhouse.35793745.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"jTKAI":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "12221_Cat_v1_l3.553c92a2.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"3zKC9":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "12221_Cat_v1_l3.0bc61995.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"fZxyN":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "xrubik.77a38852.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"bguwy":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "xrubik.f01b8af1.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"hG8vP":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "Di-3d.ab5d1a68.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"0393A":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "zelenskyycube.d98da9c1.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"kgQxU":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "cube2.8c63359a.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"ldq2n":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "cube2.5d66a165.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"aq2Ph":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.20cdb81a.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"l5PEl":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "plane.2ea8e87c.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"gIudg":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.0c0037de.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"9zmWL":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "mario-sculpture.e2a0597d.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"lg9C7":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "willisau_riale.ac5452da.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"cJdff":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "willisau_riale.c31a390c.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"hDYgj":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.05726ad2.obj" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"cDjVC":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "chair.a0644976.mtl" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"6mdLk":[function(require,module,exports) {
-"use strict";
-//import * as twgl from "./../node_modules/twgl.js";    // Greg's work
-//import { m4 } from "./../node_modules/twgl.js";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.SkeletonScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-//import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-//import { FishV } from "../bonemodel/fishv";
-const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
-class SkeletonScene {
-    constructor(cgl, capp, dictpar, cdiv){
-        // SceneInterface only, skybox is shown in animation container (now animation1.ts)
-        this.scenesize = 40;
-        this.sceneenv = 2;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        this.bufferInfo = null;
-        this.skinVAO = null;
-        this.phase0 = 0.0; //2.0; // 143 degrees 
-        // super(cgl, capp, dictpar, cdiv);
-        SkeletonScene.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
-        gui.add(this.animationParameters, "movetail");
-    }
-    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
-    initScene(gl, cap, dictpar, p, textureReadyCallback) {
-        var time0 = 0;
-        // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
-        var spar;
-        if ((spar = dictpar.get("phase2")) != undefined) this.phase0 = +spar;
-        this.afish = new fishvtranslated_1.FishVTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.005, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = 0.0; //(this.skeletonParameters.move)?0.06:0.0;
-        this.afish.prepareSurfaceTextures(gl, "zelenskyy");
-        this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
-        this.afish.numBones = this.afish.mesh.type == gl.TRIANGLE_STRIP ? this.afish.mesh.nsegments / this.afish.mesh.bonediv : this.afish.mesh.nsegments;
-        this.afish.createBoneTexture(gl, time0, dictpar);
-        this.afish.createSurfaceTexture(gl);
-        this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
-        this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        textureReadyCallback(0);
-    }
-    //------------------------------------------------------------------------------------------------------------------------------------
-    drawScene(gl, cam, time) {
-        var uniforms = this.uniforms;
-        uniforms.viewprojection = cam.viewProjection;
-        gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = 0.0; //(this.skeletonParameters!.move)?(this.animationParameters!.b.speed):0.0;
-        this.afish.computeBone(time, false, this.animationParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            20.0,
-            -20,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -15,
-            0.0,
-            0.0
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, false, this.animationParameters.movetail);
-        this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            50.0,
-            -10,
-            10.0
-        ]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [
-            -50,
-            5.0,
-            -10
-        ]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
-        twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-    }
-}
-exports.SkeletonScene = SkeletonScene;
-
-},{"twgl.js":"3uqAP","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishvtranslated":"40Zci"}],"40Zci":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishVTranslated = void 0;
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const fish = __importStar(require("./fish"));
-class FishVTranslated extends fish.Fish {
-    prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishVPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishVPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    computeBoneMatrices(bones, di) {
-        /*
-         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
-         for (var i = 0; i < bones.length; i++)
-         {
-             m4.translate(m4.identity(),[this.px,
-                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
-                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
-                            bones[i]);
-            this.py+=0.0;
-            this.pz+=0.00000;
-            amp+=this.scale*damp;
-            
-         }
-         */ var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arange = this.arange * 2.0 * Math.PI;
-        for(var i = 0; i < bones.length; i++){
-            var m = twgl_js_1.m4.identity();
-            var normx = i;
-            normx = normx / bones.length;
-            var ay = arange * (normx * di);
-            var az = arange * (normx * di);
-            twgl_js_1.m4.translate(m, [
-                this.px,
-                this.py + amp * 10.0 * Math.cos(0.5 * ay),
-                this.pz + amp * Math.sin(1.0 * az)
-            ], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
-            amp += this.size * damp;
-        }
-    //   this.px+=-this.forwardspeed; // * bones.length;      
-    }
-}
-exports.FishVTranslated = FishVTranslated;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"7ZHPR":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishAnimationScene = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const animationclock = __importStar(require("../baseapp/animationclock"));
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-const fishonejoint = __importStar(require("./../bonemodel/fishonejoint"));
-const fishv = __importStar(require("./../bonemodel/fishv"));
-const fishhrotated = __importStar(require("./../bonemodel/fishhrotated"));
-const fishvtranslated = __importStar(require("./../bonemodel/fishvtranslated"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class FishAnimationScene {
-    constructor(cgl, capp, dictpar, cdiv){
-        this.scenesize = 40;
-        this.sceneenv = 2;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
-        this.fish = [
-            new fishvtranslated.FishVTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999, 2.1, "gradient", 0.6, [
-                0.0,
-                0.0,
-                1.0
-            ]),
-            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fishvtranslated.FishVTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
-        ];
-        this.fishjointcounts = [
-            1,
-            28,
-            1,
-            1,
-            1
-        ];
-        this.fishpositions = [
-            [
-                [
-                    0.0,
-                    -20,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    -15,
-                    15,
-                    0
-                ]
-            ],
-            [
-                [
-                    20.0,
-                    -5,
-                    -15
-                ]
-            ],
-            [
-                [
-                    -10,
-                    -5,
-                    0.0
-                ]
-            ],
-            [
-                [
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            ]
-        ];
-        this.clock = new animationclock.AnimationClock();
-        FishAnimationScene.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [
-            boneanimation.vsSkeleton,
-            boneanimation.fsSkeleton
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
-        gui.add(this.animationParameters, "movetail");
-    }
-    initScene(gl, cap, dictpar, p, textureReadyCallback) {
-        var nFish = 0;
-        var time0 = 0;
-        this.fish.forEach((afish)=>{
-            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
-            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
-            afish.setNumBones(gl);
-            afish.createBoneTexture(gl, time0, dictpar);
-            afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
-            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
-            nFish++;
-            if (nFish == this.fish.length) textureReadyCallback(0);
-        });
-    }
-    drawScene(gl, cam, time) {
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++)this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
-        for(var fishtype = 0; fishtype < this.fish.length; fishtype++){
-            gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = this.animationParameters.b.move ? this.animationParameters.b.speed : 0.0;
-            if (this.fishjointcounts[fishtype] == 1) {
-                this.fish[fishtype].computeBone(time, this.animationParameters.b.move, this.animationParameters.movetail);
-                this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
-                this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
-                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-            } else {
-                var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
-                var ampl0 = this.fish[fishtype].ampl;
-                var sling = this.animationParameters.sling;
-                for(var i = 0; i < this.fishjointcounts[fishtype]; i++){
-                    var timeoffs = i * sling;
-                    var nx = i / this.fishjointcounts[fishtype];
-                    this.fish[fishtype].ampl = ampl0 * nx;
-                    this.fish[fishtype].computeBone(time - timeoffs, this.animationParameters.b.move, this.animationParameters.movetail);
-                    this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
-                    this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
-                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
-                    twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
-                    localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
-                }
-                this.fish[fishtype].ampl = ampl0;
-            }
-        }
-    }
-}
-exports.FishAnimationScene = FishAnimationScene;
-
-},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","./../bonemodel/fishonejoint":"6rbFF","./../bonemodel/fishv":"gjwG7","./../bonemodel/fishhrotated":"1fDzv","./../bonemodel/fishvtranslated":"40Zci"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
+},{"twgl.js":"3uqAP"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
 
 //# sourceMappingURL=index.5710aea2.js.map

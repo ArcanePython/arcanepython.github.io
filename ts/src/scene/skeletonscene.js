@@ -29,20 +29,18 @@ const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 //import { FishV } from "../bonemodel/fishv";
 const fishvtranslated_1 = require("../bonemodel/fishvtranslated");
 class SkeletonScene {
-    constructor(cgl, capp, dictpar, cdiv) {
+    constructor(cgl) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
         this.sceneenv = 2;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
         // super(cgl, capp, dictpar, cdiv);
         SkeletonScene.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) { }
@@ -51,7 +49,8 @@ class SkeletonScene {
         gui.add(this.animationParameters, 'movetail');
     }
     // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
-    initScene(gl, cap, dictpar, p, textureReadyCallback) {
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
         var time0 = 0;
         // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         var spar;
@@ -66,11 +65,13 @@ class SkeletonScene {
         this.afish.createSurfaceTexture(gl);
         this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
-        textureReadyCallback(0);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.bufferInfo);
+        if (textureReadyCallback != undefined)
+            textureReadyCallback(0);
     }
     //------------------------------------------------------------------------------------------------------------------------------------
     drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
@@ -78,18 +79,18 @@ class SkeletonScene {
         this.afish.computeBone(time, false, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [20.0, -20.0, 0.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [-15.0, 0.0, 0.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         this.afish.computeBone(time, false, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [50.0, -10.0, 10.0]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [-50.0, 5.0, -10.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
     }
 }

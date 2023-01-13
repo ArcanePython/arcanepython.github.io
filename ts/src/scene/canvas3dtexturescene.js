@@ -24,7 +24,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 class Canvas3dTextureScene {
     constructor(gl) {
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 60;
         this.sceneenv = 2;
         this.widthTextureToRenderOn = 512;
@@ -75,9 +74,8 @@ class Canvas3dTextureScene {
         this.ctime = 0;
         this.modelXRotationRadians = 0;
         this.modelYRotationRadians = 0;
-        this.twglprograminfo = new Array(2);
         console.log("=> scene constructor 3dtexture");
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
         console.log("<= scene constructor 3dtexture");
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
@@ -100,7 +98,7 @@ class Canvas3dTextureScene {
         gl.enableVertexAttribArray(posAttributeLocation);
         // <==
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         /** @type {HTMLCanvasElement} */
         var canvas = gl.canvas; // document.querySelector("#canvas");
         //var gl = canvas.getContext("webgl2");
@@ -108,6 +106,7 @@ class Canvas3dTextureScene {
             console.log("ERROR: gl found null in canvas3dtexturescene.initScene()");
             return;
         }
+        var p = this.twglprograminfo;
         console.log("=> canvas3dtexturescene.initScene()");
         // Use our boilerplate utils to compile the shaders and link into a program
         //this.program = p.program;
@@ -239,7 +238,8 @@ class Canvas3dTextureScene {
         //this.gl = gl;
         this.ctime = 0.0;
         console.log("<= canvas3dtexturescene.initScene()");
-        sceneReadyCallback(-1);
+        if (sceneReadyCallback != undefined)
+            sceneReadyCallback(-1);
         //  requestAnimationFrame((time)=>this.drawScene(time));
         //  requestAnimationFrame(drawScene);
     }
@@ -250,12 +250,12 @@ class Canvas3dTextureScene {
         gl.useProgram(program);
         // Bind the attribute/buffer set we want.
         gl.bindVertexArray(this.vao);
-        //  this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
+        //if(cam!=null)  this.restoreContext(gl, this.positionBuffer!,this.positionAttributeLocation!,3);
         // Compute the projection matrix
         var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
         var viewProjectionMatrix = twgl_js_1.m4.identity();
         if (cam == null) {
-            var cameraPosition = [0, 0, 2];
+            var cameraPosition = [0, 0, 15];
             var up = [0, 1, 0];
             var target = [0, 0, 0];
             // Compute the camera's matrix using look at.
@@ -279,17 +279,15 @@ class Canvas3dTextureScene {
             // AND move the world so that the camera is effectively the origin
             viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
         }
-        var x = 1;
-        // for (let x = -1; x <= 1; ++x) 
-        {
+        if (cam == null) {
             var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [0, 0, 0]); // [x * .9, 0, 0]);
-            matrix = twgl_js_1.m4.axisRotate(matrix, [1, 0, 0], this.modelXRotationRadians * x);
-            matrix = twgl_js_1.m4.axisRotate(matrix, [0, 1, 0], this.modelYRotationRadians * x);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [1, 0, 0], this.modelXRotationRadians * 1.0);
+            matrix = twgl_js_1.m4.axisRotate(matrix, [0, 1, 0], this.modelYRotationRadians * 1.0);
             // Set the matrix.
             gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
             // Tell the shader to use texture unit 0 for u_texture
             gl.uniform1i(this.textureLocation, 0);
-            const c = x * .1 + .5;
+            var c = 0;
             gl.uniform4fv(this.colorMultLocation, [c * .5 + .5, 1, 1 - c, 1]);
             // Draw the geometry.
             var primitiveType = gl.TRIANGLES;
@@ -297,6 +295,42 @@ class Canvas3dTextureScene {
             var count = 6 * 6;
             gl.drawArrays(primitiveType, offset, count);
         }
+        else {
+            var x = 1;
+            for (let x = -1; x <= 1; ++x) {
+                var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [0, 0, 0]); // [x * .9, 0, 0]);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [1, 0, 0], this.modelXRotationRadians * x);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [0, 1, 0], this.modelYRotationRadians * x);
+                if (cam != null)
+                    matrix = twgl_js_1.m4.translate(matrix, [x * 10.0, 0, 0]);
+                // Set the matrix.
+                gl.uniformMatrix4fv(this.worldViewProjectionLocation, false, matrix);
+                // Tell the shader to use texture unit 0 for u_texture
+                gl.uniform1i(this.textureLocation, 0);
+                var c = x * .1 + .5;
+                gl.uniform4fv(this.colorMultLocation, [c * .5 + .5, 1, 1 - c, 1]);
+                // Draw the geometry.
+                var primitiveType = gl.TRIANGLES;
+                var offset = 0;
+                var count = 6 * 6;
+                gl.drawArrays(primitiveType, offset, count);
+            }
+        }
+    }
+    restorePositionAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        //var size = 2;          // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+        // <==
     }
     // Draw the scene.
     drawScene(gl, cam, time) {
@@ -310,73 +344,71 @@ class Canvas3dTextureScene {
         this.modelYRotationRadians += -0.7 * deltaTime;
         this.modelXRotationRadians += -0.4 * deltaTime;
         //  twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-        {
-            // render to our targetTexture by binding the framebuffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
-            // render cube with our 3x2 texture
-            gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
-            // Tell WebGL how to convert from clip space to pixels
-            gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
-            // Clear the canvas AND the depth buffer.
-            gl.clearColor(.5, .7, 1, 1); // clear to blue
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            const aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
-            this.drawCube(gl, this.twglprograminfo[1].program, aspect, null);
-        }
-        {
-            // render to the canvas
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // render the cube with the texture we just rendered to
-            gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
-            // Tell WebGL how to convert from clip space to pixels
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            // Clear the canvas AND the depth buffer.
-            //    gl.clearColor(1, 1, 1, 1);   // clear to white
-            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-            this.drawCube(gl, this.twglprograminfo[1].program, aspect, cam);
-        }
+        gl.useProgram(this.twglprograminfo.program);
+        // render to our targetTexture by binding the framebuffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
+        // render cube with our 3x2 texture
+        gl.bindTexture(gl.TEXTURE_2D, this.textureOn3DCube);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, this.widthTextureToRenderOn, this.heighttextureToRenderOn);
+        // Clear the canvas AND the depth buffer.
+        gl.clearColor(.5, .7, 1, 1); // clear to blue
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        var aspect = this.widthTextureToRenderOn / this.heighttextureToRenderOn;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, null);
+        // render to the canvas
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // render the cube with the texture we just rendered to
+        gl.bindTexture(gl.TEXTURE_2D, this.textureToRenderOn);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        // Clear the canvas AND the depth buffer.
+        // gl.clearColor(1, 1, 1, 1);   // clear to white
+        // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        this.drawCube(gl, this.twglprograminfo.program, aspect, cam);
+        //console.log("<- scene1");
         //requestAnimationFrame((time)=>this.drawScene(time));
     }
     // Fill the buffer with the values that define a cube.
     setGeometry(gl) {
         var positions = new Float32Array([
-            -0.5, -0.5, -0.5,
-            -0.5, 0.5, -0.5,
-            0.5, -0.5, -0.5,
-            -0.5, 0.5, -0.5,
-            0.5, 0.5, -0.5,
-            0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
-            0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
-            -0.5, 0.5, 0.5,
-            0.5, -0.5, 0.5,
-            0.5, 0.5, 0.5,
-            -0.5, 0.5, -0.5,
-            -0.5, 0.5, 0.5,
-            0.5, 0.5, -0.5,
-            -0.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            0.5, 0.5, -0.5,
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, -0.5, 0.5,
-            0.5, -0.5, -0.5,
-            0.5, -0.5, 0.5,
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, 0.5, -0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
-            -0.5, 0.5, -0.5,
-            0.5, -0.5, -0.5,
-            0.5, 0.5, -0.5,
-            0.5, -0.5, 0.5,
-            0.5, -0.5, 0.5,
-            0.5, 0.5, -0.5,
-            0.5, 0.5, 0.5,
+            -3.0, -3.0, -3.0,
+            -3.0, 3.0, -3.0,
+            3.0, -3.0, -3.0,
+            -3.0, 3.0, -3.0,
+            3.0, 3.0, -3.0,
+            3.0, -3.0, -3.0,
+            -3.0, -3.0, 3.0,
+            3.0, -3.0, 3.0,
+            -3.0, 3.0, 3.0,
+            -3.0, 3.0, 3.0,
+            3.0, -3.0, 3.0,
+            3.0, 3.0, 3.0,
+            -3.0, 3.0, -3.0,
+            -3.0, 3.0, 3.0,
+            3.0, 3.0, -3.0,
+            -3.0, 3.0, 3.0,
+            3.0, 3.0, 3.0,
+            3.0, 3.0, -3.0,
+            -3.0, -3.0, -3.0,
+            3.0, -3.0, -3.0,
+            -3.0, -3.0, 3.0,
+            -3.0, -3.0, 3.0,
+            3.0, -3.0, -3.0,
+            3.0, -3.0, 3.0,
+            -3.0, -3.0, -3.0,
+            -3.0, -3.0, 3.0,
+            -3.0, 3.0, -3.0,
+            -3.0, -3.0, 3.0,
+            -3.0, 3.0, 3.0,
+            -3.0, 3.0, -3.0,
+            3.0, -3.0, -3.0,
+            3.0, 3.0, -3.0,
+            3.0, -3.0, 3.0,
+            3.0, -3.0, 3.0,
+            3.0, 3.0, -3.0,
+            3.0, 3.0, 3.0,
         ]);
         // 
         return positions;

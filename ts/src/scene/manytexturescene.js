@@ -365,7 +365,7 @@ class ManyTexturesScene {
             console.log("<= createAllTextures");
         } // return in main thread (earlier)
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         this.Prepare(gl, sceneReadyCallback);
     }
     drawScene(gl, cam, time) {
@@ -387,9 +387,9 @@ class ManyTexturesScene {
             const world = twgl_js_1.m4.identity(); // local worlds turn
             twgl_js_1.m4.translate(world, obj.obj.translation, world);
             if (this.animationParameters != null)
-                if (this.animationParameters.b.move) {
-                    twgl_js_1.m4.rotateY(world, this.animationParameters.b.speed * time * 0.05 * obj.obj.ySpeed, world);
-                    twgl_js_1.m4.rotateZ(world, this.animationParameters.b.speed * time * 0.05 * obj.obj.zSpeed, world);
+                if (this.animationParameters.move) {
+                    twgl_js_1.m4.rotateY(world, this.animationParameters.speed * time * 0.05 * obj.obj.ySpeed, world);
+                    twgl_js_1.m4.rotateZ(world, this.animationParameters.speed * time * 0.05 * obj.obj.zSpeed, world);
                 }
             uni.u_world = world; // this object's world     
             uni.u_worldInverseTranspose = twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world1));

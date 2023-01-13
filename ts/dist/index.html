@@ -150,27 +150,30 @@ str += lnk(commonhtml + "?plane&radius0=25&hx=0.8&hy=0.5", "Plane");
 str += lnk(commonhtml + "?greenhouse", "Greenhouse");
 str += `
         <p>
-        <b>Experiments</b><br>
+        <b>Experimental</b><br>
         `;
 //  str+=lnk(commonhtml+"?whalesapp&radius0=26&hx=1.0&hy=0.2&stride=180&numrows=6","Triangle mesh");
 // str+=lnk(commonhtml+"?skyboxcube","Greggs Skycube with cam");
 //  str+=lnk(commonhtml+"?drawinstanced&radius0=60&hx=0&hy=0","Gregg's Instanced");
-str += lnk(commonhtml + "?whales&radius0=120&hx=1.7&hy=0.1&mesh=strip&stride=180&numrows=39", "Zelensky whales patrol");
-str += lnk(commonhtml + "?variousfish&radius0=120&hx=1.6&hy=0&mesh=strip&stride=180&numrows=39&fish=1", "Various Fish shapes");
+//  str+=lnk(commonhtml+"?variousfish&radius0=120&hx=1.6&hy=0&mesh=strip&stride=180&numrows=39&fish=1","Various Fish shapes");
 str += lnk(commonhtml + "?canvas3dtexture&radius0=60&hx=0&hy=0", "3d on tex Gregg#3");
 str += lnk("?drawimagespace&backcolorchoice=1", "Image space");
+str += lnk(commonhtml + "?animation9&radius0=40&hx=-0.8&hy=0.0&backcolorchoice=1", "Multiple scenes culling");
 str += `
         <p>
         <b>Scenes with background</b><br>
         `;
-str += lnk(commonhtml + "?animation0&radius0=60&hx=0&hy=0&speed=0.01", "Skybox only scene");
+str += lnk(commonhtml + "?whales&radius0=120&hx=1.7&hy=0.1&mesh=strip&stride=180&numrows=39", "Zelensky whale patrol");
+//   str+=lnk(commonhtml+"?animation0&radius0=60&hx=0&hy=0&speed=0.01","Skybox only scene");
 str += lnk(commonhtml + "?animation4&radius0=20&hx=0&hy=0", "Skycube Scene");
-str += lnk(commonhtml + "?animation3&radius0=250&hx=0&hy=0", "Lights Scene");
-str += lnk(commonhtml + "?animation8&radius0=3&hx=80&hy=0", "3d on tex Scene");
-str += lnk(commonhtml + "?animation1&radius0=80&hx=20&hy=10&fov=32", "Mixed Texture Scene");
+str += lnk(commonhtml + "?animation3&radius0=50&hx=0&hy=0", "Lighted F with 3dcubes");
+str += lnk(commonhtml + "?animation1&radius0=180&hx=3.9&hy=1.1&fov=32", "Cube placed on grid");
 str += lnk(commonhtml + "?animation5&radius0=50&hx=20&hy=10", "Many Textures Scene");
-str += lnk(commonhtml + "?animation6&radius0=60&hx=0.7&hy=0.0", "ObjectList Scene");
-str += lnk(commonhtml + "?animation7&radius0=5&hx=-1.57&hy=0&backcolorchoice=1", "Instanced Scene");
+//   str+=lnk(commonhtml+"?animation6&radius0=60&hx=0.7&hy=0.0","ObjectList Scene");
+str += lnk(commonhtml + "?animation7&plane&radius0=123&hx=-1.8&hy=0.2&backcolorchoice=1", "Blockguy chased by plane");
+str += lnk(commonhtml + "?animation2&radius0=40&hx=-0.8&hy=0.0&backcolorchoice=1", "Blockguy chasing 3dcubes");
+//   str+=lnk(commonhtml+"?animation8&radius0=83&hx=-1.8&hy=0.2&backcolorchoice=1","3d on tex Scene2");
+//   str+=lnk(commonhtml+"?animation9&radius0=83&hx=-1.8&hy=0.2&backcolorchoice=1","Compound Scene 1-2");
 //str+=lnk(commonhtml+"?objectlist","Gregg's ObjectList");
 linksdiv.innerHTML = str + "<p>";
 

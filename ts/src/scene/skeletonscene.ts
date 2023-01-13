@@ -17,6 +17,9 @@ import * as scene from "./scene";
 //import { FishV } from "../bonemodel/fishv";
 import { FishVTranslated } from "../bonemodel/fishvtranslated";
 
+
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -37,10 +40,10 @@ export class SkeletonScene implements scene.SceneInterface
       // SceneInterface only, skybox is shown in animation container (now animation1.ts)
       scenesize: number = 40;
       sceneenv: number = 2;
-      animationParameters: scene.TAnimation1Parameters | undefined;
+      animationParameters: TAnimation1Parameters | undefined;
       vertexShaderSource = ``;
       fragmentShaderSource = ``; 
-      twglprograminfo: twgl.ProgramInfo[]|null=null;
+      twglprograminfo: twgl.ProgramInfo|undefined;
       cameraPosition: [number,number,number] | undefined
       positionLocation: number | undefined;
       resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
@@ -60,18 +63,18 @@ export class SkeletonScene implements scene.SceneInterface
    
     static instance: SkeletonScene;
 
-    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, cdiv:string)
+    constructor( cgl: WebGL2RenderingContext)
     { 
      // super(cgl, capp, dictpar, cdiv);
      SkeletonScene.instance = this;
-      this.twglprograminfo = new Array(2);
-      this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+      this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
   
     }
 
    // main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
-    initScene(gl: WebGL2RenderingContext,  cap:scene.TAnimation1Parameters, dictpar:Map<string,string>| undefined,  p: twgl.ProgramInfo, textureReadyCallback: (a:any)=>void | undefined)
+    initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters,cam: camhandler.Camera,  dictpar:Map<string,string>| undefined, textureReadyCallback: undefined | ((a:any)=>void))
     {
+      gl.useProgram(this.twglprograminfo!.program);
       var time0: number=0;
     
      // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
@@ -90,14 +93,15 @@ export class SkeletonScene implements scene.SceneInterface
       this.uniforms= this.afish.createUniforms(gl, dictpar!); // this.phase0);
       this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh!.arrays);
 
-      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![1], this.bufferInfo!);
-      textureReadyCallback(0);
+      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, this.bufferInfo!);
+     if (textureReadyCallback!=undefined) textureReadyCallback(0);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------
     
     drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number)
     {       
+        gl.useProgram(this.twglprograminfo!.program);
         var uniforms = this.uniforms!;
         uniforms.viewprojection = cam.viewProjection;   
   
@@ -108,22 +112,22 @@ export class SkeletonScene implements scene.SceneInterface
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2); 
        
         uniforms.world = m4.translate(m4.identity(), [20.0, -20.0, 0.0]);  // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
        
         uniforms.world = m4.translate(m4.identity(), [-15.0, 0.0, 0.0]);     // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
   
         this.afish!.computeBone(time, false, this.animationParameters!.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2);
 
         uniforms.world = m4.translate(m4.identity(), [50.0, -10.0, 10.0]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
 
         uniforms.world = m4.translate(m4.identity(), [-50.0, 5.0, -10.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
     }   
 }

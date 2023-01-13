@@ -100,8 +100,7 @@ class drawimagespace extends baseapp.BaseApp {
         //===================================================================================================
         this.gui = null;
         drawimagespace.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [this.vs, this.fs]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [this.vs, this.fs]);
     }
     prepareSurfaceTextures(gl, selectedSurface) {
         this.textureaspects.set("checker", 1.0);
@@ -228,29 +227,27 @@ class drawimagespace extends baseapp.BaseApp {
     }
     //---------------------------------------------------------------------------------------------------------
     main(gl, dictpar) {
-        var _a;
         //  super.main(gl, dictpar,"","");
         //  if (this.program && this.gl && this.program[0])
-        {
-            this.prepareSurfaceTextures(gl, "zelenskyy");
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            this.txtaspect = this.textureaspects.get("geotriangle2");
-            this.ny = 1.0;
-            console.log("this.twglprograminfo.length=" + ((_a = this.twglprograminfo) === null || _a === void 0 ? void 0 : _a.length));
-            var program = this.twglprograminfo[1].program;
-            console.log("<assigned program");
-            this.diffuseLocation = gl.getUniformLocation(program, 'diffuse');
-            this.imageSizeLocation = gl.getUniformLocation(program, 'u_imageSize');
-            this.tealLocation = gl.getUniformLocation(program, 'u_teal');
-            this.xshiftLocation = gl.getUniformLocation(program, 'u_xshift');
-            this.yshiftLocation = gl.getUniformLocation(program, 'u_yshift');
-            this.aspectLocation = gl.getUniformLocation(program, 'u_aspect');
-            this.xzoomoffsetLocation = gl.getUniformLocation(program, 'u_xzoomoffset');
-            this.yzoomoffsetLocation = gl.getUniformLocation(program, 'u_yzoomoffset');
-            // gl.useProgram(this.twglprograminfo![0].program);
-            // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
-            requestAnimationFrame(() => this.render(0));
-        } //else
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        this.prepareSurfaceTextures(gl, "zelenskyy");
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        this.txtaspect = this.textureaspects.get("geotriangle2");
+        this.ny = 1.0;
+        console.log("<assigned program");
+        this.diffuseLocation = gl.getUniformLocation(program, 'diffuse');
+        this.imageSizeLocation = gl.getUniformLocation(program, 'u_imageSize');
+        this.tealLocation = gl.getUniformLocation(program, 'u_teal');
+        this.xshiftLocation = gl.getUniformLocation(program, 'u_xshift');
+        this.yshiftLocation = gl.getUniformLocation(program, 'u_yshift');
+        this.aspectLocation = gl.getUniformLocation(program, 'u_aspect');
+        this.xzoomoffsetLocation = gl.getUniformLocation(program, 'u_xzoomoffset');
+        this.yzoomoffsetLocation = gl.getUniformLocation(program, 'u_yzoomoffset');
+        // gl.useProgram(this.twglprograminfo![0].program);
+        // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
+        requestAnimationFrame(() => this.render(0));
+        //else
         //console.log("initprogram program[0] fails.");
     }
     readcolor(original) {
@@ -268,8 +265,10 @@ class drawimagespace extends baseapp.BaseApp {
         var _a;
         if (this.textures != null) {
             var gl = this.gl;
+            var program = this.twglprograminfo.program;
+            gl.useProgram(program);
             twgl.resizeCanvasToDisplaySize(gl.canvas);
-            gl.useProgram(this.twglprograminfo[1].program);
+            //  gl.useProgram(this.twglprograminfo![1].program);
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
             var texture = this.textures[this.currentTexture];
             if (texture == null || texture == undefined) {

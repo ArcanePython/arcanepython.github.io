@@ -5,15 +5,18 @@ import * as datgui from "dat.gui"
 import * as camhandler from "./../baseapp/camhandler" // camera projection     
 import * as scene from "./scene"
 
+
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
+
 export class SkyBoxScene implements scene.SceneInterface
 {
     // SceneInterface only, skybox is shown in animation container (now animation1.ts)
     scenesize: number = 40;
     sceneenv: number = 1;
-    animationParameters: scene.TAnimation1Parameters | undefined;
+    animationParameters: TAnimation1Parameters | undefined;
     vertexShaderSource = ``;
     fragmentShaderSource = ``; 
-    twglprograminfo: twgl.ProgramInfo[]|null=null;
+  //  twglprograminfo: twgl.ProgramInfo[]|null=null;
     cameraPosition: [number,number,number] | undefined
     positionLocation: number | undefined;
     resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
@@ -33,10 +36,10 @@ export class SkyBoxScene implements scene.SceneInterface
         }
     }
 
-    initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters, dictpar:Map<string,string>, progenv: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+    initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters, cam: camhandler.Camera, dictpar:Map<string,string>,  sceneReadyCallback: (a:any)=>void | undefined)
     { 
         this.animationParameters=(this.animationParameters==undefined)?cap:this.animationParameters;
-        if (this.speedpreset) this.animationParameters.b.speed = this.speedpreset!;
+        if (this.speedpreset) this.animationParameters.speed = this.speedpreset!;
         sceneReadyCallback(0); 
     }
 

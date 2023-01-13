@@ -67,16 +67,18 @@ exports.render = render;
 var matlib;
 var indexBuffers = [];
 function renderIndexBuffer(gl, vertexPositionAttribute, normalAttribute, texCoordAttribute, offset, texItemSize, tex) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
-    gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
-    gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffers[offset]);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.enableVertexAttribArray(texCoordAttribute);
-    gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
-    gl.vertexAttribPointer(texCoordAttribute, texItemSize, gl.FLOAT, false, 0, 0);
-    gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
+    if (indexBuffers[offset] != undefined) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.vertexBuffer);
+        gl.vertexAttribPointer(vertexPositionAttribute, exports.meshWithBuffers.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.normalBuffer);
+        gl.vertexAttribPointer(normalAttribute, exports.meshWithBuffers.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffers[offset]);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.enableVertexAttribArray(texCoordAttribute);
+        gl.bindBuffer(gl.ARRAY_BUFFER, exports.meshWithBuffers.textureBuffer);
+        gl.vertexAttribPointer(texCoordAttribute, texItemSize, gl.FLOAT, false, 0, 0);
+        gl.drawElements(gl.TRIANGLES, exports.mesh.indicesPerMaterial[offset].length, gl.UNSIGNED_SHORT, 0);
+    }
 }
 exports.renderIndexBuffer = renderIndexBuffer;
 function PrepareIndexBuffers(gl) {
@@ -144,7 +146,7 @@ async function asyncFetchObjMtl(cobjname, cmatname) {
     if (matlib) {
         var l = matlib.materials["Material"];
         if (l != undefined)
-            console.log("ambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular);
+            console.log("->asyncFetchObjMtlambient=" + l.ambient + " diffuse=" + l.diffuse + " specular=" + l.specular);
         var cMeshOptions = {
             enableWTextureCoord: false,
             calcTangentsAndBitangents: false,
@@ -158,12 +160,13 @@ async function asyncFetchObjMtl(cobjname, cmatname) {
             var cstyle = "<style> thead {color: green;} tbody {color: blue;}tfoot {color: red;}table, th, td { border: 1px solid black;}</style>";
             if (mydiv)
                 mydiv.innerHTML = cstyle + "<table><thead><tr><th style='horizontal-align:left'>MTL Material</th><th>OBJ Mesh</th></tr></thead><tbody><tr><td style='vertical-align:top;width:600px'>" + rv.smatreport + "</td><td style='vertical-align:top'>" + rv.smeshreport + "</td></tr></tbody></table>";
+            console.log("<- asyncFetchObjMtl");
         }
         else
-            console.log("object file  " + cobjname + " could not be read.");
+            console.log("ERROR: object file  " + cobjname + " could not be read.");
     }
     else
-        console.log("materials file " + cmatname + " could not be read");
+        console.log("ERROR: materials file " + cmatname + " could not be read");
 }
 exports.asyncFetchObjMtl = asyncFetchObjMtl;
 //===========================================================================================================================================

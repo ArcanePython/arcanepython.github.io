@@ -11,18 +11,12 @@ export class Animation1 extends baseapp.BaseApp
     public scene: scene.SceneInterface;                                                     
     public skyboxtexture: WebGLTexture | undefined;
 
+    defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+
     //=============================================================================
 
     // all parameters in any scene
-    private animation1Parameters: scene.TAnimation1Parameters = {
-        b:  this.baseappParameters,
-        texture: 'geotriangle2',
-        fov: 60,
-        typelight: 'point light',
-        sling: 117,
-        shininess: 0.1,
-        movetail: true
-      };  
+    private animation1Parameters: baseapp.TAnimation1Parameters = this.defaultParameters;
 
     private ctime: number = new Date().getTime();
     private clock: animationclock.AnimationClock;
@@ -40,11 +34,11 @@ export class Animation1 extends baseapp.BaseApp
         this.clock = new animationclock.AnimationClock();
     }
     
-    public initGUI(parameters: scene.TAnimation1Parameters): datgui.GUI
+    public initGUI(parameters: baseapp.TAnimation1Parameters): datgui.GUI
     {
         console.log("=> animation1 initGUI "+parameters);
         this.animation1Parameters = parameters ;
-        var gui = super.createGUI(this.animation1Parameters.b, this.animation1Parameters);   
+        var gui = super.createGUI(this.animation1Parameters);   
         this.scene.animationParameters =this.animation1Parameters;
         this.scene.extendGUI(gui);         
         return gui;
@@ -53,7 +47,7 @@ export class Animation1 extends baseapp.BaseApp
     public main(gl:WebGL2RenderingContext,  dictpar:Map<string,string>)
     {
         this.dictpars = dictpar;
-        
+    /*    
         if (this.scene.twglprograminfo!=null && this.scene.twglprograminfo!=undefined) 
            {
               var pienv = this.twglprograminfo![0];
@@ -66,19 +60,19 @@ export class Animation1 extends baseapp.BaseApp
                      this.twglprograminfo![j]=this.scene.twglprograminfo[j];
                    }
            }
-      
+     */ 
         this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp,  this.scene.scenesize, this.app!);
         this.cam.zoominVelocity = 0.5;
      
         if (this.scene.sceneenv>0)
         {   
-            gl.useProgram(this.twglprograminfo![0].program);
+            //gl.useProgram(this.twglprograminfo![0].program);
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl); 
             this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback)!;     
         }  else 
         {      
-            gl.useProgram(this.twglprograminfo![0].program);     
-            this.scene.initScene(gl, this.animation1Parameters, dictpar, this.twglprograminfo![1], this.sceneReadyCallback);
+           // gl.useProgram(this.twglprograminfo![1].program);     
+            this.scene.initScene(gl, this.animation1Parameters, this.cam!, dictpar, this.sceneReadyCallback);
         }
     }
 
@@ -97,7 +91,7 @@ export class Animation1 extends baseapp.BaseApp
         var thisinstance = baseapp.instance!;
         var ainstance = thisinstance as Animation1;
         console.log("textureEnvReadyCallback executes initScene");
-        ainstance.scene.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.dictpars, ainstance.twglprograminfo![1], ainstance.sceneReadyCallback);   
+        ainstance.scene.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,  ainstance.sceneReadyCallback);   
     }
 
     render(time: number) 
@@ -123,10 +117,10 @@ export class Animation1 extends baseapp.BaseApp
         if (this.scene.sceneenv>0)
         {         
             // set skybox camera
-            if (!this.scene.animationParameters?.b.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
-              else   this.cameraPosition = (this.scene.animationParameters?.b.move)? [Math.cos(time * 0.005 * this.scene.animationParameters.b.speed), 0, 
-                                                                                      Math.sin(time * 0.005 * this.scene.animationParameters.b.speed) ] : [ 1.0,0.0,0.0];      
-            gl.useProgram(this.twglprograminfo![0].program);
+            if (!this.scene.animationParameters?.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
+              else   this.cameraPosition = (this.scene.animationParameters?.move)? [Math.cos(time * 0.005 * this.scene.animationParameters.speed), 0.0, 
+                                                                                      Math.sin(time * 0.005 * this.scene.animationParameters.speed) ] : [ 1.0,0.0,0.0];      
+            //gl.useProgram(this.twglprograminfo![0].program);
             gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL); 
             if (this.doTwglEnv) 
@@ -139,9 +133,9 @@ export class Animation1 extends baseapp.BaseApp
               } 
         }    
         // render scene
-        if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )       
+        // if (this.twglprograminfo![1] != undefined && this.twglprograminfo![1] != null )       
         {  
-            gl.useProgram(this.twglprograminfo![1].program);
+            //gl.useProgram(this.twglprograminfo![1].program);
             gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
             gl.enable(gl.CULL_FACE);  // only show left-turned triangles
             this.scene.drawScene(gl, cam, time);

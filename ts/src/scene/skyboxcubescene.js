@@ -28,7 +28,6 @@ class SkyBoxCubeScene {
         this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
         //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
         this.vsMirrorCube = `#version 300 es
     
@@ -79,19 +78,19 @@ class SkyBoxCubeScene {
         `;
         this.vertexShaderSource = this.vsMirrorCube;
         this.fragmentShaderSource = this.fsMirrorCube;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vsMirrorCube, this.fsMirrorCube]);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vsMirrorCube, this.fsMirrorCube]);
         this.fieldOfViewRadians = 60 * Math.PI / 180;
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) { }
     createReflectingCubeGeo(gl) {
         this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.reflectingCubeBufferInfo);
+        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.reflectingCubeBufferInfo);
     }
-    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
         this.parameters = cap;
-        this.parameters.b.move = false;
+        this.parameters.move = false;
         this.createReflectingCubeGeo(gl);
         // console.log("dictpar[r0]="+dictpar.get('radius0'));          
         sceneReadyCallback(0);
@@ -118,6 +117,7 @@ class SkyBoxCubeScene {
         var _a;
         this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [0.1 * cam.Position()[0], 0.1 * cam.Position()[1], 0.1 * cam.Position()[2]];
+        gl.useProgram(this.twglprograminfo.program);
         // Build a view matrix for the mirror cube.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         this.projectionMatrix = twgl.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
@@ -129,7 +129,7 @@ class SkyBoxCubeScene {
         var angVelocityCube = 0.005;
         // Rotate the cube around the x axis
         if (movecube)
-            this.worldMatrix = twgl.m4.axisRotation([0, 1, 0], this.parameters.b.speed * (time + 0.1) * angVelocityCube);
+            this.worldMatrix = twgl.m4.axisRotation([0, 1, 0], this.parameters.speed * (time + 0.1) * angVelocityCube);
         else
             this.worldMatrix = twgl.m4.translation([0, 0, 0]); // twgl.m4.identity();
         // draw the mirror cube
@@ -145,7 +145,7 @@ class SkyBoxCubeScene {
         //  if (bb!=null) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bb);
         //var bb=this.reflectingCubeBufferInfo!.attribs![""]!;
         //foreach(()=>)
-        twgl.setUniforms(this.twglprograminfo[1], {
+        twgl.setUniforms(this.twglprograminfo, {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,
             u_projection: this.projectionMatrix,

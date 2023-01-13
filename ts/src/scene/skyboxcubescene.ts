@@ -5,6 +5,9 @@ import * as datgui from "dat.gui"
 import * as camhandler from "./../baseapp/camhandler" // camera projection     
 import * as scene from "./scene"
 
+
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
+
 export class SkyBoxCubeScene implements scene.SceneInterface
 {
     vaoCube: WebGLVertexArrayObject | undefined;
@@ -14,10 +17,11 @@ export class SkyBoxCubeScene implements scene.SceneInterface
     // SceneInterface only, skybox is shown in animation container (now animation1.ts)
     scenesize: number = 40;
     sceneenv: number = 1;
-    animationParameters: scene.TAnimation1Parameters | undefined;
+    animationParameters: TAnimation1Parameters | undefined;
     vertexShaderSource = ``;
     fragmentShaderSource = ``; 
-    twglprograminfo: twgl.ProgramInfo[]|null=null;
+     private twglprograminfo: twgl.ProgramInfo|undefined;
+
     //cameraPosition: [number,number,number] | undefined
     positionLocation: number | undefined;
     resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
@@ -37,8 +41,7 @@ export class SkyBoxCubeScene implements scene.SceneInterface
       this.vertexShaderSource = this.vsMirrorCube;
       this.fragmentShaderSource = this.fsMirrorCube;
     
-      this.twglprograminfo=new Array(2);   
-      this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vsMirrorCube, this.fsMirrorCube]);
+       this.twglprograminfo = twgl.createProgramInfo(gl, [this.vsMirrorCube, this.fsMirrorCube]);
 
       this.fieldOfViewRadians = 60* Math.PI / 180;
     }
@@ -46,14 +49,16 @@ export class SkyBoxCubeScene implements scene.SceneInterface
     protected createReflectingCubeGeo(gl: WebGL2RenderingContext)
     {
       this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-      this.vaoCube = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo![1], this.reflectingCubeBufferInfo)!;
+      this.vaoCube = twgl.createVAOFromBufferInfo(gl,this.twglprograminfo!, this.reflectingCubeBufferInfo)!;
     }
 
-    parameters: scene.TAnimation1Parameters | undefined; 
-    initScene(gl: WebGL2RenderingContext, cap:scene.TAnimation1Parameters, dictpar:Map<string,string>, progenv: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+    parameters: TAnimation1Parameters | undefined; 
+    initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters, cam: camhandler.Camera, dictpar:Map<string,string>,  sceneReadyCallback: (a:any)=>void | undefined)
     { 
+        gl.useProgram(this.twglprograminfo!.program);
+      
         this.parameters = cap;
-        this.parameters.b.move= false;
+        this.parameters.move= false;
         this.createReflectingCubeGeo(gl);  
        // console.log("dictpar[r0]="+dictpar.get('radius0'));          
         sceneReadyCallback(0); 
@@ -92,6 +97,8 @@ export class SkyBoxCubeScene implements scene.SceneInterface
         this.cameraTarget = [0,0,0];
         this.cameraPosition =  [0.1*cam.Position()![0],0.1*cam.Position()![1],0.1*cam.Position()![2]];
         
+        gl.useProgram(this.twglprograminfo!.program);
+      
     // Build a view matrix for the mirror cube.
         var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
         this.projectionMatrix = twgl.m4.perspective(this.fieldOfViewRadians, aspect, 1, 2000);
@@ -105,7 +112,7 @@ export class SkyBoxCubeScene implements scene.SceneInterface
         
         // Rotate the cube around the x axis
         if (movecube)
-        this.worldMatrix = twgl.m4.axisRotation( [0,1,0] as twgl.v3.Vec3 ,this.parameters!.b.speed! * (time+0.1) * angVelocityCube);
+        this.worldMatrix = twgl.m4.axisRotation( [0,1,0] as twgl.v3.Vec3 ,this.parameters!.speed! * (time+0.1) * angVelocityCube);
         else 
         this.worldMatrix = twgl.m4.translation([0,0,0]); // twgl.m4.identity();
 
@@ -126,7 +133,7 @@ export class SkyBoxCubeScene implements scene.SceneInterface
 
         //foreach(()=>)
 
-        twgl.setUniforms(this.twglprograminfo![1]!, {
+        twgl.setUniforms(this.twglprograminfo!, {
             u_world: this.worldMatrix,
             u_view: this.viewMatrix,
             u_projection: this.projectionMatrix,

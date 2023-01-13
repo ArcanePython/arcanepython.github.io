@@ -33,30 +33,25 @@ const datgui = __importStar(require("dat.gui"));
 class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
-        this.skeletonParameters = {
-            move: false,
-            movetail: true,
-            speed: 0.4,
-            texture: 'geotriangle2',
-            color0: "#00A000",
-        };
+        this.animationParameters = { move: false, color0: "#00A000", speed: 0.4, texture: 'geotriangle2', fov: 60, movetail: true, sling: 140, shininess: 0.5, typelight: 'point light' };
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 
         //------------------------------------------------------------------------------------------------------------
         this.gui = null;
         Skeleton.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     main(gl, dictpar) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         var time0 = 0;
         // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
         var spar;
         if ((spar = dictpar.get("phase2")) != undefined)
             this.phase0 = +spar;
         this.afish = new fishhtranslated.FishHTranslated(1.0, 0.2, 0.3, 0.0, 1.0, 0.015, 0.5, 2.5, "zelenskyy");
-        this.afish.forwardspeed = (this.skeletonParameters.move) ? 0.06 : 0.0;
+        this.afish.forwardspeed = (this.animationParameters.move) ? 0.06 : 0.0;
         this.afish.prepareSurfaceTextures(gl, "zelenskyy");
         this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);
         this.afish.numBones = (this.afish.mesh.type == gl.TRIANGLE_STRIP) ? (this.afish.mesh.nsegments / this.afish.mesh.bonediv) : this.afish.mesh.nsegments;
@@ -64,7 +59,7 @@ class Skeleton extends baseapp.BaseApp {
         this.afish.createSurfaceTexture(gl);
         this.uniforms = this.afish.createUniforms(gl, dictpar); // this.phase0);
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh.arrays);
-        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], this.bufferInfo);
+        this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.bufferInfo);
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 50.0, this.app);
         this.cam.zoominVelocity = 0.5;
         requestAnimationFrame(() => this.render(time0));
@@ -79,10 +74,10 @@ class Skeleton extends baseapp.BaseApp {
         }
     }
     initGUI(parameters) {
-        this.skeletonParameters = parameters;
+        this.animationParameters = parameters;
         var cc = this.gl.canvas.parentNode;
         var ccd = cc;
-        ccd.style.backgroundColor = this.skeletonParameters.color0;
+        ccd.style.backgroundColor = this.animationParameters.color0;
         // park the dat.gui box in the linksdiv below the links, in closed state
         var gui = new datgui.GUI({ autoPlace: false });
         gui.domElement.id = 'gui_drawimagespace';
@@ -105,7 +100,9 @@ class Skeleton extends baseapp.BaseApp {
     //------------------------------------------------------------------------------------------------------------------------------------
     render(time) {
         var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        //gl.useProgram(this.twglprograminfo![1].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
@@ -115,22 +112,22 @@ class Skeleton extends baseapp.BaseApp {
         var uniforms = this.uniforms;
         uniforms.viewprojection = cam.viewProjection;
         gl.bindVertexArray(this.skinVAO);
-        this.afish.forwardspeed = (this.skeletonParameters.move) ? (this.skeletonParameters.speed) : 0.0;
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.forwardspeed = (this.animationParameters.move) ? (this.animationParameters.speed) : 0.0;
+        this.afish.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [20.0, -20.0, 0.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [0.0, 0.0, 0.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
-        this.afish.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish.prepareBoneTexture(gl, this.afish.bindPoseInv2);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [50.0, -20.0, 10.0]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         uniforms.world = twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [-10.0, 5.0, -10.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo[1], uniforms);
+        twgl.setUniforms(this.twglprograminfo, uniforms);
         twgl.drawBufferInfo(gl, this.bufferInfo, this.afish.mesh.type);
         requestAnimationFrame(() => this.render(++time));
     }

@@ -6,7 +6,7 @@ import * as scene from "./scene"
 import * as datgui from "dat.gui";
 import * as camhandler from "./../baseapp/camhandler"   // camera projection
 
-import { TAnimation1Parameters }  from "./scene"
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
 interface NodeJson {
   draw: boolean;
@@ -18,7 +18,7 @@ interface NodeJson {
 
 export class ObjectListScene  implements scene.SceneInterface
 {
-  twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
+  private twglprograminfo: twgl.ProgramInfo|undefined;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
   scenesize=60;
   sceneenv=2;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
@@ -83,8 +83,7 @@ export class ObjectListScene  implements scene.SceneInterface
 
   public constructor(gl: WebGL2RenderingContext)
   {
-    this.twglprograminfo=new Array(2);   
-    this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+    this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
    }
 
   async FetchText(cparcelname: string){
@@ -94,15 +93,16 @@ export class ObjectListScene  implements scene.SceneInterface
     return enc.decode(b);
   }
 
-  initScene(gl: WebGL2RenderingContext, cap: scene.TAnimation1Parameters, dictpar:Map<string,string>, p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined) 
+  initScene(gl: WebGL2RenderingContext, cap: TAnimation1Parameters,cam: camhandler.Camera,  dictpar:Map<string,string>, sceneReadyCallback: undefined | ((a:any)=>void)) 
   {  
     this.gl = gl;
-
+    gl.useProgram(this.twglprograminfo!.program);
+    
     this.animationParameters=(this.animationParameters==undefined)?cap:this.animationParameters;
     if (dictpar?.has("speed"))
     {
-      this.animationParameters!.b.speed = +dictpar?.get("speed")!;
-        console.log("specified: speedpreset="+ this.animationParameters!.b.speed) ;
+      this.animationParameters!.speed = +dictpar?.get("speed")!;
+        console.log("specified: speedpreset="+ this.animationParameters!.speed) ;
     } else
     console.log("not specified: speedpreset") ;
    
@@ -114,15 +114,15 @@ export class ObjectListScene  implements scene.SceneInterface
     // spheres
     // var cBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
     this.nodeInfosByName = undefined;
-    var nodefact = new objectnode.NodesProducer(p,cBufferInfo);
-    var parcls=require('./../resources/blockguy.json');
+    var nodefact = new objectnode.NodesProducer(this.twglprograminfo!,cBufferInfo);
+    //var parcls=require('./../resources/blockguy.json');
 
     var nodedescriptions: objectnode.NodeJson = JSON.parse(this.sjson);
     this.scenetree = nodefact.makeNode(nodedescriptions);// -Math.PI/4.0);
     this.objects = nodefact.objects;
     this.objectsToDraw = nodefact.objectsToDraw;
     this.nodeInfosByName= nodefact.nodeInfosByName;
-    sceneReadyCallback(0);
+    if (sceneReadyCallback!=undefined) {console.log("call objlistscene scenereadycallback");  sceneReadyCallback(0);} else console.log("skip scenereadycallback"); 
    
     /*
     this.FetchText(parcls).then ((s: string)=> {
@@ -143,6 +143,8 @@ export class ObjectListScene  implements scene.SceneInterface
 
   public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
   {
+    gl.useProgram(this.twglprograminfo!.program);
+    
    var speed = 1;
    var viewProjectionMatrix = cam.viewProjection;// m4.multiply(projectionMatrix, viewMatrix);
 

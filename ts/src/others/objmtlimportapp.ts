@@ -36,6 +36,8 @@ export class MatObjApp extends baseapp.BaseApp
     time: number = 0;
     dtime: number = 0.01;
        
+    private twglprograminfo: twgl.ProgramInfo|undefined;  // there are 2 sets of shaders defined here.
+  
     //private gl: WebGL2RenderingContext;           // connect to WebGL2 and Html5Canvas
     //private app: mtls.MouseListener | undefined;  // connect mouse and keyboard to camera and light
     private cam: camhandler.Camera | undefined;               // create a camera in the constructor of this object
@@ -71,15 +73,13 @@ export class MatObjApp extends baseapp.BaseApp
     super(cgl, capp, dictPar,"c");  
     var gl =this.gl!;
     console.log("=> Constructor - create programInfo");
-    var pi = this.twglprograminfo![0];
-    this.twglprograminfo=new Array(2);
-    this.twglprograminfo[0] = pi;
-    this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vs, this.fs]);
+    this.twglprograminfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
   }
 
   main(gl:WebGL2RenderingContext,UrlPars:Map<string,string>)
   {
-    
+    var program = this.twglprograminfo!.program;
+    gl.useProgram(program);
     this.getFiles(UrlPars).then(() =>  // Fetch obj/mtl content
     { 
       var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
@@ -92,7 +92,6 @@ export class MatObjApp extends baseapp.BaseApp
       //  console.log("=> Constructor - create programInfo");
       //  this.programInfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
     
-        var program = this.twglprograminfo![1].program;
         console.log("=> Constructor - register attributes");
         this.vertexPositionAttribute = gl.getAttribLocation(program,  "position");
         gl.enableVertexAttribArray(this.vertexPositionAttribute);
@@ -369,14 +368,16 @@ export class MatObjApp extends baseapp.BaseApp
   render(dtime: number)
   {
     var gl: WebGL2RenderingContext = this.gl!;
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    var program = this.twglprograminfo!.program;
+    gl.useProgram(program);
+   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
 
     this.time+=dtime;
     
-    if (this.cam==undefined ||this.twglprograminfo![1].program==undefined) return;   
-    var program = this.twglprograminfo![1].program; 
+    if (this.cam==undefined ||this.twglprograminfo==undefined) return;   
+
     this.uniforms.u_lightWorldPos= this.cam!.lightpos;
     this.uniforms.u_difflightintensity=  this.cam!.difflightintensity;
     this.uniforms.u_speclightintensity=  this.cam!.speclightintensity; 
@@ -392,8 +393,8 @@ export class MatObjApp extends baseapp.BaseApp
       {
         var ctexture = this.prepareMaterial(i);
        // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
-        twgl.setUniforms(this.twglprograminfo![1], this.uniforms);
-        twgl.setUniforms(this.twglprograminfo![1], {
+        twgl.setUniforms(this.twglprograminfo, this.uniforms);
+        twgl.setUniforms(this.twglprograminfo, {
           u_viewInverse: this.cam.lookAt,
           u_world: world,
           u_worldInverseTranspose: m4.transpose(m4.inverse(world)),

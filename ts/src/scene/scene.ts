@@ -1,45 +1,32 @@
-import * as twgl from "twgl.js";    // Greg's work
-import { m4 } from "twgl.js";
-
 import * as datgui from "dat.gui"
 
 import * as camhandler from "./../baseapp/camhandler"   // camera projection
 
-import { TbaseappParameters }  from "./../baseapp/baseapp"
-
-export type TAnimation1Parameters =
-{
-    movetail: boolean,
-    texture: string,
-    sling: number,
-    shininess: number,
-    typelight: string;
-    fov: number;
-    b: TbaseappParameters,
-      // Checkbox tail animation on/off
-     
-}
-
-//import { TAnimation1Parameters }  from "./animation1"
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
 export interface SceneInterface 
 {
- 
+  scenesize: number;                                      // allow scene to set its size before initializing camera, r0=2*scenesize, far and near plane accordingly
+                                                          // keep in mind this happens before initScene() and there is only 1 camera involved for all scenes, so when 
+                                                          // there is more than 1 scene, the sizes and positions are to be set in the same world space..
 
-  scenesize: number;
-  sceneenv:number;
-  twglprograminfo: twgl.ProgramInfo[]|null;
-  animationParameters: TAnimation1Parameters | undefined;
-  positionLocation: number | undefined;
-  cameraPosition: [number,number,number] | undefined
+  sceneenv:number;                                        // current skybox texture -1=none 0=black 1=Ykohama 2=Stockholm
 
-  vertexShaderSource: string;
-  fragmentShaderSource: string;
- 
+  animationParameters: TAnimation1Parameters | undefined; // parameters, record will be common for all scenes displayed concurrently
+
   resizeCanvas(gl: WebGL2RenderingContext): void;
-  initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters, dictpar:Map<string,string>| undefined,  p: twgl.ProgramInfo, textureReadyCallback: (a:any)=>void | undefined): void;
-  defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera): void;
-  drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void;
-  extendGUI(datgui: datgui.GUI): void;
+  // called before Animation1/Animation2 initScene() and called on each Animation1 rendering. Scene must call twgl.resizeCanvasToDisplaySize
+
+  initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters,cam: camhandler.Camera,  dictpar:Map<string,string>| undefined, textureReadyCallback: undefined | ((a:any)=>void)): void;
+  // initialize this scene for animation parameters "cap", camera "cam" and current url arguments "dictpar". 
+  // The event textureReadyCallback is raised when scene is ready to display (textures are read)
  
+  drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void;
+  // render the scene using camera "cam" at time "time" milliseconds after program startup
+
+  defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera): void;
+  // allow scene to modify the camera on startup (needed for objmat rendering, objects can have any size) 
+
+  extendGUI(datgui: datgui.GUI): void;
+  // allow scene to add controls to the datGUI parameter interface
 }

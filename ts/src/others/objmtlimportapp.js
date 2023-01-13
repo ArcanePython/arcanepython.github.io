@@ -145,12 +145,11 @@ void main() {
  }`;
         var gl = this.gl;
         console.log("=> Constructor - create programInfo");
-        var pi = this.twglprograminfo[0];
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[0] = pi;
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vs, this.fs]);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
     }
     main(gl, UrlPars) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         this.getFiles(UrlPars).then(() => // Fetch obj/mtl content
          {
             var cc = this.gl.canvas.parentNode;
@@ -160,7 +159,6 @@ void main() {
                 var gl = this.gl;
                 //  console.log("=> Constructor - create programInfo");
                 //  this.programInfo = twgl.createProgramInfo(gl, [this.vs, this.fs]);
-                var program = this.twglprograminfo[1].program;
                 console.log("=> Constructor - register attributes");
                 this.vertexPositionAttribute = gl.getAttribLocation(program, "position");
                 gl.enableVertexAttribArray(this.vertexPositionAttribute);
@@ -404,13 +402,14 @@ void main() {
     }
     render(dtime) {
         var gl = this.gl;
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
         this.time += dtime;
-        if (this.cam == undefined || this.twglprograminfo[1].program == undefined)
+        if (this.cam == undefined || this.twglprograminfo == undefined)
             return;
-        var program = this.twglprograminfo[1].program;
         this.uniforms.u_lightWorldPos = this.cam.lightpos;
         this.uniforms.u_difflightintensity = this.cam.difflightintensity;
         this.uniforms.u_speclightintensity = this.cam.speclightintensity;
@@ -423,8 +422,8 @@ void main() {
             if (this.mats[i] != undefined) {
                 var ctexture = this.prepareMaterial(i);
                 // this.gl.bindTexture(this.gl.TEXTURE_2D, ctexture);
-                twgl.setUniforms(this.twglprograminfo[1], this.uniforms);
-                twgl.setUniforms(this.twglprograminfo[1], {
+                twgl.setUniforms(this.twglprograminfo, this.uniforms);
+                twgl.setUniforms(this.twglprograminfo, {
                     u_viewInverse: this.cam.lookAt,
                     u_world: world,
                     u_worldInverseTranspose: twgl_js_1.m4.transpose(twgl_js_1.m4.inverse(world)),

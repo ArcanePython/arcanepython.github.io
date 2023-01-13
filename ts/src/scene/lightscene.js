@@ -27,8 +27,6 @@ const basescene_1 = require("./basescene");
 class LightScene extends basescene_1.BaseScene {
     constructor(gl) {
         super();
-        // shaders to merge (here: none)
-        this.twglprograminfo = null; // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         // interface
         this.sceneenv = 1;
         this.ctime = 0;
@@ -175,8 +173,8 @@ class LightScene extends basescene_1.BaseScene {
         this.vertexShaderSource = this.vertexShaderSourceSpotLight;
         this.fragmentShaderSource = this.fragmentShaderSourceSpotLight;
         //  constructor(gl: WebGL2RenderingContext)
-        this.twglprograminfo = new Array(3);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
+        //this.twglprograminfo=new Array(3);   
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSourceSpotLight, this.fragmentShaderSourceSpotLight]);
         this.fieldOfViewRadians = 60 * Math.PI / 180;
         this.fRotationRadians = 0;
         this.lightRotationX = 0;
@@ -204,8 +202,9 @@ class LightScene extends basescene_1.BaseScene {
         else if (s == "spot light")
             LightScene.instance.typelight = 2; //gl.uniform1i(this.typelightLocation!,2);
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
-        var program = p.program;
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
         this.animationParameters = cap;
         this.viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
         this.typelightLocation = gl.getUniformLocation(program, "u_typelight");
@@ -220,6 +219,7 @@ class LightScene extends basescene_1.BaseScene {
         this.initSingleObject(gl, program, this.setGeometry, this.setNormals, sceneReadyCallback); // this will invoke the callback when done
     }
     drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
         var deltaTime = time - this.ctime;
         this.ctime = time;
         // Bind the vao, set world matrix and worldview matrix in GPU
@@ -384,8 +384,11 @@ class LightScene extends basescene_1.BaseScene {
         // We could do by changing all the values above but I'm lazy.
         // We could also do it with a matrix at draw time but you should
         // never do stuff at draw time if you can do it at init time.
-        var matrix = twgl_js_1.m4.axisRotation([1, 0, 0], Math.PI);
-        matrix = twgl_js_1.m4.translate(matrix, [-50, -75, -15]);
+        var matrix = twgl_js_1.m4.scaling([0.1, 0.1, 0.1]);
+        matrix = twgl_js_1.m4.axisRotate(matrix, [1, 0, 0], Math.PI);
+        //var matrix = m4.axisRotation([1,0,0],Math.PI);
+        matrix = twgl_js_1.m4.translate(matrix, [-5, -7.5, 10.5]);
+        //matrix = m4.scale(matrix, [0.1,0.1,0.1]);
         for (var ii = 0; ii < positions.length; ii += 3) {
             var vector = twgl_js_1.m4.transformPoint(matrix, [positions[ii + 0], positions[ii + 1], positions[ii + 2], 1]);
             positions[ii + 0] = vector[0];

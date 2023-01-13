@@ -20,15 +20,14 @@ import * as rotatingcubescene from "./scene/mixedtexturescene";        // scene:
 import * as lightscene from "./scene/lightscene";                      // scene: lights directed, point, spot
 import * as objectlistscene from "./scene/objectlistscene";            // scene: show bouncing guy node tree
 import * as canvas3dtexturescene from "./scene/canvas3dtexturescene";  // scene: show 3d on texture
+import * as canvas3dtexturescene2 from "./scene/canvas3dtexturescene2";  // scene: show 3d on texture
 import * as drawinstancedscene from "./scene/drawinstancedscene";      // scene: show texture space navigator
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
 import * as matobjscene from "./scene/matobjscene";                    // scene: show textured objects from .obj/.mtl
 import * as skeletonscene from "./scene/skeletonscene"                 // scene: bone model (single object)
 import * as fishanimationscene from "./scene/fishanimationscene"       // scene: bone model (multiple objects)
 
-
-var baseapppars = {move: true, speed: 0.01, color0:"#A0A0A0"};
-var defaultParameters: scene.TAnimation1Parameters = { b: baseapppars, movetail: true, texture: 'geotriangle2',typelight:'point light',  sling:117, shininess:11.0, fov: 60 };
+var defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
 const ShowOBJMTL     = 1;
 const ShowFish       = 3; 
@@ -92,16 +91,16 @@ function initAnimation1Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener
   return mta1;
 }
 
-function initAnimation2Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface, heighttop: number): animation2.Animation2
+function initAnimation2Scene(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scene: scene.SceneInterface[], heighttop: number): animation2.Animation2
 {
   document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
    
   var mta1 = new animation2.Animation2(gl, app, scene, dictPars!, cdiv);
 
   mta1.main(gl, dictPars!);
-  if (scene.sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
+  if (scene[0].sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
     else if (dictPars?.get("backcolorchoice")!=undefined) mta1.doShowBackgroundColorChoice = ((+dictPars?.get("backcolorchoice")!)>0);
-  mta1.initGUI(defaultParameters);
+  mta1.initGUI(defaultParameters,0);
   return mta1;
 }
 
@@ -119,16 +118,17 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
   else  if (dictPars?.get("whalesapp")!=undefined)
   {
     var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
-    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
-    sk.initGUI({move:false,movetail:true, speed:0.06,texture:"zelenskyy",color0:"#afb9af" });
+    //var baseapppars = {move: true, speed: 0.4, texture:"zelenskyy",fov:number,color0:"#A0A0A0"};
+    //sk.initGUI({b: baseapppars, move:false,movetail:true, speed:0.06,color0:"#afb9af" });
+    sk.initGUI(defaultParameters);
     sk.main(gl, dictPars);
     return sk;
   } 
   else if (dictPars?.get("variousfishapp")!=undefined)
   {  
     var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
-    var baseapppars = {move: true, speed: 0.4, color0:"#A0A0A0"};
-    fa.initGUI({ b: baseapppars, movetail: true, texture: 'geotriangle2',  sling:117 });
+    var baseapppars1 = {move: true, speed: 0.4, color0:"#A0A0A0", texture: 'geotriangle2', fov:60};
+    fa.initGUI(defaultParameters);
     fa.main(gl, dictPars);
     return  fa;
   }
@@ -161,32 +161,54 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
   //--------------------------------------------------------------------------------------------------
   else  // any other, take first argument as OBJ/MTL to show
   {
-    return initAnimation2Scene(gl, app, dictPars, new matobjscene.MatObjScene(gl, app, dictPars!),170); 
+    return initAnimation2Scene(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars!)],170); 
   }    
 }
 
+function show2(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string>, urlPar: string, scenes: scene.SceneInterface[], heighttop: number):boolean
+{
+  var b =  (dictPars?.get(urlPar)!=undefined);
+  if (b) initAnimation2Scene(gl, app, dictPars, scenes, heighttop);
+  return b;
+}
 
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  )
 {
    
   //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
 
-  if (dictPars?.get("animation4")!=undefined)
+  if (dictPars?.get("animation4")!=undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
    {
-     var mta1 = initAnimation2Scene(gl, app, dictPars, new skyboxcubescene.SkyBoxCubeScene(gl),70);
-     (mta1.scene as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!; // background texture is needed for reflection
-     console.log("assigned "+mta1.skyboxtexture!+" to scene reflection texture");
+     var mta1 = initAnimation2Scene(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)],70);
+     (mta1.scene[0] as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!;
+     return;
    } 
-    else if (dictPars?.get("animation7")!=undefined)  initAnimation2Scene(gl, app, dictPars, new drawinstancedscene.DrawInstancedScene(gl),70);
-    else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, new rotatingcubescene.MixedTextureScene(gl),70);
-    else if (dictPars?.get("animation5")!=undefined)  initAnimation2Scene(gl, app, dictPars, new manytexturescene.ManyTexturesScene(gl),70); 
-    else if (dictPars?.get("animation3")!=undefined)  initAnimation2Scene(gl, app, dictPars, new lightscene.LightScene(gl),70); 
-    else if (dictPars?.get("animation0")!=undefined)  initAnimation2Scene(gl, app, dictPars, new skyboxscene.SkyBoxScene(gl,dictPars),70); 
-    else if (dictPars?.get("animation6")!=undefined)  initAnimation2Scene(gl, app, dictPars, new objectlistscene.ObjectListScene(gl),70); 
-    else if (dictPars?.get("whales")!=undefined)      initAnimation2Scene(gl, app, dictPars, new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),70);
-    else if (dictPars?.get("variousfish")!=undefined) initAnimation2Scene(gl, app, dictPars, new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c"),70);
-    else if (dictPars?.get("animation8")!=undefined)  initAnimation2Scene(gl, app, dictPars, new canvas3dtexturescene.Canvas3dTextureScene(gl),70); 
-   
+
+   if(show2(gl,app,dictPars!,"animation7",[new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)],70)) return;     // Blockguy chased by plane
+   if(show2(gl,app,dictPars!,"animation3",[new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)],70)) return;             // Lighted F with 3dcubes
+   if(show2(gl,app,dictPars!,"animation1",[new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)],70)) return;  // Cube placed on grid
+   if(show2(gl,app,dictPars!,"animation2",[new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)],70)) return;  // Blockguy chasing 3dcubes
+   if(show2(gl,app,dictPars!,"whales",[new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)],70)) return;               // Zelensky patrol
+   if(show2(gl,app,dictPars!,"animation5",[new manytexturescene.ManyTexturesScene(gl)],70)) return;                                                  // Many textures scene
+   if(show2(gl,app,dictPars!,"animation4",[new skyboxcubescene.SkyBoxCubeScene(gl)],70)) return;                                                     // Skycube scene
+   if(show2(gl,app,dictPars!,"animation9",[ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70)) return;
+
+
+
+   /*
+    else if (dictPars?.get("animation7")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)],70);
+  //  else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)],70);
+    else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new lightscene.LightScene(gl), new canvas3dtexturescene.Canvas3dTextureScene(gl)],70);
+    else if (dictPars?.get("animation5")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new manytexturescene.ManyTexturesScene(gl)],70); 
+    else if (dictPars?.get("animation3")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),new lightscene.LightScene(gl)],70); 
+    else if (dictPars?.get("animation0")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new skyboxscene.SkyBoxScene(gl,dictPars)],70); 
+    else if (dictPars?.get("animation6")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new objectlistscene.ObjectListScene(gl)],70); 
+    else if (dictPars?.get("whales")!=undefined)      initAnimation2Scene(gl, app, dictPars, [new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c")],70);
+    else if (dictPars?.get("variousfish")!=undefined) initAnimation2Scene(gl, app, dictPars, [new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c")],70);
+    else if (dictPars?.get("animation2")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)],70); 
+    else if (dictPars?.get("animation8")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70); 
+    else if (dictPars?.get("animation9")!=undefined)  initAnimation2Scene(gl, app, dictPars, [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70); 
+   */
   else showOtherAnimations(gl, app, dictPars );
 }
 

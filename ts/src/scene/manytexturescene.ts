@@ -8,7 +8,7 @@ import * as datgui from "dat.gui"
 import * as camhandler from "./../baseapp/camhandler" // camera projection   
 import * as scene from "./scene"
 
-import { TAnimation1Parameters }  from "./scene"
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
 type Tuniforms = { 
   u_diffuseMult?: [number,Number, number, number], 
@@ -63,7 +63,7 @@ export class ManyTexturesScene implements scene.SceneInterface
 
   vertexShaderSource = ``;
   fragmentShaderSource = ``;
-  twglprograminfo: twgl.ProgramInfo[]|null=null;  // there are 2 sets of shaders defined here.
+  private twglprograminfo: twgl.ProgramInfo[]|null=null;  // there are 2 sets of shaders defined here.
   cameraPosition: [number,number,number] | undefined
 
   // Local
@@ -443,7 +443,7 @@ public Prepare(gl: WebGL2RenderingContext, sceneReadyCallback: (a:any)=>void | u
     } // return in main thread (earlier)
   }
     
-  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+  public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,cam: camhandler.Camera, dictpar:Map<string,string>, sceneReadyCallback: (a:any)=>void | undefined)
     { 
       this.Prepare(gl, sceneReadyCallback);
     }
@@ -471,10 +471,10 @@ public Prepare(gl: WebGL2RenderingContext, sceneReadyCallback: (a:any)=>void | u
            const world = m4.identity(); // local worlds turn
            m4.translate(world, obj.obj.translation, world);
            if (this.animationParameters!=null)
-           if (this.animationParameters.b.move)
+           if (this.animationParameters.move)
            {
-             m4.rotateY(world,this.animationParameters.b.speed* time * 0.05 * obj.obj.ySpeed, world);
-             m4.rotateZ(world, this.animationParameters.b.speed*time * 0.05 * obj.obj.zSpeed, world);
+             m4.rotateY(world,this.animationParameters.speed* time * 0.05 * obj.obj.ySpeed, world);
+             m4.rotateZ(world, this.animationParameters.speed*time * 0.05 * obj.obj.zSpeed, world);
            }
            uni.u_world= world; // this object's world     
            uni.u_worldInverseTranspose = m4.transpose(m4.inverse(world1)); 

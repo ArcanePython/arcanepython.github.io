@@ -24,7 +24,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 class MixedTextureScene {
     constructor(gl) {
-        this.twglprograminfo = null; // (not used in this animation)
         this.sceneenv = 2;
         this.matrixLocation = 0;
         this.textureLocation1 = 0;
@@ -74,8 +73,8 @@ class MixedTextureScene {
       //outColor = texture(u_texture2, v_texcoord);
     }
     `;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+        //this.twglprograminfo=new Array(2);
+        this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
     defaultCamera(gl, cam) { }
     extendGUI(gui) {
@@ -83,6 +82,7 @@ class MixedTextureScene {
         gui.add(this.animationParameters, 'movetail');
         gui.add(this.animationParameters, 'sling').min(9).max(120).step(1);
         gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
+        gui.remember(this.animationParameters);
         // Slider for shininess
         //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
         gui.updateDisplay();
@@ -106,7 +106,10 @@ class MixedTextureScene {
         gl.enableVertexAttribArray(posAttributeLocation);
         // <==
     }
-    initScene(gl, cap, dictpar, p, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
+        console.log("-> initScene MixedTextureScene");
+        var p = this.twglprograminfo;
+        gl.useProgram(p.program);
         this.animationParameters = cap;
         // Define shader syntax for attributes
         // Camera: prepare vs-fs transformation
@@ -183,10 +186,13 @@ class MixedTextureScene {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            sceneReadyCallback(0);
+            console.log("<- initScene MixedTextureScene texture read");
+            if (sceneReadyCallback != undefined)
+                sceneReadyCallback(0);
         };
     }
     drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
         gl.bindVertexArray(this.vao); //this always comes first !
         // 2023-01-03 prevent clear issues
         this.restorePositionAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 3);
@@ -199,13 +205,17 @@ class MixedTextureScene {
         // Time elapsed
         var deltaTime = time - this.ctime;
         this.ctime = time;
+        // Set world
+        var world = twgl_js_1.m4.identity();
+        world = twgl_js_1.m4.translation([0, 10.0, 0]);
         // Animate the rotation
         if (this.animationParameters.movetail) {
-            this.modelYRotationRadians += 0.1 * this.animationParameters.b.speed * deltaTime;
-            this.modelXRotationRadians += 0.005 * this.animationParameters.b.speed * this.animationParameters.sling * deltaTime;
+            this.modelYRotationRadians += 0.1 * this.animationParameters.speed * deltaTime;
+            this.modelXRotationRadians += 0.005 * this.animationParameters.speed * this.animationParameters.sling * deltaTime;
         }
         var matrix = twgl_js_1.m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
         matrix = twgl_js_1.m4.rotateY(matrix, this.modelYRotationRadians);
+        matrix = twgl_js_1.m4.multiply(matrix, world);
         // Set projection matrix
         gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
         // Draw the geometry.

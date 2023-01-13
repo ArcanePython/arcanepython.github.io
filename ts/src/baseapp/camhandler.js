@@ -24,6 +24,7 @@ class Camera {
         // result state to pass to shader
         this.lookAt = twgl_js_1.m4.identity(); // m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.identity(); // projection configured
+        this.camHeight = 0.0;
         //----------------------------------------------------------------
         //local state
         this.zaxis = [0, 0, 1]; // yaw axis
@@ -92,7 +93,7 @@ class Camera {
         this.eye = twgl_js_1.m4.transformPoint(t, this.eye);
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
-        // console.log("translate eye "+this.eye);
+        console.log("translate eye " + this.eye);
     }
     translateTarget(v) {
         var t = twgl_js_1.m4.translation(v);
@@ -131,7 +132,9 @@ class Camera {
         this.myr = twgl_js_1.m4.identity();
         twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahx, this.myr);
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahy, this.myr);
+        twgl_js_1.m4.translate(this.myr, [0, this.camHeight, 0], this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [this.radius, 0, 0]);
+        //this.eye[1]+=1; 
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
         this.ReportEye();

@@ -34,12 +34,6 @@ const animationclock = __importStar(require("../baseapp/animationclock"));
 class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
-        this.fishAnimationParameters = {
-            b: this.baseappParameters,
-            movetail: true,
-            texture: 'geotriangle2',
-            sling: 117,
-        };
         this.fish = [
             new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
             new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
@@ -57,11 +51,11 @@ class FishAnimation extends baseapp.BaseApp {
         ];
         this.clock = new animationclock.AnimationClock();
         FishAnimation.instance = this;
-        this.twglprograminfo = new Array(2);
-        this.twglprograminfo[1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
     }
     main(gl, dictpar) {
         var gl = this.gl;
+        gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;
         this.fish.forEach((afish) => {
@@ -72,7 +66,7 @@ class FishAnimation extends baseapp.BaseApp {
             afish.createSurfaceTexture(gl);
             afish.uniforms = afish.createUniforms(gl, dictpar);
             afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo[1], afish.bufferInfo);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
         });
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamZUp, 30.0, this.app);
@@ -92,7 +86,7 @@ class FishAnimation extends baseapp.BaseApp {
         this.fishAnimationParameters = parameters;
         // The base GUI provides checkboxes for move and move of objects,
         // a color dialog to choose background, Slider for animation speed
-        var gui = super.createGUI(this.fishAnimationParameters.b, this.fishAnimationParameters);
+        var gui = super.createGUI(this.fishAnimationParameters);
         // add a slider for sling
         gui.add(this.fishAnimationParameters, 'sling').min(9).max(120).step(1);
         gui.updateDisplay();
@@ -100,7 +94,7 @@ class FishAnimation extends baseapp.BaseApp {
     }
     render(time) {
         var gl = this.gl;
-        gl.useProgram(this.twglprograminfo[1].program);
+        gl.useProgram(this.twglprograminfo.program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
@@ -109,31 +103,32 @@ class FishAnimation extends baseapp.BaseApp {
         cam.CamHandlingZUp(gl, this.app, 1.0, -1.0);
         for (var fishtype = 0; fishtype < this.fish.length; fishtype++)
             this.fish[fishtype].uniforms.viewprojection = cam.viewProjection;
+        var par = this.fishAnimationParameters;
         for (var fishtype = 0; fishtype < this.fish.length; fishtype++) {
             gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = this.fishAnimationParameters.b.move ? this.fishAnimationParameters.b.speed : 0.0;
+            this.fish[fishtype].forwardspeed = par.move ? par.speed : 0.0;
             if (this.fishjointcounts[fishtype] == 1) // single joint fish
              {
-                this.fish[fishtype].computeBone(time, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                this.fish[fishtype].computeBone(time, par.move, par.movetail);
                 this.fish[fishtype].prepareBoneTexture(gl, this.fish[fishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
                 this.fish[fishtype].uniforms.world = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // draw a fish at some position
-                twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
                 twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
             }
             else // multiple joint segments
              {
                 var localmatrix = twgl_js_1.m4.translation(this.fishpositions[fishtype][0]); // start transforming origin of joint #0 to fish position
                 var ampl0 = this.fish[fishtype].ampl;
-                var sling = this.fishAnimationParameters.sling;
+                var sling = par.sling;
                 for (var i = 0; i < this.fishjointcounts[fishtype]; i++) // there are fishjointcounts joints for this fish type
                  {
                     var timeoffs = i * sling;
                     var nx = i / this.fishjointcounts[fishtype];
                     this.fish[fishtype].ampl = ampl0 * nx;
-                    this.fish[fishtype].computeBone(time - timeoffs, this.fishAnimationParameters.b.move, this.fishAnimationParameters.movetail);
+                    this.fish[fishtype].computeBone(time - timeoffs, par.move, par.movetail);
                     this.fish[fishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)
                     this.fish[fishtype].uniforms.world = localmatrix; // transformation for joint part depends on previous joint
-                    twgl.setUniforms(this.twglprograminfo[1], this.fish[fishtype].uniforms);
+                    twgl.setUniforms(this.twglprograminfo, this.fish[fishtype].uniforms);
                     twgl.drawBufferInfo(gl, this.fish[fishtype].bufferInfo, this.fish[fishtype].mesh.type);
                     localmatrix = twgl_js_1.m4.multiply(localmatrix, this.fish[fishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
                 }

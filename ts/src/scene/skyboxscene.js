@@ -28,7 +28,6 @@ class SkyBoxScene {
         this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.twglprograminfo = null;
         this.speedpreset = 0.05;
         if (dictPars === null || dictPars === void 0 ? void 0 : dictPars.has("speed")) {
             this.speedpreset = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("speed"));
@@ -38,10 +37,10 @@ class SkyBoxScene {
     }
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) { }
-    initScene(gl, cap, dictpar, progenv, sceneReadyCallback) {
+    initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         this.animationParameters = (this.animationParameters == undefined) ? cap : this.animationParameters;
         if (this.speedpreset)
-            this.animationParameters.b.speed = this.speedpreset;
+            this.animationParameters.speed = this.speedpreset;
         sceneReadyCallback(0);
     }
     extendGUI(gui) {

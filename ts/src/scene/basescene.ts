@@ -1,6 +1,7 @@
 import { m4 } from "twgl.js";
 import * as camhandler from "./../baseapp/camhandler"
-import {TAnimation1Parameters} from "./scene"
+
+import {TAnimation1Parameters} from "./../baseapp/baseapp"
 
 export class BaseScene
 {
@@ -48,7 +49,7 @@ export class BaseScene
                           program: WebGLProgram, 
                           setGeometry: (gl: WebGL2RenderingContext)=>void, 
                           setNormals: (gl: WebGL2RenderingContext)=>void, 
-                          sceneReadyCallback: (a:any)=>void | undefined)
+                          sceneReadyCallback: undefined | ((a:any)=>void))
   {
         // Create a vertex array object (attribute state)
         this.vaoSingleObject = gl.createVertexArray()!;
@@ -94,7 +95,7 @@ export class BaseScene
         var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next color
         var offset = 0;        // start at the beginning of the buffer
         gl.vertexAttribPointer(normalAttributeLocation, size, type, normalize, stride, offset);
-        sceneReadyCallback(0);
+        if(sceneReadyCallback!=undefined) sceneReadyCallback(0);
 
   }
 
@@ -107,10 +108,10 @@ export class BaseScene
 
   private renderMatrixSingleRotatingObjectPrologue(gl: WebGL2RenderingContext,viewProjectionMatrix: m4.Mat4, deltaTime: number)
   {
-    if (this.animationParameters!.b.move)
+    if (this.animationParameters!.move)
     {
-      this.modelYRotationRadians += 0.05* this.animationParameters!.b.speed * deltaTime;
-      this.modelXRotationRadians += 0.05* this.animationParameters!.b.speed * deltaTime;   
+      this.modelYRotationRadians += 0.05* this.animationParameters!.speed * deltaTime;
+      this.modelXRotationRadians += 0.05* this.animationParameters!.speed * deltaTime;   
     }  
     var matrixXRot = m4.axisRotation([1,0,0], this.modelXRotationRadians);
     var matrixYRot = m4.axisRotation([0,1,0], this.modelYRotationRadians);           

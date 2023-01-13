@@ -14,6 +14,9 @@ import * as baseapp from "./../baseapp/baseapp";
 import * as fishhtranslated from "./../bonemodel/fishhtranslated";
 import  * as datgui from "dat.gui";
 
+//import { SceneInterface } from "../scene/scene";
+//import { TAnimation1Parameters } from "../scene/scene";
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -29,13 +32,7 @@ type Tuniforms = {
 
 export class Skeleton extends baseapp.BaseApp
 {
-  skeletonParameters = {
-    move: false,
-    movetail: true,
-    speed: 0.4,
-    texture: 'geotriangle2',
-    color0: "#00A000",
-  };          
+    animationParameters: baseapp.TAnimation1Parameters = { move: false,color0: "#00A000",speed: 0.4,texture: 'geotriangle2',fov:60, movetail: true, sling: 140, shininess:0.5, typelight:'point light' };          
    
     cam: camhandler.Camera|undefined;
     uniforms: Tuniforms | undefined;
@@ -44,6 +41,8 @@ export class Skeleton extends baseapp.BaseApp
     phase0: number=0.0; //2.0; // 143 degrees 
     afish: fishhtranslated.FishHTranslated | undefined;
    
+    private twglprograminfo: twgl.ProgramInfo|undefined;  // there are 2 sets of shaders defined here.
+ 
 
     static instance: Skeleton;
 
@@ -51,13 +50,15 @@ export class Skeleton extends baseapp.BaseApp
     { 
       super(cgl, capp, dictpar, cdiv);
       Skeleton.instance = this;
-      this.twglprograminfo = new Array(2);
-      this.twglprograminfo![1] = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+      this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
   
     }
 
     main(gl: WebGL2RenderingContext,  dictpar:Map<string,string>)
     {
+      var program = this.twglprograminfo!.program;
+      gl.useProgram(program);
+   
       var time0: number=0;
     
      // super.maininfo(gl, dictpar,boneanimation.vsSkeleton, boneanimation.fsSkeleton );
@@ -66,7 +67,7 @@ export class Skeleton extends baseapp.BaseApp
       if ((spar=dictpar.get("phase2"))!=undefined) this.phase0= +spar!;
     
       this.afish = new fishhtranslated.FishHTranslated (1.0,0.2,0.3,  0.0, 1.0, 0.015,0.5,2.5, "zelenskyy");
-      this.afish.forwardspeed=(this.skeletonParameters.move)?0.06:0.0;
+      this.afish.forwardspeed=(this.animationParameters.move)?0.06:0.0;
       this.afish.prepareSurfaceTextures(gl, "zelenskyy");
       this.afish.mesh = this.afish.prepareMesh(gl, dictpar, 1.0);   
       this.afish.numBones = (this.afish.mesh!.type==gl.TRIANGLE_STRIP)? (this.afish.mesh!.nsegments / this.afish.mesh!.bonediv) : this.afish.mesh!.nsegments; 
@@ -76,7 +77,7 @@ export class Skeleton extends baseapp.BaseApp
       this.uniforms= this.afish.createUniforms(gl, dictpar); // this.phase0);
       this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh!.arrays);
 
-      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo![1], this.bufferInfo!);
+      this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, this.bufferInfo!);
       this.cam=camhandler.Camera.createCamera(gl,dictpar, camhandler.Camera.CamZUp, 50.0, this.app!);
       this.cam.zoominVelocity = 0.5;
       requestAnimationFrame(() => this.render(time0));   
@@ -98,13 +99,13 @@ export class Skeleton extends baseapp.BaseApp
       }
     }
 
-    public initGUI(parameters: {move:boolean, movetail:boolean,speed:number, texture:string, color0:string})
+    public initGUI(parameters: baseapp.TAnimation1Parameters)
     {
-      this.skeletonParameters = parameters;
+      this.animationParameters = parameters;
 
       var cc = (this.gl!.canvas as HTMLCanvasElement).parentNode;
       var ccd= (cc as HTMLDivElement);
-      ccd.style.backgroundColor =  this.skeletonParameters.color0;
+      ccd.style.backgroundColor =  this.animationParameters.color0;
   
       // park the dat.gui box in the linksdiv below the links, in closed state
       var gui = new datgui.GUI( { autoPlace: false } );
@@ -137,7 +138,10 @@ export class Skeleton extends baseapp.BaseApp
     render(time: number) 
     {       
         var gl = this.gl!;
-        gl.useProgram(this.twglprograminfo![1].program);
+        var program = this.twglprograminfo!.program;
+        gl.useProgram(program);
+     
+        //gl.useProgram(this.twglprograminfo![1].program);
         twgl.resizeCanvasToDisplaySize(gl.canvas  as HTMLCanvasElement);
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);        
         gl.enable(gl.DEPTH_TEST);
@@ -150,27 +154,27 @@ export class Skeleton extends baseapp.BaseApp
   
         gl.bindVertexArray(this.skinVAO);
     
-        this.afish!.forwardspeed=(this.skeletonParameters.move)?(this.skeletonParameters.speed):0.0;
-        this.afish!.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish!.forwardspeed=(this.animationParameters.move)?(this.animationParameters.speed):0.0;
+        this.afish!.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2); 
        
         uniforms.world = m4.translate(m4.identity(), [20.0, -20.0, 0.0]);  // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
        
         uniforms.world = m4.translate(m4.identity(), [0.0, 0.0, 0.0]);     // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
   
-        this.afish!.computeBone(time, this.skeletonParameters.move, this.skeletonParameters.movetail);
+        this.afish!.computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
         this.afish!.prepareBoneTexture(gl,this.afish!.bindPoseInv2);
 
         uniforms.world = m4.translate(m4.identity(), [50.0, -20.0, 10.0]); // draw a fish    
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);     
 
         uniforms.world = m4.translate(m4.identity(), [-10.0, 5.0, -10.0]); // draw a fish
-        twgl.setUniforms(this.twglprograminfo![1], uniforms)
+        twgl.setUniforms(this.twglprograminfo!, uniforms)
         twgl.drawBufferInfo(gl, this.bufferInfo!, this.afish!.mesh!.type);
        
         requestAnimationFrame(() => this.render(++time));       

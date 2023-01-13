@@ -65,7 +65,8 @@ class BaseScene {
         var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
         var offset = 0; // start at the beginning of the buffer
         gl.vertexAttribPointer(normalAttributeLocation, size, type, normalize, stride, offset);
-        sceneReadyCallback(0);
+        if (sceneReadyCallback != undefined)
+            sceneReadyCallback(0);
     }
     renderCameraSingleRotatingObjectPrologue(gl, cam, deltaTime) {
         var viewProjectionMatrix = cam.viewProjection; // m4.multiply(projectionMatrix, viewMatrix);
@@ -73,9 +74,9 @@ class BaseScene {
         gl.bindVertexArray(this.vaoSingleObject);
     }
     renderMatrixSingleRotatingObjectPrologue(gl, viewProjectionMatrix, deltaTime) {
-        if (this.animationParameters.b.move) {
-            this.modelYRotationRadians += 0.05 * this.animationParameters.b.speed * deltaTime;
-            this.modelXRotationRadians += 0.05 * this.animationParameters.b.speed * deltaTime;
+        if (this.animationParameters.move) {
+            this.modelYRotationRadians += 0.05 * this.animationParameters.speed * deltaTime;
+            this.modelXRotationRadians += 0.05 * this.animationParameters.speed * deltaTime;
         }
         var matrixXRot = twgl_js_1.m4.axisRotation([1, 0, 0], this.modelXRotationRadians);
         var matrixYRot = twgl_js_1.m4.axisRotation([0, 1, 0], this.modelYRotationRadians);

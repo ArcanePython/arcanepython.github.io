@@ -29,7 +29,8 @@
     // result state to pass to shader
     lookAt: m4.Mat4 = m4.identity();         // m4.lookAt(this.eye, this.target, this.up);
     viewProjection: m4.Mat4 = m4.identity();    // projection configured
-      
+    camHeight: number = 0.0;
+
     //----------------------------------------------------------------
     //local state
 
@@ -124,7 +125,7 @@
       this.eye=m4.transformPoint(t, this.eye) as number[]; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
-     // console.log("translate eye "+this.eye);
+      console.log("translate eye "+this.eye);
     }
 
     public translateTarget(v: number[])
@@ -177,7 +178,9 @@
       this.myr = m4.identity();
       m4.axisRotate(this.myr,this.yaxis, this.ahx, this.myr);
       m4.axisRotate(this.myr,this.zaxis, this.ahy, this.myr);
-      this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[];  
+      m4.translate(this.myr,[0,this.camHeight,0],this.myr);
+      this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[]; 
+      //this.eye[1]+=1; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
       this.ReportEye();

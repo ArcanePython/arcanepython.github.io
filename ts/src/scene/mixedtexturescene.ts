@@ -6,12 +6,13 @@ import * as datgui from "dat.gui";
 import * as camhandler from "./../baseapp/camhandler"   // camera projection
 import * as scene from "./scene"
 
-import { TAnimation1Parameters }  from "./scene"
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
 export class MixedTextureScene implements scene.SceneInterface
 {
     animationParameters: TAnimation1Parameters | undefined;
-    twglprograminfo: twgl.ProgramInfo[]|null=null;  // (not used in this animation)
+   
+    private twglprograminfo: twgl.ProgramInfo|undefined;  // (not used in this animation)
 
     sceneenv:number = 2;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
@@ -81,8 +82,8 @@ export class MixedTextureScene implements scene.SceneInterface
 
     constructor(gl: WebGL2RenderingContext)
     {
-      this.twglprograminfo=new Array(2);
-      this.twglprograminfo![1] = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
+      //this.twglprograminfo=new Array(2);
+      this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
 
     public extendGUI(gui: datgui.GUI)
@@ -92,7 +93,7 @@ export class MixedTextureScene implements scene.SceneInterface
 
      gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
      gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
- 
+     gui.remember(this.animationParameters!);
      // Slider for shininess
      //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
      gui.updateDisplay();
@@ -126,14 +127,16 @@ export class MixedTextureScene implements scene.SceneInterface
         // <==
     }
  
-    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,dictpar:Map<string,string>,  p: twgl.ProgramInfo, sceneReadyCallback: (a:any)=>void | undefined)
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,cam: camhandler.Camera, dictpar:Map<string,string>,  sceneReadyCallback: undefined | ((a:any)=>void))
     {
+      console.log("-> initScene MixedTextureScene");
+      var p=this.twglprograminfo!;
+      gl.useProgram(p.program);
       this.animationParameters = cap;
       // Define shader syntax for attributes
       
       // Camera: prepare vs-fs transformation
       this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix")!;
-      
       // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
       this.positionBuffer = gl.createBuffer()!;
       this.positionAttributeLocation = gl.getAttribLocation(p.program, "a_position");    
@@ -216,12 +219,15 @@ export class MixedTextureScene implements scene.SceneInterface
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);    
-        sceneReadyCallback(0);
+        console.log("<- initScene MixedTextureScene texture read");
+        if(sceneReadyCallback!=undefined) sceneReadyCallback(0);
+   
       }; 
     }
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
     {
+      gl.useProgram(this.twglprograminfo!.program);
       gl.bindVertexArray(this.vao!); //this always comes first !
 
       // 2023-01-03 prevent clear issues
@@ -239,15 +245,19 @@ export class MixedTextureScene implements scene.SceneInterface
       var deltaTime = time - this.ctime;
       this.ctime = time;
 
+      // Set world
+      var world: m4.Mat4 = m4.identity();
+      world = m4.translation([0,10.0,0]);
+
       // Animate the rotation
       if (this.animationParameters!.movetail)
       {
-        this.modelYRotationRadians += 0.1* this.animationParameters!.b.speed * deltaTime;
-        this.modelXRotationRadians += 0.005* this.animationParameters!.b.speed * this.animationParameters!.sling * deltaTime;   
+        this.modelYRotationRadians += 0.1* this.animationParameters!.speed * deltaTime;
+        this.modelXRotationRadians += 0.005* this.animationParameters!.speed * this.animationParameters!.sling * deltaTime;   
       }  
       var matrix = m4.rotateX(cam.viewProjection, this.modelXRotationRadians);
       matrix = m4.rotateY(matrix, this.modelYRotationRadians);     
-      
+      matrix = m4.multiply(matrix, world);
       // Set projection matrix
       gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
        
