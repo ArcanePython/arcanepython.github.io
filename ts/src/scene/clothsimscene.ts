@@ -2,9 +2,13 @@ import * as twgl from "twgl.js";    // Greg's work
 //import { m4 } from "twgl.js";
 //import { BaseApp } from "../baseapp/baseapp";
 
-import * as cloth from "./cloth"
-import * as baseapp from "./../baseapp/baseapp"
-import * as mtls from "./../baseapp/mouselistener";  // connect events for mouse movement, buttons and wheel
+import * as cloth from "../cloth/cloth"
+//import * as baseapp from "./../baseapp/baseapp"
+import * as mtls from "../baseapp/mouselistener";  // connect events for mouse movement, buttons and wheel
+import * as camhandler from "../baseapp/camhandler" // camera projection   
+import * as datgui from "dat.gui"
+import {TAnimation1Parameters} from "../baseapp/baseapp"
+import * as scene from "./scene"
 
 class ClothProducer
 {
@@ -13,7 +17,7 @@ class ClothProducer
      startX = -0.9;
      startY = 1.0;
      spacing = 1.8 / this.clothX;
-     tearDist = this.spacing * 6;
+     tearDist = this.spacing * 8;
      cloth:cloth.Cloth;
 
      constructor()
@@ -30,8 +34,8 @@ export class  ClothMouseHandler
     cloth: cloth.Cloth;
 
     mouse = new cloth.ClothMouse(
-         0.02,
-         0.08,
+      -9999, //  0.02,
+      0.02, //   0.08,
          false,
          1,
          0,
@@ -55,6 +59,7 @@ export class  ClothMouseHandler
     constructor (private canvas: HTMLCanvasElement)
     {
        ClothMouseHandler.instance = this;
+       
        var cp = new ClothProducer();
        this.cloth = cp.cloth;
        if(canvas==null||canvas==undefined) console.log("ClothMouseHandler finds unknown canvas");
@@ -73,9 +78,16 @@ export class  ClothMouseHandler
     }
 }
 
-export class ClothSim extends baseapp.BaseApp
+export class ClothSimScene implements scene.SceneInterface
 {
-    twglprograminfo: twgl.ProgramInfo;
+    scenesize = 500;
+    sceneenv = -1;
+    animationParameters: TAnimation1Parameters | undefined;
+    public resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }  
+    public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }
+    
+    private twglprograminfo: twgl.ProgramInfo;
+
     nbFrames: number = 0;
     lastTime: number= 0;
     a_PositionID: number = 0;
@@ -83,44 +95,70 @@ export class ClothSim extends baseapp.BaseApp
     cloth: cloth.Cloth|undefined;
 
     constructor(gl: WebGL2RenderingContext, capp: mtls.MouseListener,  dictPar:Map<string,string>,
-                public render_mode:number, public accuracy: number, public gravity: number, public friction: number, public bounce: number)
+                public render_mode:number, public accuracy: number,  public friction: number, public bounce: number)
     { 
-        super(gl, capp, dictPar, "c");
+        //super(gl, capp, dictPar, "c");
+        console.log("=> ClothSimScene constructor connect shaders")
         this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-        gl.useProgram(this.twglprograminfo.program);
+
+        //gl.useProgram(this.twglprograminfo.program);
+        console.log("<= ClothSimScene constructor "+this.twglprograminfo.program);
+        
     }
- 
-    prepare()
+
+    public extendGUI(gui: datgui.GUI)
     {
-        var gl= this!.gl!;
+        // Slider for sling speed
+        // Checkbox forward move animation on/off
+     //   console.log("=> cloth extendGUI movetail"+this.animationParameters!);
+        gui.add(this.animationParameters!, 'gravity',0.0,0.05,0.001);
+        //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
+        // Slider for shininess
+        //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+     //   gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+        
+        gui.updateDisplay();
+        console.log("<= ClothSimScene extendGUI")
+        //   console.log("<= manyTextures extendGUI");
+    }
+
+ 
+    prepare(gl: WebGL2RenderingContext)
+    {
         var canvas = gl.canvas as HTMLCanvasElement;         
         var cs: ClothMouseHandler = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
+        gl.useProgram(this.twglprograminfo.program);
         this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
         var indicesbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer()!;      
-    }
+     }
 
-    main()
+    public initScene(gl: WebGL2RenderingContext, cap:TAnimation1Parameters,cam: camhandler.Camera,  dictpar:Map<string,string>| undefined, textureReadyCallback: undefined | ((a:any)=>void)): void
     {      
-        this.prepare();
-        window.requestAnimationFrame(()=>{this.render();});
+        this.prepare(gl);
+        console.log("<= ClothSimScene initScene");
+        if (textureReadyCallback!=undefined) textureReadyCallback(0);
+ 
+        //   window.requestAnimationFrame(()=>{this.render();});
     }
 
-    render() {
-
-        this.cloth!.update(ClothMouseHandler.instance.mouse,0.032, this.accuracy,this.gravity,this.friction,this.bounce);
-           var currentTime = Date.now();    
+    public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void
+    {
+        //console.log("cloth drawscene");
+        gl.useProgram(this.twglprograminfo.program);
+        this.cloth!.update(ClothMouseHandler.instance.mouse,0.032, this.accuracy,-this.animationParameters!.gravity,this.friction,this.bounce);
+        
+        var currentTime = Date.now();    
         this.nbFrames++;
         if ((currentTime - this.lastTime) >= 5000.0) {
             console.log(5000.0 / this.nbFrames + " ms/frame");
             this.nbFrames = 0;
             this.lastTime = currentTime;
         }
-        var gl = this.gl!;
         if (this.cloth!.dirty)
         {
        //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
@@ -133,7 +171,7 @@ export class ClothSim extends baseapp.BaseApp
         gl.vertexAttribPointer(this.a_PositionID, 3, gl.FLOAT, false, 0, 0);
         gl.drawElements(this.render_mode!, this.cloth!.indices.length, gl.UNSIGNED_INT, 0);
         gl.flush();        
-        window.requestAnimationFrame(()=>{this.render();});
+      //  window.requestAnimationFrame(()=>{this.render();});
       }
 
     vertexShaderSource = `
@@ -168,7 +206,8 @@ export class ClothSim extends baseapp.BaseApp
     void main()
     {
         //gl_FragColor = vec4(0.6, 0.8, 0.4, v_position.y);
-        gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
+     //   gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
+        gl_FragColor = vec4(0.2, 0.4, 0.2, 1.0);
     }
     `;
 }

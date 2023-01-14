@@ -94,7 +94,7 @@ export class SkeletonScene implements scene.SceneInterface
       this.bufferInfo = twgl.createBufferInfoFromArrays(gl, this.afish.mesh!.arrays);
 
       this.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, this.bufferInfo!);
-     if (textureReadyCallback!=undefined) textureReadyCallback(0);
+      if (textureReadyCallback!=undefined) textureReadyCallback(0);
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------

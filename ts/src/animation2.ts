@@ -13,7 +13,7 @@ export class Animation2 extends baseapp.BaseApp
 
     public static instance: Animation2|undefined;
 
-    defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+    defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     //=============================================================================
 
@@ -81,10 +81,12 @@ export class Animation2 extends baseapp.BaseApp
         this.cam.zoominVelocity = 0.5;    
         if (this.scene[0].sceneenv>0)
         {   
+          console.log("animation2 initscenes with background");
             if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl); 
             this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.scene[0].sceneenv, this.textureEnvReadyCallback)!;     
         } else
         {       
+          console.log("animation2 initscenes without background");
           this.initScenes();
       //    var n: number=0;
     //      var ainstance=this;

@@ -42,7 +42,7 @@ class MouseListener {
             event.stopPropagation();
             return false;
         });
-        canvas.onmousedown = (e) => {
+        canvas.addEventListener("mousedown", e => {
             this.mouse.button = e.button;
             this.mouse.down = true;
             this.mouse.dragpx0 = e.x;
@@ -52,9 +52,8 @@ class MouseListener {
             this.mouse.dragx0 = this.mouse.x;
             this.mouse.dragy0 = this.mouse.y;
             this.mouse.dragging = true;
-            e.cancelBubble = true;
-        };
-        canvas.onmouseup = (e) => {
+        });
+        canvas.addEventListener("mouseup", e => {
             (this.mouse.down = false);
             if (this.mouse.dragvector == undefined) {
                 if (this.OnMouseUp != undefined)
@@ -64,8 +63,8 @@ class MouseListener {
                 this.OnMouseUp(this.mouse.sx + " " + this.mouse.sy + " dragging: v=" + this.mouse.dragvector + " d=" + this.mouse.dragdistance);
             this.mouse.dragging = false;
             delete this.mouse.dragvector;
-        };
-        canvas.onmousemove = (e) => {
+        });
+        canvas.addEventListener("mousemove", e => {
             var canvas = document.getElementById('c');
             let rect = canvas.getBoundingClientRect();
             this.mouse.px = e.x;
@@ -90,9 +89,9 @@ class MouseListener {
             }
             if (this.OnMouseMove != undefined)
                 this.OnMouseMove(this.mouse.sx + " " + this.mouse.sy);
-            //console.log("setmouse "+this.mouse.x+","+this.mouse.y); }
+            //console.log("setmouse "+this.mouse.x+","+this.mouse.y);
             canvas.oncontextmenu = (e) => e.preventDefault();
-        };
+        });
     }
     mousewheeleventdone() {
         this.mouse.changewheel = false;

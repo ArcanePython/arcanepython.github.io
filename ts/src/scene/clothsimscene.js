@@ -19,12 +19,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClothSim = exports.ClothMouseHandler = void 0;
+exports.ClothSimScene = exports.ClothMouseHandler = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 //import { m4 } from "twgl.js";
 //import { BaseApp } from "../baseapp/baseapp";
-const cloth = __importStar(require("./cloth"));
-const baseapp = __importStar(require("./../baseapp/baseapp"));
+const cloth = __importStar(require("../cloth/cloth"));
 class ClothProducer {
     constructor() {
         this.clothX = 200;
@@ -32,14 +31,16 @@ class ClothProducer {
         this.startX = -0.9;
         this.startY = 1.0;
         this.spacing = 1.8 / this.clothX;
-        this.tearDist = this.spacing * 6;
+        this.tearDist = this.spacing * 8;
         this.cloth = new cloth.Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
     }
 }
 class ClothMouseHandler {
     constructor(canvas) {
         this.canvas = canvas;
-        this.mouse = new cloth.ClothMouse(0.02, 0.08, false, 1, 0, 0, 0, 0);
+        this.mouse = new cloth.ClothMouse(-9999, //  0.02,
+        0.02, //   0.08,
+        false, 1, 0, 0, 0, 0);
         ClothMouseHandler.instance = this;
         var cp = new ClothProducer();
         this.cloth = cp.cloth;
@@ -69,14 +70,14 @@ class ClothMouseHandler {
     }
 }
 exports.ClothMouseHandler = ClothMouseHandler;
-class ClothSim extends baseapp.BaseApp {
-    constructor(gl, capp, dictPar, render_mode, accuracy, gravity, friction, bounce) {
-        super(gl, capp, dictPar, "c");
+class ClothSimScene {
+    constructor(gl, capp, dictPar, render_mode, accuracy, friction, bounce) {
         this.render_mode = render_mode;
         this.accuracy = accuracy;
-        this.gravity = gravity;
         this.friction = friction;
         this.bounce = bounce;
+        this.scenesize = 500;
+        this.sceneenv = -1;
         this.nbFrames = 0;
         this.lastTime = 0;
         this.a_PositionID = 0;
@@ -111,17 +112,36 @@ class ClothSim extends baseapp.BaseApp {
     void main()
     {
         //gl_FragColor = vec4(0.6, 0.8, 0.4, v_position.y);
-        gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
+     //   gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
+        gl_FragColor = vec4(0.2, 0.4, 0.2, 1.0);
     }
     `;
+        //super(gl, capp, dictPar, "c");
+        console.log("=> ClothSimScene constructor connect shaders");
         this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
-        gl.useProgram(this.twglprograminfo.program);
+        //gl.useProgram(this.twglprograminfo.program);
+        console.log("<= ClothSimScene constructor " + this.twglprograminfo.program);
     }
-    prepare() {
-        var gl = this.gl;
+    resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
+    defaultCamera(gl, cam) { }
+    extendGUI(gui) {
+        // Slider for sling speed
+        // Checkbox forward move animation on/off
+        //   console.log("=> cloth extendGUI movetail"+this.animationParameters!);
+        gui.add(this.animationParameters, 'gravity', 0.0, 0.05, 0.001);
+        //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
+        // Slider for shininess
+        //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
+        //   gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+        gui.updateDisplay();
+        console.log("<= ClothSimScene extendGUI");
+        //   console.log("<= manyTextures extendGUI");
+    }
+    prepare(gl) {
         var canvas = gl.canvas;
         var cs = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
+        gl.useProgram(this.twglprograminfo.program);
         this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
         var indicesbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
@@ -129,12 +149,17 @@ class ClothSim extends baseapp.BaseApp {
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer();
     }
-    main() {
-        this.prepare();
-        window.requestAnimationFrame(() => { this.render(); });
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        this.prepare(gl);
+        console.log("<= ClothSimScene initScene");
+        if (textureReadyCallback != undefined)
+            textureReadyCallback(0);
+        //   window.requestAnimationFrame(()=>{this.render();});
     }
-    render() {
-        this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, this.gravity, this.friction, this.bounce);
+    drawScene(gl, cam, time) {
+        //console.log("cloth drawscene");
+        gl.useProgram(this.twglprograminfo.program);
+        this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.friction, this.bounce);
         var currentTime = Date.now();
         this.nbFrames++;
         if ((currentTime - this.lastTime) >= 5000.0) {
@@ -142,7 +167,6 @@ class ClothSim extends baseapp.BaseApp {
             this.nbFrames = 0;
             this.lastTime = currentTime;
         }
-        var gl = this.gl;
         if (this.cloth.dirty) {
             //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
@@ -153,8 +177,8 @@ class ClothSim extends baseapp.BaseApp {
         gl.vertexAttribPointer(this.a_PositionID, 3, gl.FLOAT, false, 0, 0);
         gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
         gl.flush();
-        window.requestAnimationFrame(() => { this.render(); });
+        //  window.requestAnimationFrame(()=>{this.render();});
     }
 }
-exports.ClothSim = ClothSim;
-//# sourceMappingURL=clothsim.js.map
+exports.ClothSimScene = ClothSimScene;
+//# sourceMappingURL=clothsimscene.js.map

@@ -25,7 +25,7 @@ class Point {
     vy:number;
     vz: number;
 
-    constructor(public x: number, public y: number,public z:number) {
+    constructor(public cloth: Cloth, public x: number, public y: number,public z:number) {
         this.x = this.px = x;
         this.y = this.py = y;
         this.z = this.pz = z;
@@ -51,7 +51,7 @@ class Point {
               //  console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
             } else if (dist < mouse.cut) {
               //  console.log("seen mouse down, button="+mouse.button+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
-                this.free();
+              //  this.free();
             } // else       console.log("seen mouse down, button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
 
         }
@@ -101,7 +101,7 @@ class Point {
 
     free() {
         this.constraints = [];
-        /* cloth.removeIndex(this); */
+        this.cloth.removeIndex(this); 
     }
 
     addForce(x: number, y:number, z:number) {
@@ -114,6 +114,8 @@ class Point {
         this.pinX = pinx
         this.pinY = piny
     }
+
+    
 }
 
 class Constraint {
@@ -155,10 +157,11 @@ export class Cloth {
 
    // public canvas: HTMLCanvasElement;
     vertices: Float32Array;
-    indices: Uint32Array;
+    public indices: Uint32Array;
     points: Point[];
+    dirty: boolean=false;
 
-    constructor( clothX:number, clothY:number, startX: number, startY: number, tearDist:number, spacing: number, canvasName: string) {
+    constructor(public clothX:number, public clothY:number, startX: number, startY: number, tearDist:number, spacing: number, canvasName: string) {
        // this.canvas = ccanvas;
         this.vertices = new Float32Array(((clothX + 1) * (clothY + 1)) * 3);
         this.indices = new Uint32Array(this.vertices.length * 3);
@@ -168,7 +171,7 @@ export class Cloth {
         let cnt = 0;
         for (let y = 0; y <= clothY; y++) {
             for (let x = 0; x <= clothX; x++) {
-                let p = new Point(startX + x * spacing, startY - y * spacing, 0.0);
+                let p = new Point(this, startX + x * spacing, startY - y * spacing, 0.0);
 
                 y === 0 && p.pin(p.x, p.y);
                 x !== 0 && p.attach(this.points[this.points.length - 1],tearDist,spacing);
@@ -195,6 +198,81 @@ export class Cloth {
             }
         }
     }
+
+    removeIndex(p: Point) {
+
+        let pos = this.points.indexOf(p);
+        let posinx = this.indices.indexOf(pos);
+        if (posinx >= 0) {
+            let l = (posinx + this.clothX * 2);
+            l = (l > this.indices.length) ? this.indices.length : l;
+            let n = 0;
+            for (var i = posinx; i < l; i++) {
+                if (this.indices[i] == pos)
+                {
+                    let ii = 3*Math.floor(i/3);
+                    for (var iii=ii; iii<(ii+3); iii++)
+                      { this.indices[iii]=-1; }
+
+                    n++;
+                }
+            }
+            console.log("removing index for p=" + p.x + "," + p.y+" n="+n);
+            this.dirty = true;
+        }
+        /*
+        let pp = [
+            this.points[pos - clothX - 2],  // top-left
+            this.points[pos - clothX - 1],  // top-mid
+            this.points[pos - 1],           // mid-left
+            this.points[pos + 1],           // mid-right
+            this.points[pos + clothX],      // bot-left
+            this.points[pos + clothX + 1],  // bot-mid
+            this.points[pos + clothX + 2]   // bot-right
+        ];
+
+        let ppp = [
+            pos - clothX - 2,
+            pos - clothX - 1,
+            pos - 1,
+            pos + 1,
+            pos + clothX,
+            pos + clothX + 1,
+            pos + clothX + 2
+        ];
+      
+        let cnt = pos * 6;
+
+        this.indices[cnt++] = ppp[0] + 1;
+        this.indices[cnt++] = ppp[0] + clothX + 1;
+        this.indices[cnt++] = ppp[0] + clothX + 2;
+        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
+
+        cnt = ppp[0] * 6;
+
+        this.indices[cnt++] = ppp[0];
+        this.indices[cnt++] = ppp[0] + 1;
+        this.indices[cnt++] = ppp[0] + clothX + 1;
+        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
+
+        cnt = ppp[1] * 6;
+
+        this.indices[cnt++] = ppp[0];
+        this.indices[cnt++] = ppp[0] + 1;
+        this.indices[cnt++] = ppp[0] + clothX + 2;
+        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
+
+        cnt = ppp[2] * 6;
+
+        this.indices[cnt++] = ppp[0];
+        this.indices[cnt++] = ppp[0] + clothX + 1;
+        this.indices[cnt++] = ppp[0] + clothX + 2;
+        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
+*/
+     
+     
+    }
+
 
     update(mouse: ClothMouse, delta: number, accuracy: number, gravity:number, friction:number, bounce:number) {
         let i = accuracy;

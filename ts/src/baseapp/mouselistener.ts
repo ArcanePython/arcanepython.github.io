@@ -62,12 +62,12 @@ export class MouseListener {
     this.mouse.changedrag = false;
   }
 
-  constructor(
-    canvas: HTMLCanvasElement
-  ) {
+  constructor(canvas: HTMLCanvasElement ) 
+  {
     this.state = {count: 0};  
     canvas.addEventListener("keydown", event => { console.log("keydown "+event.ctrlKey); if (event.ctrlKey) this.controlkeydown = true; });
     canvas.addEventListener("keyup", event => { console.log("keyup "+event.ctrlKey);  if (!event.ctrlKey) this.controlkeydown = false; });
+    
     canvas.addEventListener("wheel", event => {
       this.mouse.changewheel = true;
       this.mouse.delta = Math.sign(event.deltaY);
@@ -80,21 +80,19 @@ export class MouseListener {
       event.stopPropagation();
       return false; 
      });   
-    canvas.onmousedown = (e) => {
+
+     canvas.addEventListener("mousedown", e => {
       this.mouse.button = e.button;
       this.mouse.down = true;
       this.mouse.dragpx0=e.x; 
-     this.mouse.dragpy0=canvas.height-e.y;
-
-      if (this.OnMouseDown!=undefined)
-        this.OnMouseDown(this.mouse.sx+" "+this.mouse.sy);  
+      this.mouse.dragpy0=canvas.height-e.y;
+      if (this.OnMouseDown!=undefined) this.OnMouseDown(this.mouse.sx+" "+this.mouse.sy);  
       this.mouse.dragx0 = this.mouse.x;
       this.mouse.dragy0 = this.mouse.y;
       this.mouse.dragging = true;
-      e.cancelBubble=true;
-    }
-    canvas.onmouseup = (e) => 
-    {  
+     });
+
+   canvas.addEventListener("mouseup", e => {  
       (this.mouse.down = false); 
       if (this.mouse.dragvector == undefined)
       {
@@ -105,8 +103,9 @@ export class MouseListener {
         this.OnMouseUp(this.mouse.sx+" "+this.mouse.sy+" dragging: v="+this.mouse.dragvector+" d="+this.mouse.dragdistance);  
       this.mouse.dragging = false;
       delete this.mouse.dragvector;
-    }
-    canvas.onmousemove = (e) => {
+    });
+
+    canvas.addEventListener("mousemove", e => {  
       var canvas =  (document.getElementById('c') as HTMLCanvasElement);
       let rect = canvas.getBoundingClientRect();
       this.mouse.px =e.x; 
@@ -132,8 +131,8 @@ export class MouseListener {
       }
       if (this.OnMouseMove!=undefined)
           this.OnMouseMove(this.mouse.sx+" "+this.mouse.sy);
-      //console.log("setmouse "+this.mouse.x+","+this.mouse.y); }
+      //console.log("setmouse "+this.mouse.x+","+this.mouse.y);
       canvas.oncontextmenu = (e) => e.preventDefault();
-     }
+     });
    }
 }

@@ -26,7 +26,7 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation2 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
-        this.defaultParameters = { move: true, speed: 0.01, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+        this.defaultParameters = { move: true, speed: 0.01, color0: "#A0A0A0", gravity: 0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
         //=============================================================================
         // all parameters in any scene
         this.animation1Parameters = this.defaultParameters;
@@ -80,6 +80,7 @@ class Animation2 extends baseapp.BaseApp {
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
         if (this.scene[0].sceneenv > 0) {
+            console.log("animation2 initscenes with background");
             if (this.doTwglEnv)
                 this.createEnvironmentMapGeoTwgl(gl);
             else
@@ -87,6 +88,7 @@ class Animation2 extends baseapp.BaseApp {
             this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene[0].sceneenv, this.textureEnvReadyCallback);
         }
         else {
+            console.log("animation2 initscenes without background");
             this.initScenes();
             //    var n: number=0;
             //      var ainstance=this;

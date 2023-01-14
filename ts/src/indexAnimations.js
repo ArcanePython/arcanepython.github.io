@@ -28,7 +28,6 @@ const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // ba
 const skeleton = __importStar(require("./others/skeleton")); // baseapp derivative: bone model (single object)
 const fishanimation = __importStar(require("./others/fishanimation")); // baseapp derivative: bone model (multiple objects)
 const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
-const animation1 = __importStar(require("./animation1")); // baseapp derivative: scene container
 const animation2 = __importStar(require("./animation2")); // baseapp derivative: scene container
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
@@ -37,18 +36,19 @@ const objectlistscene = __importStar(require("./scene/objectlistscene")); // sce
 const canvas3dtexturescene = __importStar(require("./scene/canvas3dtexturescene")); // scene: show 3d on texture
 const canvas3dtexturescene2 = __importStar(require("./scene/canvas3dtexturescene2")); // scene: show 3d on texture
 const drawinstancedscene = __importStar(require("./scene/drawinstancedscene")); // scene: show texture space navigator
+const clothsimscene = __importStar(require("./scene/clothsimscene")); // scene: show texture space navigator
 const skyboxcubescene = __importStar(require("./scene/skyboxcubescene")); // scene: show reflecting cube in skybox
 const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show textured objects from .obj/.mtl
 const skeletonscene = __importStar(require("./scene/skeletonscene")); // scene: bone model (single object)
 const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // scene: bone model (multiple objects)
 const clothsim = __importStar(require("./cloth/clothsim"));
-var defaultParameters = { move: true, speed: 0.01, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+var cdiv = 'c'; // name of canvas accessed by gl
+var baseappParameters = { gravity: 0.02, move: true, speed: 0.01, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+//=== DEFAULT ANIMATIONS  =================================================================================================================
 const ShowOBJMTL = 1;
 const ShowFish = 3;
 const ShowAnimation1 = 5;
-var selectedShow = ShowFish;
-var cdiv = 'c'; // name of canvas accessed by gl
-//=== DISPATCH TASKS =================================================================================================================
+var selectedShow = ShowFish; // default animation
 function preparedefaultparameters(dictPars) {
     switch (selectedShow) {
         case ShowFish:
@@ -84,39 +84,22 @@ function preparedefaultparameters(dictPars) {
         default: return;
     }
 }
-function initAnimation1Scene(gl, app, dictPars, scene, heighttop) {
+//--- DISPATCH SHOW DEPENDING ON URL ARGUMENT ----------------------------------------------------------------------------------------------------------------
+function showScenesAnimation(gl, app, dictPars, scenes, heighttop) {
     document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
-    var mta1 = new animation1.Animation1(gl, app, scene, dictPars, cdiv);
+    var mta1 = new animation2.Animation2(gl, app, scenes, dictPars, cdiv);
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
+        baseappParameters["color0"] = "#f2f0f0";
     mta1.main(gl, dictPars);
-    if (scene.sceneenv < 0)
+    if (scenes[0].sceneenv < 0)
         mta1.doShowBackgroundColorChoice = true;
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) != undefined)
         mta1.doShowBackgroundColorChoice = ((+(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice"))) > 0);
-    mta1.initGUI(defaultParameters);
+    mta1.initGUI(baseappParameters, 0);
     return mta1;
 }
-function initAnimation2Scene(gl, app, dictPars, scene, heighttop) {
-    document.getElementById("gridcells").style.gridTemplateRows = heighttop + "px";
-    var mta1 = new animation2.Animation2(gl, app, scene, dictPars, cdiv);
-    mta1.main(gl, dictPars);
-    if (scene[0].sceneenv < 0)
-        mta1.doShowBackgroundColorChoice = true;
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice")) != undefined)
-        mta1.doShowBackgroundColorChoice = ((+(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("backcolorchoice"))) > 0);
-    mta1.initGUI(defaultParameters, 0);
-    return mta1;
-}
-function showOtherAnimations(gl, app, dictPars) {
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) {
-        let accuracy = 5;
-        let gravity = -0.02;
-        let friction = 0.99;
-        let bounce = 0.5;
-        var cs = new clothsim.ClothSim(gl, gl.POINTS, accuracy, gravity, friction, bounce);
-        cs.main(gl);
-        return undefined;
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
+function showBaseAppAnimation(gl, app, dictPars) {
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawimagespace")) != undefined) {
         var ims = new drawimagespace.drawimagespace(gl, app, dictPars, cdiv);
         console.log("imscreated.");
         ims.main(gl, dictPars);
@@ -128,14 +111,14 @@ function showOtherAnimations(gl, app, dictPars) {
         var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
         //var baseapppars = {move: true, speed: 0.4, texture:"zelenskyy",fov:number,color0:"#A0A0A0"};
         //sk.initGUI({b: baseapppars, move:false,movetail:true, speed:0.06,color0:"#afb9af" });
-        sk.initGUI(defaultParameters);
+        sk.initGUI(baseappParameters);
         sk.main(gl, dictPars);
         return sk;
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         var baseapppars1 = { move: true, speed: 0.4, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60 };
-        fa.initGUI(defaultParameters);
+        fa.initGUI(baseappParameters);
         fa.main(gl, dictPars);
         return fa;
     }
@@ -145,44 +128,47 @@ function showOtherAnimations(gl, app, dictPars) {
         sbc.initGUI({ movecube: false, moveenv: false, fieldOfViewDegrees: 32, radiusCam: 5.0, angVelocityCam: 0.005, angVelocityCube: 0.003 });
         return sbc;
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("canvas3dtexture")) != undefined) {
+    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) {
+        let accuracy = 5;
+        let gravity = 0.02;
+        let friction = 0.99;
+        let bounce = 0.5;
+        var clothSim = new clothsim.ClothSim(gl, app, dictPars, gl.POINTS, accuracy, gravity, friction, bounce);
+        clothSim.main();
+        return clothSim;
+    }
+    return undefined;
+}
+function showOtherAnimations(gl, app, dictPars) {
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("canvas3dtexture")) != undefined) {
         var mtat = new canvas3dtexture.Canvas3dTexture();
         mtat.main(gl);
-        return undefined;
+        return true;
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("objectlist")) != undefined) {
         var mtao = new objectlist.ObjectList();
         mtao.main(gl);
-        return undefined;
+        return true;
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("drawinstanced")) != undefined) {
         var mtai = new drawinstanced.DrawInstanced();
         mtai.main(gl);
-        return undefined;
+        return true;
     }
-    //--------------------------------------------------------------------------------------------------
-    else // any other, take first argument as OBJ/MTL to show
-     {
-        return initAnimation2Scene(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars)], 170);
-    }
-}
-function show2(gl, app, dictPars, urlPar, scenes, heighttop) {
-    var b = ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get(urlPar)) != undefined);
-    if (b)
-        initAnimation2Scene(gl, app, dictPars, scenes, heighttop);
-    return b;
+    return false;
 }
 function show(gl, app, dictPars) {
-    console.log("=> show");
-    //--- Scene animations using Animation1 ----------------------------------------------------------------------------------------------------------------------------------
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
      {
-        var mta1 = initAnimation2Scene(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)], 70);
+        var mta1 = showScenesAnimation(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)], 70);
         mta1.scene[0].texture = mta1.skyboxtexture;
-        return;
+        return mta1;
     }
+    let friction = 0.99;
+    let bounce = 0.5;
     var a;
-    var s;
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
+        a = [new clothsimscene.ClothSimScene(gl, app, dictPars, gl.POINTS, 5, friction, bounce)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
@@ -200,35 +186,16 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
     if (a != undefined)
-        initAnimation2Scene(gl, app, dictPars, a, 70);
-    else
-        showOtherAnimations(gl, app, dictPars);
-    /*
-       if(show2(gl,app,dictPars!,"animation7",a7,70)) return;     // Blockguy chased by plane
-       if(show2(gl,app,dictPars!,"animation3",[new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)],70)) return;             // Lighted F with 3dcubes
-       if(show2(gl,app,dictPars!,"animation1",[new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)],70)) return;  // Cube placed on grid
-       if(show2(gl,app,dictPars!,"animation2",[new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)],70)) return;  // Blockguy chasing 3dcubes
-       if(show2(gl,app,dictPars!,"whales",[new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)],70)) return;               // Zelensky patrol
-       if(show2(gl,app,dictPars!,"animation5",[new manytexturescene.ManyTexturesScene(gl)],70)) return;                                                  // Many textures scene
-       if(show2(gl,app,dictPars!,"animation4",[new skyboxcubescene.SkyBoxCubeScene(gl)],70)) return;                                                     // Skycube scene
-       if(show2(gl,app,dictPars!,"animation9",[ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70)) return;
-    */
-    //   console.log("<= show");
-    /*
-     else if (dictPars?.get("animation7")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)],70);
-   //  else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)],70);
-     else if (dictPars?.get("animation1")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new lightscene.LightScene(gl), new canvas3dtexturescene.Canvas3dTextureScene(gl)],70);
-     else if (dictPars?.get("animation5")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new manytexturescene.ManyTexturesScene(gl)],70);
-     else if (dictPars?.get("animation3")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),new lightscene.LightScene(gl)],70);
-     else if (dictPars?.get("animation0")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new skyboxscene.SkyBoxScene(gl,dictPars)],70);
-     else if (dictPars?.get("animation6")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new objectlistscene.ObjectListScene(gl)],70);
-     else if (dictPars?.get("whales")!=undefined)      initAnimation2Scene(gl, app, dictPars, [new skeletonscene.SkeletonScene(gl, app, dictPars, "c"),new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c")],70);
-     else if (dictPars?.get("variousfish")!=undefined) initAnimation2Scene(gl, app, dictPars, [new fishanimationscene.FishAnimationScene(gl, app, dictPars, "c")],70);
-     else if (dictPars?.get("animation2")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)],70);
-     else if (dictPars?.get("animation8")!=undefined)  initAnimation2Scene(gl, app, dictPars, [new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70);
-     else if (dictPars?.get("animation9")!=undefined)  initAnimation2Scene(gl, app, dictPars, [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)],70);
-    */
-    //  console.log("<<= show");
+        return showScenesAnimation(gl, app, dictPars, a, 70);
+    else {
+        var rv = showBaseAppAnimation(gl, app, dictPars);
+        if (rv)
+            return rv;
+        if (!showOtherAnimations(gl, app, dictPars)) {
+            return showScenesAnimation(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars)], 170);
+        }
+        return undefined;
+    }
 }
 //=== ENTRY MAIN ===============================================================================================================================
 function main() {
