@@ -19,10 +19,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClothSim = exports.ClothMouseHandler = void 0;
+exports.ClothSim = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-//import { m4 } from "twgl.js";
-//import { BaseApp } from "../baseapp/baseapp";
 const cloth = __importStar(require("./cloth"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
 class ClothProducer {
@@ -39,7 +37,9 @@ class ClothProducer {
 class ClothMouseHandler {
     constructor(canvas) {
         this.canvas = canvas;
-        this.mouse = new cloth.ClothMouse(0.02, 0.08, false, 1, 0, 0, 0, 0);
+        this.mouse = new cloth.ClothMouse(0.02, // mouse.cut
+        0.08, // mouse.influence
+        false, 1, 0, 0, 0, 0);
         ClothMouseHandler.instance = this;
         var cp = new ClothProducer();
         this.cloth = cp.cloth;
@@ -68,7 +68,6 @@ class ClothMouseHandler {
         athis.mouse.y = (athis.mouse.y * 2.0) - 1.0;
     }
 }
-exports.ClothMouseHandler = ClothMouseHandler;
 class ClothSim extends baseapp.BaseApp {
     constructor(gl, capp, dictPar, render_mode, accuracy, gravity, friction, bounce) {
         super(gl, capp, dictPar, "c");
@@ -123,8 +122,8 @@ class ClothSim extends baseapp.BaseApp {
         var cs = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
         this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        var indicesbuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
+        this.indicesbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer();
@@ -144,7 +143,7 @@ class ClothSim extends baseapp.BaseApp {
         }
         var gl = this.gl;
         if (this.cloth.dirty) {
-            //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         }
         gl.enableVertexAttribArray(this.a_PositionID);

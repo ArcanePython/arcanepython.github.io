@@ -33,7 +33,7 @@ import * as clothsim from "./cloth/clothsim"
 
 var cdiv = 'c';  // name of canvas accessed by gl
 
-var baseappParameters: baseapp.TAnimation1Parameters = { gravity: 0.02, move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+var baseappParameters: baseapp.TAnimation1Parameters = { friction:0.99, gravity: 0.02, move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
 //=== DEFAULT ANIMATIONS  =================================================================================================================
 
@@ -139,7 +139,7 @@ function showBaseAppAnimation( gl: WebGL2RenderingContext, app: mtls.MouseListen
       let gravity = 0.02;
       let friction = 0.99;
       let bounce = 0.5;
-      var clothSim = new clothsim.ClothSim(gl,app,dictPars,gl.POINTS, accuracy,gravity,friction,bounce);
+      var clothSim = new clothsim.ClothSim(gl,app,dictPars,gl.TRIANGLES, accuracy,gravity,friction,bounce);
       clothSim.main();
       return clothSim;
     }
@@ -179,10 +179,10 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
      (mta1.scene[0] as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!;
      return mta1;
    }
-   let friction = 0.99;
+   let friction = 0.67;
    let bounce = 0.5;
    var a: scene.SceneInterface[]|undefined;
-   if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars,gl.POINTS,5,friction,bounce)];
+   if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars,gl.TRIANGLES,5,friction,bounce)];
    if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
    if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
    if (dictPars?.get("animation1")!=undefined) a = [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)];

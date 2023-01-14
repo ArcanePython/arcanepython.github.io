@@ -1,6 +1,4 @@
 import * as twgl from "twgl.js";    // Greg's work
-//import { m4 } from "twgl.js";
-//import { BaseApp } from "../baseapp/baseapp";
 
 import * as cloth from "./cloth"
 import * as baseapp from "./../baseapp/baseapp"
@@ -23,15 +21,15 @@ class ClothProducer
 }
 
 
-export class  ClothMouseHandler
+class  ClothMouseHandler
 {
     public static instance: ClothMouseHandler;
 
     cloth: cloth.Cloth;
 
     mouse = new cloth.ClothMouse(
-         0.02,
-         0.08,
+         0.02,    // mouse.cut
+         0.08,    // mouse.influence
          false,
          1,
          0,
@@ -89,7 +87,10 @@ export class ClothSim extends baseapp.BaseApp
         this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
         gl.useProgram(this.twglprograminfo.program);
     }
- 
+
+    
+    indicesbuffer: WebGLBuffer|undefined;
+
     prepare()
     {
         var gl= this!.gl!;
@@ -97,8 +98,8 @@ export class ClothSim extends baseapp.BaseApp
         var cs: ClothMouseHandler = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
         this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        var indicesbuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
+        this.indicesbuffer = gl.createBuffer()!;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer()!;      
@@ -123,7 +124,7 @@ export class ClothSim extends baseapp.BaseApp
         var gl = this.gl!;
         if (this.cloth!.dirty)
         {
-       //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer!);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indices, gl.STATIC_DRAW);
      
         }

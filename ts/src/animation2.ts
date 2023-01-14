@@ -13,7 +13,7 @@ export class Animation2 extends baseapp.BaseApp
 
     public static instance: Animation2|undefined;
 
-    defaultParameters: baseapp.TAnimation1Parameters = { move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+    defaultParameters: baseapp.TAnimation1Parameters = { friction:0.99, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     //=============================================================================
 

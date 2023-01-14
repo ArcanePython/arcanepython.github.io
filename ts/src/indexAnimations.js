@@ -43,7 +43,7 @@ const skeletonscene = __importStar(require("./scene/skeletonscene")); // scene: 
 const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // scene: bone model (multiple objects)
 const clothsim = __importStar(require("./cloth/clothsim"));
 var cdiv = 'c'; // name of canvas accessed by gl
-var baseappParameters = { gravity: 0.02, move: true, speed: 0.01, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+var baseappParameters = { friction: 0.99, gravity: 0.02, move: true, speed: 0.01, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
 //=== DEFAULT ANIMATIONS  =================================================================================================================
 const ShowOBJMTL = 1;
 const ShowFish = 3;
@@ -133,7 +133,7 @@ function showBaseAppAnimation(gl, app, dictPars) {
         let gravity = 0.02;
         let friction = 0.99;
         let bounce = 0.5;
-        var clothSim = new clothsim.ClothSim(gl, app, dictPars, gl.POINTS, accuracy, gravity, friction, bounce);
+        var clothSim = new clothsim.ClothSim(gl, app, dictPars, gl.TRIANGLES, accuracy, gravity, friction, bounce);
         clothSim.main();
         return clothSim;
     }
@@ -164,11 +164,11 @@ function show(gl, app, dictPars) {
         mta1.scene[0].texture = mta1.skyboxtexture;
         return mta1;
     }
-    let friction = 0.99;
+    let friction = 0.67;
     let bounce = 0.5;
     var a;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
-        a = [new clothsimscene.ClothSimScene(gl, app, dictPars, gl.POINTS, 5, friction, bounce)];
+        a = [new clothsimscene.ClothSimScene(gl, app, dictPars, gl.TRIANGLES, 5, friction, bounce)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)

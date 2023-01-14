@@ -590,6 +590,7 @@ const fishanimationscene = __importStar(require("./scene/fishanimationscene")); 
 const clothsim = __importStar(require("./cloth/clothsim"));
 var cdiv = "c"; // name of canvas accessed by gl
 var baseappParameters = {
+    friction: 0.99,
     gravity: 0.02,
     move: true,
     speed: 0.01,
@@ -697,7 +698,7 @@ function showBaseAppAnimation(gl, app, dictPars) {
         let gravity = 0.02;
         let friction = 0.99;
         let bounce = 0.5;
-        var clothSim = new clothsim.ClothSim(gl, app, dictPars, gl.POINTS, accuracy, gravity, friction, bounce);
+        var clothSim = new clothsim.ClothSim(gl, app, dictPars, gl.TRIANGLES, accuracy, gravity, friction, bounce);
         clothSim.main();
         return clothSim;
     }
@@ -727,11 +728,11 @@ function show(gl, app, dictPars) {
         mta1.scene[0].texture = mta1.skyboxtexture;
         return mta1;
     }
-    let friction = 0.99;
+    let friction = 0.67;
     let bounce = 0.5;
     var a;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) a = [
-        new clothsimscene.ClothSimScene(gl, app, dictPars, gl.POINTS, 5, friction, bounce)
+        new clothsimscene.ClothSimScene(gl, app, dictPars, gl.TRIANGLES, 5, friction, bounce)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) a = [
         new objectlistscene.ObjectListScene(gl),
@@ -834,7 +835,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/skeleton":"8B1KF","./others/fishanimation":"2homp","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/skeletonscene":"6mdLk","./scene/fishanimationscene":"7ZHPR","./cloth/clothsim":"dATTA","./scene/clothsimscene":"1rS88"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/skeleton":"8B1KF","./others/fishanimation":"2homp","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/clothsimscene":"1rS88","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/skeletonscene":"6mdLk","./scene/fishanimationscene":"7ZHPR","./cloth/clothsim":"dATTA"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -15498,6 +15499,7 @@ class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
         this.animationParameters = {
+            friction: 0.99,
             gravity: 0.02,
             move: false,
             color0: "#00A000",
@@ -17585,6 +17587,7 @@ class Animation2 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
         this.defaultParameters = {
+            friction: 0.99,
             move: true,
             speed: 0.01,
             color0: "#A0A0A0",
@@ -25234,7 +25237,438 @@ void main() {
 }
 exports.DrawInstancedScene = DrawInstancedScene;
 
-},{"twgl.js":"3uqAP"}],"aFl5l":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"1rS88":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.ClothSimScene = void 0;
+const twgl = __importStar(require("twgl.js")); // lib: Greg's work
+const cloth = __importStar(require("../cloth/cloth"));
+class ClothProducer {
+    constructor(){
+        this.clothX = 400;
+        this.clothY = 50;
+        this.startX = -0.9;
+        this.startY = 1.0;
+        this.spacing = 1.8 / this.clothX;
+        this.tearDist = 2.0 * this.spacing * 8;
+        this.cloth = new cloth.Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
+    }
+}
+class ClothMouseHandler {
+    constructor(canvas){
+        this.canvas = canvas;
+        this.mouse = new cloth.ClothMouse(-9999, 0.10, false, 1, 0, 0, 0, 0);
+        ClothMouseHandler.instance = this;
+        var cp = new ClothProducer();
+        this.cloth = cp.cloth;
+        if (canvas == null || canvas == undefined) console.log("ClothMouseHandler finds unknown canvas");
+        else {
+            canvas.onmousedown = (e)=>{
+                var athis = ClothMouseHandler.instance;
+                athis.mouse.button = e.which;
+                athis.mouse.down = true;
+                athis.setMouse(e);
+            };
+            canvas.onmousemove = this.setMouse;
+            canvas.onmouseup = ()=>{
+                var athis = ClothMouseHandler.instance;
+                athis.mouse.down = false;
+            };
+            canvas.oncontextmenu = (e)=>e.preventDefault();
+        }
+    }
+    setMouse(e) {
+        var athis = ClothMouseHandler.instance;
+        var rect = athis.canvas.getBoundingClientRect();
+        athis.mouse.px = athis.mouse.x;
+        athis.mouse.py = athis.mouse.y;
+        athis.mouse.x = (e.x - rect.left) / athis.canvas.width;
+        athis.mouse.y = (athis.canvas.height - (e.y - rect.top)) / athis.canvas.height;
+        athis.mouse.x = athis.mouse.x * 2.0 - 1.0;
+        athis.mouse.y = athis.mouse.y * 2.0 - 1.0;
+    }
+}
+class ClothSimScene {
+    constructor(gl, capp, dictPar, render_mode, accuracy, friction, bounce){
+        this.render_mode = render_mode;
+        this.accuracy = accuracy;
+        this.friction = friction;
+        this.bounce = bounce;
+        this.scenesize = 500;
+        this.sceneenv = 1;
+        this.nbFrames = 0;
+        this.lastTime = 0;
+        this.a_PositionID = 0;
+        this.a_TexCoordID = 1;
+        this.vertexShaderSource = `
+    precision mediump float;
+
+    attribute vec3 a_position;
+    attribute vec2 a_texcoord;
+
+    uniform mat4 u_view, u_model, u_ortho;
+
+    varying vec3 v_position;
+    varying vec2 v_texcoord;
+
+    void main(){    
+   // mat4 modelview =  u_model;
+
+    gl_Position =  vec4(a_position, 1.0);
+    //gl_Position = modelview * vec4(a_position, 1.0);
+    //gl_Position = u_ortho * modelview * vec4(a_position,1.0);
+
+    v_texcoord = a_texcoord;
+
+    gl_PointSize = 2.0;
+    v_position = gl_Position.xyz/gl_Position.w;
+
+    }
+    `;
+        this.fragmentShaderSource = `
+    precision mediump float;
+
+    //uniform vec2 u_resolution;
+    //uniform float u_time;
+
+    varying vec3 v_position;
+    varying vec2 v_texcoord;
+
+    uniform sampler2D u_texture2;
+
+    void main()
+    {
+        //gl_FragColor = vec4(0.6, 0.8, 0.4, v_position.y);
+     //   gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
+      //  gl_FragColor = vec4(v_texcoord[0], v_texcoord[1], 0.0, 1.0);
+      vec4 cColor =  texture2D(u_texture2, v_texcoord);
+      gl_FragColor = vec4(cColor[0],cColor[1],cColor[2],v_position.y+0.5);
+    }
+    `;
+        this.twglprograminfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "friction", 0.9, 1.0, 0.005);
+        gui.add(this.animationParameters, "gravity", 0.0, 0.05, 0.001);
+        gui.updateDisplay();
+        console.log("<= ClothSimScene extendGUI");
+    }
+    prepare(gl) {
+        var canvas = gl.canvas;
+        var cs = new ClothMouseHandler(canvas);
+        this.cloth = cs.cloth;
+        gl.useProgram(this.twglprograminfo.program);
+        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
+        this.a_TexCoordID = gl.getAttribLocation(this.twglprograminfo.program, "a_texcoord");
+        this.texcoordbuffer = gl.createBuffer();
+        this.indicesbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
+        this.lastTime = Date.now();
+        this.vertexbuffer = gl.createBuffer();
+    }
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        this.prepare(gl);
+        //if (textureReadyCallback!=undefined) textureReadyCallback(0);
+        // => fill texture2 with clover jpg
+        this.texture2 = gl.createTexture();
+        this.textureLocation2 = gl.getUniformLocation(this.twglprograminfo.program, "u_texture2");
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
+        this.readtexture(gl, textureReadyCallback);
+    }
+    drawScene(gl, cam, time) {
+        gl.useProgram(this.twglprograminfo.program);
+        this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.animationParameters.friction, this.bounce);
+        var currentTime = Date.now();
+        this.nbFrames++;
+        if (currentTime - this.lastTime >= 5000.0) {
+            console.log(5000.0 / this.nbFrames + " ms/frame");
+            this.nbFrames = 0;
+            this.lastTime = currentTime;
+        }
+        if (this.cloth.dirty) {
+            console.log("cleanup indices");
+            this.cloth.indices = this.cloth.cleanIndices();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
+            this.cloth.dirty = false;
+        }
+        gl.enableVertexAttribArray(this.a_PositionID);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexbuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.cloth.vertices, gl.STATIC_DRAW);
+        gl.vertexAttribPointer(this.a_PositionID, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(this.a_TexCoordID);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordbuffer);
+        gl.vertexAttribPointer(this.a_TexCoordID, 2, gl.FLOAT, false, 0, 0);
+        gl.bufferData(gl.ARRAY_BUFFER, this.cloth.texcoords, gl.STATIC_DRAW);
+        gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
+        gl.flush();
+    }
+    readtexture(gl, textureReadyCallback) {
+        var fNameParcel = require("./../resources/images/satin.jpg");
+        //this.image = undefined;
+        this.readimage = new Image();
+        this.readimage.src = fNameParcel;
+        this.readimage.onload = ()=>{
+            //  this.image = this.readimage!;
+            //  console.log("finished loading clover texture "+this.image.width+","+ this.image.height);
+            var mipLevel = 0; // the largest mip
+            var internalFormat = gl.RGBA; // format we want in the texture
+            var srcFormat = gl.RGBA; // format of data we are supplying
+            var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+            gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, this.readimage);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            console.log("<- clothsim satin texture read");
+            textureReadyCallback(0);
+        };
+    }
+}
+exports.ClothSimScene = ClothSimScene;
+
+},{"twgl.js":"3uqAP","../cloth/cloth":"9GfuC","./../resources/images/satin.jpg":"h1B45"}],"9GfuC":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Cloth = exports.ClothMouse = void 0;
+class ClothMouse {
+    constructor(cut, influence, down, button, x, y, px, py){
+        this.cut = cut;
+        this.influence = influence;
+        this.down = down;
+        this.button = button;
+        this.x = x;
+        this.y = y;
+        this.px = px;
+        this.py = py;
+    }
+}
+exports.ClothMouse = ClothMouse;
+class Point {
+    constructor(cloth, x, y, z, texcoord){
+        this.cloth = cloth;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.texcoord = texcoord;
+        this.x = this.px = x;
+        this.y = this.py = y;
+        this.z = this.pz = z;
+        this.vx = this.vy = this.vz = 0;
+        this.pinX = this.pinY = undefined;
+        this.constraints = [];
+    }
+    update(mouse, delta, gravity, friction, bounce) {
+        if (this.pinX && this.pinY) return this;
+        if (mouse.down) {
+            let dx = this.x - mouse.x;
+            let dy = this.y - mouse.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (mouse.button === 1 && dist < mouse.influence) {
+                this.px = this.x - (mouse.x - mouse.px);
+                this.py = this.y - (mouse.y - mouse.py);
+            //  console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
+            } else mouse.cut; // else       console.log("seen mouse down, button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
+        }
+        this.addForce(0, gravity, 0);
+        let nx = this.x + (this.x - this.px) * friction + this.vx * delta;
+        let ny = this.y + (this.y - this.py) * friction + this.vy * delta;
+        this.px = this.x;
+        this.py = this.y;
+        this.x = nx;
+        this.y = ny;
+        this.vy = this.vx = 0;
+        if (this.x >= 1) {
+            this.px = 1 + (1 - this.px) * bounce;
+            this.x = 1;
+        }
+        if (this.y >= 1) {
+            this.py = 1 + (1 - this.py) * bounce;
+            this.y = 1;
+        } else if (this.y <= -1) {
+            this.py *= -1 * bounce;
+            this.y = -1;
+        }
+        return this;
+    }
+    resolve() {
+        if (this.pinX && this.pinY) {
+            this.x = this.pinX;
+            this.y = this.pinY;
+            return;
+        }
+        this.constraints.forEach((constraint)=>constraint.resolve());
+    }
+    attach(point, tearDist, spacing) {
+        this.constraints.push(new Constraint(this, point, tearDist, spacing));
+    }
+    free() {
+        this.constraints = [];
+        this.cloth.removeIndex(this);
+    }
+    addForce(x, y, z) {
+        this.vx += x || 0;
+        this.vy += y || 0;
+        this.vz += z || 0;
+    }
+    pin(pinx, piny) {
+        this.pinX = pinx;
+        this.pinY = piny;
+    }
+}
+class Constraint {
+    constructor(p1, p2, tearDist, spacing){
+        this.p1 = p1;
+        this.p2 = p2;
+        this.tearDist = tearDist;
+        this.spacing = spacing;
+        this.p1 = p1;
+        this.p2 = p2;
+        this.length = spacing;
+    }
+    resolve() {
+        let dx = this.p1.x - this.p2.x;
+        let dy = this.p1.y - this.p2.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < this.length) return;
+        let diff = (this.length - dist) / dist;
+        if (dist > this.tearDist) this.p1.free();
+        let mul = diff * 0.5 * (1 - this.length / dist);
+        let px = dx * mul;
+        let py = dy * mul;
+        if (!this.p1.pinX) this.p1.x += px;
+        if (!this.p1.pinY) this.p1.y += py;
+        if (!this.p2.pinX) this.p2.x -= px;
+        if (!this.p2.pinY) this.p2.y -= py;
+        return this;
+    }
+}
+class Cloth {
+    constructor(clothX, clothY, startX, startY, tearDist, spacing, canvasName){
+        this.clothX = clothX;
+        this.clothY = clothY;
+        this.dirty = false;
+        this.vertices = new Float32Array((clothX + 1) * (clothY + 1) * 3);
+        this.texcoords = new Float32Array((clothX + 1) * (clothY + 1) * 2);
+        this.indices = new Uint32Array(this.vertices.length * 2);
+        this.points = [];
+        let cnt = 0;
+        let cnttex = 0;
+        for(let y = 0; y <= clothY; y++)for(let x = 0; x <= clothX; x++){
+            var texcoord = [
+                x / clothX,
+                y / clothY
+            ];
+            let p = new Point(this, startX + x * spacing, startY - y * spacing, 0.0, texcoord);
+            y === 0 && p.pin(p.x, p.y);
+            x !== 0 && p.attach(this.points[this.points.length - 1], tearDist, spacing);
+            y !== 0 && p.attach(this.points[x + (y - 1) * (clothX + 1)], tearDist, spacing);
+            if (x !== clothX && y !== clothY) {
+                let b = cnt;
+                cnt *= 2;
+                this.indices[cnt++] = this.points.length;
+                this.indices[cnt++] = this.points.length + clothX + 1;
+                this.indices[cnt++] = this.points.length + 1;
+                this.indices[cnt++] = this.points.length + 1;
+                this.indices[cnt++] = this.points.length + clothX + 1;
+                this.indices[cnt++] = this.points.length + clothX + 2;
+                cnt = b;
+            }
+            this.points.push(p);
+            this.vertices[cnt++] = p.x;
+            this.vertices[cnt++] = p.y;
+            this.vertices[cnt++] = p.z;
+            this.texcoords[cnttex++] = p.texcoord[0];
+            this.texcoords[cnttex++] = p.texcoord[1];
+        }
+    }
+    cleanIndices() {
+        return this.indices;
+    //  var indices: Uint32Array;
+    //  var n: number=0;
+    //  this.indices.forEach((i)=>{if (i>0) n++;});
+    //  indices = new Uint32Array(n);
+    //  var j: number=0;
+    //  this.indices.forEach((i)=>{if (i>0) indices[j++]=i; });
+    //  return indices;
+    }
+    removeIndex(p) {
+        let pos = this.points.indexOf(p);
+        let posinx = this.indices.indexOf(pos);
+        if (posinx >= 0) {
+            let l = 6 * (this.clothX + 3);
+            if (posinx > this.indices.length - l) l = this.indices.length - posinx;
+            let n = 0;
+            for(var i = 0; i < this.indices.length - posinx; i++)if (this.indices[posinx + i] == pos) {
+                let ii = 3 * Math.floor((posinx + i) / 3);
+                for(var iii = ii; iii < ii + 3; iii++)this.indices[iii] = -1; // invalidate this index                      
+                n++;
+            }
+            console.log("removing index for p=" + p.x + "," + p.y + " n=" + n + " posinx=" + posinx);
+            this.dirty = true;
+        }
+    }
+    update(mouse, delta, accuracy, gravity, friction, bounce) {
+        let i = accuracy;
+        while(i--)this.points.forEach((point)=>{
+            point.resolve();
+        });
+        let cnt = 0;
+        this.points.forEach((point)=>{
+            point.update(mouse, delta, gravity, friction, bounce);
+            this.vertices[cnt++] = point.x;
+            this.vertices[cnt++] = point.y;
+            this.vertices[cnt++] = point.z;
+        });
+    }
+}
+exports.Cloth = Cloth;
+
+},{}],"h1B45":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "satin.8e10787c.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"aFl5l":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -27018,10 +27452,8 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.ClothSim = exports.ClothMouseHandler = void 0;
+exports.ClothSim = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-//import { m4 } from "twgl.js";
-//import { BaseApp } from "../baseapp/baseapp";
 const cloth = __importStar(require("./cloth"));
 const baseapp = __importStar(require("./../baseapp/baseapp"));
 class ClothProducer {
@@ -27069,7 +27501,6 @@ class ClothMouseHandler {
         athis.mouse.y = athis.mouse.y * 2.0 - 1.0;
     }
 }
-exports.ClothMouseHandler = ClothMouseHandler;
 class ClothSim extends baseapp.BaseApp {
     constructor(gl, capp, dictPar, render_mode, accuracy, gravity, friction, bounce){
         super(gl, capp, dictPar, "c");
@@ -27127,8 +27558,8 @@ class ClothSim extends baseapp.BaseApp {
         var cs = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
         this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        var indicesbuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
+        this.indicesbuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer();
@@ -27149,8 +27580,10 @@ class ClothSim extends baseapp.BaseApp {
             this.lastTime = currentTime;
         }
         var gl = this.gl;
-        if (this.cloth.dirty) //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
+        if (this.cloth.dirty) {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
+        }
         gl.enableVertexAttribArray(this.a_PositionID);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexbuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.cloth.vertices, gl.STATIC_DRAW);
@@ -27164,435 +27597,6 @@ class ClothSim extends baseapp.BaseApp {
 }
 exports.ClothSim = ClothSim;
 
-},{"twgl.js":"3uqAP","./cloth":"9GfuC","./../baseapp/baseapp":"9lZ4F"}],"9GfuC":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Cloth = exports.ClothMouse = void 0;
-class ClothMouse {
-    constructor(cut, influence, down, button, x, y, px, py){
-        this.cut = cut;
-        this.influence = influence;
-        this.down = down;
-        this.button = button;
-        this.x = x;
-        this.y = y;
-        this.px = px;
-        this.py = py;
-    }
-}
-exports.ClothMouse = ClothMouse;
-class Point {
-    constructor(cloth, x, y, z){
-        this.cloth = cloth;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.x = this.px = x;
-        this.y = this.py = y;
-        this.z = this.pz = z;
-        this.vx = this.vy = this.vz = 0;
-        this.pinX = this.pinY = undefined;
-        this.constraints = [];
-    }
-    update(mouse, delta, gravity, friction, bounce) {
-        if (this.pinX && this.pinY) return this;
-        if (mouse.down) {
-            let dx = this.x - mouse.x;
-            let dy = this.y - mouse.y;
-            let dist = Math.sqrt(dx * dx + dy * dy);
-            if (mouse.button === 1 && dist < mouse.influence) {
-                this.px = this.x - (mouse.x - mouse.px);
-                this.py = this.y - (mouse.y - mouse.py);
-            //  console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
-            } else mouse.cut; // else       console.log("seen mouse down, button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
-        }
-        this.addForce(0, gravity, 0);
-        let nx = this.x + (this.x - this.px) * friction + this.vx * delta;
-        let ny = this.y + (this.y - this.py) * friction + this.vy * delta;
-        this.px = this.x;
-        this.py = this.y;
-        this.x = nx;
-        this.y = ny;
-        this.vy = this.vx = 0;
-        if (this.x >= 1) {
-            this.px = 1 + (1 - this.px) * bounce;
-            this.x = 1;
-        }
-        if (this.y >= 1) {
-            this.py = 1 + (1 - this.py) * bounce;
-            this.y = 1;
-        } else if (this.y <= -1) {
-            this.py *= -1 * bounce;
-            this.y = -1;
-        }
-        return this;
-    }
-    resolve() {
-        if (this.pinX && this.pinY) {
-            this.x = this.pinX;
-            this.y = this.pinY;
-            return;
-        }
-        this.constraints.forEach((constraint)=>constraint.resolve());
-    }
-    attach(point, tearDist, spacing) {
-        this.constraints.push(new Constraint(this, point, tearDist, spacing));
-    }
-    free() {
-        this.constraints = [];
-        this.cloth.removeIndex(this);
-    }
-    addForce(x, y, z) {
-        this.vx += x || 0;
-        this.vy += y || 0;
-        this.vz += z || 0;
-    }
-    pin(pinx, piny) {
-        this.pinX = pinx;
-        this.pinY = piny;
-    }
-}
-class Constraint {
-    constructor(p1, p2, tearDist, spacing){
-        this.p1 = p1;
-        this.p2 = p2;
-        this.tearDist = tearDist;
-        this.spacing = spacing;
-        this.p1 = p1;
-        this.p2 = p2;
-        this.length = spacing;
-    }
-    resolve() {
-        let dx = this.p1.x - this.p2.x;
-        let dy = this.p1.y - this.p2.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < this.length) return;
-        let diff = (this.length - dist) / dist;
-        if (dist > this.tearDist) this.p1.free();
-        let mul = diff * 0.5 * (1 - this.length / dist);
-        let px = dx * mul;
-        let py = dy * mul;
-        if (!this.p1.pinX) this.p1.x += px;
-        if (!this.p1.pinY) this.p1.y += py;
-        if (!this.p2.pinX) this.p2.x -= px;
-        if (!this.p2.pinY) this.p2.y -= py;
-        return this;
-    }
-}
-class Cloth {
-    constructor(clothX, clothY, startX, startY, tearDist, spacing, canvasName){
-        this.clothX = clothX;
-        this.clothY = clothY;
-        this.dirty = false;
-        // this.canvas = ccanvas;
-        this.vertices = new Float32Array((clothX + 1) * (clothY + 1) * 3);
-        this.indices = new Uint32Array(this.vertices.length * 3);
-        this.points = [];
-        //this.canvas = document.getElementsByTagName(canvasName)[0] as HTMLCanvasElement; // "canvas")[0];
-        let cnt = 0;
-        for(let y = 0; y <= clothY; y++)for(let x = 0; x <= clothX; x++){
-            let p = new Point(this, startX + x * spacing, startY - y * spacing, 0.0);
-            y === 0 && p.pin(p.x, p.y);
-            x !== 0 && p.attach(this.points[this.points.length - 1], tearDist, spacing);
-            y !== 0 && p.attach(this.points[x + (y - 1) * (clothX + 1)], tearDist, spacing);
-            if (x !== clothX && y !== clothY) {
-                let b = cnt;
-                cnt *= 2;
-                this.indices[cnt++] = this.points.length;
-                this.indices[cnt++] = this.points.length + 1;
-                this.indices[cnt++] = this.points.length + clothX + 1;
-                this.indices[cnt++] = this.points.length + 1;
-                this.indices[cnt++] = this.points.length + clothX + 1;
-                this.indices[cnt++] = this.points.length + clothX + 2;
-                cnt = b;
-            }
-            this.points.push(p);
-            this.vertices[cnt++] = p.x;
-            this.vertices[cnt++] = p.y;
-            this.vertices[cnt++] = p.z;
-        }
-    }
-    removeIndex(p) {
-        let pos = this.points.indexOf(p);
-        let posinx = this.indices.indexOf(pos);
-        if (posinx >= 0) {
-            let l = posinx + this.clothX * 2;
-            l = l > this.indices.length ? this.indices.length : l;
-            let n = 0;
-            for(var i = posinx; i < l; i++)if (this.indices[i] == pos) {
-                let ii = 3 * Math.floor(i / 3);
-                for(var iii = ii; iii < ii + 3; iii++)this.indices[iii] = -1;
-                n++;
-            }
-            console.log("removing index for p=" + p.x + "," + p.y + " n=" + n);
-            this.dirty = true;
-        }
-    /*
-        let pp = [
-            this.points[pos - clothX - 2],  // top-left
-            this.points[pos - clothX - 1],  // top-mid
-            this.points[pos - 1],           // mid-left
-            this.points[pos + 1],           // mid-right
-            this.points[pos + clothX],      // bot-left
-            this.points[pos + clothX + 1],  // bot-mid
-            this.points[pos + clothX + 2]   // bot-right
-        ];
-
-        let ppp = [
-            pos - clothX - 2,
-            pos - clothX - 1,
-            pos - 1,
-            pos + 1,
-            pos + clothX,
-            pos + clothX + 1,
-            pos + clothX + 2
-        ];
-      
-        let cnt = pos * 6;
-
-        this.indices[cnt++] = ppp[0] + 1;
-        this.indices[cnt++] = ppp[0] + clothX + 1;
-        this.indices[cnt++] = ppp[0] + clothX + 2;
-        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
-
-        cnt = ppp[0] * 6;
-
-        this.indices[cnt++] = ppp[0];
-        this.indices[cnt++] = ppp[0] + 1;
-        this.indices[cnt++] = ppp[0] + clothX + 1;
-        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
-
-        cnt = ppp[1] * 6;
-
-        this.indices[cnt++] = ppp[0];
-        this.indices[cnt++] = ppp[0] + 1;
-        this.indices[cnt++] = ppp[0] + clothX + 2;
-        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
-
-        cnt = ppp[2] * 6;
-
-        this.indices[cnt++] = ppp[0];
-        this.indices[cnt++] = ppp[0] + clothX + 1;
-        this.indices[cnt++] = ppp[0] + clothX + 2;
-        this.indices[cnt++] = this.indices[cnt++] = this.indices[cnt++] = null;
-*/ }
-    update(mouse, delta, accuracy, gravity, friction, bounce) {
-        let i = accuracy;
-        while(i--)this.points.forEach((point)=>{
-            point.resolve();
-        });
-        let cnt = 0;
-        this.points.forEach((point)=>{
-            point.update(mouse, delta, gravity, friction, bounce);
-            this.vertices[cnt++] = point.x;
-            this.vertices[cnt++] = point.y;
-            this.vertices[cnt++] = point.z;
-        });
-    }
-}
-exports.Cloth = Cloth;
-
-},{}],"1rS88":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.ClothSimScene = exports.ClothMouseHandler = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-//import { m4 } from "twgl.js";
-//import { BaseApp } from "../baseapp/baseapp";
-const cloth = __importStar(require("../cloth/cloth"));
-class ClothProducer {
-    constructor(){
-        this.clothX = 200;
-        this.clothY = 50;
-        this.startX = -0.9;
-        this.startY = 1.0;
-        this.spacing = 1.8 / this.clothX;
-        this.tearDist = this.spacing * 8;
-        this.cloth = new cloth.Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
-    }
-}
-class ClothMouseHandler {
-    constructor(canvas){
-        this.canvas = canvas;
-        this.mouse = new cloth.ClothMouse(-9999, 0.02, false, 1, 0, 0, 0, 0);
-        ClothMouseHandler.instance = this;
-        var cp = new ClothProducer();
-        this.cloth = cp.cloth;
-        if (canvas == null || canvas == undefined) console.log("ClothMouseHandler finds unknown canvas");
-        else {
-            canvas.onmousedown = (e)=>{
-                var athis = ClothMouseHandler.instance;
-                athis.mouse.button = e.which;
-                athis.mouse.down = true;
-                athis.setMouse(e);
-            };
-            canvas.onmousemove = this.setMouse;
-            canvas.onmouseup = ()=>{
-                var athis = ClothMouseHandler.instance;
-                athis.mouse.down = false;
-            };
-            canvas.oncontextmenu = (e)=>e.preventDefault();
-        }
-    }
-    setMouse(e) {
-        var athis = ClothMouseHandler.instance;
-        var rect = athis.canvas.getBoundingClientRect();
-        athis.mouse.px = athis.mouse.x;
-        athis.mouse.py = athis.mouse.y;
-        athis.mouse.x = (e.x - rect.left) / athis.canvas.width;
-        athis.mouse.y = (athis.canvas.height - (e.y - rect.top)) / athis.canvas.height;
-        athis.mouse.x = athis.mouse.x * 2.0 - 1.0;
-        athis.mouse.y = athis.mouse.y * 2.0 - 1.0;
-    }
-}
-exports.ClothMouseHandler = ClothMouseHandler;
-class ClothSimScene {
-    constructor(gl, capp, dictPar, render_mode, accuracy, friction, bounce){
-        this.render_mode = render_mode;
-        this.accuracy = accuracy;
-        this.friction = friction;
-        this.bounce = bounce;
-        this.scenesize = 500;
-        this.sceneenv = -1;
-        this.nbFrames = 0;
-        this.lastTime = 0;
-        this.a_PositionID = 0;
-        this.vertexShaderSource = `
-    precision mediump float;
-
-    attribute vec3 a_position;
-
-    uniform mat4 u_view, u_model, u_ortho;
-
-    varying vec3 v_position;
-
-    void main(){    
-   // mat4 modelview =  u_model;
-
-    gl_Position =  vec4(a_position, 1.0);
-    //gl_Position = modelview * vec4(a_position, 1.0);
-    //gl_Position = u_ortho * modelview * vec4(a_position,1.0);
-
-    gl_PointSize = 2.0;
-    v_position = gl_Position.xyz/gl_Position.w;
-    }
-    `;
-        this.fragmentShaderSource = `
-    precision mediump float;
-
-    //uniform vec2 u_resolution;
-    //uniform float u_time;
-
-    varying vec3 v_position;
-
-    void main()
-    {
-        //gl_FragColor = vec4(0.6, 0.8, 0.4, v_position.y);
-     //   gl_FragColor = vec4(0.6, 0.8, 0.4, 1.0);
-        gl_FragColor = vec4(0.2, 0.4, 0.2, 1.0);
-    }
-    `;
-        //super(gl, capp, dictPar, "c");
-        console.log("=> ClothSimScene constructor connect shaders");
-        this.twglprograminfo = twgl.createProgramInfo(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
-        ]);
-        //gl.useProgram(this.twglprograminfo.program);
-        console.log("<= ClothSimScene constructor " + this.twglprograminfo.program);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        // Slider for sling speed
-        // Checkbox forward move animation on/off
-        //   console.log("=> cloth extendGUI movetail"+this.animationParameters!);
-        gui.add(this.animationParameters, "gravity", 0.0, 0.05, 0.001);
-        //gui.add(this.animationParameters!, 'sling').min(9).max(120).step(1);
-        // Slider for shininess
-        //gui.add(this.animationParameters!, 'shininess').min(0).max(20.0).step(0.1);
-        //   gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
-        gui.updateDisplay();
-        console.log("<= ClothSimScene extendGUI");
-    //   console.log("<= manyTextures extendGUI");
-    }
-    prepare(gl) {
-        var canvas = gl.canvas;
-        var cs = new ClothMouseHandler(canvas);
-        this.cloth = cs.cloth;
-        gl.useProgram(this.twglprograminfo.program);
-        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        var indicesbuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesbuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
-        this.lastTime = Date.now();
-        this.vertexbuffer = gl.createBuffer();
-    }
-    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
-        this.prepare(gl);
-        console.log("<= ClothSimScene initScene");
-        if (textureReadyCallback != undefined) textureReadyCallback(0);
-    //   window.requestAnimationFrame(()=>{this.render();});
-    }
-    drawScene(gl, cam, time) {
-        //console.log("cloth drawscene");
-        gl.useProgram(this.twglprograminfo.program);
-        this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.friction, this.bounce);
-        var currentTime = Date.now();
-        this.nbFrames++;
-        if (currentTime - this.lastTime >= 5000.0) {
-            console.log(5000.0 / this.nbFrames + " ms/frame");
-            this.nbFrames = 0;
-            this.lastTime = currentTime;
-        }
-        if (this.cloth.dirty) //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.cloth!.indicesbuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
-        gl.enableVertexAttribArray(this.a_PositionID);
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexbuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.cloth.vertices, gl.STATIC_DRAW);
-        gl.vertexAttribPointer(this.a_PositionID, 3, gl.FLOAT, false, 0, 0);
-        gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
-        gl.flush();
-    //  window.requestAnimationFrame(()=>{this.render();});
-    }
-}
-exports.ClothSimScene = ClothSimScene;
-
-},{"twgl.js":"3uqAP","../cloth/cloth":"9GfuC"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
+},{"twgl.js":"3uqAP","./cloth":"9GfuC","./../baseapp/baseapp":"9lZ4F"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
 
 //# sourceMappingURL=index.5710aea2.js.map
