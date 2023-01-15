@@ -110,7 +110,7 @@ class BaseApp {
         // Checkbox forward move animation on/off
         gui.add(parameters, 'move');
         // Slider for animation speed
-        gui.add(parameters, 'speed').min(0.002).max(0.06).step(0.001);
+        gui.add(parameters, 'speed').min(0.0).max(0.06).step(0.001);
         // Color dialog sets background color
         if (this.doShowBackgroundColorChoice) {
             var cel3 = gui.addColor(parameters, 'color0');

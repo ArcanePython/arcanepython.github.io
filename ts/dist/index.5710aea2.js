@@ -11381,7 +11381,7 @@ class BaseApp {
         // Checkbox forward move animation on/off
         gui.add(parameters, "move");
         // Slider for animation speed
-        gui.add(parameters, "speed").min(0.002).max(0.06).step(0.001);
+        gui.add(parameters, "speed").min(0.0).max(0.06).step(0.001);
         // Color dialog sets background color
         if (this.doShowBackgroundColorChoice) {
             var cel3 = gui.addColor(parameters, "color0");
@@ -25325,8 +25325,11 @@ class ClothSimScene {
         this.accuracy = accuracy;
         this.friction = friction;
         this.bounce = bounce;
+        this.rendermode_points = 0;
+        this.rendermode_triangles = 1;
         this.scenesize = 500;
         this.sceneenv = 1;
+        this.dirty = false;
         this.nbFrames = 0;
         this.lastTime = 0;
         this.a_PositionID = 0;
@@ -25376,6 +25379,7 @@ class ClothSimScene {
       gl_FragColor = vec4(cColor[0],cColor[1],cColor[2],v_position.y+0.5);
     }
     `;
+        ClothSimScene.instance = this;
         this.twglprograminfo = twgl.createProgramInfo(gl, [
             this.vertexShaderSource,
             this.fragmentShaderSource
@@ -25388,10 +25392,30 @@ class ClothSimScene {
     extendGUI(gui) {
         gui.add(this.animationParameters, "friction", 0.9, 1.0, 0.005);
         gui.add(this.animationParameters, "gravity", 0.0, 0.05, 0.001);
+        // Combobox texture from accepted values
+        this.animationParameters.texture = "Blue Satin";
+        var cel2 = gui.add(this.animationParameters, "texture", [
+            "None",
+            "Blue Satin"
+        ]);
+        cel2.onChange(this.onChangeTextureCombo);
         gui.updateDisplay();
         console.log("<= ClothSimScene extendGUI");
     }
+    onChangeTextureCombo(value) {
+        var thisinstance = ClothSimScene.instance;
+        console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.animationParameters.speed);
+        thisinstance.currentTexture = value;
+        if (thisinstance.currentTexture == "None") thisinstance.render_mode = thisinstance.rendermode_points;
+        else thisinstance.render_mode = thisinstance.rendermode_triangles;
+        console.log("set currentTexture to [" + value + "]");
+        var cp = new ClothProducer();
+        thisinstance.cloth = cp.cloth;
+        thisinstance.dirty = true;
+    }
     prepare(gl) {
+        this.rendermode_points = gl.POINTS;
+        this.rendermode_triangles = gl.TRIANGLES;
         var canvas = gl.canvas;
         var cs = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
@@ -25404,6 +25428,7 @@ class ClothSimScene {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer();
+        console.log("<= cloth prepare");
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
         this.prepare(gl);
@@ -25415,6 +25440,10 @@ class ClothSimScene {
         this.readtexture(gl, textureReadyCallback);
     }
     drawScene(gl, cam, time) {
+        if (this.dirty) {
+            this.prepare(gl);
+            this.dirty = false;
+        }
         gl.useProgram(this.twglprograminfo.program);
         this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.animationParameters.friction, this.bounce);
         var currentTime = Date.now();

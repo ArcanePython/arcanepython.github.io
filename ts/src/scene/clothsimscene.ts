@@ -78,6 +78,12 @@ class  ClothMouseHandler
 
 export class ClothSimScene implements scene.SceneInterface
 {
+    public static instance: ClothSimScene;
+    currentTexture: string | undefined;
+
+    rendermode_points = 0;
+    rendermode_triangles = 1;
+
     scenesize = 500;
     sceneenv = 1;
     animationParameters: TAnimation1Parameters | undefined;
@@ -86,6 +92,7 @@ export class ClothSimScene implements scene.SceneInterface
     
     private twglprograminfo: twgl.ProgramInfo;
 
+    dirty: boolean = false;
     nbFrames: number = 0;
     lastTime: number= 0;
     a_PositionID: number = 0;
@@ -100,6 +107,7 @@ export class ClothSimScene implements scene.SceneInterface
     constructor(gl: WebGL2RenderingContext, capp: mtls.MouseListener,  dictPar:Map<string,string>,
                 public render_mode:number, public accuracy: number,  public friction: number, public bounce: number)
     { 
+        ClothSimScene.instance = this;
         this.twglprograminfo = twgl.createProgramInfo(gl, [this.vertexShaderSource, this.fragmentShaderSource]);
     }
 
@@ -107,15 +115,32 @@ export class ClothSimScene implements scene.SceneInterface
     {
         gui.add(this.animationParameters!, 'friction',0.9,1.0,0.005);
         gui.add(this.animationParameters!, 'gravity',0.0,0.05,0.001);
+         // Combobox texture from accepted values
+        this.animationParameters!.texture = 'Blue Satin';
+        var cel2 = gui.add(this.animationParameters!, 'texture', [ 'None','Blue Satin' ] );
+        cel2.onChange( this.onChangeTextureCombo);
         gui.updateDisplay();
         console.log("<= ClothSimScene extendGUI")
      }
- 
 
+     onChangeTextureCombo(value? : any)
+      {
+        var thisinstance = ClothSimScene.instance!;
+        console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.animationParameters!.speed);
+        thisinstance.currentTexture = value;
+        if (thisinstance.currentTexture=="None") thisinstance.render_mode = thisinstance.rendermode_points; else thisinstance.render_mode=thisinstance.rendermode_triangles;
+        console.log("set currentTexture to ["+value+"]");
+        var cp = new ClothProducer();
+        thisinstance.cloth = cp.cloth;
+        thisinstance.dirty = true;
+      }
+ 
     indicesbuffer: WebGLBuffer | undefined;
 
     prepare(gl: WebGL2RenderingContext)
     {
+        this.rendermode_points = gl.POINTS;
+        this.rendermode_triangles = gl.TRIANGLES;
         var canvas = gl.canvas as HTMLCanvasElement;         
         var cs: ClothMouseHandler = new ClothMouseHandler(canvas);
         this.cloth = cs.cloth;
@@ -133,6 +158,7 @@ export class ClothSimScene implements scene.SceneInterface
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
         this.vertexbuffer = gl.createBuffer()!;      
+        console.log("<= cloth prepare")
      }
 
      texture2: WebGLTexture |undefined;
@@ -151,6 +177,8 @@ export class ClothSimScene implements scene.SceneInterface
 
     public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number): void
     {
+        if (this.dirty) { this.prepare(gl); this.dirty=false;}
+        
         gl.useProgram(this.twglprograminfo.program);
         this.cloth!.update(ClothMouseHandler.instance.mouse,0.032, this.accuracy,-this.animationParameters!.gravity,this.animationParameters!.friction,this.bounce);
         
