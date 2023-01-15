@@ -590,6 +590,7 @@ const fishanimationscene = __importStar(require("./scene/fishanimationscene")); 
 const clothsim = __importStar(require("./cloth/clothsim"));
 var cdiv = "c"; // name of canvas accessed by gl
 var baseappParameters = {
+    influence: 0.05,
     friction: 0.99,
     gravity: 0.02,
     move: true,
@@ -728,11 +729,11 @@ function show(gl, app, dictPars) {
         mta1.scene[0].texture = mta1.skyboxtexture;
         return mta1;
     }
-    let friction = 0.67;
+    let friction = 0.97;
     let bounce = 0.5;
     var a;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) a = [
-        new clothsimscene.ClothSimScene(gl, app, dictPars, gl.TRIANGLES, 5, friction, bounce)
+        new clothsimscene.ClothSimScene(gl, app, dictPars, gl.POINTS, 5, friction, bounce)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) a = [
         new objectlistscene.ObjectListScene(gl),
@@ -15499,6 +15500,7 @@ class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
         this.animationParameters = {
+            influence: 0.05,
             friction: 0.99,
             gravity: 0.02,
             move: false,
@@ -17587,6 +17589,7 @@ class Animation2 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv){
         super(cgl, capp, dictpar, cdiv);
         this.defaultParameters = {
+            influence: 0.05,
             friction: 0.99,
             move: true,
             speed: 0.01,
@@ -25288,7 +25291,7 @@ class ClothProducer {
 class ClothMouseHandler {
     constructor(canvas){
         this.canvas = canvas;
-        this.mouse = new cloth.ClothMouse(-9999, 0.10, false, 1, 0, 0, 0, 0);
+        this.mouse = new cloth.ClothMouse(-9999, 0.20, false, 1, 0, 0, 0, 0);
         ClothMouseHandler.instance = this;
         var cp = new ClothProducer();
         this.cloth = cp.cloth;
@@ -25320,15 +25323,16 @@ class ClothMouseHandler {
     }
 }
 class ClothSimScene {
+    //  private textureLocation2: WebGLUniformLocation|undefined;
     constructor(gl, capp, dictPar, render_mode, accuracy, friction, bounce){
         this.render_mode = render_mode;
         this.accuracy = accuracy;
         this.friction = friction;
         this.bounce = bounce;
-        this.rendermode_points = 0;
-        this.rendermode_triangles = 1;
         this.scenesize = 500;
         this.sceneenv = 1;
+        this.rendermode_points = 0;
+        this.rendermode_triangles = 4;
         this.dirty = false;
         this.nbFrames = 0;
         this.lastTime = 0;
@@ -25392,8 +25396,10 @@ class ClothSimScene {
     extendGUI(gui) {
         gui.add(this.animationParameters, "friction", 0.9, 1.0, 0.005);
         gui.add(this.animationParameters, "gravity", 0.0, 0.05, 0.001);
-        // Combobox texture from accepted values
-        this.animationParameters.texture = "Blue Satin";
+        gui.add(this.animationParameters, "influence", 0.02, 0.25, 0.005);
+        this.animationParameters.speed = 0.0;
+        this.animationParameters.friction = this.friction;
+        this.animationParameters.texture = this.render_mode == 0 ? "None" : "Blue Satin";
         var cel2 = gui.add(this.animationParameters, "texture", [
             "None",
             "Blue Satin"
@@ -25414,29 +25420,25 @@ class ClothSimScene {
         thisinstance.dirty = true;
     }
     prepare(gl) {
-        this.rendermode_points = gl.POINTS;
-        this.rendermode_triangles = gl.TRIANGLES;
-        var canvas = gl.canvas;
-        var cs = new ClothMouseHandler(canvas);
-        this.cloth = cs.cloth;
         gl.useProgram(this.twglprograminfo.program);
-        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        this.a_TexCoordID = gl.getAttribLocation(this.twglprograminfo.program, "a_texcoord");
-        this.texcoordbuffer = gl.createBuffer();
         this.indicesbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
+        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
         this.vertexbuffer = gl.createBuffer();
-        console.log("<= cloth prepare");
+        this.a_TexCoordID = gl.getAttribLocation(this.twglprograminfo.program, "a_texcoord");
+        this.texcoordbuffer = gl.createBuffer();
+        //  this.textureLocation2 = gl.getUniformLocation(this.twglprograminfo.program, "u_texture2")!;
+        this.rendermode_points = gl.POINTS;
+        this.rendermode_triangles = gl.TRIANGLES;
+        console.log("<= cloth and rendering prepare");
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        var canvas = gl.canvas;
+        this.cs = new ClothMouseHandler(canvas);
+        this.cloth = this.cs.cloth;
         this.prepare(gl);
-        //if (textureReadyCallback!=undefined) textureReadyCallback(0);
-        // => fill texture2 with clover jpg
-        this.texture2 = gl.createTexture();
-        this.textureLocation2 = gl.getUniformLocation(this.twglprograminfo.program, "u_texture2");
-        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
         this.readtexture(gl, textureReadyCallback);
     }
     drawScene(gl, cam, time) {
@@ -25444,6 +25446,7 @@ class ClothSimScene {
             this.prepare(gl);
             this.dirty = false;
         }
+        this.cs.mouse.influence = this.animationParameters.influence;
         gl.useProgram(this.twglprograminfo.program);
         this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.animationParameters.friction, this.bounce);
         var currentTime = Date.now();
@@ -25455,7 +25458,6 @@ class ClothSimScene {
         }
         if (this.cloth.dirty) {
             console.log("cleanup indices");
-            this.cloth.indices = this.cloth.cleanIndices();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
             this.cloth.dirty = false;
@@ -25468,17 +25470,17 @@ class ClothSimScene {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordbuffer);
         gl.vertexAttribPointer(this.a_TexCoordID, 2, gl.FLOAT, false, 0, 0);
         gl.bufferData(gl.ARRAY_BUFFER, this.cloth.texcoords, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
         gl.flush();
     }
     readtexture(gl, textureReadyCallback) {
+        this.texture2 = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
         var fNameParcel = require("./../resources/images/satin.jpg");
-        //this.image = undefined;
         this.readimage = new Image();
         this.readimage.src = fNameParcel;
         this.readimage.onload = ()=>{
-            //  this.image = this.readimage!;
-            //  console.log("finished loading clover texture "+this.image.width+","+ this.image.height);
             var mipLevel = 0; // the largest mip
             var internalFormat = gl.RGBA; // format we want in the texture
             var srcFormat = gl.RGBA; // format of data we are supplying
@@ -25645,22 +25647,14 @@ class Cloth {
                 cnt = b;
             }
             this.points.push(p);
+            //  p.attach(this.points[this.points.length - 1],tearDist,spacing);
+            //  p.attach(this.points[x + (y - 1) * (clothX + 1)],tearDist,spacing);
             this.vertices[cnt++] = p.x;
             this.vertices[cnt++] = p.y;
             this.vertices[cnt++] = p.z;
             this.texcoords[cnttex++] = p.texcoord[0];
             this.texcoords[cnttex++] = p.texcoord[1];
         }
-    }
-    cleanIndices() {
-        return this.indices;
-    //  var indices: Uint32Array;
-    //  var n: number=0;
-    //  this.indices.forEach((i)=>{if (i>0) n++;});
-    //  indices = new Uint32Array(n);
-    //  var j: number=0;
-    //  this.indices.forEach((i)=>{if (i>0) indices[j++]=i; });
-    //  return indices;
     }
     removeIndex(p) {
         let pos = this.points.indexOf(p);

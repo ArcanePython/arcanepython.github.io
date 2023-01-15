@@ -36,8 +36,8 @@ class ClothProducer {
 class ClothMouseHandler {
     constructor(canvas) {
         this.canvas = canvas;
-        this.mouse = new cloth.ClothMouse(-9999, //  0.02,
-        0.10, //   influence range
+        this.mouse = new cloth.ClothMouse(-9999, //  no cuts 0.02,
+        0.20, //   influence range
         false, 1, 0, 0, 0, 0);
         ClothMouseHandler.instance = this;
         var cp = new ClothProducer();
@@ -68,15 +68,16 @@ class ClothMouseHandler {
     }
 }
 class ClothSimScene {
+    //  private textureLocation2: WebGLUniformLocation|undefined;
     constructor(gl, capp, dictPar, render_mode, accuracy, friction, bounce) {
         this.render_mode = render_mode;
         this.accuracy = accuracy;
         this.friction = friction;
         this.bounce = bounce;
-        this.rendermode_points = 0;
-        this.rendermode_triangles = 1;
         this.scenesize = 500;
         this.sceneenv = 1;
+        this.rendermode_points = 0;
+        this.rendermode_triangles = 4;
         this.dirty = false;
         this.nbFrames = 0;
         this.lastTime = 0;
@@ -135,8 +136,10 @@ class ClothSimScene {
     extendGUI(gui) {
         gui.add(this.animationParameters, 'friction', 0.9, 1.0, 0.005);
         gui.add(this.animationParameters, 'gravity', 0.0, 0.05, 0.001);
-        // Combobox texture from accepted values
-        this.animationParameters.texture = 'Blue Satin';
+        gui.add(this.animationParameters, 'influence', 0.02, 0.25, 0.005);
+        this.animationParameters.speed = 0.0;
+        this.animationParameters.friction = this.friction;
+        this.animationParameters.texture = (this.render_mode == 0) ? 'None' : 'Blue Satin';
         var cel2 = gui.add(this.animationParameters, 'texture', ['None', 'Blue Satin']);
         cel2.onChange(this.onChangeTextureCombo);
         gui.updateDisplay();
@@ -156,29 +159,25 @@ class ClothSimScene {
         thisinstance.dirty = true;
     }
     prepare(gl) {
-        this.rendermode_points = gl.POINTS;
-        this.rendermode_triangles = gl.TRIANGLES;
-        var canvas = gl.canvas;
-        var cs = new ClothMouseHandler(canvas);
-        this.cloth = cs.cloth;
         gl.useProgram(this.twglprograminfo.program);
-        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
-        this.a_TexCoordID = gl.getAttribLocation(this.twglprograminfo.program, "a_texcoord");
-        this.texcoordbuffer = gl.createBuffer();
         this.indicesbuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
         this.lastTime = Date.now();
+        this.a_PositionID = gl.getAttribLocation(this.twglprograminfo.program, "a_position");
         this.vertexbuffer = gl.createBuffer();
-        console.log("<= cloth prepare");
+        this.a_TexCoordID = gl.getAttribLocation(this.twglprograminfo.program, "a_texcoord");
+        this.texcoordbuffer = gl.createBuffer();
+        //  this.textureLocation2 = gl.getUniformLocation(this.twglprograminfo.program, "u_texture2")!;
+        this.rendermode_points = gl.POINTS;
+        this.rendermode_triangles = gl.TRIANGLES;
+        console.log("<= cloth and rendering prepare");
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        var canvas = gl.canvas;
+        this.cs = new ClothMouseHandler(canvas);
+        this.cloth = this.cs.cloth;
         this.prepare(gl);
-        //if (textureReadyCallback!=undefined) textureReadyCallback(0);
-        // => fill texture2 with clover jpg
-        this.texture2 = gl.createTexture();
-        this.textureLocation2 = gl.getUniformLocation(this.twglprograminfo.program, "u_texture2");
-        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
         this.readtexture(gl, textureReadyCallback);
     }
     drawScene(gl, cam, time) {
@@ -186,6 +185,7 @@ class ClothSimScene {
             this.prepare(gl);
             this.dirty = false;
         }
+        this.cs.mouse.influence = this.animationParameters.influence;
         gl.useProgram(this.twglprograminfo.program);
         this.cloth.update(ClothMouseHandler.instance.mouse, 0.032, this.accuracy, -this.animationParameters.gravity, this.animationParameters.friction, this.bounce);
         var currentTime = Date.now();
@@ -197,7 +197,6 @@ class ClothSimScene {
         }
         if (this.cloth.dirty) {
             console.log("cleanup indices");
-            this.cloth.indices = this.cloth.cleanIndices();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.cloth.indices, gl.STATIC_DRAW);
             this.cloth.dirty = false;
@@ -210,17 +209,17 @@ class ClothSimScene {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordbuffer);
         gl.vertexAttribPointer(this.a_TexCoordID, 2, gl.FLOAT, false, 0, 0);
         gl.bufferData(gl.ARRAY_BUFFER, this.cloth.texcoords, gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
         gl.flush();
     }
     readtexture(gl, textureReadyCallback) {
+        this.texture2 = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.texture2);
         var fNameParcel = require('./../resources/images/satin.jpg');
-        //this.image = undefined;
         this.readimage = new Image();
         this.readimage.src = fNameParcel;
         this.readimage.onload = () => {
-            //  this.image = this.readimage!;
-            //  console.log("finished loading clover texture "+this.image.width+","+ this.image.height);
             var mipLevel = 0; // the largest mip
             var internalFormat = gl.RGBA; // format we want in the texture
             var srcFormat = gl.RGBA; // format of data we are supplying

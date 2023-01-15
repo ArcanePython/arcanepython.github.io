@@ -33,7 +33,7 @@ const datgui = __importStar(require("dat.gui"));
 class Skeleton extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
-        this.animationParameters = { friction: 0.99, gravity: 0.02, move: false, color0: "#00A000", speed: 0.4, texture: 'geotriangle2', fov: 60, movetail: true, sling: 140, shininess: 0.5, typelight: 'point light' };
+        this.animationParameters = { influence: 0.05, friction: 0.99, gravity: 0.02, move: false, color0: "#00A000", speed: 0.4, texture: 'geotriangle2', fov: 60, movetail: true, sling: 140, shininess: 0.5, typelight: 'point light' };
         this.bufferInfo = null;
         this.skinVAO = null;
         this.phase0 = 0.0; //2.0; // 143 degrees 

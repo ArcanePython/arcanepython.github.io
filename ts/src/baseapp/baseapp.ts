@@ -23,7 +23,8 @@ export type TAnimation1Parameters =
     move: boolean,
     speed: number,
     gravity: number,
-    friction: number
+    friction: number,
+    influence: number
    //  b: TbaseappParameters,
       // Checkbox tail animation on/off
      

@@ -32,7 +32,7 @@ type Tuniforms = {
 
 export class Skeleton extends baseapp.BaseApp
 {
-    animationParameters: baseapp.TAnimation1Parameters = { friction:0.99, gravity: 0.02, move: false,color0: "#00A000",speed: 0.4,texture: 'geotriangle2',fov:60, movetail: true, sling: 140, shininess:0.5, typelight:'point light' };          
+    animationParameters: baseapp.TAnimation1Parameters = {  influence:0.05, friction:0.99, gravity: 0.02, move: false,color0: "#00A000",speed: 0.4,texture: 'geotriangle2',fov:60, movetail: true, sling: 140, shininess:0.5, typelight:'point light' };          
    
     cam: camhandler.Camera|undefined;
     uniforms: Tuniforms | undefined;

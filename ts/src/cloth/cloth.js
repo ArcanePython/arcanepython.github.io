@@ -155,6 +155,8 @@ class Cloth {
                     cnt = b;
                 }
                 this.points.push(p);
+                //  p.attach(this.points[this.points.length - 1],tearDist,spacing);
+                //  p.attach(this.points[x + (y - 1) * (clothX + 1)],tearDist,spacing);
                 this.vertices[cnt++] = p.x;
                 this.vertices[cnt++] = p.y;
                 this.vertices[cnt++] = p.z;
@@ -162,16 +164,6 @@ class Cloth {
                 this.texcoords[cnttex++] = p.texcoord[1];
             }
         }
-    }
-    cleanIndices() {
-        return this.indices;
-        //  var indices: Uint32Array;
-        //  var n: number=0;
-        //  this.indices.forEach((i)=>{if (i>0) n++;});
-        //  indices = new Uint32Array(n);
-        //  var j: number=0;
-        //  this.indices.forEach((i)=>{if (i>0) indices[j++]=i; });
-        //  return indices;
     }
     removeIndex(p) {
         let pos = this.points.indexOf(p);
