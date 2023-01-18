@@ -92,11 +92,17 @@ export class FishAnimationScene implements scene.SceneInterface
         gl.useProgram(this.twglprograminfo!.program);
         for (var fishtype=0; fishtype<this.fish.length; fishtype++)
           this.fish[fishtype].uniforms!.viewprojection = cam.viewProjection; 
-
+      
         for (var fishtype=0; fishtype<this.fish.length; fishtype++)
         {                   
           gl.bindVertexArray(this.fish[fishtype].skinVAO);
+          
+          gl.bindTexture(gl.TEXTURE_2D, this.fish[fishtype].boneMatrixTexture!);
 
+          // since we want to use the texture for pure data we turn off filtering
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+   
           this.fish[fishtype].forwardspeed = this.animationParameters!.move?this.animationParameters!.speed:0.0;
           for (var cfish=0; cfish<this.fishpositions[fishtype].length; cfish++)
           {

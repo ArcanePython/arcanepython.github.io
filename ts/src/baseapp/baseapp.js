@@ -26,18 +26,11 @@ const datgui = __importStar(require("dat.gui"));
 exports.instance = null;
 class BaseApp {
     constructor(cgl, capp, dictpar, divname) {
-        /*   baseappParameters: TbaseappParameters = {
-               texture: 'geotriangle2',
-               fov: 60,
-               move: false,
-               speed: 0.04,
-               color0: "#00A000"
-             };
-       */
+        this.DefaultParameters = { usecamera: true, influence: 0.05, friction: 0.97, bounce: 0.5, move: true, speed: 0.01, color0: "#A0A0A0", gravity: 0.02,
+            texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+        this.baseappParameters = this.DefaultParameters;
         this.gl = null;
         this.app = null;
-        // programs
-        // protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
         // environment skybox camera
         this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [0, 0, 0];

@@ -5,12 +5,6 @@ import { m4, v3 }  from "twgl.js";    // Greg's work, this baseapp  only imports
 import * as mtls from "./mouselistener";  
 import  * as datgui from "dat.gui";
 
-/*
-export type TbaseappParameters = {
-    
-}
-*/
-
 export type TAnimation1Parameters =
 {
     movetail: boolean,
@@ -24,32 +18,23 @@ export type TAnimation1Parameters =
     speed: number,
     gravity: number,
     friction: number,
-    influence: number
-   //  b: TbaseappParameters,
-      // Checkbox tail animation on/off
-     
+    bounce: number,
+    influence: number,
+    usecamera: boolean;     
 }
 
 export var instance: BaseApp|null=null;
 
 export class BaseApp
-{    
+{       
+    protected DefaultParameters: TAnimation1Parameters =  { usecamera:true, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
+                                                            texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
-    baseappParameters: TAnimation1Parameters | undefined;
- /*   baseappParameters: TbaseappParameters = {
-        texture: 'geotriangle2',
-        fov: 60,
-        move: false,
-        speed: 0.04,
-        color0: "#00A000"
-      };  
-*/
+    baseappParameters: TAnimation1Parameters = this.DefaultParameters;
+
     public gl: WebGL2RenderingContext|null=null;
     public app:mtls.MouseListener|null=null;
 
-    // programs
-    // protected twglprograminfo: twgl.ProgramInfo[]|null=null;  // there can be several
- 
     // environment skybox camera
     public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [0,0,0];

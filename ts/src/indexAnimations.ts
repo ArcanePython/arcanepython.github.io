@@ -33,8 +33,8 @@ import * as clothsim from "./cloth/clothsim"
 
 var cdiv = 'c';  // name of canvas accessed by gl
 
-var baseappParameters: baseapp.TAnimation1Parameters = { influence:0.05,
-   friction:0.99, gravity: 0.02, move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+//var baseappParameters: baseapp.TAnimation1Parameters = { influence:0.05,
+//   friction:0.99, gravity: 0.02, move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
 //=== DEFAULT ANIMATIONS  =================================================================================================================
 
@@ -85,17 +85,11 @@ function preparedefaultparameters(dictPars: Map<string,string>)
 
 //--- DISPATCH SHOW DEPENDING ON URL ARGUMENT ----------------------------------------------------------------------------------------------------------------
 
-function showScenesAnimation(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scenes: scene.SceneInterface[], heighttop: number): animation2.Animation2
+function showScenesAnimation(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined, scenes: scene.SceneInterface[]): animation2.Animation2
 {
-  document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
-   
   var mta1 = new animation2.Animation2(gl, app, scenes, dictPars!, cdiv);
- if (dictPars?.get("cloth")!=undefined) baseappParameters["color0"]="#f2f0f0";
-  
   mta1.main(gl, dictPars!);
-  if (scenes[0].sceneenv<0)  mta1.doShowBackgroundColorChoice = true;
-    else if (dictPars?.get("backcolorchoice")!=undefined) mta1.doShowBackgroundColorChoice = ((+dictPars?.get("backcolorchoice")!)>0);
-  mta1.initGUI(baseappParameters,0);
+  mta1.initGUI(mta1.baseappParameters!, 0);
   return mta1;
 }
 
@@ -113,17 +107,14 @@ function showBaseAppAnimation( gl: WebGL2RenderingContext, app: mtls.MouseListen
     else  if (dictPars?.get("whalesapp")!=undefined)
     {
       var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
-      //var baseapppars = {move: true, speed: 0.4, texture:"zelenskyy",fov:number,color0:"#A0A0A0"};
-      //sk.initGUI({b: baseapppars, move:false,movetail:true, speed:0.06,color0:"#afb9af" });
-      sk.initGUI(baseappParameters);
+      sk.initGUI(sk.baseappParameters);
       sk.main(gl, dictPars);
       return sk;
     } 
     else if (dictPars?.get("variousfishapp")!=undefined)
     {  
       var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
-      var baseapppars1 = {move: true, speed: 0.4, color0:"#A0A0A0", texture: 'geotriangle2', fov:60};
-      fa.initGUI(baseappParameters);
+      fa.initGUI(fa.baseappParameters);
       fa.main(gl, dictPars);
       return  fa;
     }
@@ -174,16 +165,18 @@ function showOtherAnimations( gl: WebGL2RenderingContext, app: mtls.MouseListene
 
 function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map<string,string> | undefined  ): baseapp.BaseApp | undefined
 {
-  if (dictPars?.get("animation4")!=undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
+  var heighttop = 70; // reporting div, in case of obj/mat only scenery it is larger
+  document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
+ 
+   if (dictPars?.get("animation4")!=undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
    {
-     var mta1 = showScenesAnimation(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)],70);
+     var mta1 = showScenesAnimation(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)]);
      (mta1.scene[0] as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!;
      return mta1;
    }
-   let friction = 0.97;
-   let bounce = 0.5;
    var a: scene.SceneInterface[]|undefined;
-   if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars,gl.POINTS,5,friction,bounce)];
+   if (dictPars?.get("cloth2")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars)];
+   if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl)]; //,new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
    if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
    if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
    if (dictPars?.get("animation1")!=undefined) a = [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)];
@@ -192,13 +185,15 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
    if (dictPars?.get("animation5")!=undefined) a = [new manytexturescene.ManyTexturesScene(gl)];
    if (dictPars?.get("animation4")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
    if (dictPars?.get("animation9")!=undefined) a = [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
-   if (a!=undefined) return showScenesAnimation(gl, app, dictPars, a, 70);
+   if (a!=undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
       var rv = showBaseAppAnimation( gl, app,dictPars );
       if (rv) return rv;
       if (!showOtherAnimations(gl, app, dictPars ))
       {
-        return showScenesAnimation(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars!)],170); 
+        heighttop = 170;
+        document.getElementById("gridcells")!.style.gridTemplateRows = heighttop+"px";
+        return showScenesAnimation(gl, app, dictPars, [new matobjscene.MatObjScene(gl, app, dictPars!)]); 
       }    
       return undefined;
     }

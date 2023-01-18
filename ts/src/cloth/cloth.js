@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Cloth = exports.ClothMouse = void 0;
+exports.ClothProducer = exports.Cloth = exports.ClothMouse = void 0;
 class ClothMouse {
     constructor(cut, influence, down, button, x, y, px, py) {
         this.cut = cut;
@@ -11,6 +11,11 @@ class ClothMouse {
         this.y = y;
         this.px = px;
         this.py = py;
+    }
+    static DefaultMouse() {
+        return new ClothMouse(-9999, //  no cuts 0.02,
+        0.08, //   influence range
+        false, 1, 0, 0, 0, 0);
     }
 }
 exports.ClothMouse = ClothMouse;
@@ -38,12 +43,12 @@ class Point {
             if (mouse.button === 1 && dist < mouse.influence) {
                 this.px = this.x - (mouse.x - mouse.px);
                 this.py = this.y - (mouse.y - mouse.py);
-                //  console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
+                console.log("seen mouse down, button=" + mouse.button + " px=" + this.px + " py=" + this.py);
             }
             else if (dist < mouse.cut) {
                 //  console.log("seen mouse down, button="+mouse.button+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
                 //  this.free();
-            } // else       console.log("seen mouse down, button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
+            } // else       console.log("seen mouse down,bounce="+bounce+" button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
         }
         this.addForce(0, gravity, 0);
         let nx = this.x + (this.x - this.px) * friction + this.vx * delta;
@@ -202,4 +207,16 @@ class Cloth {
     }
 }
 exports.Cloth = Cloth;
+class ClothProducer {
+    constructor() {
+        this.clothX = 400;
+        this.clothY = 50;
+        this.startX = -0.9;
+        this.startY = 1.0;
+        this.spacing = 1.8 / this.clothX;
+        this.tearDist = 2.0 * this.spacing * 8;
+        this.cloth = new Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
+    }
+}
+exports.ClothProducer = ClothProducer;
 //# sourceMappingURL=cloth.js.map

@@ -143,6 +143,9 @@ class BoneAnimation {
             this.bones.forEach((bone, ndx) => { twgl_js_1.m4.multiply(bone, bindPosInv[ndx], this.boneMatrices[ndx]); });
         // update the texture with the current matrices
         gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture);
+        // since we want to use the texture for pure data we turn off filtering
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texImage2D(gl.TEXTURE_2D, 0, // level
         gl.RGBA32F, // internal format
         4, // width 4 pixels, each pixel has RGBA so 4 pixels is 16 values

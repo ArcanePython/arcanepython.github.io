@@ -24,17 +24,21 @@ const animationclock = __importStar(require("./baseapp/animationclock")); // own
 const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
 const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation2 extends baseapp.BaseApp {
-    constructor(cgl, capp, cscene, dictpar, cdiv) {
-        super(cgl, capp, dictpar, cdiv);
-        this.defaultParameters = { influence: 0.05, friction: 0.99, move: true, speed: 0.01, color0: "#A0A0A0", gravity: 0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+    constructor(cgl, capp, cscene, dictPar, cdiv) {
+        super(cgl, capp, dictPar, cdiv);
         //=============================================================================
         // all parameters in any scene
-        this.animation1Parameters = this.defaultParameters;
+        this.animation1Parameters = this.DefaultParameters;
         this.ctime = new Date().getTime();
         this.doclear = false;
         this.doTwglEnv = false; // when true, background is drawn with twgl.drawBufferInfo, which does not work with any scenery using twgl.DrawBufferInfo
         Animation2.instance = this;
         this.scene = cscene;
+        this.doShowBackgroundColorChoice = false;
+        if (this.scene[0].sceneenv < 0)
+            this.doShowBackgroundColorChoice = true;
+        else if ((dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) != undefined)
+            this.doShowBackgroundColorChoice = ((+(dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice"))) > 0);
         this.clock = new animationclock.AnimationClock();
     }
     onChangeTextureCombo(value) {

@@ -11,12 +11,12 @@ export class Animation1 extends baseapp.BaseApp
     public scene: scene.SceneInterface;                                                     
     public skyboxtexture: WebGLTexture | undefined;
 
-    defaultParameters: baseapp.TAnimation1Parameters = { influence:0.05, friction:0.99,move: true, speed: 0.01, gravity:0.02, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+ //   defaultParameters: baseapp.TAnimation1Parameters = { influence:0.05, friction:0.99,move: true, speed: 0.01, gravity:0.02, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     //=============================================================================
 
     // all parameters in any scene
-    private animation1Parameters: baseapp.TAnimation1Parameters = this.defaultParameters;
+    private animation1Parameters: baseapp.TAnimation1Parameters = this.DefaultParameters;
 
     private ctime: number = new Date().getTime();
     private clock: animationclock.AnimationClock;

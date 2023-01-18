@@ -26,10 +26,10 @@ const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
 class Animation1 extends baseapp.BaseApp {
     constructor(cgl, capp, cscene, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
-        this.defaultParameters = { influence: 0.05, friction: 0.99, move: true, speed: 0.01, gravity: 0.02, color0: "#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+        //   defaultParameters: baseapp.TAnimation1Parameters = { influence:0.05, friction:0.99,move: true, speed: 0.01, gravity:0.02, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
         //=============================================================================
         // all parameters in any scene
-        this.animation1Parameters = this.defaultParameters;
+        this.animation1Parameters = this.DefaultParameters;
         this.ctime = new Date().getTime();
         this.doclear = true;
         this.doTwglEnv = false;

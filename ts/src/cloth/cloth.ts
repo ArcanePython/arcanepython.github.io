@@ -11,6 +11,20 @@ export class ClothMouse
     public px: number,
     public py: number)
     { }
+
+    public static DefaultMouse()
+    {
+        return new ClothMouse(
+            -9999, //  no cuts 0.02,
+            0.08, //   influence range
+               false,
+               1,
+               0,
+               0,
+               0,
+               0
+           );
+    }
 }
 
 class Point {
@@ -50,11 +64,11 @@ class Point {
             if (mouse.button === 1 && dist < mouse.influence) {
                 this.px = this.x - (mouse.x - mouse.px);
                 this.py = this.y - (mouse.y - mouse.py);
-              //  console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
+                console.log("seen mouse down, button="+mouse.button+" px="+this.px+" py="+this.py);
             } else if (dist < mouse.cut) {
               //  console.log("seen mouse down, button="+mouse.button+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
               //  this.free();
-            } // else       console.log("seen mouse down, button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
+            } // else       console.log("seen mouse down,bounce="+bounce+" button="+mouse.button+" nop"+" dist="+dist+" >influence="+mouse.influence+" <cut="+mouse.cut);
 
         }
 
@@ -255,3 +269,21 @@ export class Cloth {
         });
     }
 }
+
+
+export class ClothProducer
+{
+     clothX = 400;
+     clothY = 50;
+     startX = -0.9;
+     startY = 1.0;
+     spacing = 1.8 / this.clothX;
+     tearDist = 2.0*this.spacing * 8;
+     cloth:Cloth;
+
+     constructor()
+     {
+       this.cloth = new Cloth(this.clothX,this.clothY,this.startX,this.startY,this.tearDist,this.spacing,"c");
+     }
+}
+

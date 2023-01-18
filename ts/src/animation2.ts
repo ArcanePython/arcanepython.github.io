@@ -13,12 +13,12 @@ export class Animation2 extends baseapp.BaseApp
 
     public static instance: Animation2|undefined;
 
-    defaultParameters: baseapp.TAnimation1Parameters = { influence:0.05, friction:0.99, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
-
+    defaultParameters: baseapp.TAnimation1Parameters | undefined;
+    
     //=============================================================================
 
     // all parameters in any scene
-    private animation1Parameters: baseapp.TAnimation1Parameters = this.defaultParameters;
+    private animation1Parameters: baseapp.TAnimation1Parameters = this.DefaultParameters;
 
     private ctime: number = new Date().getTime();
     private clock: animationclock.AnimationClock;
@@ -30,12 +30,15 @@ export class Animation2 extends baseapp.BaseApp
 
     public dictpars:Map<string,string>|undefined;  // used in callbacks
 
-    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , cscene: scene.SceneInterface[], dictpar:Map<string,string>, cdiv: string)
+    constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , cscene: scene.SceneInterface[], dictPar:Map<string,string>, cdiv: string)
     {       
-        super(cgl, capp, dictpar,cdiv);
+        super(cgl, capp, dictPar,cdiv);
         Animation2.instance = this;
         this.scene = cscene;
-        this.clock = new animationclock.AnimationClock();
+        this.doShowBackgroundColorChoice = false;
+        if (this.scene[0].sceneenv<0)  this.doShowBackgroundColorChoice = true;
+          else if (dictPar?.get("backcolorchoice")!=undefined) this.doShowBackgroundColorChoice = ((+dictPar?.get("backcolorchoice")!)>0);
+        this.clock = new animationclock.AnimationClock(); 
     }
 
     onChangeTextureCombo(value? : any)

@@ -170,6 +170,10 @@ export class BoneAnimation
      
       // update the texture with the current matrices
       gl.bindTexture(gl.TEXTURE_2D, this.boneMatrixTexture!);
+        // since we want to use the texture for pure data we turn off filtering
+   //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+   //     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+   
       gl.texImage2D(
           gl.TEXTURE_2D,
           0,           // level
