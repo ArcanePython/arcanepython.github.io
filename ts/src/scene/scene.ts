@@ -4,6 +4,8 @@ import * as camhandler from "./../baseapp/camhandler"   // camera projection
 
 import { TAnimation1Parameters }  from "./../baseapp/baseapp"
 
+
+
 export interface SceneInterface 
 {
   scenesize: number;                                      // allow scene to set its size before initializing camera, r0=2*scenesize, far and near plane accordingly

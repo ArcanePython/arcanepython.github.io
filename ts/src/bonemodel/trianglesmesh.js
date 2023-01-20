@@ -129,6 +129,52 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
         console.log(data);
         return { numComponents: 4, data };
     }
+    static getTrianglesMeshPositions(segmentsize, nrows, stride) {
+        var posdata = [];
+        var z = 0, sz, cx, cy, cz = 0.0, dz = 0.0;
+        sz = segmentsize;
+        dz = sz * dz;
+        for (var y = 0; y < nrows; y++) {
+            var d = (Math.PI / 4.0) * (y - nrows / 2) / nrows;
+            d = 1.0 - Math.cos(d);
+            z = 8.0 * d;
+            for (var x = 0; x < stride; x++) {
+                cx = sz * x;
+                cy = sz * y;
+                cz = sz * z;
+                //if ((x%2)==0)
+                {
+                    posdata.push(cx); //  |_\
+                    posdata.push(cy);
+                    posdata.push(cz);
+                    posdata.push(cx);
+                    posdata.push(cy + sz);
+                    posdata.push(cz + dz);
+                    posdata.push(cx + sz);
+                    posdata.push(cy + sz);
+                    posdata.push(cz + dz);
+                } //else
+                {
+                    posdata.push(cx + sz); //  \-|
+                    posdata.push(cy + sz);
+                    posdata.push(cz + dz);
+                    posdata.push(cx + sz);
+                    posdata.push(cy);
+                    posdata.push(cz);
+                    posdata.push(cx);
+                    posdata.push(cy);
+                    posdata.push(cz);
+                }
+            }
+            cz = cz + dz;
+        }
+        var data3d = new Float32Array(posdata.length);
+        for (var i = 0; i < posdata.length; i++)
+            data3d[i] = posdata[i];
+        console.log("positions: len=" + data3d.length + " nvect=" + (data3d.length / 3));
+        console.log(data3d);
+        return { numComponents: data3d.length, data: data3d };
+    }
     build3DTrianglesPositions(n, nrows, stride) {
         var posdata = [];
         var z = 0, sz, cx, cy, cz = 0.0, dz = 0.0;

@@ -25,8 +25,9 @@ const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (d
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
 class FishWithJoints extends fish.Fish {
-    constructor(size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, jointpos, vaxis) {
-        super(size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile);
+    constructor(name, size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, v, jointpos, vaxis) {
+        super(name, size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, v);
+        this.name = name;
         this.size = size;
         this.r1 = r1;
         this.r2 = r2;
@@ -35,6 +36,7 @@ class FishWithJoints extends fish.Fish {
         this.arange = arange;
         this.ampl = ampl;
         this.surfacetexturefile = surfacetexturefile;
+        this.v = v;
         this.jointpos = jointpos;
         this.vaxis = vaxis;
     }
@@ -45,25 +47,8 @@ class FishWithJoints extends fish.Fish {
         var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         dictpar.set("r1", this.r1.toString());
         dictpar.set("r2", this.r2.toString());
-        var vv = this.prepareMeshGen(gl, dictpar, scale, cnumrows, cstride, stridedmesh.StridedMesh.getMSCylPositions, stridedmesh.StridedMesh.getMSCylPositions);
+        var vv = this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getMSCylPositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
         return vv;
-        this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            console.log("created triangle strip mesh. phase=" + this.phase0);
-            return tsmesh;
-        }
-        else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getWhalePositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
     }
     computeBoneMatrices(bones, di) {
         var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction

@@ -22,6 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FishOneJoint = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
 class FishOneJoint extends fish.Fish {
     constructor() {
@@ -32,45 +33,9 @@ class FishOneJoint extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         var cstride = this.numberDictPar(dictpar, "stride", 80);
         var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        this.scale = scale;
-        var vv = this.prepareMeshGen(gl, dictpar, scale, cnumrows, cstride, stridedmesh.StridedMesh.getCylPositions, stridedmesh.StridedMesh.getCylPositions);
-        return vv;
-        /*
-             if (cmeshtype=="strip")
-              {
-                var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-                tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2)
-                tsmesh.type = gl.TRIANGLE_STRIP;
-                console.log("created triangle strip mesh. phase="+this.phase0);
-                return tsmesh;
-              }  else
-              {
-                  var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-                  trmesh.arrays.position = trmesh.getFishPPositions()
-                  trmesh.type = gl.TRIANGLES;
-                  return trmesh;
-              }
-           */
+        return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getCylPositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
-        //var jointpos = 0.1;
-        /*
-        var asin=(this.ampl * di)*Math.PI*2.0;
-        var ay=0.0;
-        var bonesize= this.mesh!.nsegments*this.mesh!.segmentsize;
-        var i2 = bones.length/2;
-        for (var i = 0; i < bones.length; i++)
-        {
-          var nnormx = (i<i2)?0:( (i-i2) /bones.length);
-          var nnormxal = 0.5 + 0.5*Math.sin( this.arange*nnormx*asin);
-          ay = asin * nnormxal;
-          var  m = m4.identity();
-          m = m4.translate(m,[jointpos*bonesize/2,0,0]);
-         if (i>i2) m = m4.rotateY(m, ay );
-          m = m4.translate(m,[-(jointpos*bonesize/2),0,0,0]);
-          bones[i] = m;
-        }
-        */
         var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction
         var len = this.jointpos * bonesize; // len is distance from 0 to joint
         var mtrans1 = twgl_js_1.m4.translation([len, 0, 0]); // joint serves as a rotation point (trans to)

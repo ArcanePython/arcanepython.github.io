@@ -6,12 +6,13 @@ type number4 = [number,number,number,number];
  
 export class StridedMesh extends stridedmesh0.StridedMesh0
 {
-  constructor( cnrows: number, cnsegments: number, scale: number)
+  constructor(name: string, cnrows: number, cnsegments: number, scale: number, seglen: number)
   {
     super();
-    this.segmentsize = scale*0.18;
+    this.segmentsize = scale*seglen; //0.18;
     this.nsegments = cnsegments;
     this.nrows = cnrows;
+ //   if (name!="dummy")   alert("StridedMesh constructor name=["+name+ "], scale="+scale+" segmentsize="+this.segmentsize+" nsegments="+cnsegments+" nrows="+cnrows)
     this.arrays = {
       position: {numComponents:0, data: new Float32Array()},                       // positions to be filled by caller
       boneNdx: this.buildBoneIndex( this.nrows, this.nsegments),                   // bone defined in X-axis direction
@@ -21,7 +22,8 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
    };
   }
 
-  buildPositions(n: number, nrows: number, stride: number)
+  /*
+  buildPositions( nrows: number, stride: number)
   {
     var posdata: number3[] = [];
     var cx=0, cy=0, cz=0;   
@@ -40,6 +42,7 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
     var data = stridedmesh0.StridedMesh0.floatStraighten("Positions",3, posdata); // this.floatStraighten4("BoneWeights",wdata);
     return  { numComponents: 3, data };
   }
+  */
 
   public static buildCylPositions(segmentsize: number, nrows: number, stride: number, r1: number, r2: number)
   {

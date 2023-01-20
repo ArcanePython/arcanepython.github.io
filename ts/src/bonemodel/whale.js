@@ -22,31 +22,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Whale = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
 class Whale extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         var cstride = this.numberDictPar(dictpar, "stride", 80);
         var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        return this.prepareMeshGen(gl, dictpar, this.scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, stridedmesh.StridedMesh.getWhalePositions);
-        /*
-            this.scale=scale;
-            var cstride =  this.numberDictPar(dictpar,"stride",80);
-            var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
-            var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
-            if (cmeshtype=="strip")
-            {
-              var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-              tsmesh.arrays.position = tsmesh.getWhalePositions()
-              tsmesh.type = gl.TRIANGLE_STRIP;
-              return tsmesh;
-            }  else
-            {
-                var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-                trmesh.arrays.position = trmesh.getFishPositions()
-                trmesh.type = gl.TRIANGLES;
-                return trmesh;
-            }
-           */
+        return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
         var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;

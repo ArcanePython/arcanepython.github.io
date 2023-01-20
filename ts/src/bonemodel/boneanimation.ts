@@ -97,13 +97,13 @@ export class BoneAnimation
     bindPoseInv2: m4.Mat4[] = [] ;
  
     phase0: number= 0;
-    mesh: stridedmesh0.StridedMesh0 = new stridedmesh.StridedMesh(1,1,1); // | null = null;   
+    mesh: stridedmesh0.StridedMesh0 = new stridedmesh.StridedMesh("dummy", 1,1,1, 0.18); // | null = null;   
     uniforms: Tuniforms = { world: [], projection: [], viewprojection:[], view:[],surfaceTexture: {}, boneMatrixTexture:{}, color:[] };  
 
     bufferInfo: twgl.BufferInfo | null = null;
     skinVAO: WebGLVertexArrayObject | null = null;
     
-    constructor( )
+    constructor(public name: string )
     {
    //   this.boneMatrixTexture = new WebGLTexture();
    //   this.surfaceTexture = new WebGLTexture();

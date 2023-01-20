@@ -26,6 +26,7 @@ import * as clothsimscene from "./scene/clothsimscene";      // scene: show text
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
 import * as matobjscene from "./scene/matobjscene";                    // scene: show textured objects from .obj/.mtl
 import * as fishanimationscene from "./scene/fishanimationscene"       // scene: bone model (multiple objects)
+import * as fishtrajectoryscene from "./scene/fishtrajectoryscene";
 
 import * as clothsim from "./cloth/clothsim"
 
@@ -37,25 +38,26 @@ var cdiv = 'c';  // name of canvas accessed by gl
 //=== DEFAULT ANIMATIONS  =================================================================================================================
 
 const ShowOBJMTL     = 1;
-const ShowFish       = 3; 
+const ShowWhales       = 3; 
 const ShowAnimation1 = 5; 
 
-var selectedShow    = ShowFish; // default animation
+var selectedShow    = ShowWhales; // default animation
 
 function preparedefaultparameters(dictPars: Map<string,string>)
 {
   switch (selectedShow)
   {
-        case ShowFish:
+        case ShowWhales:
           {
-            console.log("variousfish");
-            dictPars.set("variousfish","");
-            dictPars.set("radius0","90");
+            console.log("whales");
+            dictPars.set("whales","");
+            dictPars.set("radius0","150");
             dictPars.set("mesh","strip");
             dictPars.set("hx","1.2");
             dictPars.set("hy","0.1");
             dictPars.set("stride","180");
             dictPars.set("numrows","39");
+            dictPars.set("env","2");
             break;
           }
 
@@ -102,13 +104,6 @@ function showBaseAppAnimation( gl: WebGL2RenderingContext, app: mtls.MouseListen
       ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2',color0: "#D0A010"  }); 
       return ims;
     } 
-    else  if (dictPars?.get("whalesapp")!=undefined)
-    {  
-      var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
-      fa.initGUI(fa.baseappParameters);
-      fa.main(gl, dictPars);
-      return  fa;
-    }
     else if (dictPars?.get("skyboxcube")!=undefined)
     {  
       var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
@@ -172,17 +167,18 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
    //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
    
    
-   if (dictPars?.get("cloth")!=undefined) a = [ new fishanimationscene.FishAnimationScene(gl), new clothsimscene.ClothSimScene(gl,app,dictPars)];
+   if (dictPars?.get("cloth")!=undefined) a = [ new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1() ), new clothsimscene.ClothSimScene(gl,app,dictPars)];
    if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
    if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
    if (dictPars?.get("animation1")!=undefined) a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
   // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
    if (dictPars?.get("animation2")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
-   if (dictPars?.get("whales")!=undefined) a = [new fishanimationscene.FishAnimationScene(gl)];
+   if (dictPars?.get("whales")!=undefined) a = [new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1() )];
    if (dictPars?.get("animation5")!=undefined) a = [new manytexturescene.ManyTexturesScene(gl)];
    if (dictPars?.get("animation4")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
    if (dictPars?.get("animation6")!=undefined) a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
    if (dictPars?.get("animation9")!=undefined) a = [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
+   if (dictPars?.get("animation10")!=undefined) a =  [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoard2())];
    if (a!=undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
       var rv = showBaseAppAnimation( gl, app,dictPars );

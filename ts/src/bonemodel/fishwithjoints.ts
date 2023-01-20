@@ -7,9 +7,10 @@ import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 import * as fish from "./fish"
 
 export class FishWithJoints extends fish.Fish
-// Fish with horizontal tail, using a joint
+// Fish with horizontal tail, using multiple joints
 {       
  constructor (
+   public name: string,
    public size: number,
    public r1: number,
    public r2: number, 
@@ -18,9 +19,10 @@ export class FishWithJoints extends fish.Fish
    public arange: number, 
    public ampl: number, 
    public surfacetexturefile: string,
+   public v: [number,number,number],
    public jointpos: number, 
    public vaxis:number[]) 
- { super(size, r1,r2,  phase0, deltaphase,arange,ampl, surfacetexturefile); }
+ { super(name, size, r1,r2,  phase0, deltaphase,arange,ampl, surfacetexturefile, v); }
 
   prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0
   // create mesh positions for a fish with tail in horizontal pose, moving up/down.
@@ -32,35 +34,13 @@ export class FishWithJoints extends fish.Fish
     var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
     dictpar.set("r1",this.r1.toString());
     dictpar.set("r2",this.r2.toString());
-    var vv = this.prepareMeshGen(gl,dictpar,scale, cnumrows, cstride, stridedmesh.StridedMesh.getMSCylPositions,stridedmesh.StridedMesh.getMSCylPositions);
+    var vv = this.prepareMeshGen(gl,dictpar,this.name,scale, cnumrows, cstride, stridedmesh.StridedMesh.getMSCylPositions,trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     return vv;
-    
-
-     this.scale=scale;
-     var cstride =  this.numberDictPar(dictpar,"stride",80);
-     var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
-     var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
-     if (cmeshtype=="strip")
-      {
-        var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-        tsmesh.arrays.position = tsmesh.getCylPositions(this.r1, this.r2); // tsmesh.getFishVPositions()
-        tsmesh.type = gl.TRIANGLE_STRIP;  
-        console.log("created triangle strip mesh. phase="+this.phase0);
-        return tsmesh;
-      }  else
-      {
-          var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-          trmesh.arrays.position = trmesh.getWhalePositions()
-          trmesh.type = gl.TRIANGLES;
-          return trmesh;        
-      } 
-      
   }
 
   protected computeBoneMatrices(bones: m4.Mat4[], di:number ) 
-  // Rotate a straight tail starting at a single joint which is placed jointpos times length from start, in the X-direction.
+  // Move tail according to vaxis starting at a single joint which is placed jointpos times length from start, in the X-direction.
   // jointpos is a value between 0 and 1, di is current time
-  // Called from rendering
   { 
     var bonesize= this.mesh!.nsegments * this.mesh!.segmentsize;   // length in x direction
     var len: number=this.jointpos*bonesize;                        // len is distance from 0 to joint

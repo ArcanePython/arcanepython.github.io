@@ -22,47 +22,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhaleTranslated = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
 class WhaleTranslated extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         var cstride = this.numberDictPar(dictpar, "stride", 80);
         var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        return this.prepareMeshGen(gl, dictpar, this.scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, stridedmesh.StridedMesh.getWhalePositions);
-        /*
-            this.scale=scale;
-            var cstride =  this.numberDictPar(dictpar,"stride",80);
-            var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
-            var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
-            if (cmeshtype=="strip")
-            {
-              var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-              tsmesh.arrays.position = tsmesh.getWhalePositions()
-              tsmesh.type = gl.TRIANGLE_STRIP;
-              return tsmesh;
-            }  else
-            {
-                var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-                trmesh.arrays.position = trmesh.getWhalePositions()
-                trmesh.type = gl.TRIANGLES;
-                return trmesh;
-            }'
-            */
+        return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
-        /*
-         var amp=0.0,damp=this.ampl/bones.length, arange=this.arange*2.0*Math.PI;
-         for (var i = 0; i < bones.length; i++)
-         {
-             m4.translate(m4.identity(),[this.px,
-                            this.py + amp*10.0*Math.cos(arange*(i+di)/bones.length + di),
-                            this.pz + amp*Math.sin(+arange*i/bones.length + di)],
-                            bones[i]);
-            this.py+=0.0;
-            this.pz+=0.00000;
-            amp+=this.scale*damp;
-            
-         }
-         */
         var amp = 0.0;
         var damp = this.ampl / bones.length;
         var arange = this.arange * 2.0 * Math.PI;
@@ -77,7 +45,6 @@ class WhaleTranslated extends fish.Fish {
                 amp * Math.sin(1.0 * az)], bones[i]);
             amp += this.size * damp;
         }
-        //   this.px+=-this.forwardspeed; // * bones.length;      
     }
 }
 exports.WhaleTranslated = WhaleTranslated;

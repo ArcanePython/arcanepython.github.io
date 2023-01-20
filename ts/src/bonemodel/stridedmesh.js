@@ -22,11 +22,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StridedMesh = void 0;
 const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones data
 class StridedMesh extends stridedmesh0.StridedMesh0 {
-    constructor(cnrows, cnsegments, scale) {
+    constructor(name, cnrows, cnsegments, scale, seglen) {
         super();
-        this.segmentsize = scale * 0.18;
+        this.segmentsize = scale * seglen; //0.18;
         this.nsegments = cnsegments;
         this.nrows = cnrows;
+        //   if (name!="dummy")   alert("StridedMesh constructor name=["+name+ "], scale="+scale+" segmentsize="+this.segmentsize+" nsegments="+cnsegments+" nrows="+cnrows)
         this.arrays = {
             position: { numComponents: 0, data: new Float32Array() },
             boneNdx: this.buildBoneIndex(this.nrows, this.nsegments),
@@ -35,22 +36,27 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             texcoord: this.buildTexCoords(this.nrows, this.nsegments), // texture coords for any triangle strip quad
         };
     }
-    buildPositions(n, nrows, stride) {
-        var posdata = [];
-        var cx = 0, cy = 0, cz = 0;
-        for (var y = 0; y < nrows; y++) {
-            for (var x = 0; x < stride; x++) {
-                var d = (Math.PI / 4.0) * (y - nrows / 2) / nrows;
-                d = 1.0 - Math.cos(d);
-                cx = x * this.segmentsize;
-                cy = y * this.segmentsize;
-                cz = 88.0 * d * this.segmentsize;
-                posdata.push([cx, cy, cz]);
-            }
+    /*
+    buildPositions( nrows: number, stride: number)
+    {
+      var posdata: number3[] = [];
+      var cx=0, cy=0, cz=0;
+      for (var y=0; y<nrows; y++)
+      {
+        for (var x=0; x<stride; x++)
+        {
+          var d = (Math.PI/4.0) * (y-nrows/2) / nrows;
+          d = 1.0-Math.cos(d);
+          cx = x*this.segmentsize;
+          cy = y*this.segmentsize;
+          cz = 88.0*d*this.segmentsize;
+          posdata.push([cx,cy,cz]);
         }
-        var data = stridedmesh0.StridedMesh0.floatStraighten("Positions", 3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-        return { numComponents: 3, data };
+      }
+      var data = stridedmesh0.StridedMesh0.floatStraighten("Positions",3, posdata); // this.floatStraighten4("BoneWeights",wdata);
+      return  { numComponents: 3, data };
     }
+    */
     static buildCylPositions(segmentsize, nrows, stride, r1, r2) {
         var posdata = [];
         var cx = 0, cy = 0, cz = 0, a = 0, da = Math.PI * 2.0 / (nrows - 1), z = 0, r = 5;

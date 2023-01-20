@@ -19,7 +19,8 @@ import * as animationclock from "../baseapp/animationclock";
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 export class FishAnimation extends baseapp.BaseApp
-{          
+{      
+  /*    
     fishAnimationParameters: baseapp.TAnimation1Parameters | undefined;
 
     fish: fish.Fish[] = [           // SIZE R1  R2       PH0  DELTAP  AR   AMPL  TEX            JOINT JOINTAX
@@ -174,5 +175,6 @@ export class FishAnimation extends baseapp.BaseApp
           }
         }         
         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));   
-    }   
+    }  
+    */ 
 }

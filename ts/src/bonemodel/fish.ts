@@ -1,4 +1,3 @@
-
 import * as twgl from "twgl.js";    // Greg's work
 import { m4 } from "twgl.js";
 
@@ -7,28 +6,39 @@ import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 import * as boneanimation from "./boneanimation"
 
-
 export interface FishInterface 
   {
     computeBone( time: number, domove: boolean, domovetail: boolean): void;
     createUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>): boneanimation.Tuniforms;
     prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number,typeFish: number): stridedmesh0.StridedMesh0;
   }
-
- // type Meshproducer = (numrows: number, stride: number, scale: number) => {
- //   numComponents: number;
- //   data: Float32Array;
- //  };
   
+export interface hoard
+{
+  fish: Fish[];
+  fishjointcounts: number[] ;
+  fishpositionsV : twgl.v3.Vec3[][];
+  fishvelocitiesV : twgl.v3.Vec3[][];
+  fishmatricesR : {change: boolean, matrix: twgl.m4.Mat4}[][];
+}
+
 export abstract class Fish extends boneanimation.BoneAnimation implements FishInterface
   {
+ //   vx:number=0;
+ //   vy:number=0;
+ //   vz:number=0;
+ 
     EndOfBoneTrans: m4.Mat4 = m4.identity();
 
     public abstract prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0; // called from constructors
     protected abstract computeBoneMatrices(bones: m4.Mat4[], di:number): void; //, damp: number, arange: number) :void;                          // called from renderer
   
-    constructor (public size: number,public r1: number,public r2: number,  public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string) 
-    { super(); }
+    constructor (public name: string,
+                 public size: number,public r1: number,public r2: number,  public phase0: number, public deltaphase: number, 
+                 public arange: number, public ampl: number, public surfacetexturefile: string, public v: twgl.v3.Vec3) 
+    { 
+      super(name); 
+    }
   
     computeBone( time: number, domove: boolean, domovetail: boolean)
     {
@@ -43,31 +53,28 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
     }
 
   
-public prepareMeshGen(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number, 
-                 nrows: number, stride: number, 
-                 fstrip:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array}, 
-                 ftriangles:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array})
- // create mesh positions for a fish with tail in vertical pose, moving left/right.
- // produce a position item ready for stridedmesh0.Tarray
- {
-   this.scale=scale;      
-   var cstride =  this.numberDictPar(dictpar,"stride",80);
-   var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
-   var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
-   if (cmeshtype=="strip")
-   {
-     var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-     tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride,dictpar); // tsmesh.getWhalePositions()
-     tsmesh.type = gl.TRIANGLE_STRIP;  
-     return tsmesh;
-   }  else
-   {
-       var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-       trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride,dictpar); // trmesh.getFishPositions()
-       trmesh.type = gl.TRIANGLES;
-       return trmesh;        
-   }
-}
+    public prepareMeshGen(gl: WebGL2RenderingContext, dictpar:Map<string,string>, name:string, scale: number, 
+                    nrows: number, stride: number, 
+                    fstrip:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array}, 
+                    ftriangles:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array})
+    // create mesh positions, produce a position item ready for stridedmesh0.Tarray
+    {
+      this.scale=scale;      
+      var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
+      if (cmeshtype=="strip")
+      {
+        var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20 );
+        tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride,dictpar);
+        tsmesh.type = gl.TRIANGLE_STRIP;  
+        return tsmesh;
+      }  else
+      {
+          var trmesh = new trianglesmesh.StridedMesh(nrows, stride);
+          trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride,dictpar);
+          trmesh.type = gl.TRIANGLES;
+          return trmesh;        
+      }
+    }
 
     prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
    {
@@ -139,15 +146,3 @@ public prepareMeshGen(gl: WebGL2RenderingContext, dictpar:Map<string,string>, sc
     }
 
   }
-
-  //--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
-  
-
-  //--------------------------------------------------------------------------------------------------------
-  
-  //----------------------------------------------------------------------------------------------------------
-
-  
- //----------------------------------------------------------------------------------------------------------
-
- 

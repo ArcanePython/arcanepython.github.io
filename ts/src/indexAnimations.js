@@ -25,7 +25,6 @@ const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp deri
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
-const fishanimation = __importStar(require("./others/fishanimation")); // baseapp derivative: bone model (multiple objects)
 const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation2 = __importStar(require("./animation2")); // baseapp derivative: scene container
 const skyboxscene = __importStar(require("./scene/skyboxscene")); // scene: show skybox only (empty scene)
@@ -40,27 +39,29 @@ const clothsimscene = __importStar(require("./scene/clothsimscene")); // scene: 
 const skyboxcubescene = __importStar(require("./scene/skyboxcubescene")); // scene: show reflecting cube in skybox
 const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show textured objects from .obj/.mtl
 const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // scene: bone model (multiple objects)
+const fishtrajectoryscene = __importStar(require("./scene/fishtrajectoryscene"));
 const clothsim = __importStar(require("./cloth/clothsim"));
 var cdiv = 'c'; // name of canvas accessed by gl
 //var baseappParameters: baseapp.TAnimation1Parameters = { influence:0.05,
 //   friction:0.99, gravity: 0.02, move: true, speed: 0.01, color0:"#A0A0A0", texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 //=== DEFAULT ANIMATIONS  =================================================================================================================
 const ShowOBJMTL = 1;
-const ShowFish = 3;
+const ShowWhales = 3;
 const ShowAnimation1 = 5;
-var selectedShow = ShowFish; // default animation
+var selectedShow = ShowWhales; // default animation
 function preparedefaultparameters(dictPars) {
     switch (selectedShow) {
-        case ShowFish:
+        case ShowWhales:
             {
-                console.log("variousfish");
-                dictPars.set("variousfish", "");
-                dictPars.set("radius0", "90");
+                console.log("whales");
+                dictPars.set("whales", "");
+                dictPars.set("radius0", "150");
                 dictPars.set("mesh", "strip");
                 dictPars.set("hx", "1.2");
                 dictPars.set("hy", "0.1");
                 dictPars.set("stride", "180");
                 dictPars.set("numrows", "39");
+                dictPars.set("env", "2");
                 break;
             }
         case ShowAnimation1:
@@ -99,12 +100,6 @@ function showBaseAppAnimation(gl, app, dictPars) {
         console.log("ins.main done.");
         ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
         return ims;
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
-        var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
-        fa.initGUI(fa.baseappParameters);
-        fa.main(gl, dictPars);
-        return fa;
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
         var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
@@ -156,7 +151,7 @@ function show(gl, app, dictPars) {
     //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
-        a = [new fishanimationscene.FishAnimationScene(gl), new clothsimscene.ClothSimScene(gl, app, dictPars)];
+        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1()), new clothsimscene.ClothSimScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
@@ -167,7 +162,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined)
-        a = [new fishanimationscene.FishAnimationScene(gl)];
+        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1())];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined)
         a = [new manytexturescene.ManyTexturesScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined)
@@ -176,6 +171,8 @@ function show(gl, app, dictPars) {
         a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined)
+        a = [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoard2())];
     if (a != undefined)
         return showScenesAnimation(gl, app, dictPars, a);
     else {

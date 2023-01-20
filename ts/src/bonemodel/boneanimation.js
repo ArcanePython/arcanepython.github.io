@@ -23,7 +23,8 @@ exports.BoneAnimation = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 class BoneAnimation {
-    constructor() {
+    constructor(name) {
+        this.name = name;
         //== this instance (show animated boned object)
         this.bindPose = [];
         this.bones = [];
@@ -35,7 +36,7 @@ class BoneAnimation {
         this.scale = 1.0;
         this.bindPoseInv2 = [];
         this.phase0 = 0;
-        this.mesh = new stridedmesh.StridedMesh(1, 1, 1); // | null = null;   
+        this.mesh = new stridedmesh.StridedMesh("dummy", 1, 1, 1, 0.18); // | null = null;   
         this.uniforms = { world: [], projection: [], viewprojection: [], view: [], surfaceTexture: {}, boneMatrixTexture: {}, color: [] };
         this.bufferInfo = null;
         this.skinVAO = null;

@@ -25,13 +25,10 @@ const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
-// type Meshproducer = (numrows: number, stride: number, scale: number) => {
-//   numComponents: number;
-//   data: Float32Array;
-//  };
 class Fish extends boneanimation.BoneAnimation {
-    constructor(size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile) {
-        super();
+    constructor(name, size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, v) {
+        super(name);
+        this.name = name;
         this.size = size;
         this.r1 = r1;
         this.r2 = r2;
@@ -40,6 +37,10 @@ class Fish extends boneanimation.BoneAnimation {
         this.arange = arange;
         this.ampl = ampl;
         this.surfacetexturefile = surfacetexturefile;
+        this.v = v;
+        //   vx:number=0;
+        //   vy:number=0;
+        //   vz:number=0;
         this.EndOfBoneTrans = twgl_js_1.m4.identity();
     }
     computeBone(time, domove, domovetail) {
@@ -50,20 +51,18 @@ class Fish extends boneanimation.BoneAnimation {
         const aphase = domovetail ? (this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)) : 0;
         this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
     }
-    prepareMeshGen(gl, dictpar, scale, nrows, stride, fstrip, ftriangles) {
+    prepareMeshGen(gl, dictpar, name, scale, nrows, stride, fstrip, ftriangles) {
         this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
         var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar); // tsmesh.getWhalePositions()
+            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20);
+            tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar);
             tsmesh.type = gl.TRIANGLE_STRIP;
             return tsmesh;
         }
         else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride, dictpar); // trmesh.getFishPositions()
+            var trmesh = new trianglesmesh.StridedMesh(nrows, stride);
+            trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride, dictpar);
             trmesh.type = gl.TRIANGLES;
             return trmesh;
         }
@@ -134,8 +133,4 @@ class Fish extends boneanimation.BoneAnimation {
     }
 }
 exports.Fish = Fish;
-//--- VARIOUS TYPES OF FISH COME HERE ----------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------------
 //# sourceMappingURL=fish.js.map
