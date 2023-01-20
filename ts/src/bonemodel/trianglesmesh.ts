@@ -11,7 +11,7 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
 {
   
   
-  getFishHPositions()
+  getFishPositions()
   {
     var pos =  this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);   
     return pos;
@@ -23,7 +23,7 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
     return pos;
   }
 
-  getFishVPositions()
+  getWhalePositions()
   {
     var pos =   this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
     return pos;

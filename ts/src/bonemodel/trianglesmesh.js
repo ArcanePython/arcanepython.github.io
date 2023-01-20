@@ -24,7 +24,7 @@ const stridedmesh0 = __importStar(require("./stridedmesh0")); // mesh and bones 
 //type number4 = number[];
 //type number2 = number[];
 class StridedMesh extends stridedmesh0.StridedMesh0 {
-    getFishHPositions() {
+    getFishPositions() {
         var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
         return pos;
     }
@@ -32,7 +32,7 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
         var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
         return pos;
     }
-    getFishVPositions() {
+    getWhalePositions() {
         var pos = this.build3DTrianglesPositions(this.nsegments, this.nrows, this.nsegments);
         return pos;
     }

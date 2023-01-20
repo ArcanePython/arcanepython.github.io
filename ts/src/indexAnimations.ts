@@ -6,7 +6,6 @@ import * as skyboxcube from "./others/skyboxcube"                      // baseap
 import * as objectlist from "./others/objectlist";                     // baseapp derivative: show bouncing guy node tree
 import * as drawinstanced from "./others/drawinstanced";               // baseapp derivative: show texture space navigator
 import * as canvas3dtexture from "./others/canvas3dtexture";           // baseapp derivative: show 3d on texture
-import * as skeleton from "./others/skeleton"                          // baseapp derivative: bone model (single object)
 import * as fishanimation from "./others/fishanimation"                // baseapp derivative: bone model (multiple objects)
 import * as drawimagespace from "./others/drawimagespace"              // baseapp derivative: image space texture
 
@@ -26,7 +25,6 @@ import * as drawinstancedscene from "./scene/drawinstancedscene";      // scene:
 import * as clothsimscene from "./scene/clothsimscene";      // scene: show texture space navigator
 import * as skyboxcubescene from "./scene/skyboxcubescene";            // scene: show reflecting cube in skybox
 import * as matobjscene from "./scene/matobjscene";                    // scene: show textured objects from .obj/.mtl
-import * as skeletonscene from "./scene/skeletonscene"                 // scene: bone model (single object)
 import * as fishanimationscene from "./scene/fishanimationscene"       // scene: bone model (multiple objects)
 
 import * as clothsim from "./cloth/clothsim"
@@ -105,13 +103,6 @@ function showBaseAppAnimation( gl: WebGL2RenderingContext, app: mtls.MouseListen
       return ims;
     } 
     else  if (dictPars?.get("whalesapp")!=undefined)
-    {
-      var sk = new skeleton.Skeleton(gl, app, dictPars!, cdiv);
-      sk.initGUI(sk.baseappParameters);
-      sk.main(gl, dictPars);
-      return sk;
-    } 
-    else if (dictPars?.get("variousfishapp")!=undefined)
     {  
       var fa = new fishanimation.FishAnimation(gl, app, dictPars!, cdiv);
       fa.initGUI(fa.baseappParameters);
@@ -174,16 +165,23 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
      (mta1.scene[0] as skyboxcubescene.SkyBoxCubeScene).texture = mta1.skyboxtexture!;
      return mta1;
    }
+
    var a: scene.SceneInterface[]|undefined;
-   if (dictPars?.get("cloth2")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars)];
-   if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl)]; //,new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+   if (dictPars?.get("clonly")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars)];
+   //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+   //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+   
+   
+   if (dictPars?.get("cloth")!=undefined) a = [ new fishanimationscene.FishAnimationScene(gl), new clothsimscene.ClothSimScene(gl,app,dictPars)];
    if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
    if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
-   if (dictPars?.get("animation1")!=undefined) a = [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)];
+   if (dictPars?.get("animation1")!=undefined) a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
+  // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
    if (dictPars?.get("animation2")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
-   if (dictPars?.get("whales")!=undefined) a = [new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)];
+   if (dictPars?.get("whales")!=undefined) a = [new fishanimationscene.FishAnimationScene(gl)];
    if (dictPars?.get("animation5")!=undefined) a = [new manytexturescene.ManyTexturesScene(gl)];
    if (dictPars?.get("animation4")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
+   if (dictPars?.get("animation6")!=undefined) a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
    if (dictPars?.get("animation9")!=undefined) a = [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
    if (a!=undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
@@ -240,7 +238,7 @@ function main()
           dictPars.set(cpar,ppar);
         } else dictPars.set(spar,"");  
     }    
-    if (dictPars==undefined) // in case URL arguments, prepare the show parameters
+    if (dictPars==undefined) // nothing found.. in case URL arguments, prepare the show parameters
     {  
       console.log("No URL arguments, prepare defaults for "+ selectedShow);
       preparedefaultparameters(dictPars= new Map<string,string>());

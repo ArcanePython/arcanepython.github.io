@@ -131,7 +131,8 @@ class Constraint {
     }
 }
 class Cloth {
-    constructor(clothX, clothY, startX, startY, tearDist, spacing, canvasName) {
+    constructor(location, clothX, clothY, startX, startY, tearDist, spacing, canvasName) {
+        this.location = location;
         this.clothX = clothX;
         this.clothY = clothY;
         this.dirty = false;
@@ -162,9 +163,9 @@ class Cloth {
                 this.points.push(p);
                 //  p.attach(this.points[this.points.length - 1],tearDist,spacing);
                 //  p.attach(this.points[x + (y - 1) * (clothX + 1)],tearDist,spacing);
-                this.vertices[cnt++] = p.x;
-                this.vertices[cnt++] = p.y;
-                this.vertices[cnt++] = p.z;
+                this.vertices[cnt++] = this.location[0] + p.x;
+                this.vertices[cnt++] = this.location[1] + p.y;
+                this.vertices[cnt++] = this.location[2] + p.z;
                 this.texcoords[cnttex++] = p.texcoord[0];
                 this.texcoords[cnttex++] = p.texcoord[1];
             }
@@ -200,22 +201,22 @@ class Cloth {
         let cnt = 0;
         this.points.forEach((point) => {
             point.update(mouse, delta, gravity, friction, bounce);
-            this.vertices[cnt++] = point.x;
-            this.vertices[cnt++] = point.y;
-            this.vertices[cnt++] = point.z;
+            this.vertices[cnt++] = this.location[0] + point.x;
+            this.vertices[cnt++] = this.location[1] + point.y;
+            this.vertices[cnt++] = this.location[2] + point.z;
         });
     }
 }
 exports.Cloth = Cloth;
 class ClothProducer {
-    constructor() {
+    constructor(location) {
         this.clothX = 400;
         this.clothY = 50;
         this.startX = -0.9;
         this.startY = 1.0;
         this.spacing = 1.8 / this.clothX;
         this.tearDist = 2.0 * this.spacing * 8;
-        this.cloth = new Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
+        this.cloth = new Cloth(location, this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
     }
 }
 exports.ClothProducer = ClothProducer;

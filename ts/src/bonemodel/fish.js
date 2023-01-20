@@ -22,18 +22,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fish = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const boneanimation = __importStar(require("./boneanimation"));
 // type Meshproducer = (numrows: number, stride: number, scale: number) => {
 //   numComponents: number;
 //   data: Float32Array;
 //  };
 class Fish extends boneanimation.BoneAnimation {
-    constructor(size, r1, r2, forwardspeed, phase0, deltaphase, arange, ampl, surfacetexturefile) {
+    constructor(size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile) {
         super();
         this.size = size;
         this.r1 = r1;
         this.r2 = r2;
-        this.forwardspeed = forwardspeed;
         this.phase0 = phase0;
         this.deltaphase = deltaphase;
         this.arange = arange;
@@ -44,6 +45,28 @@ class Fish extends boneanimation.BoneAnimation {
     computeBone(time, domove, domovetail) {
         const aphase = domovetail ? (this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)) : 0;
         this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    computeJoint(time, domove, domovetail) {
+        const aphase = domovetail ? (this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)) : 0;
+        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    prepareMeshGen(gl, dictpar, scale, nrows, stride, fstrip, ftriangles) {
+        this.scale = scale;
+        var cstride = this.numberDictPar(dictpar, "stride", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
+            tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar); // tsmesh.getWhalePositions()
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        }
+        else {
+            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+            trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride, dictpar); // trmesh.getFishPositions()
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
     }
     prepareSurfaceTextures(gl, selectedSurface) {
         var gradientname = require("./../resources/models/stone/circlegradient.png");

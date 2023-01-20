@@ -24,10 +24,10 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const camhandler = __importStar(require("../baseapp/camhandler")); // camera projection
 const boneanimation = __importStar(require("../bonemodel/boneanimation"));
-const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
+const fishonejoint = __importStar(require("../bonemodel/fishwithjoints"));
 const fishv = __importStar(require("../bonemodel/fishv"));
-const fishhrotated = __importStar(require("../bonemodel/fishhrotated"));
-const fishhtranslated = __importStar(require("../bonemodel/fishhtranslated"));
+const fishhrotated = __importStar(require("../bonemodel/fishonejoint"));
+const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
 const baseapp = __importStar(require("../baseapp/baseapp"));
 const animationclock = __importStar(require("../baseapp/animationclock"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -35,11 +35,11 @@ class FishAnimation extends baseapp.BaseApp {
     constructor(cgl, capp, dictpar, cdiv) {
         super(cgl, capp, dictpar, cdiv);
         this.fish = [
-            new fishhtranslated.FishHTranslated(1.0, 2.0, 0.3, 0.03, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
-            new fishonejoint.FishOneJoint(0.06, 40.0, 24.0, 0.03, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
-            new fishhrotated.FishHRotated(0.5, 16.0, 22.0, 0.03, 0.1, 0.0015, 1.0, 0.5, "gradient"),
-            new fishv.FishV(0.2, 0.2, 0.3, 0.03, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
-            new fishhtranslated.FishHTranslated(0.3, 0.2, 0.3, 0.03, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
+            new whaletranslated.WhaleTranslated(1.0, 2.0, 0.3, 0.8, 0.0016, 0.5, 2.0, "zelenskyy"),
+            new fishonejoint.FishWithJoints(0.06, 40.0, 24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient", 0.6, [0.0, 1.0, 0.0]),
+            new fishhrotated.FishOneJoint(0.5, 16.0, 22.0, 0.1, 0.0015, 1.0, 0.5, "gradient"),
+            new fishv.FishV(0.2, 0.2, 0.3, 1.0, 0.0150, 0.5, 5.00, "flagofukraine"),
+            new whaletranslated.WhaleTranslated(0.3, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "zelenskyy")
         ];
         this.fishjointcounts = [1, 28, 1, 1, 1];
         this.fishpositions = [
@@ -50,8 +50,17 @@ class FishAnimation extends baseapp.BaseApp {
             [[0.0, 0.0, 1.0]]
         ];
         this.clock = new animationclock.AnimationClock();
+        this.px = 0;
+        this.py = 0;
+        this.pz = 0;
+        this.vx = -0.007;
+        this.vy = -0.002;
+        this.vz = 0;
+        this.firstframe = true;
+        this.dtime = 0;
+        this.vtime = 0;
         FishAnimation.instance = this;
-        this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.vsSkeleton, boneanimation.fsSkeleton]);
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [boneanimation.BoneAnimation.vsSkeleton, boneanimation.BoneAnimation.fsSkeleton]);
     }
     main(gl, dictpar) {
         var gl = this.gl;
@@ -93,6 +102,14 @@ class FishAnimation extends baseapp.BaseApp {
         return gui;
     }
     render(time) {
+        if (!this.firstframe) {
+            this.dtime = time - this.vtime;
+            this.px += this.vx * this.dtime;
+            this.py += this.vy * this.dtime;
+            this.pz += this.vz * this.dtime;
+        }
+        this.vtime = time;
+        this.firstframe = false;
         var gl = this.gl;
         gl.useProgram(this.twglprograminfo.program);
         twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -106,7 +123,7 @@ class FishAnimation extends baseapp.BaseApp {
         var par = this.fishAnimationParameters;
         for (var fishtype = 0; fishtype < this.fish.length; fishtype++) {
             gl.bindVertexArray(this.fish[fishtype].skinVAO);
-            this.fish[fishtype].forwardspeed = par.move ? par.speed : 0.0;
+            //  this.fish[fishtype].forwardspeed = par.move?par.speed:0.0;
             if (this.fishjointcounts[fishtype] == 1) // single joint fish
              {
                 this.fish[fishtype].computeBone(time, par.move, par.movetail);

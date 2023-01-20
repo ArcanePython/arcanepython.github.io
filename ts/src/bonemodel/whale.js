@@ -19,42 +19,44 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FishH = void 0;
+exports.Whale = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
-class FishH extends fish.Fish {
+class Whale extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
-        this.scale = scale;
         var cstride = this.numberDictPar(dictpar, "stride", 80);
         var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale);
-            tsmesh.arrays.position = tsmesh.getFishHPositions();
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        }
-        else {
-            var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-            trmesh.arrays.position = trmesh.getFishHPositions();
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
+        return this.prepareMeshGen(gl, dictpar, this.scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, stridedmesh.StridedMesh.getWhalePositions);
+        /*
+            this.scale=scale;
+            var cstride =  this.numberDictPar(dictpar,"stride",80);
+            var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
+            var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
+            if (cmeshtype=="strip")
+            {
+              var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
+              tsmesh.arrays.position = tsmesh.getWhalePositions()
+              tsmesh.type = gl.TRIANGLE_STRIP;
+              return tsmesh;
+            }  else
+            {
+                var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+                trmesh.arrays.position = trmesh.getFishPositions()
+                trmesh.type = gl.TRIANGLES;
+                return trmesh;
+            }
+           */
     }
     computeBoneMatrices(bones, di) {
         var amp = 0.0, damp = this.ampl / bones.length, arange = this.arange * 2.0 * Math.PI;
         for (var i = 0; i < bones.length; i++) {
-            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [this.px,
-                this.py + amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
-                this.pz + amp * Math.sin(+arange * i / bones.length + di)], bones[i]);
-            this.py += 0.0;
-            this.pz += 0.00000;
+            twgl_js_1.m4.translate(twgl_js_1.m4.identity(), [0.0,
+                amp * 10.0 * Math.cos(arange * (i + di) / bones.length + di),
+                amp * Math.sin(+arange * i / bones.length + di)], bones[i]);
             amp += this.scale * damp;
         }
-        //   this.px+=-this.forwardspeed; // * bones.length;      
     }
 }
-exports.FishH = FishH;
-//# sourceMappingURL=fishh.js.map
+exports.Whale = Whale;
+//# sourceMappingURL=whale.js.map

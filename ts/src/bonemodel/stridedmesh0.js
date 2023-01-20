@@ -16,7 +16,7 @@ class StridedMesh0 {
         this.bonediv = 2.0;
         this.type = 0;
     }
-    floatStraighten(datatitle, w, wdata) {
+    static floatStraighten(datatitle, w, wdata) {
         var data = new Float32Array(wdata.length * w);
         console.log(">floatstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
         for (var i = 0; i < wdata.length; i++)

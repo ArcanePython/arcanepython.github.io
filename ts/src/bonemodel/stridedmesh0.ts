@@ -23,7 +23,7 @@ export abstract class StridedMesh0
   type: number = 0;
   squarevectorarray: number[][] | undefined;
 
-  floatStraighten(datatitle: string, w: number, wdata: number[][]): Float32Array
+  public static floatStraighten(datatitle: string, w: number, wdata: number[][]): Float32Array
   {
     var data = new Float32Array(wdata.length*w);
     console.log(">floatstraighten"+w +" "+datatitle+" wdata.length="+wdata.length);
@@ -52,8 +52,8 @@ export abstract class StridedMesh0
     return data;
   }
 
-  abstract getFishHPositions(): {numComponents: number, data: Float32Array};
-  abstract getFishVPositions(): {numComponents: number, data: Float32Array};
+  abstract getFishPositions(): {numComponents: number, data: Float32Array};
+  abstract getWhalePositions(): {numComponents: number, data: Float32Array};
   
 
 }

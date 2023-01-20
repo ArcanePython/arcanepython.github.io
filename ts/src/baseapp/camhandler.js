@@ -134,7 +134,7 @@ class Camera {
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahy, this.myr);
         twgl_js_1.m4.translate(this.myr, [0, this.camHeight, 0], this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [this.radius, 0, 0]);
-        //this.eye[1]+=1; 
+        this.target[1] = this.camHeight;
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
         this.ReportEye();
@@ -145,6 +145,7 @@ class Camera {
         this.myr = twgl_js_1.m4.identity();
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahx, this.myr);
         //up = m4.transformPoint(myr,[0,1,0]) as number[];
+        twgl_js_1.m4.translate(this.myr, [0, 0, this.camHeight], this.myr);
         twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahy, this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [this.radius, 0, 0]);
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);

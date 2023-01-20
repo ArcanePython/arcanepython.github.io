@@ -19,12 +19,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FishHRotated = void 0;
+exports.FishOneJoint = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
 const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
 const fish = __importStar(require("./fish"));
-class FishHRotated extends fish.Fish {
+class FishOneJoint extends fish.Fish {
+    constructor() {
+        super(...arguments);
+        this.jointpos = 0.5;
+        this.vaxis = [0, 1, 0];
+    }
     prepareMesh(gl, dictpar, scale) {
         this.scale = scale;
         var cstride = this.numberDictPar(dictpar, "stride", 80);
@@ -45,36 +50,35 @@ class FishHRotated extends fish.Fish {
         }
     }
     computeBoneMatrices(bones, di) {
-        var amp = 0.0;
-        var damp = this.ampl / bones.length;
-        var arad = di * Math.PI / 180.0;
-        var asin = (this.ampl * di) * Math.PI * 2.0; //Math.sin( this.phase0+12.0*arad)*this.arange;
-        // var arange=this.arange;
-        // var cay = -180.0; 
-        var ay = 0.0;
-        var bonesize = this.mesh.nsegments * this.mesh.segmentsize;
-        var jointpos = 0.5;
-        var jointpos2 = 0.3;
-        for (var i = 0; i < bones.length; i++) {
-            var nnormx = i / bones.length;
-            var nnormxal = 0.5 + 0.5 * Math.sin(this.arange * nnormx * asin);
-            //    if (nnormx>jointpos) posay = asin * nnormxal; else posay=0;
-            ay = asin * nnormxal;
-            var m = twgl_js_1.m4.identity();
-            m = twgl_js_1.m4.translate(m, [jointpos * bonesize / 2 + this.px, 0, 0]);
-            m = twgl_js_1.m4.rotateY(m, ay);
-            m = twgl_js_1.m4.translate(m, [-(jointpos * bonesize / 2 + this.px), 0, 0, 0]);
-            m = twgl_js_1.m4.translate(m, [this.px, 0, 0, 0]);
-            //  m = m4.translate(m,[jointpos*bonesize,0,0]);
-            //   m = m4.rotateY(m, posay );
-            //   m = m4.translate(m,[this.px,0,0,0]);
-            bones[i] = m;
-            //  this.py+=0.0;
-            //  this.pz+=0.00000;
-            // amp+=this.size*damp;       
+        //var jointpos = 0.1;
+        /*
+        var asin=(this.ampl * di)*Math.PI*2.0;
+        var ay=0.0;
+        var bonesize= this.mesh!.nsegments*this.mesh!.segmentsize;
+        var i2 = bones.length/2;
+        for (var i = 0; i < bones.length; i++)
+        {
+          var nnormx = (i<i2)?0:( (i-i2) /bones.length);
+          var nnormxal = 0.5 + 0.5*Math.sin( this.arange*nnormx*asin);
+          ay = asin * nnormxal;
+          var  m = m4.identity();
+          m = m4.translate(m,[jointpos*bonesize/2,0,0]);
+         if (i>i2) m = m4.rotateY(m, ay );
+          m = m4.translate(m,[-(jointpos*bonesize/2),0,0,0]);
+          bones[i] = m;
         }
-        //    this.px+=-this.forwardspeed; // * bones.length;    
+        */
+        var bonesize = this.mesh.nsegments * this.mesh.segmentsize; // length in x direction
+        var len = this.jointpos * bonesize; // len is distance from 0 to joint
+        var mtrans1 = twgl_js_1.m4.translation([len, 0, 0]); // joint serves as a rotation point (trans to)
+        var mtrans2 = twgl_js_1.m4.translation([-len, 0, 0]); // joint serves as a rotation point (trans back)
+        var ii = bones.length * this.jointpos; // ii is index where joint starts
+        var mrot = twgl_js_1.m4.axisRotate(mtrans1, this.vaxis, di * this.ampl * 5.0); // rotation used beyond joint
+        for (var i = 0; i < bones.length; i++) {
+            var m = (i > ii) ? mrot : mtrans1; // before joint, use trans1 matrix. After joint, use rotated trans1
+            bones[i] = twgl_js_1.m4.multiply(m, mtrans2); // bone matrix consists of local m translated back to origin
+        }
     }
 }
-exports.FishHRotated = FishHRotated;
+exports.FishOneJoint = FishOneJoint;
 //# sourceMappingURL=fishhrotated.js.map

@@ -77,11 +77,13 @@ export class Animation2 extends baseapp.BaseApp
           (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
     }
 
-    public main(gl:WebGL2RenderingContext,  dictpar:Map<string,string>)
+    public main(gl:WebGL2RenderingContext,  dictPars:Map<string,string>)
     {
-        this.dictpars = dictpar;
-        this.cam=camhandler.Camera.createCamera(gl,dictpar,camhandler.Camera.CamYUp,  this.scene[0].scenesize, this.app!);
-        this.cam.zoominVelocity = 0.5;    
+        this.dictpars = dictPars;
+        this.cam=camhandler.Camera.createCamera(gl,dictPars,camhandler.Camera.CamYUp,  this.scene[0].scenesize, this.app!);
+        this.cam.zoominVelocity = 0.5;  
+        if (dictPars?.get("env")!=undefined) 
+          this.scene[0].sceneenv  = +dictPars?.get("env")!;
         if (this.scene[0].sceneenv>0)
         {   
           console.log("animation2 initscenes with background");
@@ -91,11 +93,6 @@ export class Animation2 extends baseapp.BaseApp
         {       
           console.log("animation2 initscenes without background");
           this.initScenes();
-      //    var n: number=0;
-    //      var ainstance=this;
-     //        ainstance.scene.forEach((s)=>{ s.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,
-      //        (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
-                
         }
     }
 
@@ -139,6 +136,13 @@ export class Animation2 extends baseapp.BaseApp
       //  scene.resizeCanvas(gl);  
         gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);    
         var cam: camhandler.Camera = this.cam!;
+        if (this.changedCam)
+        {
+         cam.camHeight = this.animation1Parameters.camheight;
+         cam.setYUpEye();
+         console.log("camHeight="+cam.camHeight);
+         this.changedCam = false;
+        }
         cam.CamHandlingYUp(gl, this.app!, 1.0, -1.0);   
         this.scene.forEach((s)=>{this.renderscene(gl, time,s,cam)});
         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
@@ -160,7 +164,7 @@ export class Animation2 extends baseapp.BaseApp
             if (!scene.animationParameters?.move) this.cameraPosition =   [cam?.Position()[0],cam?.Position()[1],cam?.Position()[2]];
               else   this.cameraPosition = (scene.animationParameters?.move)? [Math.cos(time * 0.005 * scene.animationParameters.speed), 0.0, 
                                                                                       Math.sin(time * 0.005 * scene.animationParameters.speed) ] : [ 4.0,0.0,0.0];      
-            gl.disable(gl.CULL_FACE);  
+        //    gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL); 
             if (this.doTwglEnv) 
               {

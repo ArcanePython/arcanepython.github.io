@@ -180,7 +180,7 @@
       m4.axisRotate(this.myr,this.zaxis, this.ahy, this.myr);
       m4.translate(this.myr,[0,this.camHeight,0],this.myr);
       this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[]; 
-      //this.eye[1]+=1; 
+      this.target[1]=this.camHeight; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
       this.ReportEye();
@@ -193,6 +193,7 @@
       this.myr = m4.identity();
       m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
       //up = m4.transformPoint(myr,[0,1,0]) as number[];
+      m4.translate(this.myr,[0,0,this.camHeight],this.myr);
       m4.axisRotate(this.myr,this.yaxis, this.ahy, this.myr);
       this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[];      
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);

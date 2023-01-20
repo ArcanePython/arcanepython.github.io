@@ -16,7 +16,7 @@ class ClothProducer
 
      constructor()
      {
-       this.cloth = new cloth.Cloth(this.clothX,this.clothY,this.startX,this.startY,this.tearDist,this.spacing,"c");
+       this.cloth = new cloth.Cloth([0,0,0],this.clothX,this.clothY,this.startX,this.startY,this.tearDist,this.spacing,"c");
      }
 }
 

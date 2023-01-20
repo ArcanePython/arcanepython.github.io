@@ -19,74 +19,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BoneAnimation = exports.fsSkeleton = exports.vsSkeleton = void 0;
+exports.BoneAnimation = void 0;
 const twgl_js_1 = require("twgl.js");
 const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-// -- vertex shader --
-exports.vsSkeleton = `#version 300 es
-
-// camera
-uniform mat4 viewprojection;
-uniform vec3 lightWorldPos;
-uniform mat4 world;
-uniform mat4 viewInverse;
-uniform mat4 worldInverseTranspose;
-
-in vec4 a_position;
-in vec4 a_weight;
-in uvec4 a_boneNdx;
-in vec2 a_texcoord;
- 
-uniform mat4 projection;
-uniform mat4 view;
-
-uniform sampler2D boneMatrixTexture;
-
-uniform float numBones;
-
-out vec2 v_texCoord;
-
-mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
-
-mat4 getBoneMatrix(uint boneNdx) {
-  if (boneNdx>99998u) return m4zero;
-  return mat4(
-    texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
-}
-
-void main() {
-  v_texCoord = a_texcoord;
-  vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
-  gl_Position = viewprojection * world * bonemovedskinpos;
- }
-`;
-exports.fsSkeleton = `#version 300 es
-precision mediump float;
-//precision highp float;
-uniform vec4 color;
-in vec2 v_texCoord;
-out vec4 outColor;
-uniform sampler2D surfaceTexture;
-
-void main () {
-  vec4 cColor =  texture(surfaceTexture, v_texCoord);
-  outColor=cColor; 
-  // * vec4(0.5,0.5,0.5,1);
-}
-`;
 class BoneAnimation {
     constructor() {
+        //== this instance (show animated boned object)
         this.bindPose = [];
         this.bones = [];
         this.boneMatrices = [];
         // animation state
-        this.px = 0.0;
-        this.py = 0.0;
-        this.pz = 0.0;
+        //px: number =0.0;
+        //py: number =0.0;
+        //pz: number =0.0;
         this.scale = 1.0;
         this.bindPoseInv2 = [];
         this.phase0 = 0;
@@ -107,7 +52,6 @@ class BoneAnimation {
         return srep;
     }
     prepareBoneInv(bindPose) {
-        // compute the initial positions of each matrix
         var nrep = 0;
         console.log("prepareBoneInv - bindpose");
         bindPose.forEach((v) => {
@@ -157,4 +101,60 @@ class BoneAnimation {
     }
 }
 exports.BoneAnimation = BoneAnimation;
+// -- vertex shader --
+BoneAnimation.vsSkeleton = `#version 300 es
+
+    // camera
+    uniform mat4 viewprojection;
+    uniform vec3 lightWorldPos;
+    uniform mat4 world;
+    uniform mat4 viewInverse;
+    uniform mat4 worldInverseTranspose;
+
+    in vec4 a_position;
+    in vec4 a_weight;
+    in uvec4 a_boneNdx;
+    in vec2 a_texcoord;
+    
+    uniform mat4 projection;
+    uniform mat4 view;
+
+    uniform sampler2D boneMatrixTexture;
+
+    uniform float numBones;
+
+    out vec2 v_texCoord;
+
+    mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+    mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
+
+    mat4 getBoneMatrix(uint boneNdx) {
+      if (boneNdx>99998u) return m4zero;
+      return mat4(
+        texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
+    }
+
+    void main() {
+      v_texCoord = a_texcoord;
+      vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
+      gl_Position = viewprojection * world * bonemovedskinpos;
+    }
+    `;
+BoneAnimation.fsSkeleton = `#version 300 es
+    precision mediump float;
+    //precision highp float;
+    uniform vec4 color;
+    in vec2 v_texCoord;
+    out vec4 outColor;
+    uniform sampler2D surfaceTexture;
+
+    void main () {
+      vec4 cColor =  texture(surfaceTexture, v_texCoord);
+      outColor=cColor; 
+      // * vec4(0.5,0.5,0.5,1);
+    }
+    `;
 //# sourceMappingURL=boneanimation.js.map

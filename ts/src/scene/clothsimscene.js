@@ -25,7 +25,7 @@ const cloth = __importStar(require("../cloth/cloth"));
 const clothmousehandler = __importStar(require("../cloth/clothmousehandler"));
 class ClothSimScene {
     constructor(gl, capp, dictPar) {
-        this.scenesize = 50;
+        this.scenesize = 40;
         this.sceneenv = 1;
         this.nbFrames = 0;
         this.lastTime = 0;
@@ -35,6 +35,7 @@ class ClothSimScene {
         this.a_TexCoordID = 1;
         this.accuracy = 5;
         this.render_mode = 0;
+        this.viewMatrix = twgl.m4.identity();
         this.vertexShaderSource = `
     precision mediump float;
 
@@ -50,7 +51,7 @@ class ClothSimScene {
     mat4 modelview =  u_model;
 
     //gl_Position =  vec4(a_position, 1.0);
-    gl_Position = modelview * vec4(a_position, 1.0);
+    gl_Position = u_view * modelview * vec4(a_position, 1.0);
     //gl_Position = u_ortho * modelview * vec4(a_position,1.0);
 
     v_texcoord = a_texcoord;
@@ -111,7 +112,7 @@ class ClothSimScene {
             thisinstance.render_mode = thisinstance.rendermode_points;
         else
             thisinstance.render_mode = thisinstance.rendermode_triangles;
-        var cp = new cloth.ClothProducer();
+        var cp = new cloth.ClothProducer([0.0, 0.0, 0.0]);
         thisinstance.cloth = cp.cloth;
         thisinstance.cs.cloth = cp.cloth;
         thisinstance.cloth.dirty = true;
@@ -167,9 +168,14 @@ class ClothSimScene {
         // matrix
         let modelMatrixID = gl.getUniformLocation(this.twglprograminfo.program, "u_model");
         var m = twgl.m4.identity();
-        m = twgl.m4.scale(m, [1.0, 1.0, 1.0]);
+        m = twgl.m4.scale(m, [40.0, 40.0, 40.0]);
+        m = twgl.m4.rotateY(m, 1.57);
         m = twgl.m4.translate(m, [0, 0, 0]);
         gl.uniformMatrix4fv(modelMatrixID, false, m);
+        // view matrix
+        this.viewMatrixID = gl.getUniformLocation(this.twglprograminfo.program, "u_view");
+        this.viewMatrix = twgl.m4.identity();
+        gl.uniformMatrix4fv(this.viewMatrixID, false, m);
         console.log("<= cloth and rendering prepare");
         gl.enableVertexAttribArray(this.a_PositionID);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexbuffer);
@@ -206,6 +212,8 @@ class ClothSimScene {
             }
             return;
         }
+        this.viewMatrix = cam.viewProjection;
+        gl.uniformMatrix4fv(this.viewMatrixID, false, this.viewMatrix);
         // At this point, texture is ready and bound, as long as it is not bound elsewhere.
         // Todo: prevent bound texture mismatch when other scenes from taking the texture buffer
         // opt: let basescene.ts maintain some statics to allow optimization!
@@ -219,18 +227,18 @@ class ClothSimScene {
         }
         else
             // no change
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
-        gl.enableVertexAttribArray(this.a_PositionID);
+            gl.enableVertexAttribArray(this.a_PositionID);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexbuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.cloth.vertices, gl.STATIC_DRAW);
         gl.vertexAttribPointer(this.a_PositionID, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indicesbuffer);
         gl.enableVertexAttribArray(this.a_TexCoordID);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.texcoordbuffer);
         gl.vertexAttribPointer(this.a_TexCoordID, 2, gl.FLOAT, false, 0, 0);
         // no change 
         // gl.bufferData(gl.ARRAY_BUFFER, this.cloth!.texcoords!, gl.STATIC_DRAW); 
         gl.drawElements(this.render_mode, this.cloth.indices.length, gl.UNSIGNED_INT, 0);
-        gl.flush();
+        //    gl.flush();        
     }
     //=== READING IMAGES ===========================================================================
     defaultImageReadyCallback(gl, textureName, texture2, im, textureReadyCallback) {

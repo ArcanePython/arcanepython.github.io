@@ -27,7 +27,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
     public abstract prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0; // called from constructors
     protected abstract computeBoneMatrices(bones: m4.Mat4[], di:number): void; //, damp: number, arange: number) :void;                          // called from renderer
   
-    constructor (public size: number,public r1: number,public r2: number, public forwardspeed: number, public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string) 
+    constructor (public size: number,public r1: number,public r2: number,  public phase0: number, public deltaphase: number, public arange: number, public ampl: number, public surfacetexturefile: string) 
     { super(); }
   
     computeBone( time: number, domove: boolean, domovetail: boolean)
@@ -35,6 +35,39 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
       const aphase = domovetail ? (this.mesh!.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)):0;
       this.computeBoneMatrices(this.bones,aphase + this.phase0); //, this.ampl, this.arange);     
     }
+
+    computeJoint( time: number, domove: boolean, domovetail: boolean)
+    {
+      const aphase = domovetail ? (this.mesh!.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase)):0;
+      this.computeBoneMatrices(this.bones,aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+
+  
+public prepareMeshGen(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number, 
+                 nrows: number, stride: number, 
+                 fstrip:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array}, 
+                 ftriangles:(segmentsize: number, nrows: number, stride: number, dictpar:Map<string,string>)=>{numComponents:number,data: Float32Array})
+ // create mesh positions for a fish with tail in vertical pose, moving left/right.
+ // produce a position item ready for stridedmesh0.Tarray
+ {
+   this.scale=scale;      
+   var cstride =  this.numberDictPar(dictpar,"stride",80);
+   var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
+   var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
+   if (cmeshtype=="strip")
+   {
+     var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
+     tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride,dictpar); // tsmesh.getWhalePositions()
+     tsmesh.type = gl.TRIANGLE_STRIP;  
+     return tsmesh;
+   }  else
+   {
+       var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
+       trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride,dictpar); // trmesh.getFishPositions()
+       trmesh.type = gl.TRIANGLES;
+       return trmesh;        
+   }
+}
 
     prepareSurfaceTextures(gl: WebGL2RenderingContext, selectedSurface:string)
    {

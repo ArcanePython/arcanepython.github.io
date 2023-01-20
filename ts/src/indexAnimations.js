@@ -25,10 +25,10 @@ const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp deri
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
-const skeleton = __importStar(require("./others/skeleton")); // baseapp derivative: bone model (single object)
 const fishanimation = __importStar(require("./others/fishanimation")); // baseapp derivative: bone model (multiple objects)
 const drawimagespace = __importStar(require("./others/drawimagespace")); // baseapp derivative: image space texture
 const animation2 = __importStar(require("./animation2")); // baseapp derivative: scene container
+const skyboxscene = __importStar(require("./scene/skyboxscene")); // scene: show skybox only (empty scene)
 const manytexturescene = __importStar(require("./scene/manytexturescene")); // scene: many textures / objects
 const rotatingcubescene = __importStar(require("./scene/mixedtexturescene")); // scene: two textures alpha-mixed
 const lightscene = __importStar(require("./scene/lightscene")); // scene: lights directed, point, spot
@@ -39,7 +39,6 @@ const drawinstancedscene = __importStar(require("./scene/drawinstancedscene")); 
 const clothsimscene = __importStar(require("./scene/clothsimscene")); // scene: show texture space navigator
 const skyboxcubescene = __importStar(require("./scene/skyboxcubescene")); // scene: show reflecting cube in skybox
 const matobjscene = __importStar(require("./scene/matobjscene")); // scene: show textured objects from .obj/.mtl
-const skeletonscene = __importStar(require("./scene/skeletonscene")); // scene: bone model (single object)
 const fishanimationscene = __importStar(require("./scene/fishanimationscene")); // scene: bone model (multiple objects)
 const clothsim = __importStar(require("./cloth/clothsim"));
 var cdiv = 'c'; // name of canvas accessed by gl
@@ -102,12 +101,6 @@ function showBaseAppAnimation(gl, app, dictPars) {
         return ims;
     }
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whalesapp")) != undefined) {
-        var sk = new skeleton.Skeleton(gl, app, dictPars, cdiv);
-        sk.initGUI(sk.baseappParameters);
-        sk.main(gl, dictPars);
-        return sk;
-    }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("variousfishapp")) != undefined) {
         var fa = new fishanimation.FishAnimation(gl, app, dictPars, cdiv);
         fa.initGUI(fa.baseappParameters);
         fa.main(gl, dictPars);
@@ -158,24 +151,29 @@ function show(gl, app, dictPars) {
         return mta1;
     }
     var a;
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth2")) != undefined)
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("clonly")) != undefined)
         a = [new clothsimscene.ClothSimScene(gl, app, dictPars)];
+    //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+    //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
-        a = [new clothsimscene.ClothSimScene(gl, app, dictPars), new fishanimationscene.FishAnimationScene(gl)]; //,new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+        a = [new fishanimationscene.FishAnimationScene(gl), new clothsimscene.ClothSimScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new lightscene.LightScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined)
-        a = [new rotatingcubescene.MixedTextureScene(gl), new drawinstancedscene.DrawInstancedScene(gl)];
+        a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
+    // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined)
-        a = [new skeletonscene.SkeletonScene(gl), new fishanimationscene.FishAnimationScene(gl)];
+        a = [new fishanimationscene.FishAnimationScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined)
         a = [new manytexturescene.ManyTexturesScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined)
         a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined)
+        a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
     if (a != undefined)
@@ -228,7 +226,7 @@ function main() {
             else
                 dictPars.set(spar, "");
         }
-        if (dictPars == undefined) // in case URL arguments, prepare the show parameters
+        if (dictPars == undefined) // nothing found.. in case URL arguments, prepare the show parameters
          {
             console.log("No URL arguments, prepare defaults for " + selectedShow);
             preparedefaultparameters(dictPars = new Map());

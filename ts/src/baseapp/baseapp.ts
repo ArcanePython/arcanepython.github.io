@@ -21,13 +21,14 @@ export type TAnimation1Parameters =
     bounce: number,
     influence: number,
     usecamera: boolean;     
+    camheight: number;     
 }
 
 export var instance: BaseApp|null=null;
 
 export class BaseApp
 {       
-    protected DefaultParameters: TAnimation1Parameters =  { usecamera:true, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
+    protected DefaultParameters: TAnimation1Parameters =  { usecamera:true, camheight:0.0, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
                                                             texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     baseappParameters: TAnimation1Parameters = this.DefaultParameters;
@@ -39,6 +40,8 @@ export class BaseApp
     public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [0,0,0];
 
+    // dat.UI
+    public changedCam: boolean = false;
     public doShowBackgroundColorChoice: boolean = false;
 
     // environment skybox
@@ -85,13 +88,21 @@ export class BaseApp
         }
     }
 
+    onChangeCamHeight(value?: any)
+    {
+        var thisinstance = instance!;
+        console.log("onchangecam camHeight="+(value as number));
+        thisinstance.changedCam = true;
+    }
+
     public createGUI(parameters:  TAnimation1Parameters): dat.GUI //, instanceParameters: {}): datgui.GUI
     {
-   //     console.log("=> baseApp initGUI "+parameters);
-        this.baseappParameters= parameters ;
+        this.baseappParameters = parameters ;
+
+        // prepare gl canvas div background to set color
         var cc = (this.gl!.canvas  as HTMLCanvasElement).parentNode;
         var ccd= (cc as HTMLDivElement);
-        ccd.style.backgroundColor =  this.baseappParameters.color0;
+        ccd.style.backgroundColor = "#000000"; // this.baseappParameters.color0;
     
         // park the dat.gui box in the linksdiv below the links, in closed state
         var gui = new datgui.GUI( { autoPlace: false } );
@@ -99,137 +110,93 @@ export class BaseApp
         document.getElementById("linksdiv")!.append( gui.domElement);
         gui.close();
 
-        // connect viewmodel
+        // connect viewmodel to dat.gui box
         gui.remember(parameters); //, instanceParameters);
      
         // Checkbox forward move animation on/off
         gui.add(parameters, 'move');
         
+        // Slider for camera height
+       var cel0 =  gui.add(parameters, 'camheight').min(-20.0).max(20.0).step(0.1);
+       cel0.onChange( this.onChangeCamHeight);
+
         // Slider for animation speed
         gui.add(parameters, 'speed').min(0.0).max(0.06).step(0.001);
         
-        // Color dialog sets background color
+        // Color dialog sets background color of gl canvas div
         if (this.doShowBackgroundColorChoice)
         {
             var cel3 = gui.addColor(parameters, 'color0');
             cel3.onChange( this.onChangeColorValue);
         }
-   //     console.log("<= baseApp initGUI");
         return gui;
     }
 
-    //======================================================================================================
-
-     
-    defaultTextureReadyCallback(err: any, texture: WebGLTexture, source: twgl.TextureSrc): void
-    { 
-      console.log("Environment textureA isready.");
-    }
-
-    straightTextureCallback(err: any, texture: WebGLTexture)
-    {
-      console.log("Environment textureB isready.");
-    }
-      
-    public compileandconnectshaders(gl: WebGL2RenderingContext, program: WebGLProgram, vs: string, fs: string, reportdiv: string)
-    {
-        var serr:string="";
-
-            var vsshader = gl.createShader( gl.VERTEX_SHADER);
-            if (vsshader!=null)
-            {
-                gl.shaderSource(vsshader, vs);
-                gl.compileShader(vsshader);
-            } else serr+= "vertex shader create issue";
-            var fshader = gl.createShader( gl.FRAGMENT_SHADER);
-            if (fshader!=null)
-            {
-                gl.shaderSource(fshader, fs);
-                gl.compileShader(fshader);
-                
-            } else serr+= "fragment shader create issue";
-            if(serr.length>0) document.getElementById(reportdiv)!.innerHTML = serr;
-            else
-                {          
-                    serr="";                             
-                    gl.attachShader(program, vsshader!);
-                    gl.deleteShader(vsshader!);
-                    gl.attachShader(program, fshader!);
-                    gl.deleteShader(fshader!);
-                    gl.linkProgram(program);
-                    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                        serr+=(`Link failed: ${gl.getProgramInfoLog(program)}`);
-                        var logvertexshader = gl.getShaderInfoLog(vsshader!);
-                        if (logvertexshader) serr+=(`${logvertexshader}`);
-                        var logfragmentshader = gl.getShaderInfoLog(fshader!);
-                        if (logfragmentshader) serr+=(`${logfragmentshader}`);
-                        var re = /(\r\n|\r|\n)/gi; 
-                        var str = serr.replace(re, "<br>"); 
-                        document.getElementById(reportdiv)!.innerHTML ="shader issue.."+"<br>"+str;
-                    } else
-                    {                          
-                        return true;
-                    }
-                    }
-    }
-
-    //--- used in skybox and skyboxcube to initialize a cubemap texture from 6 images -----------------------------------------
+    //--- shaders for environment cube map background -----------------------------------------
 
     public vsEnvironmentMap = `#version 300 es
-        in vec4 a_position;
-        out vec4 v_position;
-        void main() {
-        v_position = a_position;
-        gl_Position = vec4(a_position.xy, 1, 1);
+            in vec4 a_envposition;
+            out vec4 v_position;
+            void main() {
+            v_position = a_envposition;
+            gl_Position = vec4(a_envposition.xy, 1, 1);
         }
         `;
 
     public fsEnvironmentMap = `#version 300 es
-        precision highp float;
+            precision highp float;
 
-        uniform samplerCube u_skybox;
-        uniform mat4 u_viewDirectionProjectionInverse;
+            uniform samplerCube u_skybox;
+            uniform mat4 u_viewDirectionProjectionInverse;
 
-        in vec4 v_position;
+            in vec4 v_position;
 
-        // we need to declare an output for the fragment shader
-        out vec4 outColor;
+            // we need to declare an output for the fragment shader
+            out vec4 outColor;
 
-        void main() {
-        vec4 t = u_viewDirectionProjectionInverse * v_position;
-        // outColor = vec4(0,0,0,0);
-        outColor = texture(u_skybox, normalize(t.xyz / t.w));
+            void main() {
+            vec4 t = u_viewDirectionProjectionInverse * v_position;
+            // outColor = vec4(0,0,0,0);
+            outColor = texture(u_skybox, normalize(t.xyz / t.w));
         }
         `;
 
-        
-      
+
+    //=======================================================================================================================
+    
+    posdim: number=3;
+
     protected createEnvironmentMapGeo(gl: WebGL2RenderingContext)
     {
-           gl.useProgram(this.envPrograminfo!.program);
+        gl.useProgram(this.envPrograminfo!.program);
      
         // Create a vertex array object (attribute state) and make it the one we're currently working with
         this.vaoEnvironment = gl.createVertexArray()!;
         gl.bindVertexArray(this.vaoEnvironment);
        
-        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo!.program, "a_position");
+        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo!.program, "a_envposition");
       
         // Create a buffer for positions
         this.positionBuffer = gl.createBuffer()!;
         // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-        // Put the positions in the buffer
-        var positions = new Float32Array(
+        // Put the positions for a unit plane in the buffer
+        var positions2D = new Float32Array(
             [
-               1, -1,   -1,-1, -1, 1, // triangle SW-SE-NW
-               1, -1,   -1, 1, 1, 1, // triangle NW-SE-NE
+               1, -1, -1, -1, -1, 1, // triangle SW-SE-NW
+               1, -1, -1,  1,  1, 1, // triangle NW-SE-NE
             ]);
-        
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-     
+         var positions3D = new Float32Array(
+                [
+                    -1, -1, 0, 1, -1, 0,  -1, 1,0, // triangle SW-SE-NW
+                    -1,  1, 0, 1, -1, 0,  1, 1,0 // triangle NW-SE-NE
+                ]);
+            
+        gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);   
+        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
 
-       this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
-   
+   //     gl.bufferData(gl.ARRAY_BUFFER, positions2D, gl.STATIC_DRAW);   
+   //     this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
     }
 
     protected createEnvironmentMapTexture(gl: WebGL2RenderingContext, scene: number, textureReadyCallback: (a:any, t:WebGLTexture)=>void | undefined ): WebGLTexture|null
@@ -332,6 +299,8 @@ export class BaseApp
       
         // Build a view matrix.
         var up = [0, 1, 0];
+        //this.cameraPosition[1]=this.baseappParameters.camheight;
+        //this.cameraTarget[1]=this.baseappParameters.camheight;
         var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
         var viewMatrix = m4.inverse(cameraMatrix);
        
@@ -360,8 +329,9 @@ export class BaseApp
         var offset = 0;        // start at the beginning of the buffer
         gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
         // 3. Enable this
-        gl.enableVertexAttribArray(posAttributeLocation);
+         gl.enableVertexAttribArray(posAttributeLocation);
         // <==
+     
     }
  
     public renderenvironmentmap(gl: WebGL2RenderingContext, fov:number,   texture: WebGLTexture)
@@ -370,8 +340,7 @@ export class BaseApp
         var invproj = this.viewDirectionProjectionInverseLocation!;
         var loc = this.skyboxLocation!;
         gl.bindVertexArray(this.vaoEnvironment!);
-        this.restorePosAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, 2); 
-  
+        this.restorePosAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, this.posdim); 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP,texture);
         var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl,   fov);
         var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix!);
@@ -383,8 +352,8 @@ export class BaseApp
     
     protected createEnvironmentMapGeoTwgl(gl: WebGL2RenderingContext)
     {
-        gl.useProgram(this.envPrograminfo!.program);
-        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl,300); 
+      gl.useProgram(this.envPrograminfo!.program);
+      this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl,300); 
       this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl,this.envPrograminfo!, this.environmentBufferInfo)!;
       gl.bindVertexArray(this.vaoEnvironment);
     }
@@ -392,25 +361,14 @@ export class BaseApp
     public renderenvironmentmapTwgl(gl: WebGL2RenderingContext, fov:number, texture: WebGLTexture)
     {
         gl.useProgram(this.envPrograminfo!.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
-      
-        // Rotate the cube around the x axis
-     //   if (this.skyboxCubeParameters.movecube)
-     //     this.worldMatrix = twgl.m4.axisRotation( [1,0,0] as twgl.v3.Vec3 , mstime * this.skyboxCubeParameters.angVelocityCube);
-     //   else 
-     //     this.worldMatrix = twgl.m4.translation([0,0,0]); // twgl.m4.identity();
-
-        // draw the environment
-   //     gl.useProgram(this.twglprograminfo![0].program);
-        
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));          
         gl.bindVertexArray(this.vaoEnvironment!);
-      //  this.restoreContext(gl,this.positionBuffer!,this.positionAttributeLocation!, 2);
         twgl.setUniforms( this.envPrograminfo!, { 
           u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
           u_skybox: texture,
         });
         twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
-        gl.flush();
+   //     gl.flush();
     }
 
 }

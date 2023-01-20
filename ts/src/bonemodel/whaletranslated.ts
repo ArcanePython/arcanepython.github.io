@@ -6,13 +6,18 @@ import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 
 import * as fish from "./fish"
 
-export class FishVTranslated extends fish.Fish
+export class WhaleTranslated extends fish.Fish
 // Fish with tail  rotating around x
 {    
   prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number)
    // create mesh positions for a fish with tail in vertical pose, moving left/right.
   // produce a position item ready for stridedmesh0.Tarray
   {
+
+    var cstride =  this.numberDictPar(dictpar,"stride",80);
+    var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
+    return this.prepareMeshGen(gl,dictpar,this.scale,cnumrows,cstride,stridedmesh.StridedMesh.getWhalePositions,stridedmesh.StridedMesh.getWhalePositions);
+/*
     this.scale=scale;      
     var cstride =  this.numberDictPar(dictpar,"stride",80);
     var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
@@ -20,16 +25,17 @@ export class FishVTranslated extends fish.Fish
     if (cmeshtype=="strip")
     {
       var tsmesh = new stridedmesh.StridedMesh(cnumrows, cstride, scale );
-      tsmesh.arrays.position = tsmesh.getFishVPositions()
+      tsmesh.arrays.position = tsmesh.getWhalePositions()
       tsmesh.type = gl.TRIANGLE_STRIP;  
       return tsmesh;
     }  else
     {
         var trmesh = new trianglesmesh.StridedMesh(cnumrows, cstride);
-        trmesh.arrays.position = trmesh.getFishVPositions()
+        trmesh.arrays.position = trmesh.getWhalePositions()
         trmesh.type = gl.TRIANGLES;
         return trmesh;        
-    }
+    }'
+    */
  }
 
  protected computeBoneMatrices(bones: m4.Mat4[], di:number) 
@@ -59,12 +65,10 @@ export class FishVTranslated extends fish.Fish
          normx = normx /bones.length;         
          var ay = arange*(normx*di);
          var az = arange*(normx*di);
-         m4.translate(m,[this.px,
-                         this.py + amp * 10.0*Math.cos(0.5*ay),
-                         this.pz + amp *  Math.sin(1.0*az)], 
+         m4.translate(m,[0.0,
+                        amp * 10.0*Math.cos(0.5*ay),
+                         amp *  Math.sin(1.0*az)], 
                          bones[i]);  
-         this.py+=0.0;
-         this.pz+=0.00000;
          amp+=this.size*damp;       
       }  
 //   this.px+=-this.forwardspeed; // * bones.length;      

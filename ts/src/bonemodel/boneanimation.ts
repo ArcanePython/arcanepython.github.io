@@ -4,63 +4,6 @@ import { m4 } from "twgl.js";
 import * as stridedmesh0 from "./stridedmesh0" // mesh and bones (data)
 import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 
-// -- vertex shader --
-export const vsSkeleton = `#version 300 es
-
-// camera
-uniform mat4 viewprojection;
-uniform vec3 lightWorldPos;
-uniform mat4 world;
-uniform mat4 viewInverse;
-uniform mat4 worldInverseTranspose;
-
-in vec4 a_position;
-in vec4 a_weight;
-in uvec4 a_boneNdx;
-in vec2 a_texcoord;
- 
-uniform mat4 projection;
-uniform mat4 view;
-
-uniform sampler2D boneMatrixTexture;
-
-uniform float numBones;
-
-out vec2 v_texCoord;
-
-mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
-
-mat4 getBoneMatrix(uint boneNdx) {
-  if (boneNdx>99998u) return m4zero;
-  return mat4(
-    texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
-    texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
-}
-
-void main() {
-  v_texCoord = a_texcoord;
-  vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
-  gl_Position = viewprojection * world * bonemovedskinpos;
- }
-`;
-
-export const fsSkeleton = `#version 300 es
-precision mediump float;
-//precision highp float;
-uniform vec4 color;
-in vec2 v_texCoord;
-out vec4 outColor;
-uniform sampler2D surfaceTexture;
-
-void main () {
-  vec4 cColor =  texture(surfaceTexture, v_texCoord);
-  outColor=cColor; 
-  // * vec4(0.5,0.5,0.5,1);
-}
-`;
 
 export type Tuniforms = {
     world: m4.Mat4,
@@ -74,6 +17,66 @@ export type Tuniforms = {
 
 export class BoneAnimation
 {
+  // -- vertex shader --
+  public static vsSkeleton = `#version 300 es
+
+    // camera
+    uniform mat4 viewprojection;
+    uniform vec3 lightWorldPos;
+    uniform mat4 world;
+    uniform mat4 viewInverse;
+    uniform mat4 worldInverseTranspose;
+
+    in vec4 a_position;
+    in vec4 a_weight;
+    in uvec4 a_boneNdx;
+    in vec2 a_texcoord;
+    
+    uniform mat4 projection;
+    uniform mat4 view;
+
+    uniform sampler2D boneMatrixTexture;
+
+    uniform float numBones;
+
+    out vec2 v_texCoord;
+
+    mat4 m4ident =  mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+    mat4 m4zero =  mat4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
+
+    mat4 getBoneMatrix(uint boneNdx) {
+      if (boneNdx>99998u) return m4zero;
+      return mat4(
+        texelFetch(boneMatrixTexture, ivec2(0, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(1, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(2, boneNdx), 0),
+        texelFetch(boneMatrixTexture, ivec2(3, boneNdx), 0));
+    }
+
+    void main() {
+      v_texCoord = a_texcoord;
+      vec4 bonemovedskinpos = (getBoneMatrix(a_boneNdx[0]) * a_position * a_weight[0] + getBoneMatrix(a_boneNdx[1]) * a_position * a_weight[1]);
+      gl_Position = viewprojection * world * bonemovedskinpos;
+    }
+    `;
+
+  public static fsSkeleton = `#version 300 es
+    precision mediump float;
+    //precision highp float;
+    uniform vec4 color;
+    in vec2 v_texCoord;
+    out vec4 outColor;
+    uniform sampler2D surfaceTexture;
+
+    void main () {
+      vec4 cColor =  texture(surfaceTexture, v_texCoord);
+      outColor=cColor; 
+      // * vec4(0.5,0.5,0.5,1);
+    }
+    `;
+
+    //== this instance (show animated boned object)
+
     bindPose: m4.Mat4[] = [];    
    
     bones: m4.Mat4[] = []; 
@@ -86,9 +89,9 @@ export class BoneAnimation
     surfaceTexture: WebGLTexture| undefined;
    
     // animation state
-    px: number =0.0;
-    py: number =0.0;
-    pz: number =0.0;
+    //px: number =0.0;
+    //py: number =0.0;
+    //pz: number =0.0;
     scale: number = 1.0;
       
     bindPoseInv2: m4.Mat4[] = [] ;
@@ -120,9 +123,9 @@ export class BoneAnimation
     }
  
     prepareBoneInv(bindPose: m4.Mat4[])
-    {
-         // compute the initial positions of each matrix
-     
+    // called from Fish.createBoneTexture
+    // compute the initial positions of each matrix
+    {    
          var nrep = 0;
          console.log("prepareBoneInv - bindpose");
          bindPose.forEach((v)=>{ 
@@ -137,12 +140,10 @@ export class BoneAnimation
          }); 
     }
     
-  
     prepareBoneMatrices(gl: WebGL2RenderingContext, dictpar:Map<string,string>)
+    // called from Fish.createBoneTexture
     {
        if (this.numBones==undefined) return;
-
-    
       this.boneArray = new Float32Array(this.numBones! * 16);
     
       // prepare the texture for bone matrices

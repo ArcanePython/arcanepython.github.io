@@ -79,10 +79,12 @@ class Animation2 extends baseapp.BaseApp {
             n++;
         });
     }
-    main(gl, dictpar) {
-        this.dictpars = dictpar;
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
+    main(gl, dictPars) {
+        this.dictpars = dictPars;
+        this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
+        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined)
+            this.scene[0].sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
         if (this.scene[0].sceneenv > 0) {
             console.log("animation2 initscenes with background");
             if (this.doTwglEnv)
@@ -94,10 +96,6 @@ class Animation2 extends baseapp.BaseApp {
         else {
             console.log("animation2 initscenes without background");
             this.initScenes();
-            //    var n: number=0;
-            //      var ainstance=this;
-            //        ainstance.scene.forEach((s)=>{ s.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,
-            //        (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
         }
     }
     sceneReadyCallback(err) {
@@ -134,6 +132,12 @@ class Animation2 extends baseapp.BaseApp {
         //  scene.resizeCanvas(gl);  
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         var cam = this.cam;
+        if (this.changedCam) {
+            cam.camHeight = this.animation1Parameters.camheight;
+            cam.setYUpEye();
+            console.log("camHeight=" + cam.camHeight);
+            this.changedCam = false;
+        }
         cam.CamHandlingYUp(gl, this.app, 1.0, -1.0);
         this.scene.forEach((s) => { this.renderscene(gl, time, s, cam); });
         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
@@ -152,7 +156,7 @@ class Animation2 extends baseapp.BaseApp {
             else
                 this.cameraPosition = ((_b = scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [Math.cos(time * 0.005 * scene.animationParameters.speed), 0.0,
                     Math.sin(time * 0.005 * scene.animationParameters.speed)] : [4.0, 0.0, 0.0];
-            gl.disable(gl.CULL_FACE);
+            //    gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL);
             if (this.doTwglEnv) {
                 this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);

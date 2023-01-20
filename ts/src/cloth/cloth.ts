@@ -1,3 +1,4 @@
+import { m4 } from "twgl.js";
 
 export class ClothMouse
 {
@@ -174,12 +175,13 @@ export class Cloth {
    // public canvas: HTMLCanvasElement;
    vertices: Float32Array;
    texcoords: Float32Array;
+  
    public indices: Uint32Array;
     points: Point[];
     dirty: boolean=false;
 
    
-    constructor(public clothX:number, public clothY:number, startX: number, startY: number, tearDist:number, spacing: number, canvasName: string) {
+    constructor(public location:[number,number,number], public clothX:number, public clothY:number, startX: number, startY: number, tearDist:number, spacing: number, canvasName: string) {
       
         this.vertices = new Float32Array(((clothX + 1) * (clothY + 1)) * 3);
         this.texcoords = new Float32Array(((clothX + 1) * (clothY + 1)) * 2);
@@ -217,9 +219,9 @@ export class Cloth {
 
                
                
-                this.vertices[cnt++] = p.x;
-                this.vertices[cnt++] = p.y;
-                this.vertices[cnt++] = p.z;
+                this.vertices[cnt++] = this.location[0]+p.x;
+                this.vertices[cnt++] = this.location[1]+p.y;
+                this.vertices[cnt++] = this.location[2]+ p.z;
 
                 this.texcoords[cnttex++] = p.texcoord[0];
                 this.texcoords[cnttex++] = p.texcoord[1];
@@ -263,9 +265,9 @@ export class Cloth {
         let cnt = 0;
         this.points.forEach((point) => {
             point.update(mouse,delta,gravity, friction, bounce);
-            this.vertices[cnt++] = point.x;
-            this.vertices[cnt++] = point.y;
-            this.vertices[cnt++] = point.z;
+            this.vertices[cnt++] = this.location[0]+ point.x;
+            this.vertices[cnt++] = this.location[1]+ point.y;
+            this.vertices[cnt++] = this.location[2]+ point.z;
         });
     }
 }
@@ -281,9 +283,9 @@ export class ClothProducer
      tearDist = 2.0*this.spacing * 8;
      cloth:Cloth;
 
-     constructor()
+     constructor(location: [number,number,number])
      {
-       this.cloth = new Cloth(this.clothX,this.clothY,this.startX,this.startY,this.tearDist,this.spacing,"c");
+       this.cloth = new Cloth(location, this.clothX,this.clothY,this.startX,this.startY,this.tearDist,this.spacing,"c");
      }
 }
 

@@ -31,7 +31,7 @@ class ClothProducer {
         this.startY = 1.0;
         this.spacing = 1.8 / this.clothX;
         this.tearDist = this.spacing * 6;
-        this.cloth = new cloth.Cloth(this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
+        this.cloth = new cloth.Cloth([0, 0, 0], this.clothX, this.clothY, this.startX, this.startY, this.tearDist, this.spacing, "c");
     }
 }
 class ClothMouseHandler {

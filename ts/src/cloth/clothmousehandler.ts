@@ -24,7 +24,7 @@ export class  ClothMouseHandler
     {
        ClothMouseHandler.instance = this;
        
-       var cp = new cloth.ClothProducer();
+       var cp = new cloth.ClothProducer([0.0,0.0,0.0]);
        this.cloth = cp.cloth;
        if(canvas==null||canvas==undefined) console.log("ClothMouseHandler finds unknown canvas");
        else
