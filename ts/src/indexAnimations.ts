@@ -166,19 +166,19 @@ function show(gl: WebGL2RenderingContext, app: mtls.MouseListener, dictPars: Map
    //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
    //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
    
-   
-   if (dictPars?.get("cloth")!=undefined) a = [ new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1() ), new clothsimscene.ClothSimScene(gl,app,dictPars)];
+   var defspeed = 0.019;   
+   if (dictPars?.get("cloth")!=undefined) a = [ new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1(defspeed) ), new clothsimscene.ClothSimScene(gl,app,dictPars)];
    if (dictPars?.get("animation7")!=undefined) a = [new objectlistscene.ObjectListScene(gl),new matobjscene.MatObjScene(gl, app, dictPars!)];
    if (dictPars?.get("animation3")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl),new lightscene.LightScene(gl)];
    if (dictPars?.get("animation1")!=undefined) a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
   // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
    if (dictPars?.get("animation2")!=undefined) a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
-   if (dictPars?.get("whales")!=undefined) a = [new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1() )];
+   if (dictPars?.get("whales")!=undefined) a = [new fishanimationscene.FishAnimationScene(gl,new fishanimationscene.hoard1(defspeed) )];
    if (dictPars?.get("animation5")!=undefined) a = [new manytexturescene.ManyTexturesScene(gl)];
    if (dictPars?.get("animation4")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
    if (dictPars?.get("animation6")!=undefined) a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
    if (dictPars?.get("animation9")!=undefined) a = [ new canvas3dtexturescene.Canvas3dTextureScene(gl),new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
-   if (dictPars?.get("animation10")!=undefined) a =  [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoard2())];
+   if (dictPars?.get("animation10")!=undefined) a =  [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
    if (a!=undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
       var rv = showBaseAppAnimation( gl, app,dictPars );

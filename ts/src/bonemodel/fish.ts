@@ -6,6 +6,8 @@ import * as stridedmesh from "./stridedmesh" // mesh and bones (data)
 import * as trianglesmesh from "./trianglesmesh" // mesh and bones (data)
 import * as boneanimation from "./boneanimation"
 
+import { LinearTraject, Trajectory } from "../trajectory/trajectory";
+
 export interface FishInterface 
   {
     computeBone( time: number, domove: boolean, domovetail: boolean): void;
@@ -19,15 +21,13 @@ export interface hoard
   fishjointcounts: number[] ;
   fishpositionsV : twgl.v3.Vec3[][];
   fishvelocitiesV : twgl.v3.Vec3[][];
-  fishmatricesR : {change: boolean, matrix: twgl.m4.Mat4}[][];
+  fishmatricesR : {inxtraj: number, change: boolean, matrix: twgl.m4.Mat4}[][];
+  traj: Trajectory[];
 }
 
 export abstract class Fish extends boneanimation.BoneAnimation implements FishInterface
   {
- //   vx:number=0;
- //   vy:number=0;
- //   vz:number=0;
- 
+  
     EndOfBoneTrans: m4.Mat4 = m4.identity();
 
     public abstract prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number): stridedmesh0.StridedMesh0; // called from constructors

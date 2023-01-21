@@ -38,9 +38,6 @@ class Fish extends boneanimation.BoneAnimation {
         this.ampl = ampl;
         this.surfacetexturefile = surfacetexturefile;
         this.v = v;
-        //   vx:number=0;
-        //   vy:number=0;
-        //   vz:number=0;
         this.EndOfBoneTrans = twgl_js_1.m4.identity();
     }
     computeBone(time, domove, domovetail) {

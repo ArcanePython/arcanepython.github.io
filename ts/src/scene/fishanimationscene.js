@@ -23,6 +23,7 @@ exports.FishAnimationScene = exports.hoard1 = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const animationclock = __importStar(require("../baseapp/animationclock"));
+const trajectory_1 = require("../trajectory/trajectory");
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
 const fishv = __importStar(require("./../bonemodel/fishv"));
@@ -31,7 +32,8 @@ const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
 const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class hoard1 {
-    constructor() {
+    constructor(defaultspeed) {
+        this.traj = [];
         this.fish = [
             new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [0, 0, 0]),
             new fishwithjoints.FishWithJoints("fishjN", 0.06, 40.0, 24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient", [0, 0, 0], 0.6, [0.0, 0.0, 1.0]),
@@ -62,13 +64,16 @@ class hoard1 {
         // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
         // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
         this.fishmatricesR = [
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }, { change: true, matrix: twgl_js_1.m4.identity() }, { change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }, { inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }, { inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
         ];
+        var path = [[0, 0, 0], [2, 0, 0], [0, 0, 0]];
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, false));
+        this.traj[0].testDump(400);
     }
 }
 exports.hoard1 = hoard1;
@@ -79,7 +84,6 @@ class FishAnimationScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.clock = new animationclock.AnimationClock();
-        this.h = new hoard1();
         //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;

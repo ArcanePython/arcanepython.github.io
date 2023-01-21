@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FishTrajectoryScene = exports.hoard2 = void 0;
+exports.FishTrajectoryScene = exports.hoardsingle = exports.hoard2 = void 0;
 // fishtrajectoryscene.ts
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 const twgl = __importStar(require("twgl.js"));
@@ -31,9 +31,11 @@ const fishv = __importStar(require("./../bonemodel/fishv"));
 const whale = __importStar(require("../bonemodel/whale"));
 const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
 const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
+const trajectory_1 = require("../trajectory/trajectory");
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class hoard2 {
-    constructor() {
+    constructor(defaultspeed) {
+        this.traj = [];
         // shapes
         this.fish = [
             new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [0, 0, 0]),
@@ -67,16 +69,65 @@ class hoard2 {
         // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
         // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
         this.fishmatricesR = [
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }, { change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }],
-            [{ change: true, matrix: twgl_js_1.m4.identity() }, { change: true, matrix: twgl_js_1.m4.identity() }, { change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }, { inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }, { inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }, { inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
         ];
+        var path = [[0, 0, 0], [2, 0, 0], [0, 0, 0]];
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, false));
+        this.traj[0].testDump(400);
     }
 }
 exports.hoard2 = hoard2;
+class hoardsingle {
+    constructor(defaultspeed) {
+        this.traj = [];
+        // shapes
+        this.fish = [
+            new fishv.FishV("largefishv1", 0.5, 0.2, 0.3, 0.8, 0.0225, 0.9, 2.50, "flagofukraine", [0, 0, 0]),
+            //   new fishv.FishV                     ("largefishv2",0.9,  0.2,0.3,  0.8,  0.0125,   0.9, 2.50, "clover", [0,0,0]),
+            //new fishwithjoints.FishWithJoints   ("fishjN",0.06, 40.0,24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient",       [0,0,0], 0.6, [0.0,0.0,1.0]),
+            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [0, 0, 0]),
+        ];
+        this.fishjointcounts = [1, 1];
+        // Velocity (move), values are set at start of scene. WHhen kept, fish keep move in directions indicated
+        this.vx = -0.007;
+        this.fishvelocitiesV = [
+            [twgl.v3.create(this.vx, 0.0, 0)],
+            [twgl.v3.create(this.vx, 0.0, 0)],
+        ];
+        // Position, values are set at start of scene and updated on every frame, according to fishvelocitiesV
+        this.fishpositionsV = [
+            [twgl.v3.create(0.0, 18.0, 0.0)],
+            [twgl.v3.create(30.0, 10.0, 0.0)],
+        ];
+        // Posture (rotation) matrices are kept for each fish and should change with direction while animating
+        // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
+        // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
+        this.fishmatricesR = [
+            [{ inxtraj: 0, change: true, matrix: twgl_js_1.m4.identity() }],
+            [{ inxtraj: 1, change: true, matrix: twgl_js_1.m4.identity() }],
+        ];
+        var path = this.arcpath(200, 15, 20);
+        this.traj.push(new trajectory_1.Trajectory(path, 2.0 * defaultspeed, true));
+        var path = this.arcpath(400, 40, 0);
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
+    }
+    arcpath(grain, r, rh) {
+        var h = 0;
+        var dh = (Math.PI * 2.0) / grain;
+        var path = [];
+        for (var i = 0; i < grain; i++) {
+            h += dh;
+            path.push([r * Math.cos(h), rh * Math.cos(h), (r / 1.61) * Math.sin(h)]);
+        }
+        return path;
+    }
+}
+exports.hoardsingle = hoardsingle;
 //-------------------------------------------------------------------------------------------------------------------------------------------
 class FishTrajectoryScene {
     constructor(cgl, ch) {
@@ -85,7 +136,6 @@ class FishTrajectoryScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.clock = new animationclock.AnimationClock();
-        this.h = new hoard2();
         this.firstframe = true;
         this.dtime = 0;
         this.vtime = 0;
@@ -131,10 +181,14 @@ class FishTrajectoryScene {
         var velocitytrans;
         var localmatrix = twgl_js_1.m4.identity();
         if (!this.firstframe)
-            this.dtime = time - this.vtime;
+            this.dtime = time - this.vtime; // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
         gl.useProgram(this.twglprograminfo.program);
         for (var cfishtype = 0; cfishtype < this.h.fish.length; cfishtype++)
             this.h.fish[cfishtype].uniforms.viewprojection = cam.viewProjection;
+        var trajpos = [];
+        this.h.traj.forEach((t) => { trajpos.push(t.proceed(this.dtime)); });
+        // trajpos.push(this.h.traj[0]!.proceed(this.dtime)!);
+        // trajpos.push(this.h.traj[1]!.proceed(this.dtime)!);
         for (var cfishtype = 0; cfishtype < this.h.fishpositionsV.length; cfishtype++) {
             gl.bindVertexArray(this.h.fish[cfishtype].skinVAO);
             gl.bindTexture(gl.TEXTURE_2D, this.h.fish[cfishtype].boneMatrixTexture);
@@ -143,18 +197,25 @@ class FishTrajectoryScene {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             var jointcount = this.h.fishjointcounts[cfishtype];
             for (var cfish = 0; cfish < this.h.fishpositionsV[cfishtype].length; cfish++) {
-                // move (always done)
+                var inx = this.h.fishmatricesR[cfishtype][cfish].inxtraj;
+                // move (always done except on first frame)
                 var velo = this.h.fishvelocitiesV[cfishtype][cfish];
-                if (!this.firstframe)
-                    velocitytrans = twgl.m4.translation([velo[0] * this.dtime, velo[1] * this.dtime, velo[2] * this.dtime]);
+                if (!this.firstframe) {
+                    velo = trajpos[inx].v; //  this.h.traj[inx].ct!.v;
+                    velocitytrans = twgl.m4.translation(velo = [velo[0] * this.dtime, velo[1] * this.dtime, velo[2] * this.dtime]);
+                    this.h.fishmatricesR[cfishtype][cfish].change = trajpos[inx].change;
+                }
                 else
                     velocitytrans = twgl_js_1.m4.identity();
                 // posture (costly math, this is only done when model is changed)
-                if (this.h.fishmatricesR[cfishtype][cfish].change) {
+                if (!this.firstframe) 
+                // if (this.h.fishmatricesR[cfishtype][cfish].change)                 
+                {
                     var modeldir = [-1, 0, 0];
                     var velonorm = twgl.v3.normalize(velo);
-                    if (twgl.v3.distanceSq(modeldir, velonorm) < 1e-9)
+                    if (twgl.v3.distanceSq(modeldir, velonorm) < 1e-9) {
                         localmatrix = twgl_js_1.m4.identity();
+                    }
                     else {
                         var axis = twgl.v3.cross(modeldir, velonorm);
                         var angle = this.anglebetween(modeldir, velonorm);
@@ -167,7 +228,7 @@ class FishTrajectoryScene {
                     localmatrix = this.h.fishmatricesR[cfishtype][cfish].matrix;
                 if (jointcount == 1) // single joint fish
                  {
-                    this.h.fishpositionsV[cfishtype][cfish] = twgl_js_1.m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);
+                    this.h.fishpositionsV[cfishtype][cfish] = trajpos[inx].p; //  m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);   
                     this.h.fish[cfishtype].computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
                     this.h.fish[cfishtype].prepareBoneTexture(gl, this.h.fish[cfishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
                     this.h.fish[cfishtype].uniforms.world = twgl_js_1.m4.multiply(twgl_js_1.m4.translation(this.h.fishpositionsV[cfishtype][cfish]), localmatrix); // transformation for joint part depends on previous
@@ -176,7 +237,7 @@ class FishTrajectoryScene {
                 }
                 else // multiple joint segments
                  {
-                    this.h.fishpositionsV[cfishtype][cfish] = twgl_js_1.m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);
+                    this.h.fishpositionsV[cfishtype][cfish] = trajpos[inx].p; //m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);   
                     var ampl0 = this.h.fish[cfishtype].ampl;
                     var sling = this.animationParameters.sling;
                     var cmatrix = localmatrix;

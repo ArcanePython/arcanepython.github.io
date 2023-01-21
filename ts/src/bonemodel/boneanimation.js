@@ -54,10 +54,10 @@ class BoneAnimation {
     }
     prepareBoneInv(bindPose) {
         var nrep = 0;
-        console.log("prepareBoneInv - bindpose");
+        //console.log("prepareBoneInv - bindpose");
         bindPose.forEach((v) => {
             this.mat4report(v);
-            console.log(nrep + "] [" + v.toString() + "] ");
+            //console.log(nrep+"] ["+v.toString()+"] "); 
             nrep++;
         });
         // compute their inverses

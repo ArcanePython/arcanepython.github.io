@@ -5,6 +5,8 @@ import * as camhandler from "../baseapp/camhandler"   // camera projection
 import * as datgui from "dat.gui";
 import * as animationclock from "../baseapp/animationclock";
 
+import { LinearTraject, Trajectory } from "../trajectory/trajectory";
+
 import * as scene from "./../scene/scene"
 
 import * as boneanimation from "./../bonemodel/boneanimation"
@@ -15,12 +17,23 @@ import * as whale from "../bonemodel/whale"
 import * as fishonejoint from "../bonemodel/fishonejoint"
 import * as whaletranslated from "../bonemodel/whaletranslated"
 
-import { TAnimation1Parameters }  from "./../baseapp/baseapp"
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+import { TAnimation1Parameters }  from "./../baseapp/baseapp"
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 export class hoard1 implements fish.hoard
 {
+  traj: Trajectory[] = [];
+
+  constructor(defaultspeed: number)
+  {
+    var path: twgl.v3.Vec3[] = [[0,0,0],[2,0,0],[0,0,0]];
+    this.traj.push( new Trajectory(path, defaultspeed, false));
+    this.traj[0].testDump(400);    
+  }
+
+
     fish: fish.Fish[] = [                               // SIZE   R1 R2    FWSP  PH0  DELTAP  AR   AMPL  TEX            V       JOINT JOINTAX
     new whale.Whale                     ("cloverwhale",1.0,  0.2,0.3,  0.8,  0.0085, 0.5, 2.50, "clover",       [0,0,0]),
     new fishwithjoints.FishWithJoints   ("fishjN",0.06, 40.0,24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient",       [0,0,0], 0.6, [0.0,0.0,1.0]),
@@ -54,13 +67,13 @@ export class hoard1 implements fish.hoard
      // Posture (rotation) matrices are kept for each fish and should change with direction while animating
     // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
     // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
-    fishmatricesR : {change: boolean, matrix: twgl.m4.Mat4}[][] = [
-      [ { change:true, matrix:m4.identity() }], 
-      [ { change:true, matrix:m4.identity() }],  
-      [ { change:true, matrix:m4.identity() }],
-      [ { change:true, matrix:m4.identity() }],
-      [ { change:true, matrix:m4.identity() }],
-      [ { change:true, matrix:m4.identity() }, { change:true, matrix:m4.identity() }, { change:true, matrix:m4.identity() }],
+    fishmatricesR : {inxtraj: number, change: boolean, matrix: twgl.m4.Mat4}[][] = [
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }], 
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }],  
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }],
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }],
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }],
+      [ { inxtraj: 0, change:true, matrix:m4.identity() }, { inxtraj: 0, change:true, matrix:m4.identity() }, { inxtraj: 0, change:true, matrix:m4.identity() }],
   ];
 
 }
@@ -117,7 +130,7 @@ export class FishAnimationScene implements scene.SceneInterface
       });   
     }
 
-    h: fish.hoard = new hoard1();
+    h: fish.hoard; // = new hoard1(-0.007);
     //private velocitytrans: m4.Mat4 | undefined;
 
      firstframe: boolean=true;

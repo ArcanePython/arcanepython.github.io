@@ -150,8 +150,9 @@ function show(gl, app, dictPars) {
         a = [new clothsimscene.ClothSimScene(gl, app, dictPars)];
     //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+    var defspeed = 0.019;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
-        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1()), new clothsimscene.ClothSimScene(gl, app, dictPars)];
+        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)), new clothsimscene.ClothSimScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
@@ -162,7 +163,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined)
-        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1())];
+        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed))];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined)
         a = [new manytexturescene.ManyTexturesScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined)
@@ -172,7 +173,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined)
-        a = [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoard2())];
+        a = [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if (a != undefined)
         return showScenesAnimation(gl, app, dictPars, a);
     else {

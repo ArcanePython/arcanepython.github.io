@@ -702,8 +702,9 @@ function show(gl, app, dictPars) {
     ];
     //nope, order fails if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new fishanimationscene.FishAnimationScene(gl),new skeletonscene.SkeletonScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
+    var defspeed = 0.019;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) a = [
-        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1()),
+        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)),
         new clothsimscene.ClothSimScene(gl, app, dictPars)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) a = [
@@ -724,7 +725,7 @@ function show(gl, app, dictPars) {
         new objectlistscene.ObjectListScene(gl)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) a = [
-        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1())
+        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed))
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) a = [
         new manytexturescene.ManyTexturesScene(gl)
@@ -740,7 +741,7 @@ function show(gl, app, dictPars) {
         new canvas3dtexturescene2.Canvas3dTextureScene2(gl)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined) a = [
-        new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoard2())
+        new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))
     ];
     if (a != undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
@@ -817,7 +818,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/skyboxscene":"kcBXj","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/clothsimscene":"1rS88","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/fishanimationscene":"7ZHPR","./cloth/clothsim":"dATTA","./scene/fishtrajectoryscene":"jXMUO"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/skyboxscene":"kcBXj","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/clothsimscene":"1rS88","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/fishanimationscene":"7ZHPR","./scene/fishtrajectoryscene":"jXMUO","./cloth/clothsim":"dATTA"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -25599,6 +25600,7 @@ exports.FishAnimationScene = exports.hoard1 = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 const animationclock = __importStar(require("../baseapp/animationclock"));
+const trajectory_1 = require("../trajectory/trajectory");
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
 const fishv = __importStar(require("./../bonemodel/fishv"));
@@ -25607,7 +25609,8 @@ const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
 const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class hoard1 {
-    constructor(){
+    constructor(defaultspeed){
+        this.traj = [];
         this.fish = [
             new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
                 0,
@@ -25704,49 +25707,76 @@ class hoard1 {
         this.fishmatricesR = [
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ],
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ],
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ],
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ],
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ],
             [
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 },
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 },
                 {
+                    inxtraj: 0,
                     change: true,
                     matrix: twgl_js_1.m4.identity()
                 }
             ], 
         ];
+        var path = [
+            [
+                0,
+                0,
+                0
+            ],
+            [
+                2,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0
+            ]
+        ];
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, false));
+        this.traj[0].testDump(400);
     }
 }
 exports.hoard1 = hoard1;
@@ -25757,7 +25787,6 @@ class FishAnimationScene {
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.clock = new animationclock.AnimationClock();
-        this.h = new hoard1();
         //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;
@@ -25879,7 +25908,7 @@ class FishAnimationScene {
 }
 exports.FishAnimationScene = FishAnimationScene;
 
-},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8"}],"hK6Lv":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8","../trajectory/trajectory":"5rdam"}],"hK6Lv":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -25958,10 +25987,10 @@ class BoneAnimation {
     }
     prepareBoneInv(bindPose) {
         var nrep = 0;
-        console.log("prepareBoneInv - bindpose");
+        //console.log("prepareBoneInv - bindpose");
         bindPose.forEach((v)=>{
             this.mat4report(v);
-            console.log(nrep + "] [" + v.toString() + "] ");
+            //console.log(nrep+"] ["+v.toString()+"] "); 
             nrep++;
         });
         // compute their inverses
@@ -26390,10 +26419,10 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
             crow++;
         }
         var data = new Float32Array(wdata.length * 2);
-        console.log("=>copy texcoords len=" + wdata.length + " stride=" + stride + " nrows=" + nrows);
+        //console.log("=>copy texcoords len="+wdata.length+" stride="+stride+" nrows="+nrows);
         for(var i = 0; i < wdata.length; i++)for(var j = 0; j < 2; j++)data[i * 2 + j] = wdata[i][j];
-        console.log("texcoords buffer: len=" + data.length);
-        console.log(data);
+        //console.log("texcoords buffer: len="+data.length);
+        //console.log(data);
         return {
             numComponents: 2,
             data
@@ -26470,23 +26499,23 @@ class StridedMesh0 {
     }
     static floatStraighten(datatitle, w, wdata) {
         var data = new Float32Array(wdata.length * w);
-        console.log(">floatstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">floatstraighten"+w +" "+datatitle+" wdata.length="+wdata.length);
         for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
-        console.log("<floatstraighten" + w + " " + datatitle + ": len=" + data.length);
+        //console.log("<floatstraighten"+w +" "+datatitle+": len="+data.length);
         return data;
     }
     intStraighten(datatitle, w, wdata) {
         var data = new Uint32Array(wdata.length * w);
-        console.log(">intstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">intstraighten"+w +" "+datatitle+" wdata.length="+wdata.length);
         for(var i = 0; i < wdata.length; i++)for(var j = 0; j < w; j++)data[i * w + j] = wdata[i][j];
-        console.log("<intstraighten" + w + " " + datatitle + ": len=" + data.length);
+        //console.log("<intstraighten"+w +" "+datatitle+": len="+data.length);
         return data;
     }
     intArray(datatitle, wdata) {
         var data = new Uint32Array(wdata.length);
-        console.log(">intArray " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">intArray" +" "+datatitle+" wdata.length="+wdata.length);
         for(var i = 0; i < wdata.length; i++)data[i] = wdata[i];
-        console.log("<intArray " + datatitle + ": len=" + data.length);
+        //console.log("<intArray" +" "+datatitle+": len="+data.length);
         return data;
     }
 }
@@ -26586,181 +26615,7 @@ class FishWithJoints extends fish.Fish {
 }
 exports.FishWithJoints = FishWithJoints;
 
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./fish":"6tAIw","./trianglesmesh":"jKlEI"}],"6tAIw":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Fish = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
-const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
-const boneanimation = __importStar(require("./boneanimation"));
-class Fish extends boneanimation.BoneAnimation {
-    constructor(name, size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, v){
-        super(name);
-        this.name = name;
-        this.size = size;
-        this.r1 = r1;
-        this.r2 = r2;
-        this.phase0 = phase0;
-        this.deltaphase = deltaphase;
-        this.arange = arange;
-        this.ampl = ampl;
-        this.surfacetexturefile = surfacetexturefile;
-        this.v = v;
-        //   vx:number=0;
-        //   vy:number=0;
-        //   vz:number=0;
-        this.EndOfBoneTrans = twgl_js_1.m4.identity();
-    }
-    computeBone(time, domove, domovetail) {
-        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
-        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
-    }
-    computeJoint(time, domove, domovetail) {
-        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
-        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
-    }
-    prepareMeshGen(gl, dictpar, name, scale, nrows, stride, fstrip, ftriangles) {
-        this.scale = scale;
-        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
-        if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20);
-            tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar);
-            tsmesh.type = gl.TRIANGLE_STRIP;
-            return tsmesh;
-        } else {
-            var trmesh = new trianglesmesh.StridedMesh(nrows, stride);
-            trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride, dictpar);
-            trmesh.type = gl.TRIANGLES;
-            return trmesh;
-        }
-    }
-    prepareSurfaceTextures(gl, selectedSurface) {
-        var gradientname = require("./../resources/models/stone/circlegradient.png");
-        var clovername = require("./../resources/images/clover.jpg");
-        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
-        var textures = twgl.createTextures(gl, {
-            checker: {
-                mag: gl.NEAREST,
-                min: gl.LINEAR,
-                src: [
-                    255,
-                    255,
-                    255,
-                    255,
-                    192,
-                    192,
-                    192,
-                    255,
-                    92,
-                    92,
-                    92,
-                    255,
-                    255,
-                    255,
-                    255,
-                    255, 
-                ]
-            },
-            clover: {
-                src: clovername
-            },
-            zelenskyy: {
-                src: zelenskyyname
-            },
-            gradient: {
-                src: gradientname
-            },
-            flagofukraine: {
-                src: flagofukrainname
-            }
-        });
-        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
-        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
-        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
-        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
-        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
-        return textures;
-    }
-    createSurfaceTexture(gl) {
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
-    }
-    createBoneTexture(gl, time, dictpar) {
-        gl.activeTexture(gl.TEXTURE0);
-        this.prepareBoneMatrices(gl, dictpar);
-        this.computeBone(time, false, false);
-        this.bindPose = this.bones;
-        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
-        this.EndOfBoneTrans = twgl_js_1.m4.identity();
-    }
-    createUniforms(gl, dictpar) {
-        return {
-            world: twgl_js_1.m4.identity(),
-            projection: twgl_js_1.m4.identity(),
-            viewprojection: twgl_js_1.m4.identity(),
-            view: twgl_js_1.m4.translation([
-                0.0,
-                0.0,
-                0.0
-            ]),
-            surfaceTexture: this.surfaceTexture,
-            boneMatrixTexture: this.boneMatrixTexture,
-            color: [
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ]
-        };
-    }
-    numberDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return +spar;
-        return pardefault;
-    }
-    stringDictPar(dictpar, parname, pardefault) {
-        var spar;
-        if ((spar = dictpar.get(parname)) != undefined) return spar;
-        return pardefault;
-    }
-}
-exports.Fish = Fish;
-
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./boneanimation":"hK6Lv","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn"}],"jKlEI":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"jKlEI":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -27002,7 +26857,178 @@ class StridedMesh extends stridedmesh0.StridedMesh0 {
 }
 exports.StridedMesh = StridedMesh;
 
-},{"./stridedmesh0":"gwg6B"}],"gjwG7":[function(require,module,exports) {
+},{"./stridedmesh0":"gwg6B"}],"6tAIw":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Fish = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+const stridedmesh = __importStar(require("./stridedmesh")); // mesh and bones (data)
+const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bones (data)
+const boneanimation = __importStar(require("./boneanimation"));
+class Fish extends boneanimation.BoneAnimation {
+    constructor(name, size, r1, r2, phase0, deltaphase, arange, ampl, surfacetexturefile, v){
+        super(name);
+        this.name = name;
+        this.size = size;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.phase0 = phase0;
+        this.deltaphase = deltaphase;
+        this.arange = arange;
+        this.ampl = ampl;
+        this.surfacetexturefile = surfacetexturefile;
+        this.v = v;
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    computeBone(time, domove, domovetail) {
+        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
+        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    computeJoint(time, domove, domovetail) {
+        const aphase = domovetail ? this.mesh.bonediv * 0.01 * Math.PI * Math.sin(time * this.deltaphase) : 0;
+        this.computeBoneMatrices(this.bones, aphase + this.phase0); //, this.ampl, this.arange);     
+    }
+    prepareMeshGen(gl, dictpar, name, scale, nrows, stride, fstrip, ftriangles) {
+        this.scale = scale;
+        var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
+        if (cmeshtype == "strip") {
+            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20);
+            tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar);
+            tsmesh.type = gl.TRIANGLE_STRIP;
+            return tsmesh;
+        } else {
+            var trmesh = new trianglesmesh.StridedMesh(nrows, stride);
+            trmesh.arrays.position = ftriangles(trmesh.segmentsize, nrows, stride, dictpar);
+            trmesh.type = gl.TRIANGLES;
+            return trmesh;
+        }
+    }
+    prepareSurfaceTextures(gl, selectedSurface) {
+        var gradientname = require("./../resources/models/stone/circlegradient.png");
+        var clovername = require("./../resources/images/clover.jpg");
+        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
+        var textures = twgl.createTextures(gl, {
+            checker: {
+                mag: gl.NEAREST,
+                min: gl.LINEAR,
+                src: [
+                    255,
+                    255,
+                    255,
+                    255,
+                    192,
+                    192,
+                    192,
+                    255,
+                    92,
+                    92,
+                    92,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255, 
+                ]
+            },
+            clover: {
+                src: clovername
+            },
+            zelenskyy: {
+                src: zelenskyyname
+            },
+            gradient: {
+                src: gradientname
+            },
+            flagofukraine: {
+                src: flagofukrainname
+            }
+        });
+        if (selectedSurface == "clover") this.surfaceTexture = textures.clover;
+        if (selectedSurface == "zelenskyy") this.surfaceTexture = textures.zelenskyy;
+        if (selectedSurface == "checker") this.surfaceTexture = textures.checker;
+        if (selectedSurface == "gradient") this.surfaceTexture = textures.gradient;
+        if (selectedSurface == "flagofukraine") this.surfaceTexture = textures.flagofukraine;
+        return textures;
+    }
+    createSurfaceTexture(gl) {
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, this.surfaceTexture);
+    }
+    createBoneTexture(gl, time, dictpar) {
+        gl.activeTexture(gl.TEXTURE0);
+        this.prepareBoneMatrices(gl, dictpar);
+        this.computeBone(time, false, false);
+        this.bindPose = this.bones;
+        this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
+        this.EndOfBoneTrans = twgl_js_1.m4.identity();
+    }
+    createUniforms(gl, dictpar) {
+        return {
+            world: twgl_js_1.m4.identity(),
+            projection: twgl_js_1.m4.identity(),
+            viewprojection: twgl_js_1.m4.identity(),
+            view: twgl_js_1.m4.translation([
+                0.0,
+                0.0,
+                0.0
+            ]),
+            surfaceTexture: this.surfaceTexture,
+            boneMatrixTexture: this.boneMatrixTexture,
+            color: [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ]
+        };
+    }
+    numberDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return +spar;
+        return pardefault;
+    }
+    stringDictPar(dictpar, parname, pardefault) {
+        var spar;
+        if ((spar = dictpar.get(parname)) != undefined) return spar;
+        return pardefault;
+    }
+}
+exports.Fish = Fish;
+
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./boneanimation":"hK6Lv","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn"}],"gjwG7":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -27264,7 +27290,577 @@ class WhaleTranslated extends fish.Fish {
 }
 exports.WhaleTranslated = WhaleTranslated;
 
-},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"dATTA":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","./stridedmesh":"kYVeo","./trianglesmesh":"jKlEI","./fish":"6tAIw"}],"5rdam":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Trajectory = exports.LinearTraject = void 0;
+const twgl_js_1 = require("twgl.js");
+class LinearTraject {
+    constructor(startpoint, endpoint, velocity){
+        this.startpoint = startpoint;
+        this.endpoint = endpoint;
+        this.velocity = velocity;
+        this.n = 0;
+        this.ct = 0;
+        this.next = null;
+        this.den = 0;
+        this.vden = 0;
+        this.next = null;
+        this.d = twgl_js_1.v3.subtract(endpoint, this.startpoint);
+        this.len = twgl_js_1.v3.length(this.d);
+        this.d = twgl_js_1.v3.normalize(this.d);
+        this.dt = this.len / velocity;
+        this.v = [
+            this.d[0] * velocity,
+            this.d[1] * velocity,
+            this.d[2] * velocity
+        ];
+        this.p = this.reset(); // initial value cursor is startpoint.slice()
+    }
+    proceed(dtms) {
+        this.p[0] += this.v[0] * dtms;
+        this.p[1] += this.v[1] * dtms;
+        this.p[2] += this.v[2] * dtms;
+        this.vden = this.den;
+        this.den = twgl_js_1.v3.distance(this.p, this.endpoint);
+        //if (this.den>this.vden) console.log("found endpoint "+this.endpoint);
+        this.ct += dtms;
+        return this.den < this.vden;
+    }
+    reset() {
+        this.ct = 0;
+        this.den = 9999;
+        return this.startpoint.slice();
+    }
+    toString() {
+        return "ct=" + this.ct.toPrecision(5) + " p = " + this.p + " start=" + this.startpoint + " end=" + this.endpoint + " d=" + this.d + " v=" + this.v + " len=" + this.len + " dt=" + this.dt + " den=" + this.den;
+    }
+}
+exports.LinearTraject = LinearTraject;
+class Trajectory {
+    constructor(path, defaultspeed, circular){
+        var _a;
+        this.root = undefined;
+        this.ct = null;
+        this.lastt = null;
+        console.log("=>Trajectory constructor built list v=" + defaultspeed + " circ=" + circular);
+        var t = undefined;
+        var vp = path[0];
+        for(var ii = 1; ii < path.length; ii++){
+            var p = path[ii];
+            if (t == undefined) t = this.root = this.ct = this.lastt = new LinearTraject(vp, p, defaultspeed);
+            else {
+                t.next = this.lastt = new LinearTraject(vp, p, defaultspeed);
+                t = t.next;
+            }
+            vp = p;
+        }
+        console.log("Trajectory constructor built list, root: " + ((_a = this.root) === null || _a === void 0 ? void 0 : _a.toString()));
+        if (this.lastt == undefined) console.log("No points.");
+        else if (this.root == this.lastt) console.log("single traject");
+        else console.log("multiple trajects.");
+        if (circular) t.next = this.root;
+        this.reset();
+    }
+    reset() {
+        this.ct = this.root;
+    }
+    toString() {
+        var t = this.root;
+        var s = "";
+        for(this.root; t != this.lastt; t = t.next)s += t.toString() + "\n";
+        s += this.lastt.toString();
+        return s;
+    }
+    proceed(msdeltatime) {
+        if (this.ct != null) {
+            if (!this.ct.proceed(msdeltatime)) {
+                this.ct = this.ct.next;
+                if (this.ct != undefined) {
+                    this.ct.p = this.ct.reset();
+                    //console.log("start next traject: "+this.ct.toString()); 
+                    return {
+                        p: this.ct.p,
+                        v: this.ct.v,
+                        change: true
+                    };
+                }
+            } else return {
+                p: this.ct.p,
+                v: this.ct.v,
+                change: false
+            }; // proceed
+        }
+        //console.log("proceed leaves without cursor set");
+        return undefined;
+    }
+    testDump(maxtrajects) {
+        var _a;
+        console.log("=> testDump trajectory=\n" + this.toString() + "\n");
+        this.reset();
+        for(var ii = 0; ii < maxtrajects; ii++){
+            var pv = this.proceed(Math.random() * 10 + 6);
+            if (pv == undefined) break;
+            console.log("p=" + pv.p + " v=" + pv.v + " t.startpoint=" + ((_a = this.ct) === null || _a === void 0 ? void 0 : _a.startpoint) + " change=" + pv.change);
+        }
+        console.log("<= listed trajectpry\n" + this.toString());
+    }
+}
+exports.Trajectory = Trajectory;
+
+},{"twgl.js":"3uqAP"}],"jXMUO":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.FishTrajectoryScene = exports.hoardsingle = exports.hoard2 = void 0;
+// fishtrajectoryscene.ts
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+const twgl = __importStar(require("twgl.js"));
+const twgl_js_1 = require("twgl.js");
+const animationclock = __importStar(require("../baseapp/animationclock"));
+const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
+const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
+const fishv = __importStar(require("./../bonemodel/fishv"));
+const whale = __importStar(require("../bonemodel/whale"));
+const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
+const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
+const trajectory_1 = require("../trajectory/trajectory");
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+class hoard2 {
+    constructor(defaultspeed){
+        this.traj = [];
+        // shapes
+        this.fish = [
+            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
+                0,
+                0,
+                0
+            ]),
+            new fishwithjoints.FishWithJoints("fishjN", 0.06, 40.0, 24.0, 0.0, 0.0055, -9999, 2.1, "gradient", [
+                0,
+                0,
+                0
+            ], 0.6, [
+                0.0,
+                0.0,
+                1.0
+            ]),
+            new fishonejoint.FishOneJoint("fish1joint", 1.0, 2.0, 2.0, 0.1, 0.0045, 0.1, 0.5, "gradient", [
+                0,
+                0,
+                0
+            ]),
+            new fishv.FishV("largefishv", 0.5, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "flagofukraine", [
+                0,
+                0,
+                0
+            ]),
+            new whaletranslated.WhaleTranslated("whaletrans", 2.0, 2.0, 0.3, 0.8, 0.0016, 0.5, 2.0, "zelenskyy", [
+                0,
+                0,
+                0
+            ]),
+            new fishv.FishV("fishv", 0.25, 0.2, 0.3, 1.0, 0.0150, 0.5, 5.00, "flagofukraine", [
+                0,
+                0,
+                0
+            ]), 
+        ];
+        this.fishjointcounts = [
+            1,
+            28,
+            1,
+            1,
+            1,
+            1,
+            1
+        ];
+        // Velocity (move), values are set at start of scene. WHhen kept, fish keep move in directions indicated
+        this.vx = -0.007;
+        this.fishvelocitiesV = [
+            [
+                twgl.v3.create(this.vx, 0.003, 0)
+            ],
+            [
+                twgl.v3.create(-0.003, -0.0003, -0.003)
+            ],
+            [
+                twgl.v3.create(this.vx, 0, 0)
+            ],
+            [
+                twgl.v3.create(-0.003, -0.0003, -0.003),
+                twgl.v3.create(this.vx, 0, 0)
+            ],
+            [
+                twgl.v3.create(this.vx, 0, 0)
+            ],
+            [
+                twgl.v3.create(this.vx, 0, 0),
+                twgl.v3.create(this.vx, 0, 0),
+                twgl.v3.create(this.vx, 0, 0)
+            ], 
+        ];
+        // Position, values are set at start of scene and updated on every frame, according to fishvelocitiesV
+        this.fishpositionsV = [
+            [
+                twgl.v3.create(40.0, 20.0, 60.0)
+            ],
+            [
+                twgl.v3.create(65, 35, 0)
+            ],
+            [
+                twgl.v3.create(30.0, 30.0, -35)
+            ],
+            [
+                twgl.v3.create(70.0, 35.0, -15),
+                twgl.v3.create(40.0, 35.0, -15)
+            ],
+            [
+                twgl.v3.create(70.0, 15.0, 1.0)
+            ],
+            [
+                twgl.v3.create(20.0, 25.0, 0.0),
+                twgl.v3.create(0.0, 15.0, 0.0),
+                twgl.v3.create(30.0, 15.0, -30)
+            ], 
+        ];
+        // Posture (rotation) matrices are kept for each fish and should change with direction while animating
+        // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
+        // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
+        this.fishmatricesR = [
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                },
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                },
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                },
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ], 
+        ];
+        var path = [
+            [
+                0,
+                0,
+                0
+            ],
+            [
+                2,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0
+            ]
+        ];
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, false));
+        this.traj[0].testDump(400);
+    }
+}
+exports.hoard2 = hoard2;
+class hoardsingle {
+    constructor(defaultspeed){
+        this.traj = [];
+        // shapes
+        this.fish = [
+            new fishv.FishV("largefishv1", 0.5, 0.2, 0.3, 0.8, 0.0225, 0.9, 2.50, "flagofukraine", [
+                0,
+                0,
+                0
+            ]),
+            //   new fishv.FishV                     ("largefishv2",0.9,  0.2,0.3,  0.8,  0.0125,   0.9, 2.50, "clover", [0,0,0]),
+            //new fishwithjoints.FishWithJoints   ("fishjN",0.06, 40.0,24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient",       [0,0,0], 0.6, [0.0,0.0,1.0]),
+            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
+                0,
+                0,
+                0
+            ]), 
+        ];
+        this.fishjointcounts = [
+            1,
+            1
+        ];
+        // Velocity (move), values are set at start of scene. WHhen kept, fish keep move in directions indicated
+        this.vx = -0.007;
+        this.fishvelocitiesV = [
+            [
+                twgl.v3.create(this.vx, 0.0, 0)
+            ],
+            [
+                twgl.v3.create(this.vx, 0.0, 0)
+            ], 
+        ];
+        // Position, values are set at start of scene and updated on every frame, according to fishvelocitiesV
+        this.fishpositionsV = [
+            [
+                twgl.v3.create(0.0, 18.0, 0.0)
+            ],
+            [
+                twgl.v3.create(30.0, 10.0, 0.0)
+            ], 
+        ];
+        // Posture (rotation) matrices are kept for each fish and should change with direction while animating
+        // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
+        // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
+        this.fishmatricesR = [
+            [
+                {
+                    inxtraj: 0,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ],
+            [
+                {
+                    inxtraj: 1,
+                    change: true,
+                    matrix: twgl_js_1.m4.identity()
+                }
+            ], 
+        ];
+        var path = this.arcpath(200, 15, 20);
+        this.traj.push(new trajectory_1.Trajectory(path, 2.0 * defaultspeed, true));
+        var path = this.arcpath(400, 40, 0);
+        this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
+    }
+    arcpath(grain, r, rh) {
+        var h = 0;
+        var dh = Math.PI * 2.0 / grain;
+        var path = [];
+        for(var i = 0; i < grain; i++){
+            h += dh;
+            path.push([
+                r * Math.cos(h),
+                rh * Math.cos(h),
+                r / 1.61 * Math.sin(h)
+            ]);
+        }
+        return path;
+    }
+}
+exports.hoardsingle = hoardsingle;
+//-------------------------------------------------------------------------------------------------------------------------------------------
+class FishTrajectoryScene {
+    constructor(cgl, ch){
+        this.scenesize = 140;
+        this.sceneenv = -1;
+        this.vertexShaderSource = ``;
+        this.fragmentShaderSource = ``;
+        this.clock = new animationclock.AnimationClock();
+        this.firstframe = true;
+        this.dtime = 0;
+        this.vtime = 0;
+        this.h = ch;
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
+            boneanimation.BoneAnimation.vsSkeleton,
+            boneanimation.BoneAnimation.fsSkeleton
+        ]);
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    defaultCamera(gl, cam) {}
+    extendGUI(gui) {
+        gui.add(this.animationParameters, "movetail");
+    }
+    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program);
+        var nFish = 0;
+        var time0 = 0;
+        this.h.fish.forEach((afish)=>{
+            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
+            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
+            afish.setNumBones(gl);
+            afish.createBoneTexture(gl, time0, dictpar);
+            afish.createSurfaceTexture(gl);
+            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
+            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
+            nFish++;
+            if (nFish == this.h.fish.length && textureReadyCallback != undefined) textureReadyCallback(0);
+        });
+    }
+    anglebetween(vectora, vectorb) {
+        var vector1 = twgl.v3.normalize(vectora);
+        var vector2 = twgl.v3.normalize(vectorb);
+        if (twgl.v3.distanceSq(vector1, vector2) < 1e-9) return 0.0;
+        var num = twgl.v3.dot(vector1, vector2);
+        var vd1 = twgl.v3.subtract(vector1, vector2);
+        var vd2 = twgl.v3.subtract([
+            -vector1[0],
+            -vector1[1],
+            -vector1[2]
+        ], vector2);
+        var l1 = twgl.v3.length(vd1);
+        var l2 = twgl.v3.length(vd2);
+        return !(num < 0.0) ? 2.0 * Math.asin(l1 / 2.0) : Math.PI - 2.0 * Math.asin(l2 / 2.0);
+    }
+    drawScene(gl, cam, time) {
+        var velocitytrans;
+        var localmatrix = twgl_js_1.m4.identity();
+        if (!this.firstframe) this.dtime = time - this.vtime; // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+        gl.useProgram(this.twglprograminfo.program);
+        for(var cfishtype = 0; cfishtype < this.h.fish.length; cfishtype++)this.h.fish[cfishtype].uniforms.viewprojection = cam.viewProjection;
+        var trajpos = [];
+        this.h.traj.forEach((t)=>{
+            trajpos.push(t.proceed(this.dtime));
+        });
+        // trajpos.push(this.h.traj[0]!.proceed(this.dtime)!);
+        // trajpos.push(this.h.traj[1]!.proceed(this.dtime)!);
+        for(var cfishtype = 0; cfishtype < this.h.fishpositionsV.length; cfishtype++){
+            gl.bindVertexArray(this.h.fish[cfishtype].skinVAO);
+            gl.bindTexture(gl.TEXTURE_2D, this.h.fish[cfishtype].boneMatrixTexture);
+            // since we want to use the texture for pure data we turn off filtering
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            var jointcount = this.h.fishjointcounts[cfishtype];
+            for(var cfish = 0; cfish < this.h.fishpositionsV[cfishtype].length; cfish++){
+                var inx = this.h.fishmatricesR[cfishtype][cfish].inxtraj;
+                // move (always done except on first frame)
+                var velo = this.h.fishvelocitiesV[cfishtype][cfish];
+                if (!this.firstframe) {
+                    velo = trajpos[inx].v; //  this.h.traj[inx].ct!.v;
+                    velocitytrans = twgl.m4.translation(velo = [
+                        velo[0] * this.dtime,
+                        velo[1] * this.dtime,
+                        velo[2] * this.dtime
+                    ]);
+                    this.h.fishmatricesR[cfishtype][cfish].change = trajpos[inx].change;
+                } else velocitytrans = twgl_js_1.m4.identity();
+                // posture (costly math, this is only done when model is changed)
+                if (!this.firstframe) // if (this.h.fishmatricesR[cfishtype][cfish].change)                 
+                {
+                    var modeldir = [
+                        -1,
+                        0,
+                        0
+                    ];
+                    var velonorm = twgl.v3.normalize(velo);
+                    if (twgl.v3.distanceSq(modeldir, velonorm) < 1e-9) localmatrix = twgl_js_1.m4.identity();
+                    else {
+                        var axis = twgl.v3.cross(modeldir, velonorm);
+                        var angle = this.anglebetween(modeldir, velonorm);
+                        localmatrix = twgl_js_1.m4.axisRotation(axis, angle);
+                    }
+                    this.h.fishmatricesR[cfishtype][cfish].matrix = localmatrix;
+                    this.h.fishmatricesR[cfishtype][cfish].change = false;
+                } else localmatrix = this.h.fishmatricesR[cfishtype][cfish].matrix;
+                if (jointcount == 1) {
+                    this.h.fishpositionsV[cfishtype][cfish] = trajpos[inx].p; //  m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);   
+                    this.h.fish[cfishtype].computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
+                    this.h.fish[cfishtype].prepareBoneTexture(gl, this.h.fish[cfishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
+                    this.h.fish[cfishtype].uniforms.world = twgl_js_1.m4.multiply(twgl_js_1.m4.translation(this.h.fishpositionsV[cfishtype][cfish]), localmatrix); // transformation for joint part depends on previous
+                    twgl.setUniforms(this.twglprograminfo, this.h.fish[cfishtype].uniforms);
+                    twgl.drawBufferInfo(gl, this.h.fish[cfishtype].bufferInfo, this.h.fish[cfishtype].mesh.type);
+                } else {
+                    this.h.fishpositionsV[cfishtype][cfish] = trajpos[inx].p; //m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);   
+                    var ampl0 = this.h.fish[cfishtype].ampl;
+                    var sling = this.animationParameters.sling;
+                    var cmatrix = localmatrix;
+                    for(var i = 0; i < jointcount; i++){
+                        var timeoffs = i * sling;
+                        var nx = i / jointcount;
+                        this.h.fish[cfishtype].ampl = ampl0 * nx;
+                        this.h.fish[cfishtype].computeJoint(time - timeoffs, this.animationParameters.move, this.animationParameters.movetail);
+                        this.h.fish[cfishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)                           
+                        this.h.fish[cfishtype].uniforms.world = twgl_js_1.m4.multiply(twgl_js_1.m4.translation(this.h.fishpositionsV[cfishtype][cfish]), cmatrix); // transformation for joint part depends on previous joint
+                        twgl.setUniforms(this.twglprograminfo, this.h.fish[cfishtype].uniforms);
+                        twgl.drawBufferInfo(gl, this.h.fish[cfishtype].bufferInfo, this.h.fish[cfishtype].mesh.type);
+                        cmatrix = twgl_js_1.m4.multiply(cmatrix, this.h.fish[cfishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
+                    }
+                    this.h.fish[cfishtype].ampl = ampl0;
+                }
+            }
+        }
+        this.vtime = time;
+        this.firstframe = false;
+    }
+}
+exports.FishTrajectoryScene = FishTrajectoryScene;
+
+},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8","../trajectory/trajectory":"5rdam"}],"dATTA":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -27447,335 +28043,6 @@ class ClothSim extends baseapp.BaseApp {
 }
 exports.ClothSim = ClothSim;
 
-},{"twgl.js":"3uqAP","./cloth":"9GfuC","./../baseapp/baseapp":"9lZ4F"}],"jXMUO":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.FishTrajectoryScene = exports.hoard2 = void 0;
-// fishtrajectoryscene.ts
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-const twgl = __importStar(require("twgl.js"));
-const twgl_js_1 = require("twgl.js");
-const animationclock = __importStar(require("../baseapp/animationclock"));
-const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
-const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
-const fishv = __importStar(require("./../bonemodel/fishv"));
-const whale = __importStar(require("../bonemodel/whale"));
-const fishonejoint = __importStar(require("../bonemodel/fishonejoint"));
-const whaletranslated = __importStar(require("../bonemodel/whaletranslated"));
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-class hoard2 {
-    constructor(){
-        // shapes
-        this.fish = [
-            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
-                0,
-                0,
-                0
-            ]),
-            new fishwithjoints.FishWithJoints("fishjN", 0.06, 40.0, 24.0, 0.0, 0.0055, -9999, 2.1, "gradient", [
-                0,
-                0,
-                0
-            ], 0.6, [
-                0.0,
-                0.0,
-                1.0
-            ]),
-            new fishonejoint.FishOneJoint("fish1joint", 1.0, 2.0, 2.0, 0.1, 0.0045, 0.1, 0.5, "gradient", [
-                0,
-                0,
-                0
-            ]),
-            new fishv.FishV("largefishv", 0.5, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "flagofukraine", [
-                0,
-                0,
-                0
-            ]),
-            new whaletranslated.WhaleTranslated("whaletrans", 2.0, 2.0, 0.3, 0.8, 0.0016, 0.5, 2.0, "zelenskyy", [
-                0,
-                0,
-                0
-            ]),
-            new fishv.FishV("fishv", 0.25, 0.2, 0.3, 1.0, 0.0150, 0.5, 5.00, "flagofukraine", [
-                0,
-                0,
-                0
-            ]), 
-        ];
-        this.fishjointcounts = [
-            1,
-            28,
-            1,
-            1,
-            1,
-            1,
-            1
-        ];
-        // Velocity (move), values are set at start of scene. WHhen kept, fish keep move in directions indicated
-        this.vx = -0.007;
-        this.fishvelocitiesV = [
-            [
-                twgl.v3.create(this.vx, 0.003, 0)
-            ],
-            [
-                twgl.v3.create(-0.003, -0.0003, -0.003)
-            ],
-            [
-                twgl.v3.create(this.vx, 0, 0)
-            ],
-            [
-                twgl.v3.create(-0.003, -0.0003, -0.003),
-                twgl.v3.create(this.vx, 0, 0)
-            ],
-            [
-                twgl.v3.create(this.vx, 0, 0)
-            ],
-            [
-                twgl.v3.create(this.vx, 0, 0),
-                twgl.v3.create(this.vx, 0, 0),
-                twgl.v3.create(this.vx, 0, 0)
-            ], 
-        ];
-        // Position, values are set at start of scene and updated on every frame, according to fishvelocitiesV
-        this.fishpositionsV = [
-            [
-                twgl.v3.create(40.0, 20.0, 60.0)
-            ],
-            [
-                twgl.v3.create(65, 35, 0)
-            ],
-            [
-                twgl.v3.create(30.0, 30.0, -35)
-            ],
-            [
-                twgl.v3.create(70.0, 35.0, -15),
-                twgl.v3.create(40.0, 35.0, -15)
-            ],
-            [
-                twgl.v3.create(70.0, 15.0, 1.0)
-            ],
-            [
-                twgl.v3.create(20.0, 25.0, 0.0),
-                twgl.v3.create(0.0, 15.0, 0.0),
-                twgl.v3.create(30.0, 15.0, -30)
-            ], 
-        ];
-        // Posture (rotation) matrices are kept for each fish and should change with direction while animating
-        // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
-        // a new matrix is generated in drawScene() from fisvelocitiesV and default posture [-1,0,0]
-        this.fishmatricesR = [
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ],
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ],
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ],
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                },
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ],
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ],
-            [
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                },
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                },
-                {
-                    change: true,
-                    matrix: twgl_js_1.m4.identity()
-                }
-            ], 
-        ];
-    }
-}
-exports.hoard2 = hoard2;
-//-------------------------------------------------------------------------------------------------------------------------------------------
-class FishTrajectoryScene {
-    constructor(cgl, ch){
-        this.scenesize = 140;
-        this.sceneenv = -1;
-        this.vertexShaderSource = ``;
-        this.fragmentShaderSource = ``;
-        this.clock = new animationclock.AnimationClock();
-        this.h = new hoard2();
-        this.firstframe = true;
-        this.dtime = 0;
-        this.vtime = 0;
-        this.h = ch;
-        this.twglprograminfo = twgl.createProgramInfo(cgl, [
-            boneanimation.BoneAnimation.vsSkeleton,
-            boneanimation.BoneAnimation.fsSkeleton
-        ]);
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    defaultCamera(gl, cam) {}
-    extendGUI(gui) {
-        gui.add(this.animationParameters, "movetail");
-    }
-    initScene(gl, cap, cam, dictpar, textureReadyCallback) {
-        gl.useProgram(this.twglprograminfo.program);
-        var nFish = 0;
-        var time0 = 0;
-        this.h.fish.forEach((afish)=>{
-            afish.prepareSurfaceTextures(gl, afish.surfacetexturefile);
-            afish.mesh = afish.prepareMesh(gl, dictpar, afish.size);
-            afish.setNumBones(gl);
-            afish.createBoneTexture(gl, time0, dictpar);
-            afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
-            afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
-            afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
-            nFish++;
-            if (nFish == this.h.fish.length && textureReadyCallback != undefined) textureReadyCallback(0);
-        });
-    }
-    anglebetween(vectora, vectorb) {
-        var vector1 = twgl.v3.normalize(vectora);
-        var vector2 = twgl.v3.normalize(vectorb);
-        if (twgl.v3.distanceSq(vector1, vector2) < 1e-9) return 0.0;
-        var num = twgl.v3.dot(vector1, vector2);
-        var vd1 = twgl.v3.subtract(vector1, vector2);
-        var vd2 = twgl.v3.subtract([
-            -vector1[0],
-            -vector1[1],
-            -vector1[2]
-        ], vector2);
-        var l1 = twgl.v3.length(vd1);
-        var l2 = twgl.v3.length(vd2);
-        return !(num < 0.0) ? 2.0 * Math.asin(l1 / 2.0) : Math.PI - 2.0 * Math.asin(l2 / 2.0);
-    }
-    drawScene(gl, cam, time) {
-        var velocitytrans;
-        var localmatrix = twgl_js_1.m4.identity();
-        if (!this.firstframe) this.dtime = time - this.vtime;
-        gl.useProgram(this.twglprograminfo.program);
-        for(var cfishtype = 0; cfishtype < this.h.fish.length; cfishtype++)this.h.fish[cfishtype].uniforms.viewprojection = cam.viewProjection;
-        for(var cfishtype = 0; cfishtype < this.h.fishpositionsV.length; cfishtype++){
-            gl.bindVertexArray(this.h.fish[cfishtype].skinVAO);
-            gl.bindTexture(gl.TEXTURE_2D, this.h.fish[cfishtype].boneMatrixTexture);
-            // since we want to use the texture for pure data we turn off filtering
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            var jointcount = this.h.fishjointcounts[cfishtype];
-            for(var cfish = 0; cfish < this.h.fishpositionsV[cfishtype].length; cfish++){
-                // move (always done)
-                var velo = this.h.fishvelocitiesV[cfishtype][cfish];
-                if (!this.firstframe) velocitytrans = twgl.m4.translation([
-                    velo[0] * this.dtime,
-                    velo[1] * this.dtime,
-                    velo[2] * this.dtime
-                ]);
-                else velocitytrans = twgl_js_1.m4.identity();
-                // posture (costly math, this is only done when model is changed)
-                if (this.h.fishmatricesR[cfishtype][cfish].change) {
-                    var modeldir = [
-                        -1,
-                        0,
-                        0
-                    ];
-                    var velonorm = twgl.v3.normalize(velo);
-                    if (twgl.v3.distanceSq(modeldir, velonorm) < 1e-9) localmatrix = twgl_js_1.m4.identity();
-                    else {
-                        var axis = twgl.v3.cross(modeldir, velonorm);
-                        var angle = this.anglebetween(modeldir, velonorm);
-                        localmatrix = twgl_js_1.m4.axisRotation(axis, angle);
-                    }
-                    this.h.fishmatricesR[cfishtype][cfish].matrix = localmatrix;
-                    this.h.fishmatricesR[cfishtype][cfish].change = false;
-                } else localmatrix = this.h.fishmatricesR[cfishtype][cfish].matrix;
-                if (jointcount == 1) {
-                    this.h.fishpositionsV[cfishtype][cfish] = twgl_js_1.m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);
-                    this.h.fish[cfishtype].computeBone(time, this.animationParameters.move, this.animationParameters.movetail);
-                    this.h.fish[cfishtype].prepareBoneTexture(gl, this.h.fish[cfishtype].bindPoseInv2); // freeform bones need to keep their initial transformations
-                    this.h.fish[cfishtype].uniforms.world = twgl_js_1.m4.multiply(twgl_js_1.m4.translation(this.h.fishpositionsV[cfishtype][cfish]), localmatrix); // transformation for joint part depends on previous
-                    twgl.setUniforms(this.twglprograminfo, this.h.fish[cfishtype].uniforms);
-                    twgl.drawBufferInfo(gl, this.h.fish[cfishtype].bufferInfo, this.h.fish[cfishtype].mesh.type);
-                } else {
-                    this.h.fishpositionsV[cfishtype][cfish] = twgl_js_1.m4.transformPoint(velocitytrans, this.h.fishpositionsV[cfishtype][cfish]);
-                    var ampl0 = this.h.fish[cfishtype].ampl;
-                    var sling = this.animationParameters.sling;
-                    var cmatrix = localmatrix;
-                    for(var i = 0; i < jointcount; i++){
-                        var timeoffs = i * sling;
-                        var nx = i / jointcount;
-                        this.h.fish[cfishtype].ampl = ampl0 * nx;
-                        this.h.fish[cfishtype].computeJoint(time - timeoffs, this.animationParameters.move, this.animationParameters.movetail);
-                        this.h.fish[cfishtype].prepareBoneTexture(gl, null); // for a segment, bindPoseInv2 need not be set (null)                           
-                        this.h.fish[cfishtype].uniforms.world = twgl_js_1.m4.multiply(twgl_js_1.m4.translation(this.h.fishpositionsV[cfishtype][cfish]), cmatrix); // transformation for joint part depends on previous joint
-                        twgl.setUniforms(this.twglprograminfo, this.h.fish[cfishtype].uniforms);
-                        twgl.drawBufferInfo(gl, this.h.fish[cfishtype].bufferInfo, this.h.fish[cfishtype].mesh.type);
-                        cmatrix = twgl_js_1.m4.multiply(cmatrix, this.h.fish[cfishtype].EndOfBoneTrans); // stack the end-transformation of this segment into matrix cm         
-                    }
-                    this.h.fish[cfishtype].ampl = ampl0;
-                }
-            }
-        }
-        this.vtime = time;
-        this.firstframe = false;
-    }
-}
-exports.FishTrajectoryScene = FishTrajectoryScene;
-
-},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
+},{"twgl.js":"3uqAP","./cloth":"9GfuC","./../baseapp/baseapp":"9lZ4F"}]},["8uxfi","aqPhO"], "aqPhO", "parcelRequire19e8")
 
 //# sourceMappingURL=index.5710aea2.js.map

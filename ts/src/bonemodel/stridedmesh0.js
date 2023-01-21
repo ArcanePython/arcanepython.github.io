@@ -18,28 +18,28 @@ class StridedMesh0 {
     }
     static floatStraighten(datatitle, w, wdata) {
         var data = new Float32Array(wdata.length * w);
-        console.log(">floatstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">floatstraighten"+w +" "+datatitle+" wdata.length="+wdata.length);
         for (var i = 0; i < wdata.length; i++)
             for (var j = 0; j < w; j++)
                 data[i * w + j] = wdata[i][j];
-        console.log("<floatstraighten" + w + " " + datatitle + ": len=" + data.length);
+        //console.log("<floatstraighten"+w +" "+datatitle+": len="+data.length);
         return data;
     }
     intStraighten(datatitle, w, wdata) {
         var data = new Uint32Array(wdata.length * w);
-        console.log(">intstraighten" + w + " " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">intstraighten"+w +" "+datatitle+" wdata.length="+wdata.length);
         for (var i = 0; i < wdata.length; i++)
             for (var j = 0; j < w; j++)
                 data[i * w + j] = wdata[i][j];
-        console.log("<intstraighten" + w + " " + datatitle + ": len=" + data.length);
+        //console.log("<intstraighten"+w +" "+datatitle+": len="+data.length);
         return data;
     }
     intArray(datatitle, wdata) {
         var data = new Uint32Array(wdata.length);
-        console.log(">intArray" + " " + datatitle + " wdata.length=" + wdata.length);
+        //console.log(">intArray" +" "+datatitle+" wdata.length="+wdata.length);
         for (var i = 0; i < wdata.length; i++)
             data[i] = wdata[i];
-        console.log("<intArray" + " " + datatitle + ": len=" + data.length);
+        //console.log("<intArray" +" "+datatitle+": len="+data.length);
         return data;
     }
 }

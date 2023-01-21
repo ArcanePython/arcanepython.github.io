@@ -303,11 +303,11 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
         crow++;
     }
     var data = new Float32Array(wdata.length*2);
-    console.log("=>copy texcoords len="+wdata.length+" stride="+stride+" nrows="+nrows);
+    //console.log("=>copy texcoords len="+wdata.length+" stride="+stride+" nrows="+nrows);
     for(var i=0; i<wdata.length; i++)   
       for(var j=0; j<2; j++) data[i*2+j]=wdata[i][j];     
-    console.log("texcoords buffer: len="+data.length);
-    console.log(data);
+    //console.log("texcoords buffer: len="+data.length);
+    //console.log(data);
     return { numComponents: 2, data };
   }
 
