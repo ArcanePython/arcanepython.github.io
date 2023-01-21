@@ -741,6 +741,7 @@ function show(gl, app, dictPars) {
         new canvas3dtexturescene2.Canvas3dTextureScene2(gl)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined) a = [
+        new drawinstancedscene.DrawInstancedScene(gl),
         new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))
     ];
     if (a != undefined) return showScenesAnimation(gl, app, dictPars, a);
@@ -11272,6 +11273,7 @@ exports.instance = null;
 class BaseApp {
     constructor(cgl, capp, dictpar, divname){
         this.DefaultParameters = {
+            showgrid: false,
             usecamera: true,
             camheight: 0.0,
             influence: 0.05,
@@ -11474,6 +11476,14 @@ class BaseApp {
                 neg_y_name = require("./../resources/images/gamlastan/negy.jpg");
                 neg_z_name = require("./../resources/images/gamlastan/negz.jpg");
                 break;
+            case 3:
+                pos_x_name = require("./../resources/images/underwater/pos-x.jpg");
+                pos_y_name = require("./../resources/images/underwater/pos-y.jpg");
+                pos_z_name = require("./../resources/images/underwater/pos-z.jpg");
+                neg_x_name = require("./../resources/images/underwater/neg-x.jpg");
+                neg_y_name = require("./../resources/images/underwater/neg-y.jpg");
+                neg_z_name = require("./../resources/images/underwater/neg-z.jpg");
+                break;
         }
         const faceInfos = [
             {
@@ -11610,7 +11620,7 @@ class BaseApp {
 }
 exports.BaseApp = BaseApp;
 
-},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz"}],"k3xQk":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz","./../resources/images/underwater/pos-x.jpg":"eM650","./../resources/images/underwater/pos-y.jpg":"cunsh","./../resources/images/underwater/pos-z.jpg":"lAzoW","./../resources/images/underwater/neg-x.jpg":"gQ6n8","./../resources/images/underwater/neg-y.jpg":"36KrD","./../resources/images/underwater/neg-z.jpg":"8LtWO"}],"k3xQk":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "color", ()=>color);
@@ -13988,6 +13998,24 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "negy.2
 
 },{"./helpers/bundle-url":"lgJ39"}],"jW3Oz":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "negz.55905f3f.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"eM650":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-x.16723f28.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"cunsh":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-y.c839ac38.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lAzoW":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-z.c07de4bf.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"gQ6n8":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-x.f50667b7.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"36KrD":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.7d3cd280.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"8LtWO":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.340b8870.jpg" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"1ZnlU":[function(require,module,exports) {
 "use strict";
@@ -20388,6 +20416,7 @@ class MixedTextureScene {
         gl.useProgram(p.program);
         this.animationParameters = cap;
         // Define shader syntax for attributes
+        cap.movetail = false;
         // Camera: prepare vs-fs transformation
         this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
         // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 
@@ -23432,7 +23461,7 @@ class DrawInstancedScene {
     constructor(gl){
         //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 50;
-        this.sceneenv = 1;
+        this.sceneenv = -1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
@@ -23475,7 +23504,8 @@ void main() {
     defaultCamera(gl, cam) {}
     extendGUI(gui) {
         // Checkbox forward move animation on/off
-        gui.add(this.animationParameters, "movetail");
+        //  gui.add(this.animationParameters!, 'movetail');
+        gui.add(this.animationParameters, "showgrid");
     }
     initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         console.log("-> initScene DrawInstancedScene");
@@ -23485,7 +23515,7 @@ void main() {
         cam.setYUpEye();
         this.animationParameters = cap;
         cap.move = false;
-        cap.movetail = false;
+        cap.showgrid = true;
         var p = this.twglprograminfo;
         const positionLoc = gl.getAttribLocation(p.program, "a_position");
         const colorLoc = gl.getAttribLocation(p.program, "color");
@@ -23618,13 +23648,19 @@ void main() {
         if (sceneReadyCallback != undefined) sceneReadyCallback(0);
     }
     drawScene(gl, cam, time) {
+        var _a;
+        if (!((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.showgrid)) return;
         gl.useProgram(this.twglprograminfo.program);
         var world = twgl_js_1.m4.identity();
-        world = twgl_js_1.m4.translation([
+        world = twgl_js_1.m4.multiply(twgl_js_1.m4.scaling([
+            5,
+            5,
+            5
+        ]), twgl_js_1.m4.translation([
             15,
             0,
             -15
-        ]); // m4.translation([16,-8,-16]);
+        ])); // m4.translation([16,-8,-16]);
         gl.uniformMatrix4fv(this.worldloc, false, world);
         var m3 = cam.viewProjection;
         gl.uniformMatrix4fv(this.viewprojectionLoc, false, m3);
@@ -27650,9 +27686,7 @@ class hoardsingle {
                 0,
                 0
             ]),
-            //   new fishv.FishV                     ("largefishv2",0.9,  0.2,0.3,  0.8,  0.0125,   0.9, 2.50, "clover", [0,0,0]),
-            //new fishwithjoints.FishWithJoints   ("fishjN",0.06, 40.0,24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient",       [0,0,0], 0.6, [0.0,0.0,1.0]),
-            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
+            new whaletranslated.WhaleTranslated("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [
                 0,
                 0,
                 0
@@ -27702,7 +27736,7 @@ class hoardsingle {
         ];
         var path = this.arcpath(200, 15, 20);
         this.traj.push(new trajectory_1.Trajectory(path, 2.0 * defaultspeed, true));
-        var path = this.arcpath(400, 40, 0);
+        var path = this.arcpath(400, 80, 0);
         this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
     }
     arcpath(grain, r, rh) {
@@ -27743,7 +27777,8 @@ class FishTrajectoryScene {
     }
     defaultCamera(gl, cam) {}
     extendGUI(gui) {
-        gui.add(this.animationParameters, "movetail");
+        gui.add(this.animationParameters, "showgrid");
+    //    gui.add(this.animationParameters!, 'movetail');
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
         gl.useProgram(this.twglprograminfo.program);
@@ -27760,6 +27795,8 @@ class FishTrajectoryScene {
             afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
             if (nFish == this.h.fish.length && textureReadyCallback != undefined) textureReadyCallback(0);
+            cap.movetail = true;
+            cap.showgrid = false;
         });
     }
     anglebetween(vectora, vectorb) {

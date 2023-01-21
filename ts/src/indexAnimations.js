@@ -173,7 +173,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined)
-        a = [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
+        a = [new drawinstancedscene.DrawInstancedScene(gl), new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if (a != undefined)
         return showScenesAnimation(gl, app, dictPars, a);
     else {

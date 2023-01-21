@@ -14,7 +14,7 @@ export class DrawInstancedScene implements scene.SceneInterface
 {
  //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
     scenesize=50;
-    sceneenv=1;
+    sceneenv=-1;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;
@@ -23,7 +23,8 @@ export class DrawInstancedScene implements scene.SceneInterface
 
     public extendGUI(gui: datgui.GUI) {
         // Checkbox forward move animation on/off
-        gui.add(this.animationParameters!, 'movetail');
+      //  gui.add(this.animationParameters!, 'movetail');
+      gui.add(this.animationParameters!, 'showgrid');
      
     }
  
@@ -91,8 +92,8 @@ public constructor(gl: WebGL2RenderingContext)
 
     this.animationParameters= cap;
     cap.move=false;
-    cap.movetail=false;
-    
+    cap.showgrid=true;
+     
     var p=this.twglprograminfo!;
       
     const positionLoc = gl.getAttribLocation(p.program, 'a_position');
@@ -227,10 +228,12 @@ public constructor(gl: WebGL2RenderingContext)
 
   public drawScene(gl: WebGL2RenderingContext,cam: camhandler.Camera, time: number) 
   {  
+    if (!this.animationParameters?.showgrid) return;
+
     gl.useProgram(this.twglprograminfo.program);
 
     var world = m4.identity();
-    world = m4.translation([16-1,0,-16+1]);  // m4.translation([16,-8,-16]);
+    world =m4.multiply(m4.scaling([5,5,5]), m4.translation([16-1,0,-16+1]));  // m4.translation([16,-8,-16]);
     gl.uniformMatrix4fv(this.worldloc!, false, world);
     var m3 = cam!.viewProjection;
     gl.uniformMatrix4fv(this.viewprojectionLoc!, false, m3);

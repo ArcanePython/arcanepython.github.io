@@ -112,6 +112,7 @@ class MixedTextureScene {
         gl.useProgram(p.program);
         this.animationParameters = cap;
         // Define shader syntax for attributes
+        cap.movetail = false;
         // Camera: prepare vs-fs transformation
         this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix");
         // Create the position buffer and decide where the current vertex data needs to go ------------------------------------ 

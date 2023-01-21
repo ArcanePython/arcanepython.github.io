@@ -26,7 +26,7 @@ class DrawInstancedScene {
     constructor(gl) {
         //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 50;
-        this.sceneenv = 1;
+        this.sceneenv = -1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
@@ -64,7 +64,8 @@ void main() {
     defaultCamera(gl, cam) { }
     extendGUI(gui) {
         // Checkbox forward move animation on/off
-        gui.add(this.animationParameters, 'movetail');
+        //  gui.add(this.animationParameters!, 'movetail');
+        gui.add(this.animationParameters, 'showgrid');
     }
     initScene(gl, cap, cam, dictpar, sceneReadyCallback) {
         console.log("-> initScene DrawInstancedScene");
@@ -74,7 +75,7 @@ void main() {
         cam.setYUpEye();
         this.animationParameters = cap;
         cap.move = false;
-        cap.movetail = false;
+        cap.showgrid = true;
         var p = this.twglprograminfo;
         const positionLoc = gl.getAttribLocation(p.program, 'a_position');
         const colorLoc = gl.getAttribLocation(p.program, 'color');
@@ -182,9 +183,12 @@ void main() {
             sceneReadyCallback(0);
     }
     drawScene(gl, cam, time) {
+        var _a;
+        if (!((_a = this.animationParameters) === null || _a === void 0 ? void 0 : _a.showgrid))
+            return;
         gl.useProgram(this.twglprograminfo.program);
         var world = twgl_js_1.m4.identity();
-        world = twgl_js_1.m4.translation([16 - 1, 0, -16 + 1]); // m4.translation([16,-8,-16]);
+        world = twgl_js_1.m4.multiply(twgl_js_1.m4.scaling([5, 5, 5]), twgl_js_1.m4.translation([16 - 1, 0, -16 + 1])); // m4.translation([16,-8,-16]);
         gl.uniformMatrix4fv(this.worldloc, false, world);
         var m3 = cam.viewProjection;
         gl.uniformMatrix4fv(this.viewprojectionLoc, false, m3);

@@ -134,6 +134,7 @@ export class MixedTextureScene implements scene.SceneInterface
       gl.useProgram(p.program);
       this.animationParameters = cap;
       // Define shader syntax for attributes
+      cap.movetail=false;
       
       // Camera: prepare vs-fs transformation
       this.matrixLocation = gl.getUniformLocation(p.program, "u_matrix")!;

@@ -7,6 +7,7 @@ import  * as datgui from "dat.gui";
 
 export type TAnimation1Parameters =
 {
+    showgrid: boolean;
     movetail: boolean,
     sling: number,
     shininess: number,
@@ -28,7 +29,7 @@ export var instance: BaseApp|null=null;
 
 export class BaseApp
 {       
-    protected DefaultParameters: TAnimation1Parameters =  { usecamera:true, camheight:0.0, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
+    protected DefaultParameters: TAnimation1Parameters =  { showgrid: false, usecamera:true, camheight:0.0, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
                                                             texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     baseappParameters: TAnimation1Parameters = this.DefaultParameters;
@@ -232,6 +233,15 @@ export class BaseApp
                 neg_x_name= require("./../resources/images/gamlastan/negx.jpg");
                 neg_y_name= require("./../resources/images/gamlastan/negy.jpg");
                 neg_z_name= require("./../resources/images/gamlastan/negz.jpg");
+                break;
+            }
+            case 3: {
+                pos_x_name= require("./../resources/images/underwater/pos-x.jpg");
+                pos_y_name= require("./../resources/images/underwater/pos-y.jpg");
+                pos_z_name= require("./../resources/images/underwater/pos-z.jpg");
+                neg_x_name= require("./../resources/images/underwater/neg-x.jpg");
+                neg_y_name= require("./../resources/images/underwater/neg-y.jpg");
+                neg_z_name= require("./../resources/images/underwater/neg-z.jpg");
                 break;
             }
         }

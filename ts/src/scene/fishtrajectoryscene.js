@@ -88,9 +88,7 @@ class hoardsingle {
         // shapes
         this.fish = [
             new fishv.FishV("largefishv1", 0.5, 0.2, 0.3, 0.8, 0.0225, 0.9, 2.50, "flagofukraine", [0, 0, 0]),
-            //   new fishv.FishV                     ("largefishv2",0.9,  0.2,0.3,  0.8,  0.0125,   0.9, 2.50, "clover", [0,0,0]),
-            //new fishwithjoints.FishWithJoints   ("fishjN",0.06, 40.0,24.0, 0.0, 0.0055, -9999.0, 2.1, "gradient",       [0,0,0], 0.6, [0.0,0.0,1.0]),
-            new whale.Whale("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [0, 0, 0]),
+            new whaletranslated.WhaleTranslated("cloverwhale", 1.0, 0.2, 0.3, 0.8, 0.0085, 0.5, 2.50, "clover", [0, 0, 0]),
         ];
         this.fishjointcounts = [1, 1];
         // Velocity (move), values are set at start of scene. WHhen kept, fish keep move in directions indicated
@@ -113,7 +111,7 @@ class hoardsingle {
         ];
         var path = this.arcpath(200, 15, 20);
         this.traj.push(new trajectory_1.Trajectory(path, 2.0 * defaultspeed, true));
-        var path = this.arcpath(400, 40, 0);
+        var path = this.arcpath(400, 80, 0);
         this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
     }
     arcpath(grain, r, rh) {
@@ -145,7 +143,8 @@ class FishTrajectoryScene {
     resizeCanvas(gl) { twgl.resizeCanvasToDisplaySize(gl.canvas); }
     defaultCamera(gl, cam) { }
     extendGUI(gui) {
-        gui.add(this.animationParameters, 'movetail');
+        gui.add(this.animationParameters, 'showgrid');
+        //    gui.add(this.animationParameters!, 'movetail');
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
         gl.useProgram(this.twglprograminfo.program);
@@ -163,6 +162,8 @@ class FishTrajectoryScene {
             nFish++;
             if (nFish == this.h.fish.length && textureReadyCallback != undefined)
                 textureReadyCallback(0);
+            cap.movetail = true;
+            cap.showgrid = false;
         });
     }
     anglebetween(vectora, vectorb) {
