@@ -102,7 +102,7 @@ class hoardsingle {
         // Position, values are set at start of scene and updated on every frame, according to fishvelocitiesV
         this.fishpositionsV = [
             [twgl.v3.create(0.0, 18.0, 0.0)],
-            [twgl.v3.create(30.0, 10.0, 0.0)],
+            [twgl.v3.create(30.0, 9.0, 0.0)],
         ];
         // Posture (rotation) matrices are kept for each fish and should change with direction while animating
         // When any velocity has changed in fishvelocitiesV, "change" is set to true for corresponding fish
