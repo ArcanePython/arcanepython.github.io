@@ -16,7 +16,6 @@ class LinearTraject {
         this.d = twgl_js_1.v3.subtract(endpoint, this.startpoint);
         this.len = twgl_js_1.v3.length(this.d);
         this.d = twgl_js_1.v3.normalize(this.d);
-        this.dt = this.len / velocity;
         this.v = [this.d[0] * velocity, this.d[1] * velocity, this.d[2] * velocity];
         this.p = this.reset(); // initial value cursor is startpoint.slice()
     }
@@ -36,7 +35,7 @@ class LinearTraject {
         return this.startpoint.slice();
     }
     toString() {
-        return "ct=" + this.ct.toPrecision(5) + " p = " + this.p + " start=" + this.startpoint + " end=" + this.endpoint + " d=" + this.d + " v=" + this.v + " len=" + this.len + " dt=" + this.dt + " den=" + this.den;
+        return "ct=" + this.ct.toPrecision(5) + " p = " + this.p + " start=" + this.startpoint + " end=" + this.endpoint + " d=" + this.d + " v=" + this.v + " len=" + this.len + " den=" + this.den;
     }
 }
 exports.LinearTraject = LinearTraject;

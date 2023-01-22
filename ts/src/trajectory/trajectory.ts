@@ -7,7 +7,6 @@ export class LinearTraject
     d: v3.Vec3; // direction
     v: v3.Vec3; // displacement/ms
     ct: number = 0;
-    dt: number;
     len: number;
     next:LinearTraject | null = null;
     den: number=0;
@@ -19,7 +18,6 @@ export class LinearTraject
         this.d=v3.subtract(endpoint,this.startpoint);
         this.len = v3.length(this.d);
         this.d=v3.normalize(this.d);
-        this.dt = this.len/velocity; 
         this.v=[this.d[0]*velocity,this.d[1]*velocity,this.d[2]*velocity];
         this.p = this.reset(); // initial value cursor is startpoint.slice()
     }
@@ -45,7 +43,7 @@ export class LinearTraject
 
     toString(): string
     {
-        return "ct="+this.ct.toPrecision(5)+" p = "+this.p+" start="+this.startpoint+" end="+this.endpoint+" d="+this.d+" v="+this.v+ " len="+this.len+ " dt="+this.dt+ " den="+this.den ;
+        return "ct="+this.ct.toPrecision(5)+" p = "+this.p+" start="+this.startpoint+" end="+this.endpoint+" d="+this.d+" v="+this.v+ " len="+this.len+  " den="+this.den ;
     }
 }
 

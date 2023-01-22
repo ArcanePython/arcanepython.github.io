@@ -51,9 +51,6 @@ export abstract class StridedMesh0
     //console.log("<intArray" +" "+datatitle+": len="+data.length);
     return data;
   }
-
-  abstract getFishPositions(): {numComponents: number, data: Float32Array};
-  abstract getWhalePositions(): {numComponents: number, data: Float32Array};
-  
+ 
 
 }

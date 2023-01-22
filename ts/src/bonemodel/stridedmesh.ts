@@ -12,7 +12,7 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
     this.segmentsize = scale*seglen; //0.18;
     this.nsegments = cnsegments;
     this.nrows = cnrows;
- //   if (name!="dummy")   alert("StridedMesh constructor name=["+name+ "], scale="+scale+" segmentsize="+this.segmentsize+" nsegments="+cnsegments+" nrows="+cnrows)
+    if (name!="dummy") console.log("StridedMesh constructor name=["+name+ "], scale="+scale+" segmentsize="+this.segmentsize+" nsegments="+cnsegments+" nrows="+cnrows)
     this.arrays = {
       position: {numComponents:0, data: new Float32Array()},                       // positions to be filled by caller
       boneNdx: this.buildBoneIndex( this.nrows, this.nsegments),                   // bone defined in X-axis direction
@@ -21,28 +21,6 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
       texcoord: this.buildTexCoords( this.nrows, this.nsegments),                  // texture coords for any triangle strip quad
    };
   }
-
-  /*
-  buildPositions( nrows: number, stride: number)
-  {
-    var posdata: number3[] = [];
-    var cx=0, cy=0, cz=0;   
-    for (var y=0; y<nrows; y++)
-    {
-      for (var x=0; x<stride; x++)
-      {
-        var d = (Math.PI/4.0) * (y-nrows/2) / nrows;
-        d = 1.0-Math.cos(d);
-        cx = x*this.segmentsize;
-        cy = y*this.segmentsize;
-        cz = 88.0*d*this.segmentsize;
-        posdata.push([cx,cy,cz]);
-      }
-    }
-    var data = stridedmesh0.StridedMesh0.floatStraighten("Positions",3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-    return  { numComponents: 3, data };
-  }
-  */
 
   public static buildCylPositions(segmentsize: number, nrows: number, stride: number, r1: number, r2: number)
   {
@@ -105,54 +83,7 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
     return  { numComponents: 3, data };
   }
 
-
-  buildFishVPositions( nrows: number, stride: number)
-  {
-    return StridedMesh.buildFishVPositions(this.segmentsize,nrows,stride)
- /*
-    var posdata: number3[] = [];
-    var cx=0, cy=0, cz=0, a =0, da=Math.PI*2.0/(nrows-1), z=0, r=20;   
-    var dtail = stride/4;
-    var htail = stride*3/4;
-    var dr = r/dtail;
-    for (var y=0; y<nrows; y++)
-    {
-      r=1;
-      for (var x=0; x<stride; x++)
-      {
-        var d = (Math.PI/4.0) * (y-nrows/2) / nrows;
-        d = 1.0-Math.cos(d);
-        cx = x*this.segmentsize;
-        if (x<dtail)
-        {
-          r=r+dr;
-        }
-        var dtailr = (x-htail);
-        if (dtailr<0)
-        {           
-            cy = this.segmentsize*Math.cos(-a)*r;
-            cz = this.segmentsize*Math.sin(-a)*r;          
-        } else
-        {
-          var cdr = 1.0 - dtailr/dtail;            
-            cy = this.segmentsize*Math.cos(-a)*r*(cdr);
-            cz = this.segmentsize*Math.sin(-a)*r*(2.0-cdr);          
-        }
-        posdata.push([cx,cy,cz]);
-      }
-      a+=da;
-    }
-    var data = stridedmesh0.StridedMesh0.floatStraighten("Positions",3, posdata); // this.floatStraighten4("BoneWeights",wdata);
-    return  { numComponents: 3, data };
-    */
-  }
-
-
-  buildFishHPositions( nrows: number, stride: number)
-  {
-    return StridedMesh.buildFishHPositions(this.segmentsize,nrows,stride)
-  }
-
+  
   public static buildFishHPositions(segmentsize: number,  nrows: number, stride: number)
   {
     var posdata: number3[] = [];
@@ -191,24 +122,6 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
     return  { numComponents: 3, data };
   }
 
-  getFishPositions()
-  {
-    var pos =  this.buildFishHPositions( this.nrows, this.nsegments);   
-    return pos;
-  }
-
-  getWhalePositions()
-  {
-    var pos =   this.buildFishVPositions(this.nrows, this.nsegments);
-    return pos;
-  }
-
-  getCylPositions(r1: number,r2: number)
-  {
-    var pos =  StridedMesh.buildCylPositions(this.segmentsize, this.nrows, this.nsegments, r1, r2);   
-    return pos;
-  }
-
   public static getWhalePositions(segmentsize: number,  nrows: number, stride: number)
   {
     var pos =   StridedMesh.buildFishVPositions(segmentsize, nrows, stride);
@@ -229,7 +142,8 @@ export class StridedMesh extends stridedmesh0.StridedMesh0
   
   public static getMSCylPositions(segmentsize: number,  nrows: number, stride: number)
   {
-    var pos =  StridedMesh.buildCylPositions(segmentsize,  nrows, stride,24,40);   
+    var r1: number=90, r2: number=170;
+    var pos =  StridedMesh.buildCylPositions(segmentsize,  nrows, stride,r1,r2);   
     return pos;
   }
 
