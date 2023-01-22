@@ -21,6 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FishAnimation = void 0;
 const baseapp = __importStar(require("../baseapp/baseapp"));
+//import * as animationclock from "../baseapp/animationclock";
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 class FishAnimation extends baseapp.BaseApp {
 }

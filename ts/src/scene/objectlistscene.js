@@ -26,7 +26,6 @@ const objectnode = __importStar(require("./objectnode"));
 class ObjectListScene {
     constructor(gl) {
         this.scenesize = 60;
-        this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
 
     in vec4 a_position;

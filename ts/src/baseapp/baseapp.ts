@@ -12,6 +12,7 @@ export type TAnimation1Parameters =
     sling: number,
     shininess: number,
     typelight: string;
+    environment: string;
     texture: string;
     fov:number;
     color0: string;
@@ -30,12 +31,15 @@ export var instance: BaseApp|null=null;
 export class BaseApp
 {       
     protected DefaultParameters: TAnimation1Parameters =  { showgrid: false, usecamera:true, camheight:0.0, influence:0.05, friction:0.97, bounce:0.5, move: true, speed: 0.01, color0:"#A0A0A0", gravity:0.02, 
-                                                            texture: 'geotriangle2', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
+                                                            texture: 'geotriangle2', environment: 'None', fov: 60, movetail: true, typelight:'point light',  sling:117, shininess:11.0 };
 
     baseappParameters: TAnimation1Parameters = this.DefaultParameters;
 
     public gl: WebGL2RenderingContext|null=null;
     public app:mtls.MouseListener|null=null;
+
+    // environment image
+    sceneenv = -1;
 
     // environment skybox camera
     public cameraTarget= [0,0,0];
@@ -46,6 +50,7 @@ export class BaseApp
     public doShowBackgroundColorChoice: boolean = false;
 
     // environment skybox
+    protected skyboxtexture: WebGLTexture | undefined;
     private skyboxLocation: WebGLUniformLocation | undefined;
     private viewDirectionProjectionInverseLocation: WebGLUniformLocation | undefined;
     private positionBuffer: WebGLBuffer|undefined;       // environment map geometry (quad in case of twgl)
@@ -56,6 +61,11 @@ export class BaseApp
     
     private envPrograminfo: twgl.ProgramInfo | undefined;
     
+    public  getEnvironmentTexture():WebGLTexture | undefined
+    {
+      return this.skyboxtexture;
+    }
+
     protected constructor(cgl: WebGL2RenderingContext | undefined | null, capp: mtls.MouseListener | undefined , dictpar:Map<string,string>, divname: string)
     {
         instance = this;
@@ -130,9 +140,25 @@ export class BaseApp
             var cel3 = gui.addColor(parameters, 'color0');
             cel3.onChange( this.onChangeColorValue);
         }
+
+        // Combobox texture from accepted values
+        var cel2 = gui.add(parameters, 'environment', [ 'None','Black','Yokohama', 'Stockholm', 'Underwater' ] );
+        cel2.onChange( this.onChangeEnvironmentCombo);
+        
         return gui;
     }
-
+    
+    onChangeEnvironmentCombo(value? : any)
+    {
+        var thisinstance = instance!;
+        if (value=="None")       { thisinstance.sceneenv=-1; thisinstance.skyboxtexture = undefined; return; } // no operaton: result is set background color 
+        if (value=="Black")      { thisinstance.sceneenv=0; } // black skybox: result is a black background  
+        if (value=="Yokohama")   { thisinstance.sceneenv=1; }
+        if (value=="Stockholm")  { thisinstance.sceneenv=2; }
+        if (value=="Underwater") { thisinstance.sceneenv=3; }
+        thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!,thisinstance.sceneenv, (p1,p2)=>{})!;
+    }
+ 
     //--- shaders for environment cube map background -----------------------------------------
 
     public vsEnvironmentMap = `#version 300 es
@@ -158,7 +184,9 @@ export class BaseApp
             void main() {
             vec4 t = u_viewDirectionProjectionInverse * v_position;
             // outColor = vec4(0,0,0,0);
-            outColor = texture(u_skybox, normalize(t.xyz / t.w));
+            //vec3 vinv= vec3(1.0,1.0,1.0);
+            //outColor = texture(u_skybox, vinv - normalize(t.xyz / t.w));
+            outColor = texture(u_skybox,  normalize(t.xyz / t.w));
         }
         `;
 
@@ -187,10 +215,15 @@ export class BaseApp
                1, -1, -1, -1, -1, 1, // triangle SW-SE-NW
                1, -1, -1,  1,  1, 1, // triangle NW-SE-NE
             ]);
-         var positions3D = new Float32Array(
+        var positions3D = new Float32Array(
+            [
+                -1, -1, 0, 1, -1, 0,  -1, 1,0, // triangle SW-SE-NW
+                -1,  1, 0, 1, -1, 0,  1, 1,0 // triangle NW-SE-NE
+            ]);
+        var positions3DMir = new Float32Array(
                 [
-                    -1, -1, 0, 1, -1, 0,  -1, 1,0, // triangle SW-SE-NW
-                    -1,  1, 0, 1, -1, 0,  1, 1,0 // triangle NW-SE-NE
+                    1, -1, 0,  -1, -1, 0, -1, 1,0, // triangle SW-SE-NW
+                    1, -1, 0,   -1,  1, 0,1, 1,0 // triangle NW-SE-NE
                 ]);
             
         gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);   
@@ -209,6 +242,15 @@ export class BaseApp
         var p=scene;
         switch (p) {
             case 0: {
+                pos_x_name= require("./../resources/images/black/pos-x.jpg");
+                pos_y_name= require("./../resources/images/black/pos-y.jpg");
+                pos_z_name= require("./../resources/images/black/pos-z.jpg");
+                neg_x_name= require("./../resources/images/black/neg-x.jpg");
+                neg_y_name= require("./../resources/images/black/neg-y.jpg");
+                neg_z_name= require("./../resources/images/black/neg-z.jpg");
+                break;
+            }
+            case 4: {
                 pos_x_name= require("./../resources/images/chmuseum/pos-x.jpg");
                 pos_y_name= require("./../resources/images/chmuseum/pos-y.jpg");
                 pos_z_name= require("./../resources/images/chmuseum/pos-z.jpg");
@@ -300,7 +342,7 @@ export class BaseApp
         return mytexture;
     }
 
-    public computeprojectionmatrices(gl: WebGL2RenderingContext, fov:number): m4.Mat4
+    public computeprojectionmatrices(gl: WebGL2RenderingContext, up: twgl.v3.Vec3, fov:number): m4.Mat4
     // env map
     {
         // Build a projection matrix.
@@ -308,7 +350,7 @@ export class BaseApp
         var projectionMatrix = m4.perspective(fov, aspect, 1, 2000);
       
         // Build a view matrix.
-        var up = [0, 1, 0];
+       // var up = [0, 1, 0];
         //this.cameraPosition[1]=this.baseappParameters.camheight;
         //this.cameraTarget[1]=this.baseappParameters.camheight;
         var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
@@ -352,7 +394,7 @@ export class BaseApp
         gl.bindVertexArray(this.vaoEnvironment!);
         this.restorePosAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, this.posdim); 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP,texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl,   fov);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [0,1,0],  fov);
         var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix!);
         gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(loc, 0);
@@ -371,7 +413,7 @@ export class BaseApp
     public renderenvironmentmapTwgl(gl: WebGL2RenderingContext, fov:number, texture: WebGLTexture)
     {
         gl.useProgram(this.envPrograminfo!.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));          
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl,[0,1,0], fov));          
         gl.bindVertexArray(this.vaoEnvironment!);
         twgl.setUniforms( this.envPrograminfo!, { 
           u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,

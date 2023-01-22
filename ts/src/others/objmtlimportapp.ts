@@ -130,7 +130,7 @@ export class MatObjApp extends baseapp.BaseApp
 
   gui: datgui.GUI|null=null;
 
-  onChangeTextureCombo(value? : any)
+  onChangeEnvironmentCombo(value? : any)
   {
     var thisinstance = baseapp.instance!;
     //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);

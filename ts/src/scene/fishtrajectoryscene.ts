@@ -5,7 +5,6 @@ import { m4, v3 } from "twgl.js";
 
 import * as camhandler from "../baseapp/camhandler"
 import * as datgui from "dat.gui"
-import * as animationclock from "../baseapp/animationclock"
 import * as scene from "./../scene/scene"
 
 import * as boneanimation from "./../bonemodel/boneanimation"
@@ -146,7 +145,6 @@ export class hoardsingle implements fish.hoard
 export class FishTrajectoryScene implements scene.SceneInterface
 {              
         scenesize: number = 140;
-        sceneenv: number = -1;
         animationParameters: TAnimation1Parameters | undefined;
         vertexShaderSource = ``;
         fragmentShaderSource = ``; 
@@ -174,10 +172,11 @@ export class FishTrajectoryScene implements scene.SceneInterface
     
         initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters, cam: camhandler.Camera, dictpar:Map<string,string>| undefined,  textureReadyCallback: undefined | ((a:any)=>void))
         {
+            gl.useProgram(this.twglprograminfo!.program);  // fish rendering program
+      
             cap.move = false;  
             cap.movetail = true;  
             cap.showgrid = false;  
-            gl.useProgram(this.twglprograminfo!.program);
             var nFish: number = 0;
             var time0: number = 0;
             this.h.fish.forEach((afish)=>{
@@ -192,7 +191,7 @@ export class FishTrajectoryScene implements scene.SceneInterface
                 nFish++;
                 if (nFish==this.h.fish.length && textureReadyCallback!=undefined) textureReadyCallback(0);           
               });   
-          }
+        }
         
         anglebetween( vectora: twgl.v3.Vec3,  vectorb: twgl.v3.Vec3): number
         // costly math, this is only done when model is changed
@@ -209,8 +208,7 @@ export class FishTrajectoryScene implements scene.SceneInterface
         }
 
         drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number)
-        {      
-                         
+        {                               
             gl.useProgram(this.twglprograminfo!.program); // fish rendering program
             
             // set the same camera for each fish type
@@ -218,7 +216,8 @@ export class FishTrajectoryScene implements scene.SceneInterface
                 this.h.fish[cfishtype].uniforms!.viewprojection = cam.viewProjection; 
             
             // update trajectory positions and velocity for current time
-            if (!this.firstframe) this.dtime=time-this.vtime; // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+            // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+            if (!this.firstframe) this.dtime=time-this.vtime;
             var trajpos: { p:v3.Vec3, v:v3.Vec3, change: boolean }[]=[];
             this.h.traj.forEach((t)=>{trajpos.push(t.proceed(this.dtime)!);});
           
@@ -267,7 +266,8 @@ export class FishTrajectoryScene implements scene.SceneInterface
                         ma.matrix = localmatrix;
                         ma.change =false;
                     } 
-                        
+                    
+                    // draw it
                     this.drawFish(gl, time, ma.matrix, cfishtype,cfish,inx,trajpos);
                 }
             }         

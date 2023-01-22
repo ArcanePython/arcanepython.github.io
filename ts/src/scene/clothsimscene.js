@@ -26,7 +26,6 @@ const clothmousehandler = __importStar(require("../cloth/clothmousehandler"));
 class ClothSimScene {
     constructor(gl, capp, dictPar) {
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.nbFrames = 0;
         this.lastTime = 0;
         this.rendermode_points = 0;

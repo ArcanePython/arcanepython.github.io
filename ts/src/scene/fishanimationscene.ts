@@ -3,7 +3,7 @@ import { m4 } from "twgl.js";
 
 import * as camhandler from "../baseapp/camhandler"   // camera projection
 import * as datgui from "dat.gui";
-import * as animationclock from "../baseapp/animationclock";
+//import * as animationclock from "../baseapp/animationclock";
 
 import { LinearTraject, Trajectory } from "../trajectory/trajectory";
 
@@ -81,7 +81,6 @@ export class hoard1 implements fish.hoard
 export class FishAnimationScene implements scene.SceneInterface
 {          
   scenesize: number = 40;
-  sceneenv: number = -1;
   animationParameters: TAnimation1Parameters | undefined;
   vertexShaderSource = ``;
   fragmentShaderSource = ``; 
@@ -97,7 +96,7 @@ export class FishAnimationScene implements scene.SceneInterface
       gui.add(this.animationParameters!, 'movetail');
    }
       
-    clock: animationclock.AnimationClock = new animationclock.AnimationClock();
+    //clock: animationclock.AnimationClock = new animationclock.AnimationClock();
 
     static instance: FishAnimationScene;
 
@@ -111,6 +110,7 @@ export class FishAnimationScene implements scene.SceneInterface
 
     initScene(gl: WebGL2RenderingContext,  cap:TAnimation1Parameters, cam: camhandler.Camera, dictpar:Map<string,string>| undefined,  textureReadyCallback: undefined | ((a:any)=>void))
     {
+      cap.camheight= 20;
       gl.useProgram(this.twglprograminfo!.program);
       var nFish: number = 0;
       var time0: number = 0;
@@ -125,6 +125,7 @@ export class FishAnimationScene implements scene.SceneInterface
         afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, afish.bufferInfo);
         nFish++;
         if (nFish==this.h.fish.length && textureReadyCallback!=undefined) textureReadyCallback(0);
+       
        
       //  textureReadyCallback(0);
       });   

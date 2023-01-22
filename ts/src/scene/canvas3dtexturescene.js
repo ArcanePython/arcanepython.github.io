@@ -25,7 +25,6 @@ const twgl_js_1 = require("twgl.js");
 class Canvas3dTextureScene {
     constructor(gl) {
         this.scenesize = 60;
-        this.sceneenv = 2;
         this.widthTextureToRenderOn = 512;
         this.heighttextureToRenderOn = 512;
         this.fieldOfViewRadians = (60 * Math.PI / 180);

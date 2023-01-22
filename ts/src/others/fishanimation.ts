@@ -13,7 +13,7 @@ import * as whaletranslated from "../bonemodel/whaletranslated"
 
 import  * as datgui from "dat.gui";
 import * as baseapp from "../baseapp/baseapp";
-import * as animationclock from "../baseapp/animationclock";
+//import * as animationclock from "../baseapp/animationclock";
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------

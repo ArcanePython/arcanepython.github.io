@@ -26,7 +26,6 @@ class DrawInstancedScene {
     constructor(gl) {
         //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 50;
-        this.sceneenv = -1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;

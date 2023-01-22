@@ -62,18 +62,23 @@ class Animation1 extends baseapp.BaseApp {
          */
         this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, this.scene.scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
-        if (this.scene.sceneenv > 0) {
-            //gl.useProgram(this.twglprograminfo![0].program);
-            if (this.doTwglEnv)
-                this.createEnvironmentMapGeoTwgl(gl);
-            else
-                this.createEnvironmentMapGeo(gl);
-            this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene.sceneenv, this.textureEnvReadyCallback);
-        }
-        else {
-            // gl.useProgram(this.twglprograminfo![1].program);     
-            this.scene.initScene(gl, this.animation1Parameters, this.cam, dictpar, this.sceneReadyCallback);
-        }
+        if (this.doTwglEnv)
+            this.createEnvironmentMapGeoTwgl(gl);
+        else
+            this.createEnvironmentMapGeo(gl);
+        this.skyboxtexture = this.createEnvironmentMapTexture(gl, (this.sceneenv < 0) ? 1 : this.sceneenv, this.textureEnvReadyCallback);
+        /*
+           if (this.sceneenv>0)
+           {
+               //gl.useProgram(this.twglprograminfo![0].program);
+               if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl);
+               this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.sceneenv, this.textureEnvReadyCallback)!;
+           }  else
+           {
+              // gl.useProgram(this.twglprograminfo![1].program);
+               this.scene.initScene(gl, this.animation1Parameters, this.cam!, dictpar, this.sceneReadyCallback);
+           }
+        */
     }
     sceneReadyCallback(err) {
         var thisinstance = baseapp.instance;
@@ -105,7 +110,7 @@ class Animation1 extends baseapp.BaseApp {
         // set current scene parameters
         this.scene.animationParameters = this.animation1Parameters;
         // render skybox                                                                          
-        if (this.scene.sceneenv > 0) {
+        if (this.sceneenv > 0) {
             // set skybox camera
             if (!((_a = this.scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move))
                 this.cameraPosition = [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[1], cam === null || cam === void 0 ? void 0 : cam.Position()[2]];

@@ -135,7 +135,6 @@ exports.hoardsingle = hoardsingle;
 class FishTrajectoryScene {
     constructor(cgl, ch) {
         this.scenesize = 140;
-        this.sceneenv = -1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.firstframe = true;
@@ -150,10 +149,10 @@ class FishTrajectoryScene {
         gui.add(this.animationParameters, 'movetail');
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program); // fish rendering program
         cap.move = false;
         cap.movetail = true;
         cap.showgrid = false;
-        gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;
         this.h.fish.forEach((afish) => {
@@ -188,8 +187,9 @@ class FishTrajectoryScene {
         for (var cfishtype = 0; cfishtype < this.h.fish.length; cfishtype++)
             this.h.fish[cfishtype].uniforms.viewprojection = cam.viewProjection;
         // update trajectory positions and velocity for current time
+        // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
         if (!this.firstframe)
-            this.dtime = time - this.vtime; // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+            this.dtime = time - this.vtime;
         var trajpos = [];
         this.h.traj.forEach((t) => { trajpos.push(t.proceed(this.dtime)); });
         // for each fish type..
@@ -229,6 +229,7 @@ class FishTrajectoryScene {
                     ma.matrix = localmatrix;
                     ma.change = false;
                 }
+                // draw it
                 this.drawFish(gl, time, ma.matrix, cfishtype, cfish, inx, trajpos);
             }
         }

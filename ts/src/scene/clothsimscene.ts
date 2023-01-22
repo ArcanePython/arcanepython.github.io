@@ -15,7 +15,6 @@ export class ClothSimScene implements scene.SceneInterface
     public static instance: ClothSimScene;
   
     public scenesize = 40;
-    public sceneenv = 1;
     public animationParameters: TAnimation1Parameters | undefined;
     
     public cloth: cloth.Cloth | undefined;

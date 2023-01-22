@@ -188,7 +188,7 @@ void main() {
                 console.log("ERROR: obj/mtl no mesh could be created.");
         }); // getfiles then({})
     }
-    onChangeTextureCombo(value) {
+    onChangeEnvironmentCombo(value) {
         var thisinstance = baseapp.instance;
         //console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
         //  thisinstance.currentTexture = value;

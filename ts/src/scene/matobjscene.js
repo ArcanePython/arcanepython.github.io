@@ -28,7 +28,6 @@ class MatObjScene {
     constructor(gl, capp, dictPar) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = -1; // 2;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.time = 0;

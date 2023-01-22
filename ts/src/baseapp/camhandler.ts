@@ -48,17 +48,15 @@
 
     constructor( dictpar:Map<string,string>)
     { 
-      {
+        var cvrad = Math.PI/180.0;
         if (dictpar.get("radius0")!=undefined) this.radius0 = +dictpar.get("radius0")!;
-        if (dictpar.get("hx")!=undefined) this.ahx = +dictpar.get("hx")!;
-        if (dictpar.get("hy")!=undefined) this.ahy = +dictpar.get("hy")!;
+        if (dictpar.get("hx")!=undefined) this.ahx = cvrad *( +dictpar.get("hx")!);
+        if (dictpar.get("hy")!=undefined) this.ahy = cvrad *( +dictpar.get("hy")!);
         if (dictpar.get("hxl")!=undefined){ this.ahorizlight = +dictpar.get("hxl")!;this.changelight=true; }
         if (dictpar.get("hyl")!=undefined){ this.avertlight = +dictpar.get("hyl")!;this.changelight=true; }
         if (dictpar.get("difflight")!=undefined){ this.difflightintensity = +dictpar.get("difflight")!; this.changelight=true; }
         if (dictpar.get("speclight")!=undefined){ this.speclightintensity = +dictpar.get("speclight")!; this.changelight=true; }
-      }
-      this.radius = this.radius0;
-      
+        this.radius = this.radius0;
     }
 /*
     private static createYUpCamera(gl: WebGL2RenderingContext, dictpar: Map<string,string>, szobj: number, app: mtls.MouseListener)

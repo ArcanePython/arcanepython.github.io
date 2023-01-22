@@ -14,7 +14,6 @@ export class MixedTextureScene implements scene.SceneInterface
    
     private twglprograminfo: twgl.ProgramInfo|undefined;  // (not used in this animation)
 
-    sceneenv:number = 2;
     positionLocation: number | undefined; // WebGLUniformLocation | undefined;
     cameraPosition: [number,number,number] | undefined
 

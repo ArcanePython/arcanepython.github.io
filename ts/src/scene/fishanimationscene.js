@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FishAnimationScene = exports.hoard1 = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const animationclock = __importStar(require("../baseapp/animationclock"));
+//import * as animationclock from "../baseapp/animationclock";
 const trajectory_1 = require("../trajectory/trajectory");
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
@@ -80,10 +80,8 @@ exports.hoard1 = hoard1;
 class FishAnimationScene {
     constructor(cgl, ch) {
         this.scenesize = 40;
-        this.sceneenv = -1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.clock = new animationclock.AnimationClock();
         //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;
@@ -100,6 +98,7 @@ class FishAnimationScene {
         gui.add(this.animationParameters, 'movetail');
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        cap.camheight = 20;
         gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;

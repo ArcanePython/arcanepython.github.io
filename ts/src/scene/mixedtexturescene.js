@@ -24,7 +24,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 class MixedTextureScene {
     constructor(gl) {
-        this.sceneenv = 2;
         this.matrixLocation = 0;
         this.textureLocation1 = 0;
         this.textureLocation2 = 0;

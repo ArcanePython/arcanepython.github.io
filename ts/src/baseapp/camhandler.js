@@ -37,29 +37,28 @@ class Camera {
         this.projection = twgl_js_1.m4.identity();
         this.changelight = false;
         this.changeeye = false;
-        {
-            if (dictpar.get("radius0") != undefined)
-                this.radius0 = +dictpar.get("radius0");
-            if (dictpar.get("hx") != undefined)
-                this.ahx = +dictpar.get("hx");
-            if (dictpar.get("hy") != undefined)
-                this.ahy = +dictpar.get("hy");
-            if (dictpar.get("hxl") != undefined) {
-                this.ahorizlight = +dictpar.get("hxl");
-                this.changelight = true;
-            }
-            if (dictpar.get("hyl") != undefined) {
-                this.avertlight = +dictpar.get("hyl");
-                this.changelight = true;
-            }
-            if (dictpar.get("difflight") != undefined) {
-                this.difflightintensity = +dictpar.get("difflight");
-                this.changelight = true;
-            }
-            if (dictpar.get("speclight") != undefined) {
-                this.speclightintensity = +dictpar.get("speclight");
-                this.changelight = true;
-            }
+        var cvrad = Math.PI / 180.0;
+        if (dictpar.get("radius0") != undefined)
+            this.radius0 = +dictpar.get("radius0");
+        if (dictpar.get("hx") != undefined)
+            this.ahx = cvrad * (+dictpar.get("hx"));
+        if (dictpar.get("hy") != undefined)
+            this.ahy = cvrad * (+dictpar.get("hy"));
+        if (dictpar.get("hxl") != undefined) {
+            this.ahorizlight = +dictpar.get("hxl");
+            this.changelight = true;
+        }
+        if (dictpar.get("hyl") != undefined) {
+            this.avertlight = +dictpar.get("hyl");
+            this.changelight = true;
+        }
+        if (dictpar.get("difflight") != undefined) {
+            this.difflightintensity = +dictpar.get("difflight");
+            this.changelight = true;
+        }
+        if (dictpar.get("speclight") != undefined) {
+            this.speclightintensity = +dictpar.get("speclight");
+            this.changelight = true;
         }
         this.radius = this.radius0;
     }

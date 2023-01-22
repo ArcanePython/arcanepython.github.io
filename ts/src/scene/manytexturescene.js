@@ -41,7 +41,6 @@ exports.Tdrawitem = Tdrawitem;
 class ManyTexturesScene {
     constructor(gl) {
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null; // there are 2 sets of shaders defined here.

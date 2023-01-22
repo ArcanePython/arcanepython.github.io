@@ -155,7 +155,7 @@ class drawimagespace extends baseapp.BaseApp {
         if (selectedSurface == "protractorT2")
             return this.textures.protractorT2;
     }
-    onChangeTextureCombo(value) {
+    onChangeEnvironmentCombo(value) {
         var thisinstance = drawimagespace.instance;
         console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.imagespaceParameters.speed);
         thisinstance.currentTexture = value;
@@ -221,7 +221,7 @@ class drawimagespace extends baseapp.BaseApp {
         cel3.onChange(this.onChangeColorValue);
         // Combobox texture from accepted values
         var cel2 = gui.add(this.imagespaceParameters, 'texture', ['geotriangle2', 'zelenskyy', 'clover', 'checker', 'aristotle', 'protractorT2']);
-        cel2.onChange(this.onChangeTextureCombo);
+        cel2.onChange(this.onChangeEnvironmentCombo);
         gui.updateDisplay();
         return gui;
     }

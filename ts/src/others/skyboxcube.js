@@ -171,7 +171,7 @@ class skyboxcube extends baseapp.BaseApp {
             if (!this.skyboxCubeParameters.moveenv)
                 this.cameraPosition = (_a = this.cam) === null || _a === void 0 ? void 0 : _a.Position();
         }
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fieldOfViewRadians));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [0, 1, 0], fieldOfViewRadians));
         // Rotate the cube around the x axis
         if (this.skyboxCubeParameters.movecube)
             this.worldMatrix = twgl.m4.axisRotation([1, 0, 0], mstime * this.skyboxCubeParameters.angVelocityCube);

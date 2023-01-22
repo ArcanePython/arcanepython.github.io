@@ -25,7 +25,6 @@ class SkyBoxScene {
     constructor(gl, dictPars) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.speedpreset = 0.05;

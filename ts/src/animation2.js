@@ -35,31 +35,11 @@ class Animation2 extends baseapp.BaseApp {
         Animation2.instance = this;
         this.scene = cscene;
         this.doShowBackgroundColorChoice = false;
-        if (this.scene[0].sceneenv < 0)
+        if (this.sceneenv < 0)
             this.doShowBackgroundColorChoice = true;
         else if ((dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) != undefined)
             this.doShowBackgroundColorChoice = ((+(dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice"))) > 0);
         this.clock = new animationclock.AnimationClock();
-    }
-    onChangeTextureCombo(value) {
-        var thisinstance = Animation2.instance;
-        console.log("we choose texture=[" + value + "] thisinstance.scene.sceneenv=" + thisinstance.scene[0].sceneenv);
-        if (value == "Black")
-            thisinstance.skyboxtexture = undefined; // result is a black background  
-        if (value == "Yokohama")
-            thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 1, (p1, p2) => { });
-        if (value == "Stockholm")
-            thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 2, (p1, p2) => { });
-        this.scene.forEach((s) => {
-            if (value == "None")
-                s.sceneenv = -1; // result is chosen color0 div  background  
-            if (value == "Black")
-                s.sceneenv = 0; //thisinstance.skyboxtexture = undefined; // result is a black background  
-            if (value == "Yokohama")
-                s.sceneenv = 1; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=1, (p1,p2)=>{})!;    
-            if (value == "Stockholm")
-                s.sceneenv = 2; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=2, (p1,p2)=>{})!; 
-        });
     }
     initGUI(parameters, cscene) {
         console.log("=> animation1 initGUI " + parameters);
@@ -84,19 +64,23 @@ class Animation2 extends baseapp.BaseApp {
         this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
         if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined)
-            this.scene[0].sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
-        if (this.scene[0].sceneenv > 0) {
-            console.log("animation2 initscenes with background");
-            if (this.doTwglEnv)
-                this.createEnvironmentMapGeoTwgl(gl);
-            else
-                this.createEnvironmentMapGeo(gl);
-            this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene[0].sceneenv, this.textureEnvReadyCallback);
-        }
-        else {
-            console.log("animation2 initscenes without background");
-            this.initScenes();
-        }
+            this.sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
+        /*        if (this.sceneenv>0)
+                {
+                  console.log("animation2 initscenes with background");
+                    if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl);
+                    this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.sceneenv, this.textureEnvReadyCallback)!;
+                } else
+                {
+                  console.log("animation2 initscenes without background");
+                  this.initScenes();
+                }
+        */
+        if (this.doTwglEnv)
+            this.createEnvironmentMapGeoTwgl(gl);
+        else
+            this.createEnvironmentMapGeo(gl);
+        this.skyboxtexture = this.createEnvironmentMapTexture(gl, (this.sceneenv < 0) ? 1 : this.sceneenv, this.textureEnvReadyCallback);
     }
     sceneReadyCallback(err) {
         console.log("-> sceneReadyCallback");
@@ -149,7 +133,7 @@ class Animation2 extends baseapp.BaseApp {
         // set current scene parameters
         scene.animationParameters = this.animation1Parameters;
         // render skybox                                                                          
-        if (scene.sceneenv > 0) {
+        if (this.sceneenv >= 0) {
             // set skybox camera
             if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move))
                 this.cameraPosition = [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[1], cam === null || cam === void 0 ? void 0 : cam.Position()[2]];
@@ -162,6 +146,8 @@ class Animation2 extends baseapp.BaseApp {
                 this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             }
             else {
+                console.log("render environment");
+                gl.disable(gl.CULL_FACE);
                 this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             }
         }

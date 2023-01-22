@@ -25,7 +25,6 @@ class SkyBoxCubeScene {
     constructor(gl) {
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
@@ -138,7 +137,7 @@ class SkyBoxCubeScene {
         if (this.projectionMatrix == undefined)
             this.projectionMatrix = twgl.m4.identity();
         //  gl.useProgram(this.twglprograminfo![1].program);      
-        gl.depthFunc(gl.LESS); // use the default depth test
+        //    gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube);
         //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
         //  var bb=this.reflectingCubeBufferInfo!.indices;

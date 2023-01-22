@@ -630,6 +630,7 @@ function preparedefaultparameters(dictPars) {
 function showScenesAnimation(gl, app, dictPars, scenes) {
     var mta1 = new animation2.Animation2(gl, app, scenes, dictPars, cdiv);
     mta1.main(gl, dictPars);
+    mta1.changedCam = true;
     mta1.initGUI(mta1.baseappParameters, 0);
     return mta1;
 }
@@ -693,7 +694,7 @@ function show(gl, app, dictPars) {
         var mta1 = showScenesAnimation(gl, app, dictPars, [
             new skyboxcubescene.SkyBoxCubeScene(gl)
         ]);
-        mta1.scene[0].texture = mta1.skyboxtexture;
+        mta1.scene[0].texture = mta1.getEnvironmentTexture();
         return mta1;
     }
     var a;
@@ -720,6 +721,7 @@ function show(gl, app, dictPars) {
         new rotatingcubescene.MixedTextureScene(gl)
     ];
     // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
+    // if (dictPars?.get("animation2")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined) a = [
         new canvas3dtexturescene.Canvas3dTextureScene(gl),
         new objectlistscene.ObjectListScene(gl)
@@ -11178,7 +11180,11 @@ class skyboxcube extends baseapp.BaseApp {
             // override cameraPosition by mouse camera position when moveenv checked off
             if (!this.skyboxCubeParameters.moveenv) this.cameraPosition = (_a = this.cam) === null || _a === void 0 ? void 0 : _a.Position();
         }
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fieldOfViewRadians));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [
+            0,
+            1,
+            0
+        ], fieldOfViewRadians));
         // Rotate the cube around the x axis
         if (this.skyboxCubeParameters.movecube) this.worldMatrix = twgl.m4.axisRotation([
             1,
@@ -11284,6 +11290,7 @@ class BaseApp {
             color0: "#A0A0A0",
             gravity: 0.02,
             texture: "geotriangle2",
+            environment: "None",
             fov: 60,
             movetail: true,
             typelight: "point light",
@@ -11293,6 +11300,8 @@ class BaseApp {
         this.baseappParameters = this.DefaultParameters;
         this.gl = null;
         this.app = null;
+        // environment image
+        this.sceneenv = -1;
         // environment skybox camera
         this.cameraTarget = [
             0,
@@ -11330,7 +11339,9 @@ class BaseApp {
             void main() {
             vec4 t = u_viewDirectionProjectionInverse * v_position;
             // outColor = vec4(0,0,0,0);
-            outColor = texture(u_skybox, normalize(t.xyz / t.w));
+            //vec3 vinv= vec3(1.0,1.0,1.0);
+            //outColor = texture(u_skybox, vinv - normalize(t.xyz / t.w));
+            outColor = texture(u_skybox,  normalize(t.xyz / t.w));
         }
         `;
         //=======================================================================================================================
@@ -11352,6 +11363,9 @@ class BaseApp {
             this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
             document.getElementById("cdiv").innerHTML = "BaseApp: skybox perspective prepared";
         }
+    }
+    getEnvironmentTexture() {
+        return this.skyboxtexture;
     }
     onChangeColorValue(value) {
         var thisinstance = exports.instance;
@@ -11393,7 +11407,30 @@ class BaseApp {
             var cel3 = gui.addColor(parameters, "color0");
             cel3.onChange(this.onChangeColorValue);
         }
+        // Combobox texture from accepted values
+        var cel2 = gui.add(parameters, "environment", [
+            "None",
+            "Black",
+            "Yokohama",
+            "Stockholm",
+            "Underwater"
+        ]);
+        cel2.onChange(this.onChangeEnvironmentCombo);
         return gui;
+    }
+    onChangeEnvironmentCombo(value) {
+        var thisinstance = exports.instance;
+        if (value == "None") {
+            thisinstance.sceneenv = -1;
+            thisinstance.skyboxtexture = undefined;
+            return;
+        } // no operaton: result is set background color 
+        if (value == "Black") thisinstance.sceneenv = 0;
+         // black skybox: result is a black background  
+        if (value == "Yokohama") thisinstance.sceneenv = 1;
+        if (value == "Stockholm") thisinstance.sceneenv = 2;
+        if (value == "Underwater") thisinstance.sceneenv = 3;
+        thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.sceneenv, (p1, p2)=>{});
     }
     createEnvironmentMapGeo(gl) {
         gl.useProgram(this.envPrograminfo.program);
@@ -11440,6 +11477,26 @@ class BaseApp {
             1,
             0 // triangle NW-SE-NE
         ]);
+        var positions3DMir = new Float32Array([
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            1,
+            0 // triangle NW-SE-NE
+        ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
     //     gl.bufferData(gl.ARRAY_BUFFER, positions2D, gl.STATIC_DRAW);   
@@ -11453,6 +11510,14 @@ class BaseApp {
         var p = scene;
         switch(p){
             case 0:
+                pos_x_name = require("./../resources/images/black/pos-x.jpg");
+                pos_y_name = require("./../resources/images/black/pos-y.jpg");
+                pos_z_name = require("./../resources/images/black/pos-z.jpg");
+                neg_x_name = require("./../resources/images/black/neg-x.jpg");
+                neg_y_name = require("./../resources/images/black/neg-y.jpg");
+                neg_z_name = require("./../resources/images/black/neg-z.jpg");
+                break;
+            case 4:
                 pos_x_name = require("./../resources/images/chmuseum/pos-x.jpg");
                 pos_y_name = require("./../resources/images/chmuseum/pos-y.jpg");
                 pos_z_name = require("./../resources/images/chmuseum/pos-z.jpg");
@@ -11547,16 +11612,12 @@ class BaseApp {
         //!  this.texture= mytexture!;
         return mytexture;
     }
-    computeprojectionmatrices(gl, fov) {
+    computeprojectionmatrices(gl, up, fov) {
         // Build a projection matrix.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
         // Build a view matrix.
-        var up = [
-            0,
-            1,
-            0
-        ];
+        // var up = [0, 1, 0];
         //this.cameraPosition[1]=this.baseappParameters.camheight;
         //this.cameraTarget[1]=this.baseappParameters.camheight;
         var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
@@ -11593,7 +11654,11 @@ class BaseApp {
         gl.bindVertexArray(this.vaoEnvironment);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [
+            0,
+            1,
+            0
+        ], fov);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(loc, 0);
@@ -11608,7 +11673,11 @@ class BaseApp {
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
         gl.useProgram(this.envPrograminfo.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [
+            0,
+            1,
+            0
+        ], fov));
         gl.bindVertexArray(this.vaoEnvironment);
         twgl.setUniforms(this.envPrograminfo, {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
@@ -11620,7 +11689,7 @@ class BaseApp {
 }
 exports.BaseApp = BaseApp;
 
-},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz","./../resources/images/underwater/pos-x.jpg":"eM650","./../resources/images/underwater/pos-y.jpg":"cunsh","./../resources/images/underwater/pos-z.jpg":"lAzoW","./../resources/images/underwater/neg-x.jpg":"gQ6n8","./../resources/images/underwater/neg-y.jpg":"36KrD","./../resources/images/underwater/neg-z.jpg":"8LtWO"}],"k3xQk":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz","./../resources/images/underwater/pos-x.jpg":"eM650","./../resources/images/underwater/pos-y.jpg":"cunsh","./../resources/images/underwater/pos-z.jpg":"lAzoW","./../resources/images/underwater/neg-x.jpg":"gQ6n8","./../resources/images/underwater/neg-y.jpg":"36KrD","./../resources/images/underwater/neg-z.jpg":"8LtWO","./../resources/images/black/pos-x.jpg":"aFxWk","./../resources/images/black/pos-y.jpg":"akByC","./../resources/images/black/pos-z.jpg":"kkwE7","./../resources/images/black/neg-x.jpg":"8D6Mw","./../resources/images/black/neg-y.jpg":"aJXpF","./../resources/images/black/neg-z.jpg":"lEcMw"}],"k3xQk":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "color", ()=>color);
@@ -14017,6 +14086,24 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.
 },{"./helpers/bundle-url":"lgJ39"}],"8LtWO":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.340b8870.jpg" + "?" + Date.now();
 
+},{"./helpers/bundle-url":"lgJ39"}],"aFxWk":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-x.3ef7d7b2.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"akByC":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-y.750d626d.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"kkwE7":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-z.8d5ed1ff.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"8D6Mw":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-x.a1591952.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"aJXpF":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.d90745b7.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lEcMw":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.681e3e53.jpg" + "?" + Date.now();
+
 },{"./helpers/bundle-url":"lgJ39"}],"1ZnlU":[function(require,module,exports) {
 "use strict";
 // camera
@@ -14083,9 +14170,10 @@ class Camera {
         this.projection = twgl_js_1.m4.identity();
         this.changelight = false;
         this.changeeye = false;
+        var cvrad = Math.PI / 180.0;
         if (dictpar.get("radius0") != undefined) this.radius0 = +dictpar.get("radius0");
-        if (dictpar.get("hx") != undefined) this.ahx = +dictpar.get("hx");
-        if (dictpar.get("hy") != undefined) this.ahy = +dictpar.get("hy");
+        if (dictpar.get("hx") != undefined) this.ahx = cvrad * +dictpar.get("hx");
+        if (dictpar.get("hy") != undefined) this.ahy = cvrad * +dictpar.get("hy");
         if (dictpar.get("hxl") != undefined) {
             this.ahorizlight = +dictpar.get("hxl");
             this.changelight = true;
@@ -15664,7 +15752,7 @@ class drawimagespace extends baseapp.BaseApp {
         if (selectedSurface == "aristotle") return this.textures.geotriangle2;
         if (selectedSurface == "protractorT2") return this.textures.protractorT2;
     }
-    onChangeTextureCombo(value) {
+    onChangeEnvironmentCombo(value) {
         var thisinstance = drawimagespace.instance;
         console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.imagespaceParameters.speed);
         thisinstance.currentTexture = value;
@@ -15728,7 +15816,7 @@ class drawimagespace extends baseapp.BaseApp {
             "aristotle",
             "protractorT2"
         ]);
-        cel2.onChange(this.onChangeTextureCombo);
+        cel2.onChange(this.onChangeEnvironmentCombo);
         gui.updateDisplay();
         return gui;
     }
@@ -15931,22 +16019,9 @@ class Animation2 extends baseapp.BaseApp {
         Animation2.instance = this;
         this.scene = cscene;
         this.doShowBackgroundColorChoice = false;
-        if (this.scene[0].sceneenv < 0) this.doShowBackgroundColorChoice = true;
+        if (this.sceneenv < 0) this.doShowBackgroundColorChoice = true;
         else if ((dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) != undefined) this.doShowBackgroundColorChoice = +(dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) > 0;
         this.clock = new animationclock.AnimationClock();
-    }
-    onChangeTextureCombo(value) {
-        var thisinstance = Animation2.instance;
-        console.log("we choose texture=[" + value + "] thisinstance.scene.sceneenv=" + thisinstance.scene[0].sceneenv);
-        if (value == "Black") thisinstance.skyboxtexture = undefined; // result is a black background  
-        if (value == "Yokohama") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 1, (p1, p2)=>{});
-        if (value == "Stockholm") thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, 2, (p1, p2)=>{});
-        this.scene.forEach((s)=>{
-            if (value == "None") s.sceneenv = -1; // result is chosen color0 div  background  
-            if (value == "Black") s.sceneenv = 0; //thisinstance.skyboxtexture = undefined; // result is a black background  
-            if (value == "Yokohama") s.sceneenv = 1; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=1, (p1,p2)=>{})!;    
-            if (value == "Stockholm") s.sceneenv = 2; //thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl!, thisinstance.scene[0].sceneenv=2, (p1,p2)=>{})!; 
-        });
     }
     initGUI(parameters, cscene) {
         console.log("=> animation1 initGUI " + parameters);
@@ -15968,16 +16043,20 @@ class Animation2 extends baseapp.BaseApp {
         this.dictpars = dictPars;
         this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
         this.cam.zoominVelocity = 0.5;
-        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined) this.scene[0].sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
-        if (this.scene[0].sceneenv > 0) {
-            console.log("animation2 initscenes with background");
-            if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
-            else this.createEnvironmentMapGeo(gl);
-            this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.scene[0].sceneenv, this.textureEnvReadyCallback);
-        } else {
-            console.log("animation2 initscenes without background");
-            this.initScenes();
-        }
+        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined) this.sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
+        /*        if (this.sceneenv>0)
+                {
+                  console.log("animation2 initscenes with background");
+                    if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl);
+                    this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.sceneenv, this.textureEnvReadyCallback)!;
+                } else
+                {
+                  console.log("animation2 initscenes without background");
+                  this.initScenes();
+                }
+        */ if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
+        else this.createEnvironmentMapGeo(gl);
+        this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.sceneenv < 0 ? 1 : this.sceneenv, this.textureEnvReadyCallback);
     }
     sceneReadyCallback(err) {
         console.log("-> sceneReadyCallback");
@@ -16032,7 +16111,7 @@ class Animation2 extends baseapp.BaseApp {
         // set current scene parameters
         scene.animationParameters = this.animation1Parameters;
         // render skybox                                                                          
-        if (scene.sceneenv > 0) {
+        if (this.sceneenv >= 0) {
             // set skybox camera
             if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move)) this.cameraPosition = [
                 cam === null || cam === void 0 ? void 0 : cam.Position()[0],
@@ -16051,7 +16130,11 @@ class Animation2 extends baseapp.BaseApp {
             //    gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL);
             if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
-            else this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
+            else {
+                console.log("render environment");
+                gl.disable(gl.CULL_FACE);
+                this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
+            }
         }
         // render scene
         gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
@@ -16134,7 +16217,6 @@ class SkyBoxScene {
     constructor(gl, dictPars){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.speedpreset = 0.05;
@@ -16218,7 +16300,6 @@ exports.Tdrawitem = Tdrawitem;
 class ManyTexturesScene {
     constructor(gl){
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.twglprograminfo = null; // there are 2 sets of shaders defined here.
@@ -20323,7 +20404,6 @@ const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
 class MixedTextureScene {
     constructor(gl){
-        this.sceneenv = 2;
         this.matrixLocation = 0;
         this.textureLocation1 = 0;
         this.textureLocation2 = 0;
@@ -20777,8 +20857,6 @@ const basescene_1 = require("./basescene");
 class LightScene extends basescene_1.BaseScene {
     constructor(gl){
         super();
-        // interface
-        this.sceneenv = 1;
         this.ctime = 0;
         this.scenesize = 60;
         this.vertexShaderSourceSpotLight = `#version 300 es
@@ -21857,7 +21935,6 @@ const objectnode = __importStar(require("./objectnode"));
 class ObjectListScene {
     constructor(gl){
         this.scenesize = 60;
-        this.sceneenv = 2;
         this.vertexShaderSource = `#version 300 es
 
     in vec4 a_position;
@@ -22189,7 +22266,6 @@ const twgl_js_1 = require("twgl.js");
 class Canvas3dTextureScene {
     constructor(gl){
         this.scenesize = 60;
-        this.sceneenv = 2;
         this.widthTextureToRenderOn = 512;
         this.heighttextureToRenderOn = 512;
         this.fieldOfViewRadians = 60 * Math.PI / 180;
@@ -22826,7 +22902,6 @@ const twgl_js_1 = require("twgl.js");
 class Canvas3dTextureScene2 {
     constructor(gl){
         this.scenesize = 60;
-        this.sceneenv = 1;
         this.widthTextureToRenderOn = 512;
         this.heighttextureToRenderOn = 512;
         this.fieldOfViewRadians = 60 * Math.PI / 180;
@@ -23461,7 +23536,6 @@ class DrawInstancedScene {
     constructor(gl){
         //   twglprograminfo: twgl.ProgramInfo[]|null=null;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
         this.scenesize = 50;
-        this.sceneenv = -1;
         this.vertexShaderSource = `#version 300 es
 in vec4 a_position;
 in vec4 color;
@@ -23713,7 +23787,6 @@ const clothmousehandler = __importStar(require("../cloth/clothmousehandler"));
 class ClothSimScene {
     constructor(gl, capp, dictPar){
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.nbFrames = 0;
         this.lastTime = 0;
         this.rendermode_points = 0;
@@ -24296,7 +24369,6 @@ class SkyBoxCubeScene {
     constructor(gl){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = 1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
@@ -24430,7 +24502,7 @@ class SkyBoxCubeScene {
         if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
         if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
         //  gl.useProgram(this.twglprograminfo![1].program);      
-        gl.depthFunc(gl.LESS); // use the default depth test
+        //    gl.depthFunc(gl.LESS);  // use the default depth test
         gl.bindVertexArray(this.vaoCube);
         //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
         //  var bb=this.reflectingCubeBufferInfo!.indices;
@@ -24493,7 +24565,6 @@ class MatObjScene {
     constructor(gl, capp, dictPar){
         // SceneInterface only, skybox is shown in animation container (now animation1.ts)
         this.scenesize = 40;
-        this.sceneenv = -1; // 2;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.time = 0;
@@ -25635,7 +25706,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.FishAnimationScene = exports.hoard1 = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
 const twgl_js_1 = require("twgl.js");
-const animationclock = __importStar(require("../baseapp/animationclock"));
+//import * as animationclock from "../baseapp/animationclock";
 const trajectory_1 = require("../trajectory/trajectory");
 const boneanimation = __importStar(require("./../bonemodel/boneanimation"));
 const fishwithjoints = __importStar(require("../bonemodel/fishwithjoints"));
@@ -25819,10 +25890,8 @@ exports.hoard1 = hoard1;
 class FishAnimationScene {
     constructor(cgl, ch){
         this.scenesize = 40;
-        this.sceneenv = -1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        this.clock = new animationclock.AnimationClock();
         //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;
@@ -25844,6 +25913,7 @@ class FishAnimationScene {
         gui.add(this.animationParameters, "movetail");
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        cap.camheight = 20;
         gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;
@@ -25944,7 +26014,7 @@ class FishAnimationScene {
 }
 exports.FishAnimationScene = FishAnimationScene;
 
-},{"twgl.js":"3uqAP","../baseapp/animationclock":"4nsaS","../trajectory/trajectory":"5rdam","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8"}],"5rdam":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","../trajectory/trajectory":"5rdam","./../bonemodel/boneanimation":"hK6Lv","../bonemodel/fishwithjoints":"8we7o","./../bonemodel/fishv":"gjwG7","../bonemodel/whale":"9Ww6M","../bonemodel/fishonejoint":"6rbFF","../bonemodel/whaletranslated":"jTFw8"}],"5rdam":[function(require,module,exports) {
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -27710,7 +27780,6 @@ exports.hoardsingle = hoardsingle;
 class FishTrajectoryScene {
     constructor(cgl, ch){
         this.scenesize = 140;
-        this.sceneenv = -1;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
         this.firstframe = true;
@@ -27730,10 +27799,10 @@ class FishTrajectoryScene {
         gui.add(this.animationParameters, "movetail");
     }
     initScene(gl, cap, cam, dictpar, textureReadyCallback) {
+        gl.useProgram(this.twglprograminfo.program); // fish rendering program
         cap.move = false;
         cap.movetail = true;
         cap.showgrid = false;
-        gl.useProgram(this.twglprograminfo.program);
         var nFish = 0;
         var time0 = 0;
         this.h.fish.forEach((afish)=>{
@@ -27769,7 +27838,8 @@ class FishTrajectoryScene {
         // set the same camera for each fish type
         for(var cfishtype = 0; cfishtype < this.h.fish.length; cfishtype++)this.h.fish[cfishtype].uniforms.viewprojection = cam.viewProjection;
         // update trajectory positions and velocity for current time
-        if (!this.firstframe) this.dtime = time - this.vtime; // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+        // at 60Fps, value of dtime is ms between 9 and 22, nominal 16.66
+        if (!this.firstframe) this.dtime = time - this.vtime;
         var trajpos = [];
         this.h.traj.forEach((t)=>{
             trajpos.push(t.proceed(this.dtime));
@@ -27821,6 +27891,7 @@ class FishTrajectoryScene {
                     ma.matrix = localmatrix;
                     ma.change = false;
                 }
+                // draw it
                 this.drawFish(gl, time, ma.matrix, cfishtype, cfish, inx, trajpos);
             }
         }

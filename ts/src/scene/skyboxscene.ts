@@ -12,7 +12,6 @@ export class SkyBoxScene implements scene.SceneInterface
 {
     // SceneInterface only, skybox is shown in animation container (now animation1.ts)
     scenesize: number = 40;
-    sceneenv: number = 1;
     animationParameters: TAnimation1Parameters | undefined;
     vertexShaderSource = ``;
     fragmentShaderSource = ``; 

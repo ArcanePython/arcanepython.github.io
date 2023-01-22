@@ -12,7 +12,7 @@ export interface SceneInterface
                                                           // keep in mind this happens before initScene() and there is only 1 camera involved for all scenes, so when 
                                                           // there is more than 1 scene, the sizes and positions are to be set in the same world space..
 
-  sceneenv:number;                                        // current skybox texture -1=none 0=black 1=Ykohama 2=Stockholm
+  //sceneenv1:number;                                        // current skybox texture -1=none 0=black 1=Ykohama 2=Stockholm
 
   animationParameters: TAnimation1Parameters | undefined; // parameters, record will be common for all scenes displayed concurrently
 

@@ -54,7 +54,6 @@ export class ManyTexturesScene implements scene.SceneInterface
   animationParameters: TAnimation1Parameters | undefined;
   scenesize: number = 40;
 
-  sceneenv:number = 1;
   positionLocation: number | undefined; // WebGLUniformLocation | undefined;
       
   public defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) { }

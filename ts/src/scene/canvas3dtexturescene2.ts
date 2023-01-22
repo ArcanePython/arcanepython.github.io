@@ -12,7 +12,6 @@ implements scene.SceneInterface
 {
     private twglprograminfo: twgl.ProgramInfo|undefined;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
     scenesize=60;
-    sceneenv=1;
     positionLocation: number | undefined;
     cameraPosition: [number,number,number] | undefined
     animationParameters: TAnimation1Parameters | undefined;

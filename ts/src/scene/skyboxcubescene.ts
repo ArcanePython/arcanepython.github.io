@@ -16,7 +16,6 @@ export class SkyBoxCubeScene implements scene.SceneInterface
    
     // SceneInterface only, skybox is shown in animation container (now animation1.ts)
     scenesize: number = 40;
-    sceneenv: number = 1;
     animationParameters: TAnimation1Parameters | undefined;
     vertexShaderSource = ``;
     fragmentShaderSource = ``; 
@@ -122,7 +121,7 @@ export class SkyBoxCubeScene implements scene.SceneInterface
         if (this.projectionMatrix==undefined)this.projectionMatrix=twgl.m4.identity();
 
       //  gl.useProgram(this.twglprograminfo![1].program);      
-        gl.depthFunc(gl.LESS);  // use the default depth test
+    //    gl.depthFunc(gl.LESS);  // use the default depth test
 
         gl.bindVertexArray(this.vaoCube!);  
      //   this.restorePositionAttributeContext(gl, this.reflectingCubeBufferInfo!.attribs posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)

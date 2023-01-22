@@ -89,6 +89,7 @@ function preparedefaultparameters(dictPars) {
 function showScenesAnimation(gl, app, dictPars, scenes) {
     var mta1 = new animation2.Animation2(gl, app, scenes, dictPars, cdiv);
     mta1.main(gl, dictPars);
+    mta1.changedCam = true;
     mta1.initGUI(mta1.baseappParameters, 0);
     return mta1;
 }
@@ -142,7 +143,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) // Sky Cube scene (requires copying the background texture for display as reflection !)
      {
         var mta1 = showScenesAnimation(gl, app, dictPars, [new skyboxcubescene.SkyBoxCubeScene(gl)]);
-        mta1.scene[0].texture = mta1.skyboxtexture;
+        mta1.scene[0].texture = mta1.getEnvironmentTexture();
         return mta1;
     }
     var a;
@@ -160,6 +161,7 @@ function show(gl, app, dictPars) {
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined)
         a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
     // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
+    // if (dictPars?.get("animation2")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined)

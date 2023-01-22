@@ -152,7 +152,7 @@ export class drawimagespace extends baseapp.BaseApp
 
       gui: datgui.GUI|null=null;
 
-      onChangeTextureCombo(value? : any)
+      onChangeEnvironmentCombo(value? : any)
       {
         var thisinstance = drawimagespace.instance as drawimagespace;
         console.log("we are in texture=["+value+"] obj.speed="+ thisinstance.imagespaceParameters.speed);
@@ -220,7 +220,7 @@ export class drawimagespace extends baseapp.BaseApp
        
         // Combobox texture from accepted values
         var cel2 = gui.add(this.imagespaceParameters, 'texture', [ 'geotriangle2','zelenskyy', 'clover', 'checker','aristotle','protractorT2' ] );
-        cel2.onChange( this.onChangeTextureCombo);
+        cel2.onChange( this.onChangeEnvironmentCombo);
            
         gui.updateDisplay();
         return gui;

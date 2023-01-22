@@ -27,10 +27,12 @@ exports.instance = null;
 class BaseApp {
     constructor(cgl, capp, dictpar, divname) {
         this.DefaultParameters = { showgrid: false, usecamera: true, camheight: 0.0, influence: 0.05, friction: 0.97, bounce: 0.5, move: true, speed: 0.01, color0: "#A0A0A0", gravity: 0.02,
-            texture: 'geotriangle2', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
+            texture: 'geotriangle2', environment: 'None', fov: 60, movetail: true, typelight: 'point light', sling: 117, shininess: 11.0 };
         this.baseappParameters = this.DefaultParameters;
         this.gl = null;
         this.app = null;
+        // environment image
+        this.sceneenv = -1;
         // environment skybox camera
         this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [0, 0, 0];
@@ -60,7 +62,9 @@ class BaseApp {
             void main() {
             vec4 t = u_viewDirectionProjectionInverse * v_position;
             // outColor = vec4(0,0,0,0);
-            outColor = texture(u_skybox, normalize(t.xyz / t.w));
+            //vec3 vinv= vec3(1.0,1.0,1.0);
+            //outColor = texture(u_skybox, vinv - normalize(t.xyz / t.w));
+            outColor = texture(u_skybox,  normalize(t.xyz / t.w));
         }
         `;
         //=======================================================================================================================
@@ -82,6 +86,9 @@ class BaseApp {
             this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
             document.getElementById('cdiv').innerHTML = "BaseApp: skybox perspective prepared";
         }
+    }
+    getEnvironmentTexture() {
+        return this.skyboxtexture;
     }
     onChangeColorValue(value) {
         var thisinstance = exports.instance;
@@ -121,7 +128,31 @@ class BaseApp {
             var cel3 = gui.addColor(parameters, 'color0');
             cel3.onChange(this.onChangeColorValue);
         }
+        // Combobox texture from accepted values
+        var cel2 = gui.add(parameters, 'environment', ['None', 'Black', 'Yokohama', 'Stockholm', 'Underwater']);
+        cel2.onChange(this.onChangeEnvironmentCombo);
         return gui;
+    }
+    onChangeEnvironmentCombo(value) {
+        var thisinstance = exports.instance;
+        if (value == "None") {
+            thisinstance.sceneenv = -1;
+            thisinstance.skyboxtexture = undefined;
+            return;
+        } // no operaton: result is set background color 
+        if (value == "Black") {
+            thisinstance.sceneenv = 0;
+        } // black skybox: result is a black background  
+        if (value == "Yokohama") {
+            thisinstance.sceneenv = 1;
+        }
+        if (value == "Stockholm") {
+            thisinstance.sceneenv = 2;
+        }
+        if (value == "Underwater") {
+            thisinstance.sceneenv = 3;
+        }
+        thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.sceneenv, (p1, p2) => { });
     }
     createEnvironmentMapGeo(gl) {
         gl.useProgram(this.envPrograminfo.program);
@@ -142,6 +173,10 @@ class BaseApp {
             -1, -1, 0, 1, -1, 0, -1, 1, 0,
             -1, 1, 0, 1, -1, 0, 1, 1, 0 // triangle NW-SE-NE
         ]);
+        var positions3DMir = new Float32Array([
+            1, -1, 0, -1, -1, 0, -1, 1, 0,
+            1, -1, 0, -1, 1, 0, 1, 1, 0 // triangle NW-SE-NE
+        ]);
         gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
         //     gl.bufferData(gl.ARRAY_BUFFER, positions2D, gl.STATIC_DRAW);   
@@ -155,6 +190,15 @@ class BaseApp {
         var p = scene;
         switch (p) {
             case 0: {
+                pos_x_name = require("./../resources/images/black/pos-x.jpg");
+                pos_y_name = require("./../resources/images/black/pos-y.jpg");
+                pos_z_name = require("./../resources/images/black/pos-z.jpg");
+                neg_x_name = require("./../resources/images/black/neg-x.jpg");
+                neg_y_name = require("./../resources/images/black/neg-y.jpg");
+                neg_z_name = require("./../resources/images/black/neg-z.jpg");
+                break;
+            }
+            case 4: {
                 pos_x_name = require("./../resources/images/chmuseum/pos-x.jpg");
                 pos_y_name = require("./../resources/images/chmuseum/pos-y.jpg");
                 pos_z_name = require("./../resources/images/chmuseum/pos-z.jpg");
@@ -239,12 +283,12 @@ class BaseApp {
         //!  this.texture= mytexture!;
         return mytexture;
     }
-    computeprojectionmatrices(gl, fov) {
+    computeprojectionmatrices(gl, up, fov) {
         // Build a projection matrix.
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
         // Build a view matrix.
-        var up = [0, 1, 0];
+        // var up = [0, 1, 0];
         //this.cameraPosition[1]=this.baseappParameters.camheight;
         //this.cameraTarget[1]=this.baseappParameters.camheight;
         var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
@@ -281,7 +325,7 @@ class BaseApp {
         gl.bindVertexArray(this.vaoEnvironment);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, fov);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [0, 1, 0], fov);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(loc, 0);
@@ -296,7 +340,7 @@ class BaseApp {
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
         gl.useProgram(this.envPrograminfo.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, fov));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [0, 1, 0], fov));
         gl.bindVertexArray(this.vaoEnvironment);
         twgl.setUniforms(this.envPrograminfo, {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,

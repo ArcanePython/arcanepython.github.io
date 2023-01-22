@@ -27,8 +27,6 @@ const basescene_1 = require("./basescene");
 class LightScene extends basescene_1.BaseScene {
     constructor(gl) {
         super();
-        // interface
-        this.sceneenv = 1;
         this.ctime = 0;
         this.scenesize = 60;
         this.vertexShaderSourceSpotLight = `#version 300 es

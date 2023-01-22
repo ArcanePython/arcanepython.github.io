@@ -20,7 +20,6 @@ export class LightScene extends BaseScene implements scene.SceneInterface
     private twglprograminfo: twgl.ProgramInfo|undefined;  // shaders are provided in interface string fields, in this scene twglprograminfo[] remains null
 
     // interface
-    sceneenv:number = 1;
     positionLocation: number | undefined;
     cameraPosition: [number,number,number] | undefined
     ctime: number = 0;
