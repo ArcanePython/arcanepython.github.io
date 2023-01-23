@@ -90,7 +90,7 @@ export class hoardsingle implements fish.hoard
         this.traj.push( new Trajectory(path, 2.0*defaultspeed, true));
         var path = this.arcpath(400,80,0,1.0/1.61);
         this.traj.push( new Trajectory(path, defaultspeed, true));
-        var path = this.arcpath(400,100,0,1.0);
+        var path = this.arcpath(400,120,0,1.0);
         this.traj.push( new Trajectory(path, defaultspeed, true));
     }  
 
@@ -185,7 +185,7 @@ export class FishTrajectoryScene implements scene.SceneInterface
                 afish.setNumBones(gl);
                 afish.createBoneTexture(gl, time0, dictpar!);
                 afish.createSurfaceTexture(gl);
-                afish.uniforms= afish.createUniforms(gl, dictpar!);
+                afish.uniforms= afish.createUniforms();
                 afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh!.arrays);
                 afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, afish.bufferInfo);
                 nFish++;
@@ -243,17 +243,14 @@ export class FishTrajectoryScene implements scene.SceneInterface
                     // move (always done except on first frame)
                     var velo: v3.Vec3 = [0,0,0];
                     var velocitytrans: m4.Mat4;
-                    if (!this.firstframe)
-                    { 
-                        velo = trajpos[inx].v;
-                        velocitytrans = twgl.m4.translation(velo=[velo[0]*this.dtime,velo[1]*this.dtime,velo[2]*this.dtime]);  
-                        ma.change = trajpos[inx].change;
-                    }    
-                    else velocitytrans = m4.identity();
-                
+                    velo = trajpos[inx].v;
+                    velocitytrans = twgl.m4.translation(velo=[velo[0]*this.dtime,velo[1]*this.dtime,velo[2]*this.dtime]);  
+                    ma.change = trajpos[inx].change;
+                 
                     // posture (done when direction is changed)
                     if (ma.change)                 
                     {           
+                        if(inx>0){}// console.log("change "+trajpos[inx].v+" to "+trajpos[inx].v); }
                         var modeldir = [-1,0,0];
                         var localmatrix = m4.identity();      
                         var velonorm = twgl.v3.normalize(velo);

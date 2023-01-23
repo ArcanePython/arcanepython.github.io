@@ -15,6 +15,7 @@ class Camera {
         this.far = 1000.0; // far plane
         this.rotationVelocity = 0.012; // mouse drag sensitivity for angle turns
         this.zoominVelocity = 1.0; // mouse wheel sensitivity set at objectsize/40
+        this.camType = Camera.CamYUp;
         // lights
         this.ahorizlight = 3.0 * Math.PI / 2.0; // light horizontal angle
         this.avertlight = Math.PI / 4.0; // light vertical angle
@@ -64,6 +65,7 @@ class Camera {
     }
     static createCamera(gl, dictpar, camtype, szobj, app) {
         var cam = new Camera(dictpar);
+        cam.camType = camtype;
         cam.zoominVelocity = szobj / 20.0;
         if (cam.radius0 == 0) {
             cam.radius0 = 2.0 * szobj;
@@ -97,9 +99,13 @@ class Camera {
     translateTarget(v) {
         var t = twgl_js_1.m4.translation(v);
         this.target = twgl_js_1.m4.transformPoint(t, this.target);
-        this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
+        if (this.camType == Camera.CamYUp)
+            this.setYUpEye();
+        if (this.camType == Camera.CamZUp)
+            this.setZUpEye();
+        //  this.lookAt = m4.lookAt(this.eye, this.target, this.up);
         //console.log("translate target "+this.target);
-        this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
+        //  this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
     }
     ReportEye() {
         var sEye = this.eye[0].toPrecision(4) + "," + this.eye[1].toPrecision(4) + "," + this.eye[2].toPrecision(4);
@@ -133,7 +139,7 @@ class Camera {
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahy, this.myr);
         twgl_js_1.m4.translate(this.myr, [0, this.camHeight, 0], this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [this.radius, 0, 0]);
-        this.target[1] = this.camHeight;
+        //   this.target[1]=this.camHeight; 
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
         this.ReportEye();
@@ -142,10 +148,15 @@ class Camera {
     setZUpEye() {
         //  this.yaxis = m4.transformPoint(this.invworldmat, [0,1,0]) as number[];    
         this.myr = twgl_js_1.m4.identity();
+        /*   m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
+           //up = m4.transformPoint(myr,[0,1,0]) as number[];
+           m4.translate(this.myr,[0,0,this.camHeight],this.myr);
+           m4.axisRotate(this.myr,this.yaxis, this.ahy, this.myr);
+        */
         twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahx, this.myr);
         //up = m4.transformPoint(myr,[0,1,0]) as number[];
-        twgl_js_1.m4.translate(this.myr, [0, 0, this.camHeight], this.myr);
         twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahy, this.myr);
+        twgl_js_1.m4.translate(this.myr, [0, 0, this.camHeight], this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [this.radius, 0, 0]);
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));

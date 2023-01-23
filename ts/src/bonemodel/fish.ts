@@ -63,7 +63,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
       var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
       if (cmeshtype=="strip")
       {
-        var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20 );
+        var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.40 );
         tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride,dictpar);
         tsmesh.type = gl.TRIANGLE_STRIP;  
         return tsmesh;
@@ -117,7 +117,7 @@ export abstract class Fish extends boneanimation.BoneAnimation implements FishIn
         this.EndOfBoneTrans = m4.identity();     
     }
 
-    createUniforms(gl:WebGL2RenderingContext,dictpar:Map<string,string>)
+    createUniforms()
     // called from constructors
     {
         return  {

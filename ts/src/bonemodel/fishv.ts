@@ -16,7 +16,7 @@ export class FishV extends fish.Fish
   // create mesh positions for a fish with tail in vertical pose, moving left/right.
   {
     var cstride =  this.numberDictPar(dictpar,"stride",80);
-    var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
+    var cnumrows =  this.numberDictPar(dictpar,"numrows",30);
     return this.prepareMeshGen(gl,dictpar,this.name,scale,cnumrows,cstride,stridedmesh.StridedMesh.getFishPositions,trianglesmesh.StridedMesh.getTrianglesMeshPositions);
   }
 

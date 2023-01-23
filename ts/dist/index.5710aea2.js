@@ -567,7 +567,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 const mtls = __importStar(require("./baseapp/mouselistener")); // baseapp connects events for mouse click, move and wheel to an app object
 const twgl = __importStar(require("twgl.js"));
-const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp derivative: show reflecting cube in skybox
+//import * as skyboxcube from "./others/skyboxcube"                      // baseapp derivative: show reflecting cube in skybox
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
@@ -602,10 +602,8 @@ function preparedefaultparameters(dictPars) {
             dictPars.set("whales", "");
             dictPars.set("radius0", "150");
             dictPars.set("mesh", "strip");
-            dictPars.set("hx", "1.2");
-            dictPars.set("hy", "0.1");
-            dictPars.set("stride", "180");
-            dictPars.set("numrows", "39");
+            dictPars.set("hx", "60");
+            dictPars.set("hy", "10");
             dictPars.set("env", "2");
             break;
         case ShowAnimation1:
@@ -631,6 +629,7 @@ function showScenesAnimation(gl, app, dictPars, scenes) {
     var mta1 = new animation2.Animation2(gl, app, scenes, dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.changedCam = true;
+    //mta1.baseappParameters!.move=false;
     mta1.initGUI(mta1.baseappParameters, 0);
     return mta1;
 }
@@ -648,18 +647,6 @@ function showBaseAppAnimation(gl, app, dictPars) {
             color0: "#D0A010"
         });
         return ims;
-    } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
-        var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
-        sbc.main(gl, dictPars);
-        sbc.initGUI({
-            movecube: false,
-            moveenv: false,
-            fieldOfViewDegrees: 32,
-            radiusCam: 5.0,
-            angVelocityCam: 0.005,
-            angVelocityCube: 0.003
-        });
-        return sbc;
     } else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) {
         let accuracy = 5;
         let gravity = 0.02;
@@ -705,8 +692,8 @@ function show(gl, app, dictPars) {
     //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     var defspeed = 0.019;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) a = [
-        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)),
-        new clothsimscene.ClothSimScene(gl, app, dictPars)
+        new clothsimscene.ClothSimScene(gl, app, dictPars),
+        new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)), 
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined) a = [
         new objectlistscene.ObjectListScene(gl),
@@ -720,20 +707,15 @@ function show(gl, app, dictPars) {
         new drawinstancedscene.DrawInstancedScene(gl),
         new rotatingcubescene.MixedTextureScene(gl)
     ];
-    // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
-    // if (dictPars?.get("animation2")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined) a = [
         new canvas3dtexturescene.Canvas3dTextureScene(gl),
         new objectlistscene.ObjectListScene(gl)
     ];
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined) a = [
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined) a = [
         new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed))
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined) a = [
         new manytexturescene.ManyTexturesScene(gl)
-    ];
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined) a = [
-        new skyboxcubescene.SkyBoxCubeScene(gl)
     ];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined) a = [
         new skyboxscene.SkyBoxScene(gl, dictPars)
@@ -742,10 +724,11 @@ function show(gl, app, dictPars) {
         new canvas3dtexturescene.Canvas3dTextureScene(gl),
         new canvas3dtexturescene2.Canvas3dTextureScene2(gl)
     ];
-    // if (dictPars?.get("animation10")!=undefined) a =  [new drawinstancedscene.DrawInstancedScene(gl),new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined) a = [
+        new drawinstancedscene.DrawInstancedScene(gl),
         new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))
     ];
+    //  if (dictPars?.get("animation10")!=undefined) a =  [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if (a != undefined) return showScenesAnimation(gl, app, dictPars, a);
     else {
         var rv = showBaseAppAnimation(gl, app, dictPars);
@@ -821,7 +804,7 @@ function main() {
 }
 main();
 
-},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/skyboxcube":"hTGOp","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/skyboxscene":"kcBXj","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/clothsimscene":"1rS88","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/fishanimationscene":"7ZHPR","./scene/fishtrajectoryscene":"jXMUO","./cloth/clothsim":"dATTA"}],"4qFhF":[function(require,module,exports) {
+},{"./baseapp/mouselistener":"4qFhF","twgl.js":"3uqAP","./others/objectlist":"piLyt","./others/drawinstanced":"VzCYY","./others/canvas3dtexture":"hNUAa","./others/drawimagespace":"fDS7w","./animation2":"9igw0","./scene/skyboxscene":"kcBXj","./scene/manytexturescene":"fJWn9","./scene/mixedtexturescene":"lQx96","./scene/lightscene":"bnNYj","./scene/objectlistscene":"ZXdmK","./scene/canvas3dtexturescene":"euPH5","./scene/canvas3dtexturescene2":"kMwgT","./scene/drawinstancedscene":"aeXif","./scene/clothsimscene":"1rS88","./scene/skyboxcubescene":"aFl5l","./scene/matobjscene":"6Rbvi","./scene/fishanimationscene":"7ZHPR","./scene/fishtrajectoryscene":"jXMUO","./cloth/clothsim":"dATTA"}],"4qFhF":[function(require,module,exports) {
 "use strict";
 //--- MOUSE EVENT LISTENERS ------------------------------------------------------------------------------------------------
 Object.defineProperty(exports, "__esModule", {
@@ -10984,7 +10967,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"hTGOp":[function(require,module,exports) {
+},{}],"piLyt":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11018,113 +11001,1361 @@ var __importStar = this && this.__importStar || function(mod) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.skyboxcube = void 0;
+exports.ObjectList = void 0;
 const twgl = __importStar(require("twgl.js")); // Greg's work
-const baseapp = __importStar(require("./../baseapp/baseapp"));
-const camhandler = __importStar(require("./../baseapp/camhandler"));
-const datgui = __importStar(require("dat.gui"));
-class skyboxcube extends baseapp.BaseApp {
-    constructor(cgl, capp, dictpar, cdiv){
-        super(cgl, capp, dictpar, cdiv);
-        //-----------------------------------------------------------------------------------------------------------------
-        this.skyboxCubeParameters = {
-            movecube: true,
-            moveenv: true,
-            fieldOfViewDegrees: 0,
-            radiusCam: 0,
-            angVelocityCam: 0,
-            angVelocityCube: 0 // mirror cube rotation velocity
-        };
-        //--- Shaders for the mirrorCoube -------------------------------------------------------------------------
-        this.vsMirrorCube = `#version 300 es
-    
-    in vec4 a_position;
-    in vec3 a_normal;
-    
-    uniform mat4 u_projection;
-    uniform mat4 u_view;
-    uniform mat4 u_world;
-    
-    out vec3 v_worldPosition;
-    out vec3 v_worldNormal;
-    
-    void main() {
-      // Multiply the position by the matrix.
-      gl_Position = u_projection * u_view * u_world * a_position;
-    
-      // send the view position to the fragment shader
-      v_worldPosition = (u_world * a_position).xyz;
-    
-      // orient the normals and pass to the fragment shader
-      v_worldNormal = mat3(u_world) * a_normal;
+const twgl_js_1 = require("twgl.js");
+const objectnode = __importStar(require("./../scene/objectnode"));
+class ObjectList {
+    constructor(){
+        this.vs = `#version 300 es
+
+  in vec4 a_position;
+  in vec4 a_color;
+  
+  uniform mat4 u_matrix;
+  
+  out vec4 v_color;
+  
+  void main() {
+    // Multiply the position by the matrix.
+    gl_Position = u_matrix * a_position;
+  
+    // Pass the color to the fragment shader.
+    v_color = a_color;
+  }
+  `;
+        this.fs = `#version 300 es
+  precision highp float;
+  
+  // Passed in from the vertex shader.
+  in vec4 v_color;
+  
+  uniform vec4 u_colorMult;
+  uniform vec4 u_colorOffset;
+  
+  out vec4 outColor;
+  
+  void main() {
+      outColor = v_color * u_colorMult + u_colorOffset;
+  }
+  `;
+        this.objectsToDraw = [];
+        this.objects = [];
+        // state
+        this.cx = 0;
+        this.cy = 0;
+        this.cz = -20;
+        this.vx = 0;
+        this.vy = 0;
+        this.vz = 0.05;
     }
-    `;
-        this.fsMirrorCube = `#version 300 es
-    precision highp float;
-    
-    // Passed in from the vertex shader.
-    in vec3 v_worldPosition;
-    in vec3 v_worldNormal;
-    
-    // The texture.
-    uniform samplerCube u_texture;
-    
-    // The position of the camera
-    uniform vec3 u_worldCameraPosition;
-    
-    // we need to declare an output for the fragment shader
-    out vec4 outColor;
-    
-    void main() {
-      vec3 worldNormal = normalize(v_worldNormal);
-      vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
-      vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
-    
-      outColor = texture(u_texture, direction);
+    async FetchText(cparcelname) {
+        const res = await fetch(cparcelname);
+        var b = await res.arrayBuffer();
+        var enc = new TextDecoder("utf-8");
+        return enc.decode(b);
     }
-    `;
-        this.twglprograminfo = twgl.createProgramInfo(cgl, [
-            this.vsMirrorCube,
-            this.fsMirrorCube
+    main(gl) {
+        // setup GLSL program
+        twgl.setAttributePrefix("a_");
+        this.gl = gl;
+        this.programInfo = twgl.createProgramInfo(gl, [
+            this.vs,
+            this.fs
         ]);
+        // setup Camera
+        this.fieldOfViewRadians = 60.0 * Math.PI / 180;
+        // setup geometry
+        // avoid Gregg's flattenedPrimitives for now - cant get it to compile in TS
+        // var arrays: { [key:string]:twgl.primitives.TypedArray }= twgl.primitives.createCubeVertices(1); 
+        // var cubeBufferInfo: twgl.BufferInfo = this.createFlattenedVertices(gl, arrays, 6)!;
+        // cubes
+        var cubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
+        // spheres
+        // var cubeBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
+        // VAO (not needed)
+        // var cubeBufferInfo: twgl.BufferInfo = twgl.primitives.createCubeVertices(1); // this.flattenedPrimitives.createCubeBufferInfo(gl, 1)!; // lx leave out , 1);
+        // var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+        this.nodeInfosByName = undefined;
+        var nodefact = new objectnode.NodesProducer(this.programInfo, cubeBufferInfo);
+        var parcls = require("./../resources/blockguy.json");
+        var mydata = this.FetchText(parcls).then((s)=>{
+            console.log("mydata=" + mydata + " s=" + s);
+            var nodedescriptions = JSON.parse(s);
+            this.scene = nodefact.makeNode(nodedescriptions);
+            this.objects = nodefact.objects;
+            this.objectsToDraw = nodefact.objectsToDraw;
+            this.nodeInfosByName = nodefact.nodeInfosByName;
+        });
+        // First frame
+        requestAnimationFrame((time)=>this.drawScene(time));
     }
-    //  fieldOfViewRadians : number = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
-    createReflectingCubeGeo(gl) {
-        this.reflectingCubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.2);
-        this.vaoCube = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, this.reflectingCubeBufferInfo);
+    drawScene(time) {
+        time *= 0.001;
+        // check if JSon read and converted
+        if (!this.nodeInfosByName) {
+            requestAnimationFrame((time)=>this.drawScene(time));
+            return;
+        }
+        var nodeInfosByName = this.nodeInfosByName;
+        var gl = this.gl;
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.useProgram(this.programInfo.program);
+        // setup the camera's projection matrix
+        var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 200);
+        // setup the camera's matrix using look at.
+        var cameraPosition = [
+            14,
+            3.5,
+            10
+        ];
+        var target = [
+            0,
+            0.0,
+            0
+        ];
+        var up = [
+            0,
+            1,
+            0
+        ];
+        var cameraMatrix = twgl_js_1.m4.lookAt(cameraPosition, target, up);
+        // setup view matrix from the camera matrix.
+        var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+        var viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
+        // Animation
+        var adjust;
+        var speed = 3;
+        var c = time * speed;
+        adjust = Math.abs(Math.sin(c));
+        nodeInfosByName["point between feet"].trs.translation[1] = adjust;
+        adjust = Math.sin(c);
+        nodeInfosByName["left-leg"].trs.rotation[0] = adjust;
+        nodeInfosByName["right-leg"].trs.rotation[0] = -adjust;
+        adjust = Math.sin(c + 0.1) * 0.4;
+        nodeInfosByName["left-calf"].trs.rotation[0] = -adjust;
+        nodeInfosByName["right-calf"].trs.rotation[0] = adjust;
+        adjust = Math.sin(c + 0.1) * 0.4;
+        nodeInfosByName["left-foot"].trs.rotation[0] = -adjust;
+        nodeInfosByName["right-foot"].trs.rotation[0] = adjust;
+        adjust = Math.sin(c) * 0.4;
+        nodeInfosByName["left-arm"].trs.rotation[0] = adjust;
+        nodeInfosByName["left-arm"].trs.rotation[1] = adjust;
+        nodeInfosByName["right-arm"].trs.rotation[2] = adjust;
+        adjust = Math.sin(c + 0.1) * 0.4;
+        nodeInfosByName["left-forearm"].trs.rotation[0] = adjust;
+        nodeInfosByName["left-forearm"].trs.rotation[1] = adjust;
+        nodeInfosByName["right-forearm"].trs.rotation[2] = adjust;
+        adjust = Math.sin(c - 0.1) * 0.4;
+        nodeInfosByName["left-hand"].trs.rotation[2] = adjust;
+        nodeInfosByName["right-hand"].trs.rotation[2] = adjust;
+        nodeInfosByName["left-hand"].trs.rotation[1] = adjust;
+        nodeInfosByName["right-hand"].trs.rotation[1] = adjust;
+        adjust = Math.sin(c) * 0.4;
+        nodeInfosByName["waist"].trs.rotation[1] = adjust;
+        adjust = Math.sin(c) * 0.4;
+        nodeInfosByName["torso"].trs.rotation[1] = adjust;
+        adjust = Math.sin(c + 0.25) * 0.4;
+        nodeInfosByName["neck"].trs.rotation[1] = adjust;
+        adjust = Math.sin(c + 0.5) * 0.4;
+        nodeInfosByName["head"].trs.rotation[1] = adjust;
+        adjust = Math.cos(c * 2) * 0.4;
+        nodeInfosByName["head"].trs.rotation[0] = adjust;
+        // Update all world matrices in the scene graph
+        var currentTranslation = twgl_js_1.m4.translation([
+            -this.cx,
+            this.cy,
+            this.cz
+        ]);
+        this.scene.updateWorldMatrix(currentTranslation);
+        this.cx += this.vx * speed / 4.0;
+        this.cy += this.vy * speed / 4.0;
+        this.cz += this.vz * speed / 4.0;
+        // Compute all the matrices for rendering
+        this.objects.forEach((object)=>{
+            object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
+        });
+        // Draw the objects
+        twgl.drawObjectList(gl, this.objectsToDraw);
+        // Next framw
+        requestAnimationFrame((time)=>this.drawScene(time));
     }
-    main(gl, dictpar) {
-        // http://127.0.0.1:1234/index.html?skyboxcube&fov=22&movecube=true&moveenv=true
-        var b = "";
-        b = dictpar.get("movecube");
-        if (b) this.skyboxCubeParameters.movecube = b == "true";
-        b = dictpar.get("moveenv");
-        if (b) this.skyboxCubeParameters.moveenv = b == "true";
-        b = dictpar.get("fov");
-        if (b) this.skyboxCubeParameters.fieldOfViewDegrees = +b;
-        b = dictpar.get("vele");
-        if (b) this.skyboxCubeParameters.angVelocityCam = +b;
-        b = dictpar.get("velc");
-        if (b) this.skyboxCubeParameters.angVelocityCube = +b;
-        // https://webgl2fundamentals.org/webgl/lessons/webgl-skybox.html
-        this.createReflectingCubeGeo(gl);
-        this.createEnvironmentMapGeoTwgl(gl);
-        this.skyboxtexture = this.createEnvironmentMapTexture(gl, 1, this.textureReadyCallback);
-        this.cam = camhandler.Camera.createCamera(gl, dictpar, camhandler.Camera.CamYUp, 0.5, this.app);
-        this.cam.zoominVelocity = 0.5;
-        this.cam.setRadius(6.0);
-        this.cam.translateEye([
-            6.0,
+}
+exports.ObjectList = ObjectList;
+
+},{"twgl.js":"3uqAP","./../scene/objectnode":"kGgzx","./../resources/blockguy.json":"2rYWp"}],"kGgzx":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.NodesProducer = exports.Node = exports.NodeTransforms = void 0;
+const twgl_js_1 = require("twgl.js");
+class NodeTransforms {
+    constructor(){
+        this.translation = [
+            0,
             0,
             0
-        ]);
-        requestAnimationFrame(()=>this.render(0));
+        ];
+        this.rotation = [
+            0,
+            0,
+            0
+        ];
+        this.scale = [
+            1,
+            1,
+            1
+        ];
     }
-    textureReadyCallback(err, texture) {
-        console.log("SkyboxCube Environment texture isready.");
+    getMatrix(dst) {
+        dst = dst || twgl_js_1.m4.identity();
+        var t = this.translation;
+        var r = this.rotation;
+        var s = this.scale;
+        //console.log("t="+t+" r="+r+" s="+s);
+        // compute a matrix from translation, rotation, and scale
+        twgl_js_1.m4.translation(t, dst);
+        twgl_js_1.m4.axisRotate(dst, [
+            1,
+            0,
+            0
+        ], r[0], dst);
+        //console.log("r[0]="+r[0]+" dst="+dst);
+        twgl_js_1.m4.axisRotate(dst, [
+            0,
+            1,
+            0
+        ], r[1], dst);
+        twgl_js_1.m4.axisRotate(dst, [
+            0,
+            0,
+            1
+        ], r[2], dst);
+        twgl_js_1.m4.scale(dst, s, dst);
+        return dst;
+    }
+}
+exports.NodeTransforms = NodeTransforms;
+class Node {
+    constructor(source){
+        this.children = [];
+        this.localMatrix = twgl_js_1.m4.identity();
+        this.worldMatrix = twgl_js_1.m4.identity();
+        this.parent = null;
+        //  drawInfo: NodeDrawInfo|null = null;
+        this.drawInfo = null;
+        this.source = source;
+    }
+    setParent(parent) {
+        // Disconnect from existing parent
+        if (this.parent) {
+            var ndx = this.parent.children.indexOf(this);
+            if (ndx >= 0) this.parent.children.splice(ndx, 1);
+        }
+        // Add to new parent, assign
+        if (parent) parent.children.push(this);
+        this.parent = parent;
+    }
+    updateWorldMatrix(matrix) {
+        var source = this.source;
+        if (source) source.getMatrix(this.localMatrix);
+        if (matrix) // a matrix was passed in so do the math
+        twgl_js_1.m4.multiply(matrix, this.localMatrix, this.worldMatrix);
+        else // no matrix was passed in so just copy.
+        twgl_js_1.m4.copy(this.localMatrix, this.worldMatrix);
+        // now process all the children
+        var worldMatrix = this.worldMatrix;
+        this.children.forEach(function(child) {
+            child.updateWorldMatrix(worldMatrix);
+        });
+    }
+}
+exports.Node = Node;
+class NodesProducer {
+    constructor(programInfo, cubeBufferInfo){
+        this.programInfo = programInfo;
+        this.cubeBufferInfo = cubeBufferInfo;
+        // result
+        this.nodeInfosByName = {};
+        this.objectsToDraw = [];
+        this.objects = [];
+        this.makeNode = (nodeDescription)=>{
+            var trs = new NodeTransforms();
+            var cnode = new Node(trs);
+            this.nodeInfosByName[nodeDescription.name] = {
+                trs: trs,
+                node: cnode
+            };
+            trs.rotation = [
+                0,
+                0,
+                0
+            ];
+            // if (orientationAnglexz!=undefined) trs.rotation = [0,orientationAnglexz,0]; // Lx initial rotation of the model
+            trs.scale = nodeDescription.scaling || trs.scale;
+            trs.translation = nodeDescription.translation || trs.translation;
+            if (nodeDescription.draw !== false) {
+                cnode.drawInfo = {
+                    uniforms: {
+                        u_colorOffset: [
+                            0,
+                            0,
+                            0.6,
+                            0
+                        ],
+                        u_colorMult: [
+                            0.4,
+                            0.4,
+                            0.4,
+                            1
+                        ],
+                        u_matrix: undefined
+                    },
+                    programInfo: this.programInfo,
+                    bufferInfo: this.cubeBufferInfo
+                };
+                this.objectsToDraw.push(cnode.drawInfo);
+                this.objects.push(cnode);
+            }
+            var makeNodes = (nodeDescriptions)=>{
+                return nodeDescriptions ? nodeDescriptions.map(this.makeNode) : [];
+            };
+            makeNodes(nodeDescription.children).forEach(function(child) {
+                child.setParent(cnode);
+            });
+            return cnode;
+        };
+    }
+}
+exports.NodesProducer = NodesProducer;
+
+},{"twgl.js":"3uqAP"}],"2rYWp":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "blockguy.ba5581b9.json" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"VzCYY":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.DrawInstanced = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class DrawInstanced {
+    constructor(){
+        this.vertexShaderSource = `#version 300 es
+in vec4 a_position;
+in vec4 color;
+in mat4 matrix;
+uniform mat4 projection;
+uniform mat4 view;
+
+out vec4 v_color;
+
+void main() {
+  // Multiply the position by the matrix.
+  gl_Position = projection * view * matrix * a_position;
+
+  // Pass the vertex color to the fragment shader.
+  v_color = color;
+}
+`;
+        this.fragmentShaderSource = `#version 300 es
+precision highp float;
+
+// Passed in from the vertex shader.
+in vec4 v_color;
+
+out vec4 outColor;
+
+void main() {
+  outColor = v_color;
+}
+`;
+        this.numVertices = 12;
+        this.numInstances = 5;
+        this.matrices = [];
+    }
+    resizeCanvas(gl) {
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    }
+    main(gl) {
+        twgl.setAttributePrefix("a_");
+        this.gl = gl;
+        const programInfo = twgl.createProgramInfo(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+        this.program = programInfo.program;
+        const positionLoc = gl.getAttribLocation(this.program, "a_position");
+        const colorLoc = gl.getAttribLocation(this.program, "color");
+        const matrixLoc = gl.getAttribLocation(this.program, "matrix");
+        this.projectionLoc = gl.getUniformLocation(this.program, "projection");
+        this.viewLoc = gl.getUniformLocation(this.program, "view");
+        // Create a vertex array object (attribute state)
+        this.vao = gl.createVertexArray();
+        // and make it the one we're currently working with
+        gl.bindVertexArray(this.vao);
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            /*    -0.1,  0.4,
+                -0.1, -0.4,
+                 0.1, -0.4,
+                 0.1, -0.4,
+                -0.1,  0.4,
+                 0.1,  0.4,
+                 0.4, -0.1,
+                -0.4, -0.1,
+                -0.4,  0.1,
+                -0.4,  0.1,
+                 0.4, -0.1,
+                 0.4,  0.1, */ // corrected Greggs list to have the triangles of each spoke turn in the same direction.
+            // this will allow  gl.enable(gl.DEPTH_TEST) and gl.enable(gl.CULL_FACE) in the
+            // preparation when this is ported to a scene class.
+            -0.1,
+            0.4,
+            -0.1,
+            -0.4,
+            0.1,
+            -0.4,
+            -0.1,
+            0.4,
+            0.1,
+            -0.4,
+            0.1,
+            0.4,
+            -0.4,
+            -0.1,
+            0.4,
+            -0.1,
+            -0.4,
+            0.1,
+            -0.4,
+            0.1,
+            0.4,
+            -0.1,
+            0.4,
+            0.1, 
+        ]), gl.STATIC_DRAW);
+        this.numVertices = 12;
+        // setup the position attribute
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        // setup matrixes, one per instance
+        this.numInstances = 5;
+        // make a typed array with one view per matrix
+        this.matrixData = new Float32Array(this.numInstances * 16);
+        for(let i = 0; i < this.numInstances; ++i){
+            const byteOffsetToMatrix = i * 64;
+            const numFloatsForView = 16;
+            this.matrices.push(new Float32Array(this.matrixData.buffer, byteOffsetToMatrix, numFloatsForView));
+        }
+        this.matrixBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
+        // just allocate the buffer
+        gl.bufferData(gl.ARRAY_BUFFER, this.matrixData.byteLength, gl.DYNAMIC_DRAW);
+        // set all 4 attributes for matrix
+        const bytesPerMatrix = 64;
+        for(let i1 = 0; i1 < 4; ++i1){
+            const loc = matrixLoc + i1;
+            gl.enableVertexAttribArray(loc);
+            // note the stride and offset
+            const offset = i1 * 16; // 4 floats per row, 4 bytes per float
+            gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, bytesPerMatrix, offset);
+            // this line says this attribute only changes for each 1 instance
+            gl.vertexAttribDivisor(loc, 1);
+        }
+        // setup colors, one per instance
+        const colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            1,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            1,
+            1
+        ]), gl.STATIC_DRAW);
+        // set attribute for color
+        gl.enableVertexAttribArray(colorLoc);
+        gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
+        // this line says this attribute only changes for each 1 instance
+        gl.vertexAttribDivisor(colorLoc, 1);
+        requestAnimationFrame(()=>this.drawScene(0.0));
+    }
+    drawScene(time) {
+        var gl = this.gl;
+        time *= 0.001; // seconds
+        twgl.resizeCanvasToDisplaySize(gl.canvas);
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.useProgram(this.program);
+        // set the view and projection matrices since
+        // they are shared by all instances
+        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        gl.uniformMatrix4fv(this.projectionLoc, false, twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1));
+        gl.uniformMatrix4fv(this.viewLoc, false, twgl_js_1.m4.axisRotation([
+            0,
+            0,
+            1
+        ], time * .1));
+        // setup all attributes
+        gl.bindVertexArray(this.vao);
+        // update all the matrices
+        this.matrices.forEach((mat, ndx)=>{
+            twgl_js_1.m4.translation([
+                -0.5 + ndx * 0.25,
+                0,
+                0
+            ], mat);
+            twgl_js_1.m4.axisRotate(mat, [
+                0,
+                0,
+                1
+            ], time * (0.1 + 0.1 * ndx), mat);
+        });
+        // upload the new matrix data
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.matrixData);
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.numVertices, this.numInstances);
+        //requestAnimationFrame(render);
+        requestAnimationFrame((time)=>this.drawScene(time));
+    }
+}
+exports.DrawInstanced = DrawInstanced;
+
+},{"twgl.js":"3uqAP"}],"hNUAa":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Canvas3dTexture = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work
+const twgl_js_1 = require("twgl.js");
+class Canvas3dTexture {
+    constructor(){
+        this.vertexShaderSource = `#version 300 es
+
+// an attribute is an input (in) to a vertex shader.
+// It will receive data from a buffer
+in vec4 a_position;
+in vec2 a_texcoord;
+
+// A matrix to transform the positions by
+uniform mat4 u_matrix;
+
+// a varying to pass the texture coordinates to the fragment shader
+out vec2 v_texcoord;
+
+// all shaders have a main function
+void main() {
+  // Multiply the position by the matrix.
+  gl_Position = u_matrix * a_position;
+
+  // Pass the texcoord to the fragment shader.
+  v_texcoord = a_texcoord;
+}
+`;
+        this.fragmentShaderSource = `#version 300 es
+
+precision highp float;
+
+// Passed in from the vertex shader.
+in vec2 v_texcoord;
+
+// The texture.
+uniform sampler2D u_texture;
+uniform vec4 u_colorMult;
+
+// we need to declare an output for the fragment shader
+out vec4 outColor;
+
+void main() {
+   outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult;
+}
+`;
+    }
+    main(gl) {
+        // Get A WebGL context
+        /** @type {HTMLCanvasElement} */ var canvas = gl.canvas; // document.querySelector("#canvas");
+        //var gl = canvas.getContext("webgl2");
+        if (!gl) return;
+        // Use our boilerplate utils to compile the shaders and link into a program
+        var program = twgl.createProgramFromSources(gl, [
+            this.vertexShaderSource,
+            this.fragmentShaderSource
+        ]);
+        // look up where the vertex data needs to go.
+        var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        var texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord");
+        // look up uniform locations
+        var matrixLocation = gl.getUniformLocation(program, "u_matrix");
+        var textureLocation = gl.getUniformLocation(program, "u_texture");
+        var colorMultLocation = gl.getUniformLocation(program, "u_colorMult");
+        // Create a buffer
+        var positionBuffer = gl.createBuffer();
+        // Create a vertex array object (attribute state)
+        var vao = gl.createVertexArray();
+        // and make it the one we're currently working with
+        gl.bindVertexArray(vao);
+        // Turn on the attribute
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        // Set Geometry.
+        this.setGeometry(gl);
+        // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = 3; // 3 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
+        // create the texcoord buffer, make it the current ARRAY_BUFFER
+        // and copy in the texcoord values
+        var texcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        this.setTexcoords(gl);
+        // Turn on the attribute
+        gl.enableVertexAttribArray(texcoordAttributeLocation);
+        // Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
+        var size = 2; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floating point values
+        var normalize = true; // convert from 0-255 to 0.0-1.0
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
+        // Create a texture.
+        var texture = gl.createTexture();
+        // use texture unit 0
+        gl.activeTexture(gl.TEXTURE0 + 0);
+        // bind to the TEXTURE_2D bind point of texture unit 0
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // fill texture with 3x2 pixels
+        {
+            const level = 0;
+            const internalFormat = gl.R8;
+            const width = 3;
+            const height = 2;
+            const border = 0;
+            const format = gl.RED;
+            const type1 = gl.UNSIGNED_BYTE;
+            const data = new Uint8Array([
+                128,
+                64,
+                128,
+                0,
+                192,
+                0, 
+            ]);
+            gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, type1, data);
+        }
+        // set the filtering so we don't need mips
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // Create a texture to render to
+        const targetTextureWidth = 256;
+        const targetTextureHeight = 256;
+        const targetTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+        {
+            // define size and format of level 0
+            const level1 = 0;
+            const internalFormat1 = gl.RGBA;
+            const border1 = 0;
+            const format1 = gl.RGBA;
+            const type2 = gl.UNSIGNED_BYTE;
+            const data1 = null;
+            gl.texImage2D(gl.TEXTURE_2D, level1, internalFormat1, targetTextureWidth, targetTextureHeight, border1, format1, type2, data1);
+            // set the filtering so we don't need mips
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        }
+        // Create and bind the framebuffer
+        const fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        // attach the texture as the first color attachment
+        const attachmentPoint = gl.COLOR_ATTACHMENT0;
+        const level2 = 0;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level2);
+        // create a depth texture
+        const depthTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+        // make a depth buffer and the same size as the targetTexture
+        {
+            // define size and format of level 0
+            const level3 = 0;
+            const internalFormat2 = gl.DEPTH_COMPONENT24;
+            const border2 = 0;
+            const format2 = gl.DEPTH_COMPONENT;
+            const type3 = gl.UNSIGNED_INT;
+            const data2 = null;
+            gl.texImage2D(gl.TEXTURE_2D, level3, internalFormat2, targetTextureWidth, targetTextureHeight, border2, format2, type3, data2);
+            // set the filtering so we don't need mips
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            // attach the depth texture to the framebuffer
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, level3);
+        }
+        var fieldOfViewRadians = 60 * Math.PI / 180;
+        var modelXRotationRadians = 0;
+        var modelYRotationRadians = 0;
+        // Get the starting time.
+        var then = 0;
+        requestAnimationFrame(drawScene);
+        function drawCube(aspect) {
+            // Tell it to use our program (pair of shaders)
+            gl.useProgram(program);
+            // Bind the attribute/buffer set we want.
+            gl.bindVertexArray(vao);
+            // Compute the projection matrix
+            var projectionMatrix = twgl_js_1.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
+            var cameraPosition = [
+                0,
+                0,
+                2
+            ];
+            var up = [
+                0,
+                1,
+                0
+            ];
+            var target = [
+                0,
+                0,
+                0
+            ];
+            // Compute the camera's matrix using look at.
+            var cameraMatrix = twgl_js_1.m4.lookAt(cameraPosition, target, up);
+            // Make a view matrix from the camera matrix.
+            var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+            var viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
+            for(let x = -1; x <= 1; ++x){
+                var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
+                    x * .9,
+                    0,
+                    0
+                ]);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [
+                    1,
+                    0,
+                    0
+                ], modelXRotationRadians * x);
+                matrix = twgl_js_1.m4.axisRotate(matrix, [
+                    0,
+                    1,
+                    0
+                ], modelYRotationRadians * x);
+                // Set the matrix.
+                gl.uniformMatrix4fv(matrixLocation, false, matrix);
+                // Tell the shader to use texture unit 0 for u_texture
+                gl.uniform1i(textureLocation, 0);
+                const c = x * .5 + .5;
+                gl.uniform4fv(colorMultLocation, [
+                    c * .5 + .5,
+                    1,
+                    1 - c,
+                    1
+                ]);
+                // Draw the geometry.
+                var primitiveType = gl.TRIANGLES;
+                var offset = 0;
+                var count = 36;
+                gl.drawArrays(primitiveType, offset, count);
+            }
+        }
+        // Draw the scene.
+        function drawScene(time) {
+            // convert to seconds
+            time *= 0.001;
+            // Subtract the previous time from the current time
+            var deltaTime = time - then;
+            // Remember the current time for the next frame.
+            then = time;
+            // Animate the rotation
+            modelYRotationRadians += -0.7 * deltaTime;
+            modelXRotationRadians += -0.4 * deltaTime;
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            gl.enable(gl.CULL_FACE);
+            gl.enable(gl.DEPTH_TEST);
+            {
+                // render to our targetTexture by binding the framebuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+                // render cube with our 3x2 texture
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                // Tell WebGL how to convert from clip space to pixels
+                gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
+                // Clear the canvas AND the depth buffer.
+                gl.clearColor(.5, .7, 1, 1); // clear to blue
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                const aspect = targetTextureWidth / targetTextureHeight;
+                drawCube(aspect);
+            }
+            {
+                // render to the canvas
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                // render the cube with the texture we just rendered to
+                gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+                // Tell WebGL how to convert from clip space to pixels
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                // Clear the canvas AND the depth buffer.
+                gl.clearColor(1, 1, 1, 1); // clear to white
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                const aspect1 = gl.canvas.clientWidth / gl.canvas.clientHeight;
+                drawCube(aspect1);
+            }
+            requestAnimationFrame(drawScene);
+        }
+    }
+    // Fill the buffer with the values that define a cube.
+    setGeometry(gl) {
+        var positions = new Float32Array([
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5,
+            -0.5,
+            0.5,
+            0.5,
+            0.5, 
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    }
+    // Fill the buffer with texture coordinates the cube.
+    setTexcoords(gl) {
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            1, 
+        ]), gl.STATIC_DRAW);
+    }
+}
+exports.Canvas3dTexture = Canvas3dTexture;
+
+},{"twgl.js":"3uqAP"}],"fDS7w":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.drawimagespace = void 0;
+const twgl = __importStar(require("twgl.js")); // Lib: Gregg's work
+const datgui = __importStar(require("dat.gui")); // Lib: dat.gui
+const baseapp = __importStar(require("./../baseapp/baseapp")); // convenient base class initializing gl2 and program(s)
+class drawimagespace extends baseapp.BaseApp {
+    constructor(cgl, capp, dictpar, cdiv){
+        super(cgl, capp, dictpar, cdiv);
+        this.imagespaceParameters = {
+            move: false,
+            teal: false,
+            speed: 0.4,
+            texture: "geotriangle2",
+            color0: "#00A000"
+        };
+        this.diffuseLocation = 0;
+        this.imageSizeLocation = 0;
+        this.tealLocation = 0;
+        this.aspectLocation = 0;
+        this.xshiftLocation = 0;
+        this.yshiftLocation = 0;
+        this.cxshift = 0; // total hhift texture space (pixels)
+        this.cyshift = 0; // total hhift texture space (pixels)
+        /*
+              cxdshift: number=6.0; // moving camera
+              cydshift: number=4.0; // moving camera
+              cxshiftmax: number=1000; // moving camera x limit
+              cyshiftmax: number=400;  // moving camera y limit
+         */ this.xzoomoffsetLocation = 0;
+        this.yzoomoffsetLocation = 0;
+        this.xzoomoffset = 0;
+        this.yzoomoffset = 0;
+        this.currentTexture = "geotriangle2";
+        this.ny = 0.0;
+        this.txtaspect = 1.0;
+        // textures repository
+        this.textures = null;
+        this.textureaspects = new Map();
+        this.vs = `#version 300 es
+        precision highp float;
+        precision highp int;   
+        void main()
+        {
+          //show smaller, centered triangle gl_Position = vec4(1.f * float(uint(gl_VertexID) % 2u) - 0.5f, 1.f*float(uint(gl_VertexID) / 2u) - 0.5f, 1.0, 1.0);
+          //show half viewport triangle gl_Position = vec4(2.f * float(uint(gl_VertexID) % 2u) - 1.f, 2.f*float(uint(gl_VertexID) / 2u) - 1.f, 1.0, 1.0);
+          //show (the same) half viewport triangle  gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 2.0f, 4.f*float(uint(gl_VertexID) / 2u) - 2.0f, 1.0, 1.0);
+          //show covering right side of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) - 1.0f, 1.0, 1.0);
+          //show covering upper right square of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) + 0.0f, 1.0, 1.0);
+          //show covering  entire viewport
+          gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 1.0f,
+                             4.f * float(uint(gl_VertexID) / 2u) - 1.0f, 
+                             1.0, 1.0);       
+        }`;
+        this.fs = `#version 300 es
+        precision highp float;
+        precision highp int;
+        uniform sampler2D diffuse;
+        uniform vec2 u_imageSize;
+        uniform int u_teal; 
+        uniform int u_xshift; 
+        uniform int u_yshift; 
+        uniform float u_aspect; 
+        uniform float u_xzoomoffset    ;
+        uniform float u_yzoomoffset    ;
+          out vec4 color;
+        void main()
+        {
+          float px = u_aspect *(gl_FragCoord.x-float(u_xshift));
+          float py = gl_FragCoord.y-float(u_yshift);
+          px-=u_xzoomoffset;
+          py-=u_yzoomoffset;
+          vec2 texoffset1 = vec2(  px,  u_imageSize.y -py) / u_imageSize;
+          vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
+
+          vec4 ccolor = texture(diffuse, texcoord1);
+          if ((py<u_imageSize.y && px<u_imageSize.x) || (u_teal ==1))
+            color=ccolor;
+        }`;
+        //===================================================================================================
+        this.gui = null;
+        drawimagespace.instance = this;
+        this.twglprograminfo = twgl.createProgramInfo(cgl, [
+            this.vs,
+            this.fs
+        ]);
+    }
+    prepareSurfaceTextures(gl, selectedSurface) {
+        this.textureaspects.set("checker", 1.0);
+        this.textureaspects.set("clover", 1.0);
+        this.textureaspects.set("zelenskyy", 1.0);
+        this.textureaspects.set("aristotle", 1);
+        this.textureaspects.set("flagofukraine", 856.0 / 1288.0);
+        this.textureaspects.set("flagofukraine2", 1288.0 / 856.0);
+        this.textureaspects.set("geotriangle", 258.0 / 424.0);
+        this.textureaspects.set("geotriangle2", 0.5);
+        this.textureaspects.set("geotriangle2", 0.5);
+        this.textureaspects.set("protractorT2", 395.0 / 747.0);
+        var gradientname = require("./../resources/models/stone/circlegradient.png");
+        var aristotlename = require("./../resources/models/stone/aristoteles1.png");
+        var clovername = require("./../resources/images/clover.jpg");
+        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
+        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
+        var flagofukrainname2 = require("./../resources/models/stone/flagofukraine2.png");
+        var trianglename = require("./../resources/models/stone/geodriehoek.png");
+        var trianglename2 = require("./../resources/models/stone/geodriehoek2.png");
+        var protractorT2name = require("./../resources/models/stone/protractorT2.png");
+        this.textures = twgl.createTextures(gl, {
+            checker: {
+                mag: gl.NEAREST,
+                min: gl.LINEAR,
+                src: [
+                    255,
+                    255,
+                    255,
+                    255,
+                    192,
+                    192,
+                    192,
+                    0,
+                    92,
+                    92,
+                    92,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255, 
+                ]
+            },
+            clover: {
+                src: clovername
+            },
+            zelenskyy: {
+                src: zelenskyyname
+            },
+            gradient: {
+                src: gradientname
+            },
+            flagofukraine: {
+                src: flagofukrainname
+            },
+            flagofukraine2: {
+                src: flagofukrainname2
+            },
+            geotriangle: {
+                src: trianglename
+            },
+            geotriangle2: {
+                src: trianglename2
+            },
+            aristotle: {
+                src: aristotlename
+            },
+            protractorT2: {
+                src: protractorT2name
+            }
+        });
+        if (selectedSurface == "checker") return this.textures.checker;
+        if (selectedSurface == "clover") return this.textures.clover;
+        if (selectedSurface == "zelenskyy") return this.textures.zelenskyy;
+        if (selectedSurface == "gradient") return this.textures.gradient;
+        if (selectedSurface == "flagofukraine") return this.textures.flagofukraine;
+        if (selectedSurface == "flagofukraine2") return this.textures.flagofukraine2;
+        if (selectedSurface == "geotriangle") return this.textures.geotriangle;
+        if (selectedSurface == "geotriangle2") return this.textures.geotriangle2;
+        if (selectedSurface == "aristotle") return this.textures.geotriangle2;
+        if (selectedSurface == "protractorT2") return this.textures.protractorT2;
+    }
+    onChangeEnvironmentCombo(value) {
+        var thisinstance = drawimagespace.instance;
+        console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.imagespaceParameters.speed);
+        thisinstance.currentTexture = value;
+        console.log("set currentTexture to [" + value + "]");
+        if (value == "clover") thisinstance.ny = 8.0;
+        else if (value == "geotriangle2") thisinstance.ny = 2.0;
+        else thisinstance.ny = 4.0;
+        console.log("this.textureaspects=" + thisinstance.textureaspects);
+        if (value == "geotriangle") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle");
+        if (value == "geotriangle2") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle2");
+        if (value == "flagofukraine") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine");
+        if (value == "flagofukraine2") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine2");
+        if (value == "clover") {
+            if (thisinstance.textureaspects.has("clover")) thisinstance.txtaspect = thisinstance.textureaspects.get("clover");
+        }
+        if (value == "aristotle") thisinstance.txtaspect = thisinstance.textureaspects.get("aristotle");
+        if (value == "checker") thisinstance.txtaspect = thisinstance.textureaspects.get("checker");
+        if (value == "zelenskyy") thisinstance.txtaspect = thisinstance.textureaspects.get("zelenskyy");
+        if (value == "protractorT2") thisinstance.txtaspect = thisinstance.textureaspects.get("protractorT2");
+        //alert("txtaspect set at "+thisinstance.txtaspect);
+        thisinstance.app.mouse.totaldelta = 0;
+    }
+    onChangeColorValue(value) {
+        console.log("we are in color=[" + value + "]");
+        var thisinstance = drawimagespace.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
     }
     initGUI(parameters) {
-        this.skyboxCubeParameters = parameters;
+        this.imagespaceParameters = parameters;
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = this.imagespaceParameters.color0;
         // park the dat.gui box in the linksdiv below the links, in closed state
         var gui = new datgui.GUI({
             autoPlace: false
@@ -11133,563 +12364,152 @@ class skyboxcube extends baseapp.BaseApp {
         document.getElementById("linksdiv").append(gui.domElement);
         gui.close();
         // connect viewmodel
-        gui.remember(this.skyboxCubeParameters);
-        // Checkbox forward move animation on/off
-        gui.add(this.skyboxCubeParameters, "movecube");
-        // Checkbox tail animation on/off
-        gui.add(this.skyboxCubeParameters, "moveenv");
-        // Slider for field of view
-        gui.add(this.skyboxCubeParameters, "fieldOfViewDegrees").min(20.0).max(80.0).step(0.02);
+        gui.remember(this.imagespaceParameters);
+        // Checkbox for animation on/off
+        gui.add(this.imagespaceParameters, "move");
+        // Checkbox for tealing texture on/off
+        gui.add(this.imagespaceParameters, "teal");
         // Slider for animation speed
-        gui.add(this.skyboxCubeParameters, "radiusCam").min(0.1).max(20.0).step(0.02);
-        // Slider for animation speed
-        gui.add(this.skyboxCubeParameters, "angVelocityCam").min(0.0001).max(0.01).step(0.0001);
-        // Slider for animation speed of cube
-        gui.add(this.skyboxCubeParameters, "angVelocityCube").min(0.001).max(0.01).step(0.0001);
+        gui.add(this.imagespaceParameters, "speed").min(0.2).max(1).step(0.005);
+        // Color dialog sets background color
+        var cel3 = gui.addColor(this.imagespaceParameters, "color0");
+        cel3.onChange(this.onChangeColorValue);
+        // Combobox texture from accepted values
+        var cel2 = gui.add(this.imagespaceParameters, "texture", [
+            "geotriangle2",
+            "zelenskyy",
+            "clover",
+            "checker",
+            "aristotle",
+            "protractorT2"
+        ]);
+        cel2.onChange(this.onChangeEnvironmentCombo);
         gui.updateDisplay();
         return gui;
     }
-    render(mstime) {
-        var _a;
-        var gl = this.gl;
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
+    //---------------------------------------------------------------------------------------------------------
+    main(gl, dictpar) {
+        //  super.main(gl, dictpar,"","");
+        //  if (this.program && this.gl && this.program[0])
+        var program = this.twglprograminfo.program;
+        gl.useProgram(program);
+        this.prepareSurfaceTextures(gl, "zelenskyy");
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.enable(gl.CULL_FACE);
-        // gl.enable(gl.DEPTH_TEST);     
-        // gl.depthFunc(gl.LEQUAL);        
-        // by default, rotate camera position.
-        this.cameraPosition = this.skyboxCubeParameters.moveenv ? [
-            Math.cos(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam,
-            0,
-            Math.sin(mstime * this.skyboxCubeParameters.angVelocityCam) * this.skyboxCubeParameters.radiusCam
-        ] : [
-            this.skyboxCubeParameters.radiusCam,
-            0.0,
-            0.0
-        ];
-        // the projected direction of view is inverted and passed to environment shader as u_viewDirectionProjectionInverse to address the cube map texture
-        // computeprojectionmatrices will find projection, view and direction matrix, invert it for the Cubemap 
-        var fieldOfViewRadians = this.skyboxCubeParameters.fieldOfViewDegrees * Math.PI / 180;
-        // field of view angle determines how narrow or wide the camera view is
-        // aperture will be normalized to width of viewport.
-        if (this.cam) {
-            var cam = this.cam;
-            cam.rotationVelocity = this.skyboxCubeParameters.angVelocityCam / (Math.PI / 2.0 - fieldOfViewRadians);
-            cam.CamHandlingYUp(gl, this.app, -1, -1);
-            cam.ReportEye();
-            // override cameraPosition by mouse camera position when moveenv checked off
-            if (!this.skyboxCubeParameters.moveenv) this.cameraPosition = (_a = this.cam) === null || _a === void 0 ? void 0 : _a.Position();
-        }
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [
-            0,
-            1,
-            0
-        ], fieldOfViewRadians));
-        // Rotate the cube around the x axis
-        if (this.skyboxCubeParameters.movecube) this.worldMatrix = twgl.m4.axisRotation([
-            1,
-            0,
-            0
-        ], mstime * this.skyboxCubeParameters.angVelocityCube);
-        else this.worldMatrix = twgl.m4.translation([
-            0,
-            0,
-            0
-        ]); // twgl.m4.identity();
-        // draw the environment
-        //  gl.useProgram(this.twglprograminfo![0].program);
-        this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture);
-        /*
-                gl.bindVertexArray(this.vaoEnvironment!);
-                twgl.setUniforms( this.twglprograminfo![0], {
-                  u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
-                  u_skybox: this.texture,
-                });
-                twgl.drawBufferInfo(gl, this.environmentBufferInfo!);
-        */ // Build a view matrix for the mirror cube.
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        this.projectionMatrix = twgl.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
-        // Build a view matrix.
-        var up = [
-            0,
-            1,
-            0
-        ];
-        var cameraMatrix = twgl.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
-        this.viewMatrix = twgl.m4.inverse(cameraMatrix);
-        // draw the mirror cube
-        if (this.viewMatrix == undefined) this.viewMatrix = twgl.m4.identity();
-        if (this.projectionMatrix == undefined) this.projectionMatrix = twgl.m4.identity();
-        gl.useProgram(this.twglprograminfo.program);
-        //  gl.depthFunc(gl.LESS);  // use the default depth test
-        gl.bindVertexArray(this.vaoCube);
-        twgl.setUniforms(this.twglprograminfo, {
-            u_world: this.worldMatrix,
-            u_view: this.viewMatrix,
-            u_projection: this.projectionMatrix,
-            u_texture: this.skyboxtexture,
-            u_worldCameraPosition: this.cameraPosition
-        });
-        twgl.drawBufferInfo(gl, this.reflectingCubeBufferInfo);
-        //next frame
-        requestAnimationFrame(()=>this.render(++mstime));
+        this.txtaspect = this.textureaspects.get("geotriangle2");
+        this.ny = 1.0;
+        console.log("<assigned program");
+        this.diffuseLocation = gl.getUniformLocation(program, "diffuse");
+        this.imageSizeLocation = gl.getUniformLocation(program, "u_imageSize");
+        this.tealLocation = gl.getUniformLocation(program, "u_teal");
+        this.xshiftLocation = gl.getUniformLocation(program, "u_xshift");
+        this.yshiftLocation = gl.getUniformLocation(program, "u_yshift");
+        this.aspectLocation = gl.getUniformLocation(program, "u_aspect");
+        this.xzoomoffsetLocation = gl.getUniformLocation(program, "u_xzoomoffset");
+        this.yzoomoffsetLocation = gl.getUniformLocation(program, "u_yzoomoffset");
+        // gl.useProgram(this.twglprograminfo![0].program);
+        // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
+        requestAnimationFrame(()=>this.render(0));
+    //else
+    //console.log("initprogram program[0] fails.");
     }
-}
-exports.skyboxcube = skyboxcube;
-
-},{"twgl.js":"3uqAP","./../baseapp/baseapp":"9lZ4F","./../baseapp/camhandler":"1ZnlU","dat.gui":"k3xQk"}],"9lZ4F":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.BaseApp = exports.instance = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work, this twglbaseapp provides all tools like programInfo
-const twgl_js_1 = require("twgl.js"); // Greg's work, this baseapp  only imports geometry matrix/vector tools
-const datgui = __importStar(require("dat.gui"));
-exports.instance = null;
-class BaseApp {
-    constructor(cgl, capp, dictpar, divname){
-        this.DefaultParameters = {
-            showgrid: false,
-            usecamera: true,
-            camheight: 0.0,
-            influence: 0.05,
-            friction: 0.97,
-            bounce: 0.5,
-            move: true,
-            speed: 0.01,
-            color0: "#A0A0A0",
-            gravity: 0.02,
-            texture: "geotriangle2",
-            environment: "None",
-            fov: 60,
-            movetail: true,
-            typelight: "point light",
-            sling: 117,
-            shininess: 11.0
+    readcolor(original) {
+        var s = original[0] == "#" ? original.substring(1) : original;
+        var v1 = parseInt(s.substring(0, 2), 16);
+        var v2 = parseInt(s.substring(2, 4), 16);
+        var v3 = parseInt(s.substring(4, 6), 16);
+        return {
+            r: v1 / 256.0,
+            g: v2 / 256.0,
+            b: v3 / 256.0
         };
-        this.baseappParameters = this.DefaultParameters;
-        this.gl = null;
-        this.app = null;
-        // environment image
-        this.sceneenv = -1;
-        // environment skybox camera
-        this.cameraTarget = [
-            0,
-            0,
-            0
-        ];
-        this.cameraPosition = [
-            0,
-            0,
-            0
-        ];
-        // dat.UI
-        this.changedCam = false;
-        this.doShowBackgroundColorChoice = false;
-        //--- shaders for environment cube map background -----------------------------------------
-        this.vsEnvironmentMap = `#version 300 es
-            in vec4 a_envposition;
-            out vec4 v_position;
-            void main() {
-            v_position = a_envposition;
-            gl_Position = vec4(a_envposition.xy, 1, 1);
-        }
-        `;
-        this.fsEnvironmentMap = `#version 300 es
-            precision highp float;
-
-            uniform samplerCube u_skybox;
-            uniform mat4 u_viewDirectionProjectionInverse;
-
-            in vec4 v_position;
-
-            // we need to declare an output for the fragment shader
-            out vec4 outColor;
-
-            void main() {
-            vec4 t = u_viewDirectionProjectionInverse * v_position;
-            // outColor = vec4(0,0,0,0);
-            //vec3 vinv= vec3(1.0,1.0,1.0);
-            //outColor = texture(u_skybox, vinv - normalize(t.xyz / t.w));
-            outColor = texture(u_skybox,  normalize(t.xyz / t.w));
-        }
-        `;
-        //=======================================================================================================================
-        this.posdim = 3;
-        exports.instance = this;
-        document.getElementById("cdiv").innerHTML = "finding webgl2...";
-        var isWebGL2 = !!cgl;
-        if (!isWebGL2) document.getElementById("cdiv").innerHTML = "no webgl2";
-        else {
-            this.gl = cgl;
-            this.app = capp;
-            twgl.setAttributePrefix("a_");
-            this.envPrograminfo = twgl.createProgramInfo(cgl, [
-                this.vsEnvironmentMap,
-                this.fsEnvironmentMap
-            ]);
-            document.getElementById("cdiv").innerHTML = "cdiv environment shaders initialized";
-            this.skyboxLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_skybox");
-            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
-            document.getElementById("cdiv").innerHTML = "BaseApp: skybox perspective prepared";
-        }
     }
-    getEnvironmentTexture() {
-        return this.skyboxtexture;
-    }
-    onChangeColorValue(value) {
-        var thisinstance = exports.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
-        }
-    }
-    onChangeCamHeight(value) {
-        var thisinstance = exports.instance;
-        console.log("onchangecam camHeight=" + value);
-        thisinstance.changedCam = true;
-    }
-    createGUI(parameters) {
-        this.baseappParameters = parameters;
-        // prepare gl canvas div background to set color
-        var cc = this.gl.canvas.parentNode;
-        var ccd = cc;
-        ccd.style.backgroundColor = "#000000"; // this.baseappParameters.color0;
-        // park the dat.gui box in the linksdiv below the links, in closed state
-        var gui = new datgui.GUI({
-            autoPlace: false
-        });
-        gui.domElement.id = "gui_drawimagespace";
-        document.getElementById("linksdiv").append(gui.domElement);
-        gui.close();
-        // connect viewmodel to dat.gui box
-        gui.remember(parameters); //, instanceParameters);
-        // Checkbox forward move animation on/off
-        gui.add(parameters, "move");
-        // Slider for camera height
-        var cel0 = gui.add(parameters, "camheight").min(-20).max(20.0).step(0.1);
-        cel0.onChange(this.onChangeCamHeight);
-        // Slider for animation speed
-        gui.add(parameters, "speed").min(0.0).max(0.06).step(0.001);
-        // Color dialog sets background color of gl canvas div
-        if (this.doShowBackgroundColorChoice) {
-            var cel3 = gui.addColor(parameters, "color0");
-            cel3.onChange(this.onChangeColorValue);
-        }
-        // Combobox texture from accepted values
-        var cel2 = gui.add(parameters, "environment", [
-            "None",
-            "Black",
-            "Yokohama",
-            "Stockholm",
-            "Underwater"
-        ]);
-        cel2.onChange(this.onChangeEnvironmentCombo);
-        return gui;
-    }
-    onChangeEnvironmentCombo(value) {
-        var thisinstance = exports.instance;
-        if (value == "None") {
-            thisinstance.sceneenv = -1;
-            thisinstance.skyboxtexture = undefined;
-            return;
-        } // no operaton: result is set background color 
-        if (value == "Black") thisinstance.sceneenv = 0;
-         // black skybox: result is a black background  
-        if (value == "Yokohama") thisinstance.sceneenv = 1;
-        if (value == "Stockholm") thisinstance.sceneenv = 2;
-        if (value == "Underwater") thisinstance.sceneenv = 3;
-        thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.sceneenv, (p1, p2)=>{});
-    }
-    createEnvironmentMapGeo(gl) {
-        gl.useProgram(this.envPrograminfo.program);
-        // Create a vertex array object (attribute state) and make it the one we're currently working with
-        this.vaoEnvironment = gl.createVertexArray();
-        gl.bindVertexArray(this.vaoEnvironment);
-        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo.program, "a_envposition");
-        // Create a buffer for positions
-        this.positionBuffer = gl.createBuffer();
-        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-        // Put the positions for a unit plane in the buffer
-        var positions2D = new Float32Array([
-            1,
-            -1,
-            -1,
-            -1,
-            -1,
-            1,
-            1,
-            -1,
-            -1,
-            1,
-            1,
-            1
-        ]);
-        var positions3D = new Float32Array([
-            -1,
-            -1,
-            0,
-            1,
-            -1,
-            0,
-            -1,
-            1,
-            0,
-            -1,
-            1,
-            0,
-            1,
-            -1,
-            0,
-            1,
-            1,
-            0 // triangle NW-SE-NE
-        ]);
-        var positions3DMir = new Float32Array([
-            1,
-            -1,
-            0,
-            -1,
-            -1,
-            0,
-            -1,
-            1,
-            0,
-            1,
-            -1,
-            0,
-            -1,
-            1,
-            0,
-            1,
-            1,
-            0 // triangle NW-SE-NE
-        ]);
-        gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);
-        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
-    //     gl.bufferData(gl.ARRAY_BUFFER, positions2D, gl.STATIC_DRAW);   
-    //     this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
-    }
-    createEnvironmentMapTexture(gl, scene, textureReadyCallback) {
-        var mytexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
-        var pos_x_name = "", pos_y_name = "", pos_z_name = "";
-        var neg_x_name = "", neg_y_name = "", neg_z_name = "";
-        var p = scene;
-        switch(p){
-            case 0:
-                pos_x_name = require("./../resources/images/black/pos-x.jpg");
-                pos_y_name = require("./../resources/images/black/pos-y.jpg");
-                pos_z_name = require("./../resources/images/black/pos-z.jpg");
-                neg_x_name = require("./../resources/images/black/neg-x.jpg");
-                neg_y_name = require("./../resources/images/black/neg-y.jpg");
-                neg_z_name = require("./../resources/images/black/neg-z.jpg");
-                break;
-            case 4:
-                pos_x_name = require("./../resources/images/chmuseum/pos-x.jpg");
-                pos_y_name = require("./../resources/images/chmuseum/pos-y.jpg");
-                pos_z_name = require("./../resources/images/chmuseum/pos-z.jpg");
-                neg_x_name = require("./../resources/images/chmuseum/neg-x.jpg");
-                neg_y_name = require("./../resources/images/chmuseum/neg-y.jpg");
-                neg_z_name = require("./../resources/images/chmuseum/neg-z.jpg");
-                break;
-            case 1:
-                pos_x_name = require("./../resources/images/yokohama/posx.jpg");
-                pos_y_name = require("./../resources/images/yokohama/posy.jpg");
-                pos_z_name = require("./../resources/images/yokohama/posz.jpg");
-                neg_x_name = require("./../resources/images/yokohama/negx.jpg");
-                neg_y_name = require("./../resources/images/yokohama/negy.jpg");
-                neg_z_name = require("./../resources/images/yokohama/negz.jpg");
-                break;
-            case 2:
-                pos_x_name = require("./../resources/images/gamlastan/posx.jpg");
-                pos_y_name = require("./../resources/images/gamlastan/posy.jpg");
-                pos_z_name = require("./../resources/images/gamlastan/posz.jpg");
-                neg_x_name = require("./../resources/images/gamlastan/negx.jpg");
-                neg_y_name = require("./../resources/images/gamlastan/negy.jpg");
-                neg_z_name = require("./../resources/images/gamlastan/negz.jpg");
-                break;
-            case 3:
-                pos_x_name = require("./../resources/images/underwater/pos-x.jpg");
-                pos_y_name = require("./../resources/images/underwater/pos-y.jpg");
-                pos_z_name = require("./../resources/images/underwater/pos-z.jpg");
-                neg_x_name = require("./../resources/images/underwater/neg-x.jpg");
-                neg_y_name = require("./../resources/images/underwater/neg-y.jpg");
-                neg_z_name = require("./../resources/images/underwater/neg-z.jpg");
-                break;
-        }
-        const faceInfos = [
-            {
-                target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-                url: pos_x_name
-            },
-            {
-                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-                url: neg_x_name
-            },
-            {
-                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-                url: pos_y_name
-            },
-            {
-                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                url: neg_y_name
-            },
-            {
-                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-                url: pos_z_name
-            },
-            {
-                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
-                url: neg_z_name
-            }, 
-        ];
-        var nImage = 0;
-        faceInfos.forEach((faceInfo)=>{
-            const { target , url  } = faceInfo;
-            // Upload the canvas to the cubemap face.
-            const level = 0;
-            const internalFormat = gl.RGBA;
-            const width = 256;
-            const height = 256;
-            const format = gl.RGBA;
-            const type = gl.UNSIGNED_BYTE;
-            // setup each face so it's immediately renderable
-            gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
-            // Asynchronously load an image
-            const image = new Image();
-            if (new URL(url, window.location.href).origin !== window.location.origin) image.crossOrigin = "";
-            // this.requestCORSIfNotSameOrigin(image, url)
-            image.src = url;
-            image.addEventListener("load", ()=>{
-                //gl.useProgram(this.program![0]);
-                // Now that the image has loaded make copy it to the texture.
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
-                gl.texImage2D(target, level, internalFormat, format, type, image);
-                // lx note: this is too early! console yields a warning..  
-                // gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                console.log("nImage=" + nImage + "/" + faceInfos.length + " loaded: " + image.src);
-                // instead.. initialize mipmap when all face textures are read
-                if (++nImage == faceInfos.length) {
-                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-                    if (textureReadyCallback != undefined) textureReadyCallback(0, mytexture);
-                }
-            });
-        });
-        //!  this.texture= mytexture!;
-        return mytexture;
-    }
-    computeprojectionmatrices(gl, up, fov) {
-        // Build a projection matrix.
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
-        // Build a view matrix.
-        // var up = [0, 1, 0];
-        //this.cameraPosition[1]=this.baseappParameters.camheight;
-        //this.cameraTarget[1]=this.baseappParameters.camheight;
-        var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
-        var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
-        // viewDirectionMatrix is viewMatrix without translation (direction only)
-        var viewDirectionMatrix = twgl_js_1.m4.copy(viewMatrix);
-        viewDirectionMatrix[12] = 0;
-        viewDirectionMatrix[13] = 0;
-        viewDirectionMatrix[14] = 0;
-        //
-        var viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewDirectionMatrix);
-        return viewDirectionProjectionMatrix;
-    //
-    }
-    restorePosAttributeContext(gl, posBuffer, posAttributeLocation, size) {
-        // ==> 2023-03-01 restore this part to solve the clear error
-        // 1. Bind the buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = size; // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
-        // 3. Enable this
-        gl.enableVertexAttribArray(posAttributeLocation);
-    // <==
-    }
-    renderenvironmentmap(gl, fov, texture) {
-        gl.useProgram(this.envPrograminfo.program);
-        var invproj = this.viewDirectionProjectionInverseLocation;
-        var loc = this.skyboxLocation;
-        gl.bindVertexArray(this.vaoEnvironment);
-        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [
-            0,
-            1,
-            0
-        ], fov);
-        var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
-        gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
-        gl.uniform1i(loc, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-    //gl.bindVertexArray(null);
-    }
-    createEnvironmentMapGeoTwgl(gl) {
-        gl.useProgram(this.envPrograminfo.program);
-        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
-        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.envPrograminfo, this.environmentBufferInfo);
-        gl.bindVertexArray(this.vaoEnvironment);
-    }
-    renderenvironmentmapTwgl(gl, fov, texture) {
-        gl.useProgram(this.envPrograminfo.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [
-            0,
-            1,
-            0
-        ], fov));
-        gl.bindVertexArray(this.vaoEnvironment);
-        twgl.setUniforms(this.envPrograminfo, {
-            u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
-            u_skybox: texture
-        });
-        twgl.drawBufferInfo(gl, this.environmentBufferInfo);
-    //     gl.flush();
+    render(time) {
+        var _a;
+        if (this.textures != null) {
+            var gl = this.gl;
+            var program = this.twglprograminfo.program;
+            gl.useProgram(program);
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            //  gl.useProgram(this.twglprograminfo![1].program);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            var texture = this.textures[this.currentTexture];
+            if (texture == null || texture == undefined) {
+                console.log("no texture");
+                requestAnimationFrame(()=>this.render(++time));
+                return;
+            }
+            //  gl.bindTexture(gl.TEXTURE_2D, texture);
+            /*
+                        if (this.imagespaceParameters.move)
+                        {
+                            this.cxshift+=this.imagespaceParameters.speed*this.cxdshift;
+                            if (this.cxshift>this.cxshiftmax) this.cxdshift=-this.cxdshift;
+                            if (this.cxshift<1) this.cxdshift=-this.cxdshift;
+                            this.cyshift+=this.imagespaceParameters.speed*this.cydshift;
+                            if (this.cyshift>this.cyshiftmax) this.cydshift=-this.cydshift;
+                            if (this.cyshift<1) this.cydshift=-this.cydshift;
+                        }     else
+                        if (this.app!.mouse.dragvector && this.app!.mouse.dragdistance)
+                        {
+                          var v = this.app!.mouse.dragvector!;
+                          var d = this.app!.mouse.dragpdistance!;
+                          this.cxshift+=0; //  /gl.canvas.width;
+                          this.cyshift+=0; // /gl.canvas.width;
+                          this.xzoomoffset= this.app!.mouse.px!;
+                          this.yzoomoffset= this.app!.mouse.py!;
+                          ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)
+                        }
+             */ // this does not work here, background is div background of canvas
+            //    gl.clearColor(0.0,0.0,0.0,1.0);       
+            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            // blur the checker
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            if (!this.imagespaceParameters.teal) {
+                // this will show a single instance of the texture image
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); // horizontal
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); // vertical
+            } else {
+                // this will show tealed texture images
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); // horizontal
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT); // vertical    
+            }
+            // The texture is sampled according to cdivx and cdivy.
+            // ny determines how many texture images are shown in vertical direction in tealed mode.
+            // totaldelta is the distance the mouse wheel has moved.
+            // zoomVelocity decides the speed of zoomin/zoomout
+            // the fragment shader will sample the texture using the viewport size and cdiv.
+            var cdivy = this.ny + ((_a = this.app) === null || _a === void 0 ? void 0 : _a.mouse.totaldelta) * drawimagespace.zoomVelocity;
+            var cdivx = cdivy; // keep aspect ratio of image space
+            // set zoomin state (imageSize)
+            gl.uniform2f(this.imageSizeLocation, gl.canvas.width / cdivx, gl.canvas.height / cdivy);
+            // aspect ratio texture dimensions i.r.t. viewport   
+            var daspect = gl.canvas.height / gl.canvas.width;
+            gl.uniform1f(this.aspectLocation, this.txtaspect / daspect);
+            gl.uniform1f(this.xzoomoffsetLocation, this.xzoomoffset);
+            gl.uniform1f(this.yzoomoffsetLocation, this.yzoomoffset);
+            // horizontal and vertical shift
+            gl.uniform1i(this.tealLocation, this.imagespaceParameters.teal ? 1 : 0);
+            gl.uniform1i(this.xshiftLocation, this.cxshift);
+            gl.uniform1i(this.yshiftLocation, this.cyshift);
+            // note vs is not bound to any VertexArray. The vertex shader emits all 
+            // viewport pixel positions to the fragment shader, like ShaderToy does.
+            // gl.bindVertexArray(this.vertexArray!);
+            // ..this results in the
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+            document.getElementById("cdiv").innerHTML = "draw " + time + ", xshift=" + Math.round(this.cxshift) + ", yshift=" + this.cyshift + ", " + "xcoom=" + this.xzoomoffset + ", yzoom=" + this.yzoomoffset + "<br>" + " c.width=" + gl.canvas.width + " " + " c.height=" + gl.canvas.height + ", texture=" + this.currentTexture + " ny=" + this.ny; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
+        } else document.getElementById("cdiv").innerHTML = "Initializing textures, time=" + time; //+ " this.textures.length="+this.textures!.length;
+        requestAnimationFrame(()=>this.render(++time));
     }
 }
-exports.BaseApp = BaseApp;
+exports.drawimagespace = drawimagespace;
+drawimagespace.zoomVelocity = 0.075;
+drawimagespace.animationVelocity = 0.25;
 
-},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz","./../resources/images/underwater/pos-x.jpg":"eM650","./../resources/images/underwater/pos-y.jpg":"cunsh","./../resources/images/underwater/pos-z.jpg":"lAzoW","./../resources/images/underwater/neg-x.jpg":"gQ6n8","./../resources/images/underwater/neg-y.jpg":"36KrD","./../resources/images/underwater/neg-z.jpg":"8LtWO","./../resources/images/black/pos-x.jpg":"aFxWk","./../resources/images/black/pos-y.jpg":"akByC","./../resources/images/black/pos-z.jpg":"kkwE7","./../resources/images/black/neg-x.jpg":"8D6Mw","./../resources/images/black/neg-y.jpg":"aJXpF","./../resources/images/black/neg-z.jpg":"lEcMw"}],"k3xQk":[function(require,module,exports) {
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../baseapp/baseapp":"9lZ4F","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/models/stone/aristoteles1.png":"eyRkp","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn","./../resources/models/stone/flagofukraine2.png":"gQU1V","./../resources/models/stone/geodriehoek.png":"hf4NP","./../resources/models/stone/geodriehoek2.png":"OcEbM","./../resources/models/stone/protractorT2.png":"i16db"}],"k3xQk":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "color", ()=>color);
@@ -13980,44 +14800,478 @@ var index = {
 };
 exports.default = index;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bEAXm":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9lZ4F":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.BaseApp = exports.instance = void 0;
+const twgl = __importStar(require("twgl.js")); // Greg's work, this twglbaseapp provides all tools like programInfo
+const twgl_js_1 = require("twgl.js"); // Greg's work, this baseapp  only imports geometry matrix/vector tools
+const datgui = __importStar(require("dat.gui"));
+exports.instance = null;
+class BaseApp {
+    constructor(cgl, capp, dictpar, divname){
+        this.DefaultParameters = {
+            showgrid: false,
+            usecamera: true,
+            camheight: 0.0,
+            influence: 0.05,
+            friction: 0.97,
+            bounce: 0.5,
+            move: true,
+            speed: 0.01,
+            color0: "#A0A0A0",
+            gravity: 0.02,
+            texture: "geotriangle2",
+            environment: "None",
+            fov: 60,
+            movetail: true,
+            typelight: "point light",
+            sling: 117,
+            shininess: 11.0
+        };
+        this.baseappParameters = this.DefaultParameters;
+        this.gl = null;
+        this.app = null;
+        // environment image
+        this.sceneenv = -1;
+        // environment skybox camera
+        this.up = [
+            0,
+            1,
+            0
+        ];
+        this.cameraTarget = [
+            0,
+            0,
+            0
+        ];
+        this.cameraPosition = [
+            0,
+            0,
+            0
+        ];
+        // dat.UI
+        this.changedCam = false;
+        this.doShowBackgroundColorChoice = false;
+        //--- shaders for environment cube map background -----------------------------------------
+        this.vsEnvironmentMap = `#version 300 es
+            in vec4 a_envposition;
+            out vec4 v_position;
+            void main() {
+            v_position = a_envposition;
+            gl_Position = vec4(a_envposition.xy, 1, 1);
+        }
+        `;
+        this.fsEnvironmentMap = `#version 300 es
+            precision highp float;
+
+            uniform samplerCube u_skybox;
+            uniform mat4 u_viewDirectionProjectionInverse;
+
+            in vec4 v_position;
+
+            // we need to declare an output for the fragment shader
+            out vec4 outColor;
+
+            void main() {
+            vec4 t = u_viewDirectionProjectionInverse * v_position;
+            // outColor = vec4(0,0,0,0);
+            //vec3 vinv= vec3(1.0,1.0,1.0);
+            //outColor = texture(u_skybox, vinv - normalize(t.xyz / t.w));
+            outColor = texture(u_skybox,  normalize(t.xyz / t.w));
+        }
+        `;
+        //=======================================================================================================================
+        this.posdim = 3;
+        exports.instance = this;
+        document.getElementById("cdiv").innerHTML = "finding webgl2...";
+        var isWebGL2 = !!cgl;
+        if (!isWebGL2) document.getElementById("cdiv").innerHTML = "no webgl2";
+        else {
+            this.gl = cgl;
+            this.app = capp;
+            twgl.setAttributePrefix("a_");
+            this.envPrograminfo = twgl.createProgramInfo(cgl, [
+                this.vsEnvironmentMap,
+                this.fsEnvironmentMap
+            ]);
+            document.getElementById("cdiv").innerHTML = "cdiv environment shaders initialized";
+            this.skyboxLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_skybox");
+            this.viewDirectionProjectionInverseLocation = cgl.getUniformLocation(this.envPrograminfo.program, "u_viewDirectionProjectionInverse");
+            document.getElementById("cdiv").innerHTML = "BaseApp: skybox perspective prepared";
+        }
+    }
+    getEnvironmentTexture() {
+        return this.skyboxtexture;
+    }
+    onChangeColorValue(value) {
+        var thisinstance = exports.instance;
+        if (thisinstance.gl != null) {
+            var cc = thisinstance.gl.canvas.parentNode;
+            var ccd = cc;
+            ccd.style.backgroundColor = value;
+        }
+    }
+    onChangeCamHeight(value) {
+        var thisinstance = exports.instance;
+        console.log("onchangecam camHeight=" + value);
+        thisinstance.changedCam = true;
+    }
+    createGUI(parameters) {
+        this.baseappParameters = parameters;
+        // prepare gl canvas div background to set color
+        var cc = this.gl.canvas.parentNode;
+        var ccd = cc;
+        ccd.style.backgroundColor = "#000000"; // this.baseappParameters.color0;
+        // park the dat.gui box in the linksdiv below the links, in closed state
+        var gui = new datgui.GUI({
+            autoPlace: false
+        });
+        gui.domElement.id = "gui_drawimagespace";
+        document.getElementById("linksdiv").append(gui.domElement);
+        gui.close();
+        // connect viewmodel to dat.gui box
+        gui.remember(parameters); //, instanceParameters);
+        // Checkbox forward move animation on/off
+        gui.add(parameters, "move");
+        // Slider for camera height
+        var cel0 = gui.add(parameters, "camheight").min(-20).max(20.0).step(0.1);
+        cel0.onChange(this.onChangeCamHeight);
+        // Slider for animation speed
+        gui.add(parameters, "speed").min(0.0).max(0.06).step(0.001);
+        // Color dialog sets background color of gl canvas div
+        if (this.doShowBackgroundColorChoice) {
+            var cel3 = gui.addColor(parameters, "color0");
+            cel3.onChange(this.onChangeColorValue);
+        }
+        // Combobox texture from accepted values
+        var cel2 = gui.add(parameters, "environment", [
+            "None",
+            "Black",
+            "Yokohama",
+            "Stockholm",
+            "Underwater"
+        ]);
+        cel2.onChange(this.onChangeEnvironmentCombo);
+        return gui;
+    }
+    onChangeEnvironmentCombo(value) {
+        var thisinstance = exports.instance;
+        if (value == "None") {
+            thisinstance.sceneenv = -1;
+            thisinstance.skyboxtexture = undefined;
+            return;
+        } // no operaton: result is set background color 
+        if (value == "Black") thisinstance.sceneenv = 0;
+         // black skybox: result is a black background  
+        if (value == "Yokohama") thisinstance.sceneenv = 1;
+        if (value == "Stockholm") thisinstance.sceneenv = 2;
+        if (value == "Underwater") thisinstance.sceneenv = 3;
+        thisinstance.skyboxtexture = thisinstance.createEnvironmentMapTexture(thisinstance.gl, thisinstance.sceneenv, (p1, p2)=>{});
+    }
+    createEnvironmentMapGeo(gl) {
+        gl.useProgram(this.envPrograminfo.program);
+        // Create a vertex array object (attribute state) and make it the one we're currently working with
+        this.vaoEnvironment = gl.createVertexArray();
+        gl.bindVertexArray(this.vaoEnvironment);
+        this.positionAttributeLocation = gl.getAttribLocation(this.envPrograminfo.program, "a_envposition");
+        // Create a buffer for positions
+        this.positionBuffer = gl.createBuffer();
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+        // Put the positions for a unit plane in the buffer
+        var positions2D = new Float32Array([
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            1,
+            -1,
+            -1,
+            1,
+            1,
+            1
+        ]);
+        var positions3D = new Float32Array([
+            -1,
+            -1,
+            0,
+            1,
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            1,
+            1,
+            0 // triangle NW-SE-NE
+        ]);
+        var positions3DMir = new Float32Array([
+            1,
+            -1,
+            0,
+            -1,
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            -1,
+            0,
+            -1,
+            1,
+            0,
+            1,
+            1,
+            0 // triangle NW-SE-NE
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, positions3D, gl.STATIC_DRAW);
+        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
+    //     gl.bufferData(gl.ARRAY_BUFFER, positions2D, gl.STATIC_DRAW);   
+    //     this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, 2);
+    }
+    createEnvironmentMapTexture(gl, scene, textureReadyCallback) {
+        var mytexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+        var pos_x_name = "", pos_y_name = "", pos_z_name = "";
+        var neg_x_name = "", neg_y_name = "", neg_z_name = "";
+        var p = scene;
+        switch(p){
+            case 0:
+                pos_x_name = require("./../resources/images/black/pos-x.jpg");
+                pos_y_name = require("./../resources/images/black/pos-y.jpg");
+                pos_z_name = require("./../resources/images/black/pos-z.jpg");
+                neg_x_name = require("./../resources/images/black/neg-x.jpg");
+                neg_y_name = require("./../resources/images/black/neg-y.jpg");
+                neg_z_name = require("./../resources/images/black/neg-z.jpg");
+                break;
+            case 4:
+                pos_x_name = require("./../resources/images/chmuseum/pos-x.jpg");
+                pos_y_name = require("./../resources/images/chmuseum/pos-y.jpg");
+                pos_z_name = require("./../resources/images/chmuseum/pos-z.jpg");
+                neg_x_name = require("./../resources/images/chmuseum/neg-x.jpg");
+                neg_y_name = require("./../resources/images/chmuseum/neg-y.jpg");
+                neg_z_name = require("./../resources/images/chmuseum/neg-z.jpg");
+                break;
+            case 1:
+                pos_x_name = require("./../resources/images/yokohama/posx.jpg");
+                pos_y_name = require("./../resources/images/yokohama/posy.jpg");
+                pos_z_name = require("./../resources/images/yokohama/posz.jpg");
+                neg_x_name = require("./../resources/images/yokohama/negx.jpg");
+                neg_y_name = require("./../resources/images/yokohama/negy.jpg");
+                neg_z_name = require("./../resources/images/yokohama/negz.jpg");
+                break;
+            case 2:
+                pos_x_name = require("./../resources/images/gamlastan/posx.jpg");
+                pos_y_name = require("./../resources/images/gamlastan/posy.jpg");
+                pos_z_name = require("./../resources/images/gamlastan/posz.jpg");
+                neg_x_name = require("./../resources/images/gamlastan/negx.jpg");
+                neg_y_name = require("./../resources/images/gamlastan/negy.jpg");
+                neg_z_name = require("./../resources/images/gamlastan/negz.jpg");
+                break;
+            case 3:
+                pos_x_name = require("./../resources/images/underwater/pos-x.jpg");
+                pos_y_name = require("./../resources/images/underwater/pos-y.jpg");
+                pos_z_name = require("./../resources/images/underwater/pos-z.jpg");
+                neg_x_name = require("./../resources/images/underwater/neg-x.jpg");
+                neg_y_name = require("./../resources/images/underwater/neg-y.jpg");
+                neg_z_name = require("./../resources/images/underwater/neg-z.jpg");
+                break;
+        }
+        const faceInfos = [
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+                url: pos_x_name
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+                url: neg_x_name
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+                url: pos_y_name
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                url: neg_y_name
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+                url: pos_z_name
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+                url: neg_z_name
+            }, 
+        ];
+        var nImage = 0;
+        faceInfos.forEach((faceInfo)=>{
+            const { target , url  } = faceInfo;
+            // Upload the canvas to the cubemap face.
+            const level = 0;
+            const internalFormat = gl.RGBA;
+            const width = 256;
+            const height = 256;
+            const format = gl.RGBA;
+            const type = gl.UNSIGNED_BYTE;
+            // setup each face so it's immediately renderable
+            gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
+            // Asynchronously load an image
+            const image = new Image();
+            if (new URL(url, window.location.href).origin !== window.location.origin) image.crossOrigin = "";
+            // this.requestCORSIfNotSameOrigin(image, url)
+            image.src = url;
+            image.addEventListener("load", ()=>{
+                //gl.useProgram(this.program![0]);
+                // Now that the image has loaded make copy it to the texture.
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, mytexture);
+                gl.texImage2D(target, level, internalFormat, format, type, image);
+                // lx note: this is too early! console yields a warning..  
+                // gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                console.log("nImage=" + nImage + "/" + faceInfos.length + " loaded: " + image.src);
+                // instead.. initialize mipmap when all face textures are read
+                if (++nImage == faceInfos.length) {
+                    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                    if (textureReadyCallback != undefined) textureReadyCallback(0, mytexture);
+                }
+            });
+        });
+        //!  this.texture= mytexture!;
+        return mytexture;
+    }
+    computeprojectionmatrices(gl, up, fov) {
+        // Build a projection matrix.
+        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+        var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
+        // Build a view matrix.
+        var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, [
+            0,
+            1,
+            0
+        ]);
+        cameraMatrix = twgl.m4.rotateZ(cameraMatrix, 0 * Math.PI / 2.0); // Z-cam
+        var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
+        // viewDirectionMatrix is viewMatrix without translation (direction only)
+        var viewDirectionMatrix = twgl_js_1.m4.copy(viewMatrix);
+        viewDirectionMatrix[12] = 0;
+        viewDirectionMatrix[13] = 0;
+        viewDirectionMatrix[14] = 0;
+        //
+        var viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewDirectionMatrix);
+        return viewDirectionProjectionMatrix;
+    }
+    restorePosAttributeContext(gl, posBuffer, posAttributeLocation, size) {
+        // ==> 2023-03-01 restore this part to solve the clear error
+        // 1. Bind the buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+        // 2. Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        var size = size; // 2 components per iteration
+        var type = gl.FLOAT; // the data is 32bit floats
+        var normalize = false; // don't normalize the data
+        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
+        var offset = 0; // start at the beginning of the buffer
+        gl.vertexAttribPointer(posAttributeLocation, size, type, normalize, stride, offset);
+        // 3. Enable this
+        gl.enableVertexAttribArray(posAttributeLocation);
+    // <==
+    }
+    renderenvironmentmap(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
+        var invproj = this.viewDirectionProjectionInverseLocation;
+        var loc = this.skyboxLocation;
+        gl.bindVertexArray(this.vaoEnvironment);
+        this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, this.up, fov);
+        var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
+        gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
+        gl.uniform1i(loc, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    //gl.bindVertexArray(null);
+    }
+    createEnvironmentMapGeoTwgl(gl) {
+        gl.useProgram(this.envPrograminfo.program);
+        this.environmentBufferInfo = twgl.primitives.createXYQuadBufferInfo(gl, 300);
+        this.vaoEnvironment = twgl.createVAOFromBufferInfo(gl, this.envPrograminfo, this.environmentBufferInfo);
+        gl.bindVertexArray(this.vaoEnvironment);
+    }
+    renderenvironmentmapTwgl(gl, fov, texture) {
+        gl.useProgram(this.envPrograminfo.program);
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, this.up, fov));
+        gl.bindVertexArray(this.vaoEnvironment);
+        twgl.setUniforms(this.envPrograminfo, {
+            u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+            u_skybox: texture
+        });
+        twgl.drawBufferInfo(gl, this.environmentBufferInfo);
+    //     gl.flush();
+    }
+}
+exports.BaseApp = BaseApp;
+
+},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../resources/images/black/pos-x.jpg":"aFxWk","./../resources/images/black/pos-y.jpg":"akByC","./../resources/images/black/pos-z.jpg":"kkwE7","./../resources/images/black/neg-x.jpg":"8D6Mw","./../resources/images/black/neg-y.jpg":"aJXpF","./../resources/images/black/neg-z.jpg":"lEcMw","./../resources/images/chmuseum/pos-x.jpg":"bEAXm","./../resources/images/chmuseum/pos-y.jpg":"edonI","./../resources/images/chmuseum/pos-z.jpg":"7Y3Ot","./../resources/images/chmuseum/neg-x.jpg":"gx63N","./../resources/images/chmuseum/neg-y.jpg":"cd82Z","./../resources/images/chmuseum/neg-z.jpg":"i9neI","./../resources/images/yokohama/posx.jpg":"4p98u","./../resources/images/yokohama/posy.jpg":"44Weg","./../resources/images/yokohama/posz.jpg":"aNZFs","./../resources/images/yokohama/negx.jpg":"fBkee","./../resources/images/yokohama/negy.jpg":"6jK25","./../resources/images/yokohama/negz.jpg":"cwf2u","./../resources/images/gamlastan/posx.jpg":"1Hc0s","./../resources/images/gamlastan/posy.jpg":"iudmr","./../resources/images/gamlastan/posz.jpg":"4yKuF","./../resources/images/gamlastan/negx.jpg":"wVyjF","./../resources/images/gamlastan/negy.jpg":"hBdQc","./../resources/images/gamlastan/negz.jpg":"jW3Oz","./../resources/images/underwater/pos-x.jpg":"eM650","./../resources/images/underwater/pos-y.jpg":"cunsh","./../resources/images/underwater/pos-z.jpg":"lAzoW","./../resources/images/underwater/neg-x.jpg":"gQ6n8","./../resources/images/underwater/neg-y.jpg":"36KrD","./../resources/images/underwater/neg-z.jpg":"8LtWO"}],"aFxWk":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-x.3ef7d7b2.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"akByC":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-y.750d626d.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"kkwE7":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-z.8d5ed1ff.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"8D6Mw":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-x.a1591952.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"aJXpF":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.d90745b7.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"lEcMw":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.681e3e53.jpg" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"bEAXm":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-x.13211ddc.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"edonI":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"edonI":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-y.3846150f.jpg" + "?" + Date.now();
 
 },{"./helpers/bundle-url":"lgJ39"}],"7Y3Ot":[function(require,module,exports) {
@@ -14086,25 +15340,252 @@ module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.
 },{"./helpers/bundle-url":"lgJ39"}],"8LtWO":[function(require,module,exports) {
 module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.340b8870.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"aFxWk":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-x.3ef7d7b2.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"1iiep":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "circlegradient.6cda9680.png" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"akByC":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-y.750d626d.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"eyRkp":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "aristoteles1.fe4d0f63.png" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"kkwE7":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "pos-z.8d5ed1ff.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"i3Wov":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "clover.5f19604c.jpg" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"8D6Mw":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-x.a1591952.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"dfC7C":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "zelenskii.830ddd79.png" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"aJXpF":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-y.d90745b7.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"4oUIn":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "flagofukraine.65ef6112.png" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"lEcMw":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "neg-z.681e3e53.jpg" + "?" + Date.now();
+},{"./helpers/bundle-url":"lgJ39"}],"gQU1V":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "flagofukraine2.a30fc79d.png" + "?" + Date.now();
 
-},{"./helpers/bundle-url":"lgJ39"}],"1ZnlU":[function(require,module,exports) {
+},{"./helpers/bundle-url":"lgJ39"}],"hf4NP":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "geodriehoek.617b0683.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"OcEbM":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "geodriehoek2.733c44fc.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"i16db":[function(require,module,exports) {
+module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "protractorT2.54d56187.png" + "?" + Date.now();
+
+},{"./helpers/bundle-url":"lgJ39"}],"9igw0":[function(require,module,exports) {
+"use strict";
+var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, {
+        enumerable: true,
+        get: function() {
+            return m[k];
+        }
+    });
+} : function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
+    Object.defineProperty(o, "default", {
+        enumerable: true,
+        value: v
+    });
+} : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = this && this.__importStar || function(mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) {
+        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    }
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Animation2 = void 0;
+const animationclock = __importStar(require("./baseapp/animationclock")); // own lib: frame counter
+const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
+const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
+class Animation2 extends baseapp.BaseApp {
+    constructor(cgl, capp, cscene, dictPar, cdiv){
+        super(cgl, capp, dictPar, cdiv);
+        //=============================================================================
+        // all parameters in any scene
+        this.animation1Parameters = this.DefaultParameters;
+        this.ctime = new Date().getTime();
+        this.doclear = false;
+        this.doTwglEnv = false; // when true, background is drawn with twgl.drawBufferInfo, which does not work with any scenery using twgl.DrawBufferInfo
+        Animation2.instance = this;
+        this.scene = cscene;
+        this.doShowBackgroundColorChoice = false;
+        if (this.sceneenv < 0) this.doShowBackgroundColorChoice = true;
+        else if ((dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) != undefined) this.doShowBackgroundColorChoice = +(dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) > 0;
+        this.clock = new animationclock.AnimationClock();
+    }
+    initGUI(parameters, cscene) {
+        console.log("=> animation1 initGUI " + parameters);
+        this.animation1Parameters = parameters;
+        for(var ii = 0; ii < this.scene.length; ii++)this.scene[ii].animationParameters = this.animation1Parameters;
+        var gui = super.createGUI(this.animation1Parameters);
+        this.scene[cscene].extendGUI(gui);
+        return gui;
+    }
+    initScenes() {
+        var n = 0;
+        var ainstance = baseapp.instance;
+        ainstance.scene.forEach((s)=>{
+            s.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.cam, ainstance.dictpars, ainstance.scene.length == n + 1 ? ainstance.sceneReadyCallback : undefined);
+            n++;
+        });
+    }
+    maxSceneSize() {
+        var maxsize = 0;
+        this.scene.forEach((s)=>{
+            if (s.scenesize > maxsize) maxsize = s.scenesize;
+        });
+        return maxsize;
+    }
+    main(gl, dictPars) {
+        this.dictpars = dictPars;
+        var camtp;
+        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cam")) != undefined) camtp = dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cam");
+        if (camtp == undefined || camtp == "yup") {
+            this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.maxSceneSize(), this.app);
+            this.up = [
+                0,
+                1,
+                0
+            ];
+        } else {
+            this.cam = camhandler.Camera.createCamera(this.gl, this.dictpars, camhandler.Camera.CamZUp, this.maxSceneSize(), this.app);
+            this.up = [
+                0,
+                0,
+                1
+            ];
+        }
+        this.cam.zoominVelocity = 0.5;
+        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined) this.sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
+        if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
+        else this.createEnvironmentMapGeo(gl);
+        this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.sceneenv < 0 ? 1 : this.sceneenv, this.textureEnvReadyCallback);
+    }
+    sceneReadyCallback(err) {
+        var _a, _b;
+        console.log("-> sceneReadyCallback");
+        var thisinstance = baseapp.instance;
+        var ainstance = thisinstance;
+        if (((_a = ainstance.dictpars) === null || _a === void 0 ? void 0 : _a.get("cat")) != undefined || ((_b = ainstance.dictpars) === null || _b === void 0 ? void 0 : _b.get("chair2")) != undefined) ainstance.cam = camhandler.Camera.createCamera(ainstance.gl, ainstance.dictpars, camhandler.Camera.CamZUp, ainstance.maxSceneSize(), ainstance.app);
+        ainstance.cam.zoominVelocity = 0.5;
+        ainstance.scene[0].defaultCamera(ainstance.gl, ainstance.cam);
+        ainstance.scene[0].resizeCanvas(ainstance.gl);
+        console.log("-> sceneReadyCallback request first frame");
+        ainstance.changedCam = true;
+        requestAnimationFrame(()=>ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
+    }
+    textureEnvReadyCallback(err, texture) {
+        var thisinstance = baseapp.instance;
+        var ainstance = thisinstance;
+        ainstance.initScenes();
+    }
+    render(time) {
+        var gl = this.gl;
+        var gl = this.gl;
+        if (this.doclear) {
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
+        //scene.resizeCanvas(gl);  
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        var cam = this.cam;
+        cam.camHeight = this.animation1Parameters.camheight;
+        if (this.changedCam) {
+            if (cam.camType == camhandler.Camera.CamYUp) cam.setYUpEye();
+            if (cam.camType == camhandler.Camera.CamZUp) cam.setZUpEye();
+            // console.log("camHeight="+cam.camHeight);
+            this.changedCam = false;
+        } else if (cam.camType == camhandler.Camera.CamYUp) cam.CamHandlingYUp(gl, this.app, 1.0, 1.0);
+        else cam.CamHandlingZUp(gl, this.app, 1.0, -1);
+        var n = 0;
+        this.scene.forEach((s)=>{
+            this.renderscene(gl, time, s, cam, n == 0);
+            n++;
+        });
+        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
+    }
+    renderscene(gl, time, scene, cam, renderEnvironment) {
+        var _a, _b;
+        // set current scene parameters
+        scene.animationParameters = this.animation1Parameters;
+        // render skybox                                                                          
+        if (this.sceneenv >= 0 && renderEnvironment) {
+            // set skybox camera
+            if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move)) this.cameraPosition = cam.camType == camhandler.Camera.CamZUp ? [
+                cam === null || cam === void 0 ? void 0 : cam.Position()[0],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[2],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[1]
+            ] : [
+                cam === null || cam === void 0 ? void 0 : cam.Position()[0],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[1],
+                cam === null || cam === void 0 ? void 0 : cam.Position()[2]
+            ];
+            else this.cameraPosition = ((_b = scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [
+                Math.cos(time * 0.005 * scene.animationParameters.speed),
+                0.0,
+                Math.sin(time * 0.005 * scene.animationParameters.speed)
+            ] : [
+                4.0,
+                0.0,
+                0.0
+            ];
+            gl.depthFunc(gl.LEQUAL);
+            if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
+            else {
+                gl.disable(gl.CULL_FACE);
+                this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
+            }
+        }
+        // render scene
+        gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
+        gl.enable(gl.CULL_FACE); // only show left-turned triangles
+        scene.drawScene(gl, cam, time);
+    // request next frame
+    }
+}
+exports.Animation2 = Animation2;
+
+},{"./baseapp/animationclock":"4nsaS","./baseapp/camhandler":"1ZnlU","./baseapp/baseapp":"9lZ4F"}],"4nsaS":[function(require,module,exports) {
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.AnimationClock = void 0;
+class AnimationClock {
+    constructor(){
+        this.frame = 0;
+        this.vnow = new Date();
+        this.tdt = 0;
+    }
+    getTime(cframe) {
+        const now = new Date();
+        const ctime = now.getTime();
+        const dt = ctime - this.vnow.getTime();
+        if (this.frame % 100 == 0) {
+            var fps = 1000.0 / (this.tdt / 100.0);
+            var s = "cframe=" + cframe + " tdt=" + (this.tdt / 100.0).toPrecision(4) + " ms, fps: " + fps.toPrecision(3);
+            // var s: string = "cframe="+cframe+" tdt="+this.tdt+" ms, fps: "+(1000.0/(this.tdt/100.0)).toPrecision(3).toString();
+            console.log(s);
+            document.getElementById("app").innerHTML = s;
+            this.tdt = 0;
+        }
+        this.tdt += dt;
+        this.vnow = now;
+        this.frame++;
+        return ctime;
+    }
+}
+exports.AnimationClock = AnimationClock;
+
+},{}],"1ZnlU":[function(require,module,exports) {
 "use strict";
 // camera
 Object.defineProperty(exports, "__esModule", {
@@ -14128,6 +15609,7 @@ class Camera {
         this.far = 1000.0; // far plane
         this.rotationVelocity = 0.012; // mouse drag sensitivity for angle turns
         this.zoominVelocity = 1.0; // mouse wheel sensitivity set at objectsize/40
+        this.camType = Camera.CamYUp;
         // lights
         this.ahorizlight = 3.0 * Math.PI / 2.0; // light horizontal angle
         this.avertlight = Math.PI / 4.0; // light vertical angle
@@ -14194,6 +15676,7 @@ class Camera {
     }
     static createCamera(gl, dictpar, camtype, szobj, app) {
         var cam = new Camera(dictpar);
+        cam.camType = camtype;
         cam.zoominVelocity = szobj / 20.0;
         if (cam.radius0 == 0) {
             cam.radius0 = 2.0 * szobj;
@@ -14228,9 +15711,11 @@ class Camera {
     translateTarget(v) {
         var t = twgl_js_1.m4.translation(v);
         this.target = twgl_js_1.m4.transformPoint(t, this.target);
-        this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
-        //console.log("translate target "+this.target);
-        this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
+        if (this.camType == Camera.CamYUp) this.setYUpEye();
+        if (this.camType == Camera.CamZUp) this.setZUpEye();
+    //  this.lookAt = m4.lookAt(this.eye, this.target, this.up);
+    //console.log("translate target "+this.target);
+    //  this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
     }
     ReportEye() {
         var sEye = this.eye[0].toPrecision(4) + "," + this.eye[1].toPrecision(4) + "," + this.eye[2].toPrecision(4);
@@ -14281,7 +15766,7 @@ class Camera {
             0,
             0
         ]);
-        this.target[1] = this.camHeight;
+        //   this.target[1]=this.camHeight; 
         this.lookAt = twgl_js_1.m4.lookAt(this.eye, this.target, this.up);
         this.viewProjection = twgl_js_1.m4.multiply(this.projection, twgl_js_1.m4.inverse(this.lookAt));
         this.ReportEye();
@@ -14290,14 +15775,18 @@ class Camera {
     setZUpEye() {
         //  this.yaxis = m4.transformPoint(this.invworldmat, [0,1,0]) as number[];    
         this.myr = twgl_js_1.m4.identity();
-        twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahx, this.myr);
+        /*   m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
+           //up = m4.transformPoint(myr,[0,1,0]) as number[];
+           m4.translate(this.myr,[0,0,this.camHeight],this.myr);
+           m4.axisRotate(this.myr,this.yaxis, this.ahy, this.myr);
+        */ twgl_js_1.m4.axisRotate(this.myr, this.zaxis, this.ahx, this.myr);
         //up = m4.transformPoint(myr,[0,1,0]) as number[];
+        twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahy, this.myr);
         twgl_js_1.m4.translate(this.myr, [
             0,
             0,
             this.camHeight
         ], this.myr);
-        twgl_js_1.m4.axisRotate(this.myr, this.yaxis, this.ahy, this.myr);
         this.eye = twgl_js_1.m4.transformPoint(this.myr, [
             this.radius,
             0,
@@ -14434,1750 +15923,7 @@ exports.Camera = Camera;
 */ Camera.CamYUp = 1;
 Camera.CamZUp = 2;
 
-},{"twgl.js":"3uqAP"}],"piLyt":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.ObjectList = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-const objectnode = __importStar(require("./../scene/objectnode"));
-class ObjectList {
-    constructor(){
-        this.vs = `#version 300 es
-
-  in vec4 a_position;
-  in vec4 a_color;
-  
-  uniform mat4 u_matrix;
-  
-  out vec4 v_color;
-  
-  void main() {
-    // Multiply the position by the matrix.
-    gl_Position = u_matrix * a_position;
-  
-    // Pass the color to the fragment shader.
-    v_color = a_color;
-  }
-  `;
-        this.fs = `#version 300 es
-  precision highp float;
-  
-  // Passed in from the vertex shader.
-  in vec4 v_color;
-  
-  uniform vec4 u_colorMult;
-  uniform vec4 u_colorOffset;
-  
-  out vec4 outColor;
-  
-  void main() {
-      outColor = v_color * u_colorMult + u_colorOffset;
-  }
-  `;
-        this.objectsToDraw = [];
-        this.objects = [];
-        // state
-        this.cx = 0;
-        this.cy = 0;
-        this.cz = -20;
-        this.vx = 0;
-        this.vy = 0;
-        this.vz = 0.05;
-    }
-    async FetchText(cparcelname) {
-        const res = await fetch(cparcelname);
-        var b = await res.arrayBuffer();
-        var enc = new TextDecoder("utf-8");
-        return enc.decode(b);
-    }
-    main(gl) {
-        // setup GLSL program
-        twgl.setAttributePrefix("a_");
-        this.gl = gl;
-        this.programInfo = twgl.createProgramInfo(gl, [
-            this.vs,
-            this.fs
-        ]);
-        // setup Camera
-        this.fieldOfViewRadians = 60.0 * Math.PI / 180;
-        // setup geometry
-        // avoid Gregg's flattenedPrimitives for now - cant get it to compile in TS
-        // var arrays: { [key:string]:twgl.primitives.TypedArray }= twgl.primitives.createCubeVertices(1); 
-        // var cubeBufferInfo: twgl.BufferInfo = this.createFlattenedVertices(gl, arrays, 6)!;
-        // cubes
-        var cubeBufferInfo = twgl.primitives.createCubeBufferInfo(gl, 1.0); // create the cube
-        // spheres
-        // var cubeBufferInfo = twgl.primitives.createSphereBufferInfo(gl, 0.5, 12,12);      
-        // VAO (not needed)
-        // var cubeBufferInfo: twgl.BufferInfo = twgl.primitives.createCubeVertices(1); // this.flattenedPrimitives.createCubeBufferInfo(gl, 1)!; // lx leave out , 1);
-        // var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-        this.nodeInfosByName = undefined;
-        var nodefact = new objectnode.NodesProducer(this.programInfo, cubeBufferInfo);
-        var parcls = require("./../resources/blockguy.json");
-        var mydata = this.FetchText(parcls).then((s)=>{
-            console.log("mydata=" + mydata + " s=" + s);
-            var nodedescriptions = JSON.parse(s);
-            this.scene = nodefact.makeNode(nodedescriptions);
-            this.objects = nodefact.objects;
-            this.objectsToDraw = nodefact.objectsToDraw;
-            this.nodeInfosByName = nodefact.nodeInfosByName;
-        });
-        // First frame
-        requestAnimationFrame((time)=>this.drawScene(time));
-    }
-    drawScene(time) {
-        time *= 0.001;
-        // check if JSon read and converted
-        if (!this.nodeInfosByName) {
-            requestAnimationFrame((time)=>this.drawScene(time));
-            return;
-        }
-        var nodeInfosByName = this.nodeInfosByName;
-        var gl = this.gl;
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-        gl.useProgram(this.programInfo.program);
-        // setup the camera's projection matrix
-        var projectionMatrix = twgl_js_1.m4.perspective(this.fieldOfViewRadians, aspect, 1, 200);
-        // setup the camera's matrix using look at.
-        var cameraPosition = [
-            14,
-            3.5,
-            10
-        ];
-        var target = [
-            0,
-            0.0,
-            0
-        ];
-        var up = [
-            0,
-            1,
-            0
-        ];
-        var cameraMatrix = twgl_js_1.m4.lookAt(cameraPosition, target, up);
-        // setup view matrix from the camera matrix.
-        var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
-        var viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
-        // Animation
-        var adjust;
-        var speed = 3;
-        var c = time * speed;
-        adjust = Math.abs(Math.sin(c));
-        nodeInfosByName["point between feet"].trs.translation[1] = adjust;
-        adjust = Math.sin(c);
-        nodeInfosByName["left-leg"].trs.rotation[0] = adjust;
-        nodeInfosByName["right-leg"].trs.rotation[0] = -adjust;
-        adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-calf"].trs.rotation[0] = -adjust;
-        nodeInfosByName["right-calf"].trs.rotation[0] = adjust;
-        adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-foot"].trs.rotation[0] = -adjust;
-        nodeInfosByName["right-foot"].trs.rotation[0] = adjust;
-        adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["left-arm"].trs.rotation[0] = adjust;
-        nodeInfosByName["left-arm"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-arm"].trs.rotation[2] = adjust;
-        adjust = Math.sin(c + 0.1) * 0.4;
-        nodeInfosByName["left-forearm"].trs.rotation[0] = adjust;
-        nodeInfosByName["left-forearm"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-forearm"].trs.rotation[2] = adjust;
-        adjust = Math.sin(c - 0.1) * 0.4;
-        nodeInfosByName["left-hand"].trs.rotation[2] = adjust;
-        nodeInfosByName["right-hand"].trs.rotation[2] = adjust;
-        nodeInfosByName["left-hand"].trs.rotation[1] = adjust;
-        nodeInfosByName["right-hand"].trs.rotation[1] = adjust;
-        adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["waist"].trs.rotation[1] = adjust;
-        adjust = Math.sin(c) * 0.4;
-        nodeInfosByName["torso"].trs.rotation[1] = adjust;
-        adjust = Math.sin(c + 0.25) * 0.4;
-        nodeInfosByName["neck"].trs.rotation[1] = adjust;
-        adjust = Math.sin(c + 0.5) * 0.4;
-        nodeInfosByName["head"].trs.rotation[1] = adjust;
-        adjust = Math.cos(c * 2) * 0.4;
-        nodeInfosByName["head"].trs.rotation[0] = adjust;
-        // Update all world matrices in the scene graph
-        var currentTranslation = twgl_js_1.m4.translation([
-            -this.cx,
-            this.cy,
-            this.cz
-        ]);
-        this.scene.updateWorldMatrix(currentTranslation);
-        this.cx += this.vx * speed / 4.0;
-        this.cy += this.vy * speed / 4.0;
-        this.cz += this.vz * speed / 4.0;
-        // Compute all the matrices for rendering
-        this.objects.forEach((object)=>{
-            object.drawInfo.uniforms.u_matrix = twgl_js_1.m4.multiply(viewProjectionMatrix, object.worldMatrix);
-        });
-        // Draw the objects
-        twgl.drawObjectList(gl, this.objectsToDraw);
-        // Next framw
-        requestAnimationFrame((time)=>this.drawScene(time));
-    }
-}
-exports.ObjectList = ObjectList;
-
-},{"twgl.js":"3uqAP","./../scene/objectnode":"kGgzx","./../resources/blockguy.json":"2rYWp"}],"kGgzx":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.NodesProducer = exports.Node = exports.NodeTransforms = void 0;
-const twgl_js_1 = require("twgl.js");
-class NodeTransforms {
-    constructor(){
-        this.translation = [
-            0,
-            0,
-            0
-        ];
-        this.rotation = [
-            0,
-            0,
-            0
-        ];
-        this.scale = [
-            1,
-            1,
-            1
-        ];
-    }
-    getMatrix(dst) {
-        dst = dst || twgl_js_1.m4.identity();
-        var t = this.translation;
-        var r = this.rotation;
-        var s = this.scale;
-        //console.log("t="+t+" r="+r+" s="+s);
-        // compute a matrix from translation, rotation, and scale
-        twgl_js_1.m4.translation(t, dst);
-        twgl_js_1.m4.axisRotate(dst, [
-            1,
-            0,
-            0
-        ], r[0], dst);
-        //console.log("r[0]="+r[0]+" dst="+dst);
-        twgl_js_1.m4.axisRotate(dst, [
-            0,
-            1,
-            0
-        ], r[1], dst);
-        twgl_js_1.m4.axisRotate(dst, [
-            0,
-            0,
-            1
-        ], r[2], dst);
-        twgl_js_1.m4.scale(dst, s, dst);
-        return dst;
-    }
-}
-exports.NodeTransforms = NodeTransforms;
-class Node {
-    constructor(source){
-        this.children = [];
-        this.localMatrix = twgl_js_1.m4.identity();
-        this.worldMatrix = twgl_js_1.m4.identity();
-        this.parent = null;
-        //  drawInfo: NodeDrawInfo|null = null;
-        this.drawInfo = null;
-        this.source = source;
-    }
-    setParent(parent) {
-        // Disconnect from existing parent
-        if (this.parent) {
-            var ndx = this.parent.children.indexOf(this);
-            if (ndx >= 0) this.parent.children.splice(ndx, 1);
-        }
-        // Add to new parent, assign
-        if (parent) parent.children.push(this);
-        this.parent = parent;
-    }
-    updateWorldMatrix(matrix) {
-        var source = this.source;
-        if (source) source.getMatrix(this.localMatrix);
-        if (matrix) // a matrix was passed in so do the math
-        twgl_js_1.m4.multiply(matrix, this.localMatrix, this.worldMatrix);
-        else // no matrix was passed in so just copy.
-        twgl_js_1.m4.copy(this.localMatrix, this.worldMatrix);
-        // now process all the children
-        var worldMatrix = this.worldMatrix;
-        this.children.forEach(function(child) {
-            child.updateWorldMatrix(worldMatrix);
-        });
-    }
-}
-exports.Node = Node;
-class NodesProducer {
-    constructor(programInfo, cubeBufferInfo){
-        this.programInfo = programInfo;
-        this.cubeBufferInfo = cubeBufferInfo;
-        // result
-        this.nodeInfosByName = {};
-        this.objectsToDraw = [];
-        this.objects = [];
-        this.makeNode = (nodeDescription)=>{
-            var trs = new NodeTransforms();
-            var cnode = new Node(trs);
-            this.nodeInfosByName[nodeDescription.name] = {
-                trs: trs,
-                node: cnode
-            };
-            trs.rotation = [
-                0,
-                0,
-                0
-            ];
-            // if (orientationAnglexz!=undefined) trs.rotation = [0,orientationAnglexz,0]; // Lx initial rotation of the model
-            trs.scale = nodeDescription.scaling || trs.scale;
-            trs.translation = nodeDescription.translation || trs.translation;
-            if (nodeDescription.draw !== false) {
-                cnode.drawInfo = {
-                    uniforms: {
-                        u_colorOffset: [
-                            0,
-                            0,
-                            0.6,
-                            0
-                        ],
-                        u_colorMult: [
-                            0.4,
-                            0.4,
-                            0.4,
-                            1
-                        ],
-                        u_matrix: undefined
-                    },
-                    programInfo: this.programInfo,
-                    bufferInfo: this.cubeBufferInfo
-                };
-                this.objectsToDraw.push(cnode.drawInfo);
-                this.objects.push(cnode);
-            }
-            var makeNodes = (nodeDescriptions)=>{
-                return nodeDescriptions ? nodeDescriptions.map(this.makeNode) : [];
-            };
-            makeNodes(nodeDescription.children).forEach(function(child) {
-                child.setParent(cnode);
-            });
-            return cnode;
-        };
-    }
-}
-exports.NodesProducer = NodesProducer;
-
-},{"twgl.js":"3uqAP"}],"2rYWp":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "blockguy.ba5581b9.json" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"VzCYY":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.DrawInstanced = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-class DrawInstanced {
-    constructor(){
-        this.vertexShaderSource = `#version 300 es
-in vec4 a_position;
-in vec4 color;
-in mat4 matrix;
-uniform mat4 projection;
-uniform mat4 view;
-
-out vec4 v_color;
-
-void main() {
-  // Multiply the position by the matrix.
-  gl_Position = projection * view * matrix * a_position;
-
-  // Pass the vertex color to the fragment shader.
-  v_color = color;
-}
-`;
-        this.fragmentShaderSource = `#version 300 es
-precision highp float;
-
-// Passed in from the vertex shader.
-in vec4 v_color;
-
-out vec4 outColor;
-
-void main() {
-  outColor = v_color;
-}
-`;
-        this.numVertices = 12;
-        this.numInstances = 5;
-        this.matrices = [];
-    }
-    resizeCanvas(gl) {
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-    }
-    main(gl) {
-        twgl.setAttributePrefix("a_");
-        this.gl = gl;
-        const programInfo = twgl.createProgramInfo(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
-        ]);
-        this.program = programInfo.program;
-        const positionLoc = gl.getAttribLocation(this.program, "a_position");
-        const colorLoc = gl.getAttribLocation(this.program, "color");
-        const matrixLoc = gl.getAttribLocation(this.program, "matrix");
-        this.projectionLoc = gl.getUniformLocation(this.program, "projection");
-        this.viewLoc = gl.getUniformLocation(this.program, "view");
-        // Create a vertex array object (attribute state)
-        this.vao = gl.createVertexArray();
-        // and make it the one we're currently working with
-        gl.bindVertexArray(this.vao);
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            /*    -0.1,  0.4,
-                -0.1, -0.4,
-                 0.1, -0.4,
-                 0.1, -0.4,
-                -0.1,  0.4,
-                 0.1,  0.4,
-                 0.4, -0.1,
-                -0.4, -0.1,
-                -0.4,  0.1,
-                -0.4,  0.1,
-                 0.4, -0.1,
-                 0.4,  0.1, */ // corrected Greggs list to have the triangles of each spoke turn in the same direction.
-            // this will allow  gl.enable(gl.DEPTH_TEST) and gl.enable(gl.CULL_FACE) in the
-            // preparation when this is ported to a scene class.
-            -0.1,
-            0.4,
-            -0.1,
-            -0.4,
-            0.1,
-            -0.4,
-            -0.1,
-            0.4,
-            0.1,
-            -0.4,
-            0.1,
-            0.4,
-            -0.4,
-            -0.1,
-            0.4,
-            -0.1,
-            -0.4,
-            0.1,
-            -0.4,
-            0.1,
-            0.4,
-            -0.1,
-            0.4,
-            0.1, 
-        ]), gl.STATIC_DRAW);
-        this.numVertices = 12;
-        // setup the position attribute
-        gl.enableVertexAttribArray(positionLoc);
-        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-        // setup matrixes, one per instance
-        this.numInstances = 5;
-        // make a typed array with one view per matrix
-        this.matrixData = new Float32Array(this.numInstances * 16);
-        for(let i = 0; i < this.numInstances; ++i){
-            const byteOffsetToMatrix = i * 64;
-            const numFloatsForView = 16;
-            this.matrices.push(new Float32Array(this.matrixData.buffer, byteOffsetToMatrix, numFloatsForView));
-        }
-        this.matrixBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
-        // just allocate the buffer
-        gl.bufferData(gl.ARRAY_BUFFER, this.matrixData.byteLength, gl.DYNAMIC_DRAW);
-        // set all 4 attributes for matrix
-        const bytesPerMatrix = 64;
-        for(let i1 = 0; i1 < 4; ++i1){
-            const loc = matrixLoc + i1;
-            gl.enableVertexAttribArray(loc);
-            // note the stride and offset
-            const offset = i1 * 16; // 4 floats per row, 4 bytes per float
-            gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, bytesPerMatrix, offset);
-            // this line says this attribute only changes for each 1 instance
-            gl.vertexAttribDivisor(loc, 1);
-        }
-        // setup colors, one per instance
-        const colorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            1,
-            0,
-            0,
-            1,
-            0,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            1,
-            1,
-            0,
-            1,
-            1,
-            1
-        ]), gl.STATIC_DRAW);
-        // set attribute for color
-        gl.enableVertexAttribArray(colorLoc);
-        gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-        // this line says this attribute only changes for each 1 instance
-        gl.vertexAttribDivisor(colorLoc, 1);
-        requestAnimationFrame(()=>this.drawScene(0.0));
-    }
-    drawScene(time) {
-        var gl = this.gl;
-        time *= 0.001; // seconds
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        // Tell WebGL how to convert from clip space to pixels
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.useProgram(this.program);
-        // set the view and projection matrices since
-        // they are shared by all instances
-        const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-        gl.uniformMatrix4fv(this.projectionLoc, false, twgl_js_1.m4.ortho(-aspect, aspect, -1, 1, -1, 1));
-        gl.uniformMatrix4fv(this.viewLoc, false, twgl_js_1.m4.axisRotation([
-            0,
-            0,
-            1
-        ], time * .1));
-        // setup all attributes
-        gl.bindVertexArray(this.vao);
-        // update all the matrices
-        this.matrices.forEach((mat, ndx)=>{
-            twgl_js_1.m4.translation([
-                -0.5 + ndx * 0.25,
-                0,
-                0
-            ], mat);
-            twgl_js_1.m4.axisRotate(mat, [
-                0,
-                0,
-                1
-            ], time * (0.1 + 0.1 * ndx), mat);
-        });
-        // upload the new matrix data
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.matrixBuffer);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.matrixData);
-        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.numVertices, this.numInstances);
-        //requestAnimationFrame(render);
-        requestAnimationFrame((time)=>this.drawScene(time));
-    }
-}
-exports.DrawInstanced = DrawInstanced;
-
-},{"twgl.js":"3uqAP"}],"hNUAa":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Canvas3dTexture = void 0;
-const twgl = __importStar(require("twgl.js")); // Greg's work
-const twgl_js_1 = require("twgl.js");
-class Canvas3dTexture {
-    constructor(){
-        this.vertexShaderSource = `#version 300 es
-
-// an attribute is an input (in) to a vertex shader.
-// It will receive data from a buffer
-in vec4 a_position;
-in vec2 a_texcoord;
-
-// A matrix to transform the positions by
-uniform mat4 u_matrix;
-
-// a varying to pass the texture coordinates to the fragment shader
-out vec2 v_texcoord;
-
-// all shaders have a main function
-void main() {
-  // Multiply the position by the matrix.
-  gl_Position = u_matrix * a_position;
-
-  // Pass the texcoord to the fragment shader.
-  v_texcoord = a_texcoord;
-}
-`;
-        this.fragmentShaderSource = `#version 300 es
-
-precision highp float;
-
-// Passed in from the vertex shader.
-in vec2 v_texcoord;
-
-// The texture.
-uniform sampler2D u_texture;
-uniform vec4 u_colorMult;
-
-// we need to declare an output for the fragment shader
-out vec4 outColor;
-
-void main() {
-   outColor = vec4(texture(u_texture, v_texcoord).rrr, 1) * u_colorMult;
-}
-`;
-    }
-    main(gl) {
-        // Get A WebGL context
-        /** @type {HTMLCanvasElement} */ var canvas = gl.canvas; // document.querySelector("#canvas");
-        //var gl = canvas.getContext("webgl2");
-        if (!gl) return;
-        // Use our boilerplate utils to compile the shaders and link into a program
-        var program = twgl.createProgramFromSources(gl, [
-            this.vertexShaderSource,
-            this.fragmentShaderSource
-        ]);
-        // look up where the vertex data needs to go.
-        var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-        var texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord");
-        // look up uniform locations
-        var matrixLocation = gl.getUniformLocation(program, "u_matrix");
-        var textureLocation = gl.getUniformLocation(program, "u_texture");
-        var colorMultLocation = gl.getUniformLocation(program, "u_colorMult");
-        // Create a buffer
-        var positionBuffer = gl.createBuffer();
-        // Create a vertex array object (attribute state)
-        var vao = gl.createVertexArray();
-        // and make it the one we're currently working with
-        gl.bindVertexArray(vao);
-        // Turn on the attribute
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        // Set Geometry.
-        this.setGeometry(gl);
-        // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-        var size = 3; // 3 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floats
-        var normalize = false; // don't normalize the data
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset);
-        // create the texcoord buffer, make it the current ARRAY_BUFFER
-        // and copy in the texcoord values
-        var texcoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-        this.setTexcoords(gl);
-        // Turn on the attribute
-        gl.enableVertexAttribArray(texcoordAttributeLocation);
-        // Tell the attribute how to get data out of texcoordBuffer (ARRAY_BUFFER)
-        var size = 2; // 2 components per iteration
-        var type = gl.FLOAT; // the data is 32bit floating point values
-        var normalize = true; // convert from 0-255 to 0.0-1.0
-        var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next color
-        var offset = 0; // start at the beginning of the buffer
-        gl.vertexAttribPointer(texcoordAttributeLocation, size, type, normalize, stride, offset);
-        // Create a texture.
-        var texture = gl.createTexture();
-        // use texture unit 0
-        gl.activeTexture(gl.TEXTURE0 + 0);
-        // bind to the TEXTURE_2D bind point of texture unit 0
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        // fill texture with 3x2 pixels
-        {
-            const level = 0;
-            const internalFormat = gl.R8;
-            const width = 3;
-            const height = 2;
-            const border = 0;
-            const format = gl.RED;
-            const type1 = gl.UNSIGNED_BYTE;
-            const data = new Uint8Array([
-                128,
-                64,
-                128,
-                0,
-                192,
-                0, 
-            ]);
-            gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, format, type1, data);
-        }
-        // set the filtering so we don't need mips
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        // Create a texture to render to
-        const targetTextureWidth = 256;
-        const targetTextureHeight = 256;
-        const targetTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, targetTexture);
-        {
-            // define size and format of level 0
-            const level1 = 0;
-            const internalFormat1 = gl.RGBA;
-            const border1 = 0;
-            const format1 = gl.RGBA;
-            const type2 = gl.UNSIGNED_BYTE;
-            const data1 = null;
-            gl.texImage2D(gl.TEXTURE_2D, level1, internalFormat1, targetTextureWidth, targetTextureHeight, border1, format1, type2, data1);
-            // set the filtering so we don't need mips
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        }
-        // Create and bind the framebuffer
-        const fb = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-        // attach the texture as the first color attachment
-        const attachmentPoint = gl.COLOR_ATTACHMENT0;
-        const level2 = 0;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level2);
-        // create a depth texture
-        const depthTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-        // make a depth buffer and the same size as the targetTexture
-        {
-            // define size and format of level 0
-            const level3 = 0;
-            const internalFormat2 = gl.DEPTH_COMPONENT24;
-            const border2 = 0;
-            const format2 = gl.DEPTH_COMPONENT;
-            const type3 = gl.UNSIGNED_INT;
-            const data2 = null;
-            gl.texImage2D(gl.TEXTURE_2D, level3, internalFormat2, targetTextureWidth, targetTextureHeight, border2, format2, type3, data2);
-            // set the filtering so we don't need mips
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            // attach the depth texture to the framebuffer
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, level3);
-        }
-        var fieldOfViewRadians = 60 * Math.PI / 180;
-        var modelXRotationRadians = 0;
-        var modelYRotationRadians = 0;
-        // Get the starting time.
-        var then = 0;
-        requestAnimationFrame(drawScene);
-        function drawCube(aspect) {
-            // Tell it to use our program (pair of shaders)
-            gl.useProgram(program);
-            // Bind the attribute/buffer set we want.
-            gl.bindVertexArray(vao);
-            // Compute the projection matrix
-            var projectionMatrix = twgl_js_1.m4.perspective(fieldOfViewRadians, aspect, 1, 2000);
-            var cameraPosition = [
-                0,
-                0,
-                2
-            ];
-            var up = [
-                0,
-                1,
-                0
-            ];
-            var target = [
-                0,
-                0,
-                0
-            ];
-            // Compute the camera's matrix using look at.
-            var cameraMatrix = twgl_js_1.m4.lookAt(cameraPosition, target, up);
-            // Make a view matrix from the camera matrix.
-            var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
-            var viewProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewMatrix);
-            for(let x = -1; x <= 1; ++x){
-                var matrix = twgl_js_1.m4.translate(viewProjectionMatrix, [
-                    x * .9,
-                    0,
-                    0
-                ]);
-                matrix = twgl_js_1.m4.axisRotate(matrix, [
-                    1,
-                    0,
-                    0
-                ], modelXRotationRadians * x);
-                matrix = twgl_js_1.m4.axisRotate(matrix, [
-                    0,
-                    1,
-                    0
-                ], modelYRotationRadians * x);
-                // Set the matrix.
-                gl.uniformMatrix4fv(matrixLocation, false, matrix);
-                // Tell the shader to use texture unit 0 for u_texture
-                gl.uniform1i(textureLocation, 0);
-                const c = x * .5 + .5;
-                gl.uniform4fv(colorMultLocation, [
-                    c * .5 + .5,
-                    1,
-                    1 - c,
-                    1
-                ]);
-                // Draw the geometry.
-                var primitiveType = gl.TRIANGLES;
-                var offset = 0;
-                var count = 36;
-                gl.drawArrays(primitiveType, offset, count);
-            }
-        }
-        // Draw the scene.
-        function drawScene(time) {
-            // convert to seconds
-            time *= 0.001;
-            // Subtract the previous time from the current time
-            var deltaTime = time - then;
-            // Remember the current time for the next frame.
-            then = time;
-            // Animate the rotation
-            modelYRotationRadians += -0.7 * deltaTime;
-            modelXRotationRadians += -0.4 * deltaTime;
-            twgl.resizeCanvasToDisplaySize(gl.canvas);
-            gl.enable(gl.CULL_FACE);
-            gl.enable(gl.DEPTH_TEST);
-            {
-                // render to our targetTexture by binding the framebuffer
-                gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-                // render cube with our 3x2 texture
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                // Tell WebGL how to convert from clip space to pixels
-                gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
-                // Clear the canvas AND the depth buffer.
-                gl.clearColor(.5, .7, 1, 1); // clear to blue
-                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                const aspect = targetTextureWidth / targetTextureHeight;
-                drawCube(aspect);
-            }
-            {
-                // render to the canvas
-                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                // render the cube with the texture we just rendered to
-                gl.bindTexture(gl.TEXTURE_2D, targetTexture);
-                // Tell WebGL how to convert from clip space to pixels
-                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-                // Clear the canvas AND the depth buffer.
-                gl.clearColor(1, 1, 1, 1); // clear to white
-                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                const aspect1 = gl.canvas.clientWidth / gl.canvas.clientHeight;
-                drawCube(aspect1);
-            }
-            requestAnimationFrame(drawScene);
-        }
-    }
-    // Fill the buffer with the values that define a cube.
-    setGeometry(gl) {
-        var positions = new Float32Array([
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5,
-            -0.5,
-            0.5,
-            0.5,
-            0.5, 
-        ]);
-        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    }
-    // Fill the buffer with texture coordinates the cube.
-    setTexcoords(gl) {
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            1,
-            1,
-            1, 
-        ]), gl.STATIC_DRAW);
-    }
-}
-exports.Canvas3dTexture = Canvas3dTexture;
-
-},{"twgl.js":"3uqAP"}],"fDS7w":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.drawimagespace = void 0;
-const twgl = __importStar(require("twgl.js")); // Lib: Gregg's work
-const datgui = __importStar(require("dat.gui")); // Lib: dat.gui
-const baseapp = __importStar(require("./../baseapp/baseapp")); // convenient base class initializing gl2 and program(s)
-class drawimagespace extends baseapp.BaseApp {
-    constructor(cgl, capp, dictpar, cdiv){
-        super(cgl, capp, dictpar, cdiv);
-        this.imagespaceParameters = {
-            move: false,
-            teal: false,
-            speed: 0.4,
-            texture: "geotriangle2",
-            color0: "#00A000"
-        };
-        this.diffuseLocation = 0;
-        this.imageSizeLocation = 0;
-        this.tealLocation = 0;
-        this.aspectLocation = 0;
-        this.xshiftLocation = 0;
-        this.yshiftLocation = 0;
-        this.cxshift = 0; // total hhift texture space (pixels)
-        this.cyshift = 0; // total hhift texture space (pixels)
-        /*
-              cxdshift: number=6.0; // moving camera
-              cydshift: number=4.0; // moving camera
-              cxshiftmax: number=1000; // moving camera x limit
-              cyshiftmax: number=400;  // moving camera y limit
-         */ this.xzoomoffsetLocation = 0;
-        this.yzoomoffsetLocation = 0;
-        this.xzoomoffset = 0;
-        this.yzoomoffset = 0;
-        this.currentTexture = "geotriangle2";
-        this.ny = 0.0;
-        this.txtaspect = 1.0;
-        // textures repository
-        this.textures = null;
-        this.textureaspects = new Map();
-        this.vs = `#version 300 es
-        precision highp float;
-        precision highp int;   
-        void main()
-        {
-          //show smaller, centered triangle gl_Position = vec4(1.f * float(uint(gl_VertexID) % 2u) - 0.5f, 1.f*float(uint(gl_VertexID) / 2u) - 0.5f, 1.0, 1.0);
-          //show half viewport triangle gl_Position = vec4(2.f * float(uint(gl_VertexID) % 2u) - 1.f, 2.f*float(uint(gl_VertexID) / 2u) - 1.f, 1.0, 1.0);
-          //show (the same) half viewport triangle  gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 2.0f, 4.f*float(uint(gl_VertexID) / 2u) - 2.0f, 1.0, 1.0);
-          //show covering right side of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) - 1.0f, 1.0, 1.0);
-          //show covering upper right square of viewport gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) + 0.0f, 4.f*float(uint(gl_VertexID) / 2u) + 0.0f, 1.0, 1.0);
-          //show covering  entire viewport
-          gl_Position = vec4(4.f * float(uint(gl_VertexID) % 2u) - 1.0f,
-                             4.f * float(uint(gl_VertexID) / 2u) - 1.0f, 
-                             1.0, 1.0);       
-        }`;
-        this.fs = `#version 300 es
-        precision highp float;
-        precision highp int;
-        uniform sampler2D diffuse;
-        uniform vec2 u_imageSize;
-        uniform int u_teal; 
-        uniform int u_xshift; 
-        uniform int u_yshift; 
-        uniform float u_aspect; 
-        uniform float u_xzoomoffset    ;
-        uniform float u_yzoomoffset    ;
-          out vec4 color;
-        void main()
-        {
-          float px = u_aspect *(gl_FragCoord.x-float(u_xshift));
-          float py = gl_FragCoord.y-float(u_yshift);
-          px-=u_xzoomoffset;
-          py-=u_yzoomoffset;
-          vec2 texoffset1 = vec2(  px,  u_imageSize.y -py) / u_imageSize;
-          vec2 texcoord1 = texoffset1 + vec2(  u_xzoomoffset, u_yzoomoffset);
-
-          vec4 ccolor = texture(diffuse, texcoord1);
-          if ((py<u_imageSize.y && px<u_imageSize.x) || (u_teal ==1))
-            color=ccolor;
-        }`;
-        //===================================================================================================
-        this.gui = null;
-        drawimagespace.instance = this;
-        this.twglprograminfo = twgl.createProgramInfo(cgl, [
-            this.vs,
-            this.fs
-        ]);
-    }
-    prepareSurfaceTextures(gl, selectedSurface) {
-        this.textureaspects.set("checker", 1.0);
-        this.textureaspects.set("clover", 1.0);
-        this.textureaspects.set("zelenskyy", 1.0);
-        this.textureaspects.set("aristotle", 1);
-        this.textureaspects.set("flagofukraine", 856.0 / 1288.0);
-        this.textureaspects.set("flagofukraine2", 1288.0 / 856.0);
-        this.textureaspects.set("geotriangle", 258.0 / 424.0);
-        this.textureaspects.set("geotriangle2", 0.5);
-        this.textureaspects.set("geotriangle2", 0.5);
-        this.textureaspects.set("protractorT2", 395.0 / 747.0);
-        var gradientname = require("./../resources/models/stone/circlegradient.png");
-        var aristotlename = require("./../resources/models/stone/aristoteles1.png");
-        var clovername = require("./../resources/images/clover.jpg");
-        var zelenskyyname = require("./../resources/models/stone/zelenskii.png");
-        var flagofukrainname = require("./../resources/models/stone/flagofukraine.png");
-        var flagofukrainname2 = require("./../resources/models/stone/flagofukraine2.png");
-        var trianglename = require("./../resources/models/stone/geodriehoek.png");
-        var trianglename2 = require("./../resources/models/stone/geodriehoek2.png");
-        var protractorT2name = require("./../resources/models/stone/protractorT2.png");
-        this.textures = twgl.createTextures(gl, {
-            checker: {
-                mag: gl.NEAREST,
-                min: gl.LINEAR,
-                src: [
-                    255,
-                    255,
-                    255,
-                    255,
-                    192,
-                    192,
-                    192,
-                    0,
-                    92,
-                    92,
-                    92,
-                    255,
-                    255,
-                    255,
-                    255,
-                    255, 
-                ]
-            },
-            clover: {
-                src: clovername
-            },
-            zelenskyy: {
-                src: zelenskyyname
-            },
-            gradient: {
-                src: gradientname
-            },
-            flagofukraine: {
-                src: flagofukrainname
-            },
-            flagofukraine2: {
-                src: flagofukrainname2
-            },
-            geotriangle: {
-                src: trianglename
-            },
-            geotriangle2: {
-                src: trianglename2
-            },
-            aristotle: {
-                src: aristotlename
-            },
-            protractorT2: {
-                src: protractorT2name
-            }
-        });
-        if (selectedSurface == "checker") return this.textures.checker;
-        if (selectedSurface == "clover") return this.textures.clover;
-        if (selectedSurface == "zelenskyy") return this.textures.zelenskyy;
-        if (selectedSurface == "gradient") return this.textures.gradient;
-        if (selectedSurface == "flagofukraine") return this.textures.flagofukraine;
-        if (selectedSurface == "flagofukraine2") return this.textures.flagofukraine2;
-        if (selectedSurface == "geotriangle") return this.textures.geotriangle;
-        if (selectedSurface == "geotriangle2") return this.textures.geotriangle2;
-        if (selectedSurface == "aristotle") return this.textures.geotriangle2;
-        if (selectedSurface == "protractorT2") return this.textures.protractorT2;
-    }
-    onChangeEnvironmentCombo(value) {
-        var thisinstance = drawimagespace.instance;
-        console.log("we are in texture=[" + value + "] obj.speed=" + thisinstance.imagespaceParameters.speed);
-        thisinstance.currentTexture = value;
-        console.log("set currentTexture to [" + value + "]");
-        if (value == "clover") thisinstance.ny = 8.0;
-        else if (value == "geotriangle2") thisinstance.ny = 2.0;
-        else thisinstance.ny = 4.0;
-        console.log("this.textureaspects=" + thisinstance.textureaspects);
-        if (value == "geotriangle") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle");
-        if (value == "geotriangle2") thisinstance.txtaspect = thisinstance.textureaspects.get("geotriangle2");
-        if (value == "flagofukraine") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine");
-        if (value == "flagofukraine2") thisinstance.txtaspect = thisinstance.textureaspects.get("flagofukraine2");
-        if (value == "clover") {
-            if (thisinstance.textureaspects.has("clover")) thisinstance.txtaspect = thisinstance.textureaspects.get("clover");
-        }
-        if (value == "aristotle") thisinstance.txtaspect = thisinstance.textureaspects.get("aristotle");
-        if (value == "checker") thisinstance.txtaspect = thisinstance.textureaspects.get("checker");
-        if (value == "zelenskyy") thisinstance.txtaspect = thisinstance.textureaspects.get("zelenskyy");
-        if (value == "protractorT2") thisinstance.txtaspect = thisinstance.textureaspects.get("protractorT2");
-        //alert("txtaspect set at "+thisinstance.txtaspect);
-        thisinstance.app.mouse.totaldelta = 0;
-    }
-    onChangeColorValue(value) {
-        console.log("we are in color=[" + value + "]");
-        var thisinstance = drawimagespace.instance;
-        if (thisinstance.gl != null) {
-            var cc = thisinstance.gl.canvas.parentNode;
-            var ccd = cc;
-            ccd.style.backgroundColor = value;
-        }
-    }
-    initGUI(parameters) {
-        this.imagespaceParameters = parameters;
-        var cc = this.gl.canvas.parentNode;
-        var ccd = cc;
-        ccd.style.backgroundColor = this.imagespaceParameters.color0;
-        // park the dat.gui box in the linksdiv below the links, in closed state
-        var gui = new datgui.GUI({
-            autoPlace: false
-        });
-        gui.domElement.id = "gui_drawimagespace";
-        document.getElementById("linksdiv").append(gui.domElement);
-        gui.close();
-        // connect viewmodel
-        gui.remember(this.imagespaceParameters);
-        // Checkbox for animation on/off
-        gui.add(this.imagespaceParameters, "move");
-        // Checkbox for tealing texture on/off
-        gui.add(this.imagespaceParameters, "teal");
-        // Slider for animation speed
-        gui.add(this.imagespaceParameters, "speed").min(0.2).max(1).step(0.005);
-        // Color dialog sets background color
-        var cel3 = gui.addColor(this.imagespaceParameters, "color0");
-        cel3.onChange(this.onChangeColorValue);
-        // Combobox texture from accepted values
-        var cel2 = gui.add(this.imagespaceParameters, "texture", [
-            "geotriangle2",
-            "zelenskyy",
-            "clover",
-            "checker",
-            "aristotle",
-            "protractorT2"
-        ]);
-        cel2.onChange(this.onChangeEnvironmentCombo);
-        gui.updateDisplay();
-        return gui;
-    }
-    //---------------------------------------------------------------------------------------------------------
-    main(gl, dictpar) {
-        //  super.main(gl, dictpar,"","");
-        //  if (this.program && this.gl && this.program[0])
-        var program = this.twglprograminfo.program;
-        gl.useProgram(program);
-        this.prepareSurfaceTextures(gl, "zelenskyy");
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        this.txtaspect = this.textureaspects.get("geotriangle2");
-        this.ny = 1.0;
-        console.log("<assigned program");
-        this.diffuseLocation = gl.getUniformLocation(program, "diffuse");
-        this.imageSizeLocation = gl.getUniformLocation(program, "u_imageSize");
-        this.tealLocation = gl.getUniformLocation(program, "u_teal");
-        this.xshiftLocation = gl.getUniformLocation(program, "u_xshift");
-        this.yshiftLocation = gl.getUniformLocation(program, "u_yshift");
-        this.aspectLocation = gl.getUniformLocation(program, "u_aspect");
-        this.xzoomoffsetLocation = gl.getUniformLocation(program, "u_xzoomoffset");
-        this.yzoomoffsetLocation = gl.getUniformLocation(program, "u_yzoomoffset");
-        // gl.useProgram(this.twglprograminfo![0].program);
-        // gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height); 
-        requestAnimationFrame(()=>this.render(0));
-    //else
-    //console.log("initprogram program[0] fails.");
-    }
-    readcolor(original) {
-        var s = original[0] == "#" ? original.substring(1) : original;
-        var v1 = parseInt(s.substring(0, 2), 16);
-        var v2 = parseInt(s.substring(2, 4), 16);
-        var v3 = parseInt(s.substring(4, 6), 16);
-        return {
-            r: v1 / 256.0,
-            g: v2 / 256.0,
-            b: v3 / 256.0
-        };
-    }
-    render(time) {
-        var _a;
-        if (this.textures != null) {
-            var gl = this.gl;
-            var program = this.twglprograminfo.program;
-            gl.useProgram(program);
-            twgl.resizeCanvasToDisplaySize(gl.canvas);
-            //  gl.useProgram(this.twglprograminfo![1].program);
-            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-            var texture = this.textures[this.currentTexture];
-            if (texture == null || texture == undefined) {
-                console.log("no texture");
-                requestAnimationFrame(()=>this.render(++time));
-                return;
-            }
-            //  gl.bindTexture(gl.TEXTURE_2D, texture);
-            /*
-                        if (this.imagespaceParameters.move)
-                        {
-                            this.cxshift+=this.imagespaceParameters.speed*this.cxdshift;
-                            if (this.cxshift>this.cxshiftmax) this.cxdshift=-this.cxdshift;
-                            if (this.cxshift<1) this.cxdshift=-this.cxdshift;
-                            this.cyshift+=this.imagespaceParameters.speed*this.cydshift;
-                            if (this.cyshift>this.cyshiftmax) this.cydshift=-this.cydshift;
-                            if (this.cyshift<1) this.cydshift=-this.cydshift;
-                        }     else
-                        if (this.app!.mouse.dragvector && this.app!.mouse.dragdistance)
-                        {
-                          var v = this.app!.mouse.dragvector!;
-                          var d = this.app!.mouse.dragpdistance!;
-                          this.cxshift+=0; //  /gl.canvas.width;
-                          this.cyshift+=0; // /gl.canvas.width;
-                          this.xzoomoffset= this.app!.mouse.px!;
-                          this.yzoomoffset= this.app!.mouse.py!;
-                          ///console.log("cxshift="+ this.cxshift+" cyshift="+this.cyshift)
-                        }
-             */ // this does not work here, background is div background of canvas
-            //    gl.clearColor(0.0,0.0,0.0,1.0);       
-            //    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);     
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
-            // gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-            // blur the checker
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            if (!this.imagespaceParameters.teal) {
-                // this will show a single instance of the texture image
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); // horizontal
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); // vertical
-            } else {
-                // this will show tealed texture images
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); // horizontal
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT); // vertical    
-            }
-            // The texture is sampled according to cdivx and cdivy.
-            // ny determines how many texture images are shown in vertical direction in tealed mode.
-            // totaldelta is the distance the mouse wheel has moved.
-            // zoomVelocity decides the speed of zoomin/zoomout
-            // the fragment shader will sample the texture using the viewport size and cdiv.
-            var cdivy = this.ny + ((_a = this.app) === null || _a === void 0 ? void 0 : _a.mouse.totaldelta) * drawimagespace.zoomVelocity;
-            var cdivx = cdivy; // keep aspect ratio of image space
-            // set zoomin state (imageSize)
-            gl.uniform2f(this.imageSizeLocation, gl.canvas.width / cdivx, gl.canvas.height / cdivy);
-            // aspect ratio texture dimensions i.r.t. viewport   
-            var daspect = gl.canvas.height / gl.canvas.width;
-            gl.uniform1f(this.aspectLocation, this.txtaspect / daspect);
-            gl.uniform1f(this.xzoomoffsetLocation, this.xzoomoffset);
-            gl.uniform1f(this.yzoomoffsetLocation, this.yzoomoffset);
-            // horizontal and vertical shift
-            gl.uniform1i(this.tealLocation, this.imagespaceParameters.teal ? 1 : 0);
-            gl.uniform1i(this.xshiftLocation, this.cxshift);
-            gl.uniform1i(this.yshiftLocation, this.cyshift);
-            // note vs is not bound to any VertexArray. The vertex shader emits all 
-            // viewport pixel positions to the fragment shader, like ShaderToy does.
-            // gl.bindVertexArray(this.vertexArray!);
-            // ..this results in the
-            gl.drawArrays(gl.TRIANGLES, 0, 3);
-            document.getElementById("cdiv").innerHTML = "draw " + time + ", xshift=" + Math.round(this.cxshift) + ", yshift=" + this.cyshift + ", " + "xcoom=" + this.xzoomoffset + ", yzoom=" + this.yzoomoffset + "<br>" + " c.width=" + gl.canvas.width + " " + " c.height=" + gl.canvas.height + ", texture=" + this.currentTexture + " ny=" + this.ny; // +" "+ccolor.r+" "+ccolor.g+" "+ccolor.b;       ;
-        } else document.getElementById("cdiv").innerHTML = "Initializing textures, time=" + time; //+ " this.textures.length="+this.textures!.length;
-        requestAnimationFrame(()=>this.render(++time));
-    }
-}
-exports.drawimagespace = drawimagespace;
-drawimagespace.zoomVelocity = 0.075;
-drawimagespace.animationVelocity = 0.25;
-
-},{"twgl.js":"3uqAP","dat.gui":"k3xQk","./../baseapp/baseapp":"9lZ4F","./../resources/models/stone/circlegradient.png":"1iiep","./../resources/models/stone/aristoteles1.png":"eyRkp","./../resources/images/clover.jpg":"i3Wov","./../resources/models/stone/zelenskii.png":"dfC7C","./../resources/models/stone/flagofukraine.png":"4oUIn","./../resources/models/stone/flagofukraine2.png":"gQU1V","./../resources/models/stone/geodriehoek.png":"hf4NP","./../resources/models/stone/geodriehoek2.png":"OcEbM","./../resources/models/stone/protractorT2.png":"i16db"}],"1iiep":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "circlegradient.6cda9680.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"eyRkp":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "aristoteles1.fe4d0f63.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"i3Wov":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "clover.5f19604c.jpg" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"dfC7C":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "zelenskii.830ddd79.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"4oUIn":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "flagofukraine.65ef6112.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"gQU1V":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "flagofukraine2.a30fc79d.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"hf4NP":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "geodriehoek.617b0683.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"OcEbM":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "geodriehoek2.733c44fc.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"i16db":[function(require,module,exports) {
-module.exports = require("./helpers/bundle-url").getBundleURL("970g0") + "protractorT2.54d56187.png" + "?" + Date.now();
-
-},{"./helpers/bundle-url":"lgJ39"}],"9igw0":[function(require,module,exports) {
-"use strict";
-var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, {
-        enumerable: true,
-        get: function() {
-            return m[k];
-        }
-    });
-} : function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-});
-var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function(o, v) {
-    Object.defineProperty(o, "default", {
-        enumerable: true,
-        value: v
-    });
-} : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = this && this.__importStar || function(mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) {
-        for(var k in mod)if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    }
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Animation2 = void 0;
-const animationclock = __importStar(require("./baseapp/animationclock")); // own lib: frame counter
-const camhandler = __importStar(require("./baseapp/camhandler")); // camera projection
-const baseapp = __importStar(require("./baseapp/baseapp")); // base app for this
-class Animation2 extends baseapp.BaseApp {
-    constructor(cgl, capp, cscene, dictPar, cdiv){
-        super(cgl, capp, dictPar, cdiv);
-        //=============================================================================
-        // all parameters in any scene
-        this.animation1Parameters = this.DefaultParameters;
-        this.ctime = new Date().getTime();
-        this.doclear = false;
-        this.doTwglEnv = false; // when true, background is drawn with twgl.drawBufferInfo, which does not work with any scenery using twgl.DrawBufferInfo
-        Animation2.instance = this;
-        this.scene = cscene;
-        this.doShowBackgroundColorChoice = false;
-        if (this.sceneenv < 0) this.doShowBackgroundColorChoice = true;
-        else if ((dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) != undefined) this.doShowBackgroundColorChoice = +(dictPar === null || dictPar === void 0 ? void 0 : dictPar.get("backcolorchoice")) > 0;
-        this.clock = new animationclock.AnimationClock();
-    }
-    initGUI(parameters, cscene) {
-        console.log("=> animation1 initGUI " + parameters);
-        this.animation1Parameters = parameters;
-        for(var ii = 0; ii < this.scene.length; ii++)this.scene[ii].animationParameters = this.animation1Parameters;
-        var gui = super.createGUI(this.animation1Parameters);
-        this.scene[cscene].extendGUI(gui);
-        return gui;
-    }
-    initScenes() {
-        var n = 0;
-        var ainstance = baseapp.instance;
-        ainstance.scene.forEach((s)=>{
-            s.initScene(ainstance.gl, ainstance.animation1Parameters, ainstance.cam, ainstance.dictpars, ainstance.scene.length == n + 1 ? ainstance.sceneReadyCallback : undefined);
-            n++;
-        });
-    }
-    main(gl, dictPars) {
-        this.dictpars = dictPars;
-        this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
-        this.cam.zoominVelocity = 0.5;
-        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined) this.sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
-        /*        if (this.sceneenv>0)
-                {
-                  console.log("animation2 initscenes with background");
-                    if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl);
-                    this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.sceneenv, this.textureEnvReadyCallback)!;
-                } else
-                {
-                  console.log("animation2 initscenes without background");
-                  this.initScenes();
-                }
-        */ if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl);
-        else this.createEnvironmentMapGeo(gl);
-        this.skyboxtexture = this.createEnvironmentMapTexture(gl, this.sceneenv < 0 ? 1 : this.sceneenv, this.textureEnvReadyCallback);
-    }
-    sceneReadyCallback(err) {
-        console.log("-> sceneReadyCallback");
-        var thisinstance = baseapp.instance;
-        var ainstance = thisinstance;
-        ainstance.scene[0].defaultCamera(ainstance.gl, ainstance.cam);
-        ainstance.scene[0].resizeCanvas(ainstance.gl);
-        console.log("-> sceneReadyCallback request first frame");
-        requestAnimationFrame(()=>ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
-    }
-    textureEnvReadyCallback(err, texture) {
-        var thisinstance = baseapp.instance;
-        var ainstance = thisinstance;
-        //    var n: number=0;
-        ainstance.initScenes();
-    //    ainstance.scene.forEach((s)=>{ s.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,
-    //                                               (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
-    }
-    render(time) {
-        var gl = this.gl;
-        /*  if (this.doclear)
-          {
-            gl.clear(gl.DEPTH_BUFFER_BIT);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          }
-         // scene.resizeCanvas(gl);
-          gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
-         */ var gl = this.gl;
-        if (this.doclear) {
-            gl.clear(gl.DEPTH_BUFFER_BIT);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
-        //  scene.resizeCanvas(gl);  
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        var cam = this.cam;
-        if (this.changedCam) {
-            cam.camHeight = this.animation1Parameters.camheight;
-            cam.setYUpEye();
-            console.log("camHeight=" + cam.camHeight);
-            this.changedCam = false;
-        }
-        cam.CamHandlingYUp(gl, this.app, 1.0, -1);
-        this.scene.forEach((s)=>{
-            this.renderscene(gl, time, s, cam);
-        });
-        requestAnimationFrame(()=>this.render(this.clock.getTime(this.clock.frame)));
-    }
-    renderscene(gl, time, scene, cam) {
-        // var scene = this.scene[cscene];
-        var _a, _b;
-        // prepare camera
-        // set current scene parameters
-        scene.animationParameters = this.animation1Parameters;
-        // render skybox                                                                          
-        if (this.sceneenv >= 0) {
-            // set skybox camera
-            if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move)) this.cameraPosition = [
-                cam === null || cam === void 0 ? void 0 : cam.Position()[0],
-                cam === null || cam === void 0 ? void 0 : cam.Position()[1],
-                cam === null || cam === void 0 ? void 0 : cam.Position()[2]
-            ];
-            else this.cameraPosition = ((_b = scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [
-                Math.cos(time * 0.005 * scene.animationParameters.speed),
-                0.0,
-                Math.sin(time * 0.005 * scene.animationParameters.speed)
-            ] : [
-                4.0,
-                0.0,
-                0.0
-            ];
-            //    gl.disable(gl.CULL_FACE);  
-            gl.depthFunc(gl.LEQUAL);
-            if (this.doTwglEnv) this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
-            else {
-                console.log("render environment");
-                gl.disable(gl.CULL_FACE);
-                this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
-            }
-        }
-        // render scene
-        gl.enable(gl.DEPTH_TEST); // obscure vertices behind other vertices
-        gl.enable(gl.CULL_FACE); // only show left-turned triangles
-        scene.drawScene(gl, cam, time);
-    // request next frame
-    }
-}
-exports.Animation2 = Animation2;
-
-},{"./baseapp/animationclock":"4nsaS","./baseapp/camhandler":"1ZnlU","./baseapp/baseapp":"9lZ4F"}],"4nsaS":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.AnimationClock = void 0;
-class AnimationClock {
-    constructor(){
-        this.frame = 0;
-        this.vnow = new Date();
-        this.tdt = 0;
-    }
-    getTime(cframe) {
-        const now = new Date();
-        const ctime = now.getTime();
-        const dt = ctime - this.vnow.getTime();
-        if (this.frame % 100 == 0) {
-            var fps = 1000.0 / (this.tdt / 100.0);
-            var s = "cframe=" + cframe + " tdt=" + (this.tdt / 100.0).toPrecision(4) + " ms, fps: " + fps.toPrecision(3);
-            // var s: string = "cframe="+cframe+" tdt="+this.tdt+" ms, fps: "+(1000.0/(this.tdt/100.0)).toPrecision(3).toString();
-            console.log(s);
-            document.getElementById("app").innerHTML = s;
-            this.tdt = 0;
-        }
-        this.tdt += dt;
-        this.vnow = now;
-        this.frame++;
-        return ctime;
-    }
-}
-exports.AnimationClock = AnimationClock;
-
-},{}],"kcBXj":[function(require,module,exports) {
+},{"twgl.js":"3uqAP"}],"kcBXj":[function(require,module,exports) {
 "use strict";
 var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -24607,6 +24353,9 @@ class MatObjScene {
         this.resolvedtextures = new Map();
         this.imgs = [];
         this.imgsa = [];
+        //------------------------------------------------------------------------
+        this.name = "";
+        this.orientations = new Map(); // for  each object, contains orientation YUp(1) or ZUp(2)
         this.ctime = 0;
         //--- SHADERS ------------------------------------------------------------------------------------------------------
         this.vs = `#version 300 es
@@ -24751,21 +24500,22 @@ void main() {
     extendGUI(gui) {
         gui.add(this.animationParameters, "fov", 5.0, 85.0, 1.0);
     }
-    //------------------------------------------------------------------------
     async getFiles(UrlPars) {
         const useInMemoryObj = false;
         if (useInMemoryObj) mobj.GetDeclaredObjMtl();
         else {
             var cresolvedfilepair = mobjfiles.getFileNamesCube();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("koenigsegg")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("building")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair2")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("cat")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("plane")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("rubik")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("stone")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("greenhouse")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+            this.name = "";
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "koenigsegg")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "building")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "chair")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "chair2")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "cat")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "plane")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "rubik")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "stone")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "greenhouse")) != undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+            this.orientations.set(this.name, cresolvedfilepair.orientation);
             console.log("=> await " + cresolvedfilepair.cobjname + " " + cresolvedfilepair.cmatname);
             await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
             if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length > 0) {
@@ -24907,13 +24657,7 @@ void main() {
         return ctexture;
     }
     drawScene(gl, cam, time) {
-        // var gl: WebGL2RenderingContext = this.gl!;
-        // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        // gl.enable(gl.DEPTH_TEST);
-        // gl.enable(gl.CULL_FACE);
-        // var dtime = time - this.ctime;
         this.ctime = time;
-        // this.time+=dtime;
         if (cam == undefined || this.twglprograminfo == undefined) return;
         var program = this.twglprograminfo.program;
         gl.useProgram(program);
@@ -25443,6 +25187,7 @@ function getFileNamesKoenigsEgg() {
     var cobjname = require("./../resources/models/koenigsegg/koenigsegg.obj");
     var cmatname = require("./../resources/models/koenigsegg/koenigsegg.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25458,6 +25203,7 @@ function getFileNamesStone() {
     var cobjname = require("./../resources/models/stone/stone12021_01.obj");
     var cmatname = require("./../resources/models/stone/stone12021_01.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25473,6 +25219,7 @@ function getFileNamesBuilding() {
     var cobjname = require("./../resources/models/building/building_04a.obj");
     var cmatname = require("./../resources/models/building/building_04.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25488,6 +25235,7 @@ function getFileNamesGreenhouse() {
     var cobjname = require("./../resources/models/greenhouse/greenhouse.obj");
     var cmatname = require("./../resources/models/greenhouse/greenhouse.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25499,6 +25247,7 @@ function getFileNamesCat() {
     var cobjname = require("./../resources/models/cat/12221_Cat_v1_l3.obj");
     var cmatname = require("./../resources/models/cat/12221_Cat_v1_l3.mtl");
     return {
+        orientation: 2.0,
         cobjname,
         cmatname,
         cfiles
@@ -25510,6 +25259,7 @@ function getFileNamesRubik() {
     var cobjname = require("./../resources/models/rubik/xrubik.obj");
     var cmatname = require("./../resources/models/rubik/xrubik.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25537,6 +25287,7 @@ function getFileNamesCube() {
     var cobjname = require("./../resources/models/cube/cube2.obj");
     var cmatname = require("./../resources/models/cube/cube2.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25548,6 +25299,7 @@ function getFileNamesPlane() {
     var cobjname = require("./../resources/models/plane/plane.obj");
     var cmatname = require("./../resources/models/plane/plane.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25559,6 +25311,7 @@ function getFileNamesMario() {
     var cobjname = require("./../resources/models/mario/mario-sculpture.obj");
     var cmatname = require("./../resources/models/mario/mario-sculpture.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25570,6 +25323,7 @@ function getFileNamesChair2() {
     var cobjname = require("./../resources/models/chair/willisau_riale.obj");
     var cmatname = require("./../resources/models/chair/willisau_riale.mtl");
     return {
+        orientation: 2.0,
         cobjname,
         cmatname,
         cfiles
@@ -25581,6 +25335,7 @@ function getFileNamesChair() {
     var cobjname = require("./../resources/models/chair/chair.obj");
     var cmatname = require("./../resources/models/chair/chair.mtl");
     return {
+        orientation: 1.0,
         cobjname,
         cmatname,
         cfiles
@@ -25892,7 +25647,6 @@ class FishAnimationScene {
         this.scenesize = 40;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;
         this.vtime = 0;
@@ -25923,12 +25677,11 @@ class FishAnimationScene {
             afish.setNumBones(gl);
             afish.createBoneTexture(gl, time0, dictpar);
             afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.uniforms = afish.createUniforms();
             afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
             afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
             if (nFish == this.h.fish.length && textureReadyCallback != undefined) textureReadyCallback(0);
-        //  textureReadyCallback(0);
         });
     }
     anglebetween(vectora, vectorb) {
@@ -26731,8 +26484,8 @@ class FishWithJoints extends fish.Fish {
     }
     prepareMesh(gl, dictpar, scale) {
         this.scale = scale;
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cstride = this.numberDictPar(dictpar, "stride", 180);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 20);
         var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         dictpar.set("r1", this.r1.toString());
         dictpar.set("r2", this.r2.toString());
@@ -27077,7 +26830,7 @@ class Fish extends boneanimation.BoneAnimation {
         this.scale = scale;
         var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20);
+            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.40);
             tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar);
             tsmesh.type = gl.TRIANGLE_STRIP;
             return tsmesh;
@@ -27148,7 +26901,7 @@ class Fish extends boneanimation.BoneAnimation {
         this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
         this.EndOfBoneTrans = twgl_js_1.m4.identity();
     }
-    createUniforms(gl, dictpar) {
+    createUniforms() {
         return {
             world: twgl_js_1.m4.identity(),
             projection: twgl_js_1.m4.identity(),
@@ -27223,7 +26976,7 @@ const fish = __importStar(require("./fish"));
 class FishV extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 30);
         return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getFishPositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
@@ -27282,8 +27035,8 @@ const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bone
 const fish = __importStar(require("./fish"));
 class Whale extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cstride = this.numberDictPar(dictpar, "stride", 180);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 40);
         return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
@@ -27418,8 +27171,8 @@ const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bone
 const fish = __importStar(require("./fish"));
 class WhaleTranslated extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cstride = this.numberDictPar(dictpar, "stride", 120);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 40);
         return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {
@@ -27757,7 +27510,7 @@ class hoardsingle {
         this.traj.push(new trajectory_1.Trajectory(path, 2.0 * defaultspeed, true));
         var path = this.arcpath(400, 80, 0, 1.0 / 1.61);
         this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
-        var path = this.arcpath(400, 100, 0, 1.0);
+        var path = this.arcpath(400, 120, 0, 1.0);
         this.traj.push(new trajectory_1.Trajectory(path, defaultspeed, true));
     }
     arcpath(grain, r, rh, excen) {
@@ -27811,7 +27564,7 @@ class FishTrajectoryScene {
             afish.setNumBones(gl);
             afish.createBoneTexture(gl, time0, dictpar);
             afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.uniforms = afish.createUniforms();
             afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
             afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
@@ -27865,17 +27618,16 @@ class FishTrajectoryScene {
                     0
                 ];
                 var velocitytrans;
-                if (!this.firstframe) {
-                    velo = trajpos[inx].v;
-                    velocitytrans = twgl.m4.translation(velo = [
-                        velo[0] * this.dtime,
-                        velo[1] * this.dtime,
-                        velo[2] * this.dtime
-                    ]);
-                    ma.change = trajpos[inx].change;
-                } else velocitytrans = twgl_js_1.m4.identity();
+                velo = trajpos[inx].v;
+                velocitytrans = twgl.m4.translation(velo = [
+                    velo[0] * this.dtime,
+                    velo[1] * this.dtime,
+                    velo[2] * this.dtime
+                ]);
+                ma.change = trajpos[inx].change;
                 // posture (done when direction is changed)
                 if (ma.change) {
+                    inx; // console.log("change "+trajpos[inx].v+" to "+trajpos[inx].v); }
                     var modeldir = [
                         -1,
                         0,

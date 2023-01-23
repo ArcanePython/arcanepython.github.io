@@ -1,3 +1,4 @@
+/*
 import * as twgl from "twgl.js";          // Greg's work
 import * as mtls from "./../baseapp/mouselistener";  // connect events for buttons and wheel
 import * as baseapp from "./../baseapp/baseapp";
@@ -154,14 +155,14 @@ export class skyboxcube extends baseapp.BaseApp
       //  gl.useProgram(this.twglprograminfo![0].program);
 
         this.renderenvironmentmapTwgl(gl, fieldOfViewRadians, this.skyboxtexture!);
-/*
-        gl.bindVertexArray(this.vaoEnvironment!);
-        twgl.setUniforms( this.twglprograminfo![0], { 
-          u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
-          u_skybox: this.texture,
-        });
-        twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
-*/
+
+//        gl.bindVertexArray(this.vaoEnvironment!);
+//        twgl.setUniforms( this.twglprograminfo![0], { 
+//          u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,
+//          u_skybox: this.texture,
+//        });
+//        twgl.drawBufferInfo(gl, this.environmentBufferInfo!);  
+
            
        // Build a view matrix for the mirror cube.
         var aspect = (gl.canvas as HTMLCanvasElement).clientWidth / (gl.canvas as HTMLCanvasElement).clientHeight;
@@ -241,3 +242,4 @@ export class skyboxcube extends baseapp.BaseApp
     }
     `;
 }
+*/

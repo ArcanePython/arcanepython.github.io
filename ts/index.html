@@ -149,15 +149,14 @@
         `;
         var commonhtml =  "index.html";           // this html (do not use dist\ parcel's)
         str+=lnk(commonhtml+"?cube&radius0=12&hx=-40&hy=20","Textured cubes");
-        str+=lnk(commonhtml+"?koenigsegg&radius0=85&hx=30&hy=60","Koenigsegg");
+        str+=lnk(commonhtml+"?koenigsegg&radius0=85&hx=3&hy=25","Koenigsegg");
         str+=lnk(commonhtml+"?rubik&radius0=25&hx=60&hy=20","Blue Rubik");
         str+=lnk(commonhtml+"?building&radius0=65&hx=-55&hy=25&hxl=-0.61&difflight=1&speclight=0","Building");
         str+=lnk(commonhtml+"?chair&radius0=31&hx=45&hy=25","Chair");
-        str+=lnk(commonhtml+"?chair2&radius0=138&hx=40&hy=30","Chair 2");
-        str+=lnk(commonhtml+"?cat&radius0=137&hx=-91&hy=-60&hxl=-1.4&hyl=-0.77&difflight=0.8","Cat");
+        str+=lnk(commonhtml+"?chair2&radius0=198&hx=0&hy=0&cam=zup","Chair 2");
         str+=lnk(commonhtml+"?stone&radius0=8&hx=45&hy=30","Stone");
         str+=lnk(commonhtml+"?plane&radius0=25&hx=45&hy=25","Plane");
-        str+=lnk(commonhtml+"?greenhouse","Greenhouse");
+        //str+=lnk(commonhtml+"?greenhouse","Greenhouse");
         str+=`
         <p>
         <b>Experimental</b><br>
@@ -170,14 +169,15 @@
         str+=lnk(commonhtml+"?canvas3dtexture&radius0=60&hx=0&hy=0","3d on tex Gregg#3");
         str+=lnk("?drawimagespace&backcolorchoice=1","Image space");
         str+=lnk(commonhtml+"?animation9&radius0=40&hx=-45&hy=0.0&backcolorchoice=1&env=1","Multiple scenes culling");
+        str+=lnk(commonhtml+"?cat&radius0=350&hx=-300&hy=-50&hxl=-1.4&hyl=-0.77&difflight=0.8&cam=zup&env=1","Funny cat camera");
         str+=`
         <p>
         <b>Scenes and compound scenes</b><br>
         `;
-        str+=lnk(commonhtml+"?whales&radius0=140&hx=100&hy=10&mesh=strip&stride=180&numrows=39&env=2","Zelensky whale patrol");
+        str+=lnk(commonhtml+"?animation8&radius0=140&hx=100&hy=10&env=2","Zelensky whale patrol");
         //str+=lnk(commonhtml+"?animation6&radius0=60&hx=0&hy=0&speed=0.01","Skybox only scene");
         str+=lnk(commonhtml+"?animation4&radius0=20&hx=0&hy=0&env=1","Skycube Scene");
-        str+=lnk(commonhtml+"?animation10&radius0=230&hx=273&hy=15&mesh=strip&stride=180&numrows=39&fish=1&env=3","Fish trajectory");
+        str+=lnk(commonhtml+"?animation10&radius0=270&hx=273&hy=15&fish=1&env=3","Fish trajectory");
         str+=lnk(commonhtml+"?animation3=0&radius0=50&hx=0&hy=0","Lighted F with 3dcubes");
         str+=lnk(commonhtml+"?animation1&radius0=200&hx=225&hy=20&fov=32&env=0","Cube placed on grid");
      //   str+=lnk(commonhtml+"?animationi&radius0=180&hx=3.9&hy=1.1&fov=32","Instanced scene");

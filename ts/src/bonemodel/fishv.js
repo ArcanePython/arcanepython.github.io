@@ -27,7 +27,7 @@ const fish = __importStar(require("./fish"));
 class FishV extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
         var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 30);
         return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getFishPositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {

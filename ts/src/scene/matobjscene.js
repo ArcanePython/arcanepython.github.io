@@ -51,6 +51,9 @@ class MatObjScene {
         this.resolvedtextures = new Map();
         this.imgs = [];
         this.imgsa = [];
+        //------------------------------------------------------------------------
+        this.name = "";
+        this.orientations = new Map(); // for  each object, contains orientation YUp(1) or ZUp(2)
         this.ctime = 0;
         //--- SHADERS ------------------------------------------------------------------------------------------------------
         this.vs = `#version 300 es
@@ -189,31 +192,32 @@ void main() {
     extendGUI(gui) {
         gui.add(this.animationParameters, 'fov', 5.0, 85.0, 1.0);
     }
-    //------------------------------------------------------------------------
     async getFiles(UrlPars) {
         const useInMemoryObj = false;
         if (useInMemoryObj)
             mobj.GetDeclaredObjMtl();
         else {
             var cresolvedfilepair = mobjfiles.getFileNamesCube();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("koenigsegg")) != undefined)
+            this.name = "";
+            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "koenigsegg")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("building")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "building")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesBuilding();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "chair")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesChair();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("chair2")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "chair2")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesChair2();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("cat")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "cat")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesCat();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("plane")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "plane")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesPlane();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("rubik")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "rubik")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesRubik();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("stone")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "stone")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesStone();
-            if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get("greenhouse")) != undefined)
+            else if ((UrlPars === null || UrlPars === void 0 ? void 0 : UrlPars.get(this.name = "greenhouse")) != undefined)
                 cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+            this.orientations.set(this.name, cresolvedfilepair.orientation);
             console.log("=> await " + cresolvedfilepair.cobjname + " " + cresolvedfilepair.cmatname);
             await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
             if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length > 0) {
@@ -365,13 +369,7 @@ void main() {
         return ctexture;
     }
     drawScene(gl, cam, time) {
-        // var gl: WebGL2RenderingContext = this.gl!;
-        // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        // gl.enable(gl.DEPTH_TEST);
-        // gl.enable(gl.CULL_FACE);
-        // var dtime = time - this.ctime;
         this.ctime = time;
-        // this.time+=dtime;
         if (cam == undefined || this.twglprograminfo == undefined)
             return;
         var program = this.twglprograminfo.program;

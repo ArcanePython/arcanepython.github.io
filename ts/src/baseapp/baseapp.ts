@@ -42,6 +42,7 @@ export class BaseApp
     sceneenv = -1;
 
     // environment skybox camera
+    public up = [0,1,0];
     public cameraTarget= [0,0,0];
     public cameraPosition: number[]= [0,0,0];
 
@@ -342,7 +343,7 @@ export class BaseApp
         return mytexture;
     }
 
-    public computeprojectionmatrices(gl: WebGL2RenderingContext, up: twgl.v3.Vec3, fov:number): m4.Mat4
+    private computeprojectionmatrices(gl: WebGL2RenderingContext, up: twgl.v3.Vec3, fov:number): m4.Mat4
     // env map
     {
         // Build a projection matrix.
@@ -350,10 +351,8 @@ export class BaseApp
         var projectionMatrix = m4.perspective(fov, aspect, 1, 2000);
       
         // Build a view matrix.
-       // var up = [0, 1, 0];
-        //this.cameraPosition[1]=this.baseappParameters.camheight;
-        //this.cameraTarget[1]=this.baseappParameters.camheight;
-        var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        var cameraMatrix = m4.lookAt(this.cameraPosition, this.cameraTarget, [0,1,0]);
+        cameraMatrix = twgl.m4.rotateZ(cameraMatrix,0*Math.PI/2.0); // Z-cam
         var viewMatrix = m4.inverse(cameraMatrix);
        
         // viewDirectionMatrix is viewMatrix without translation (direction only)
@@ -363,9 +362,8 @@ export class BaseApp
         viewDirectionMatrix[14] = 0;
         //
         var viewDirectionProjectionMatrix =  m4.multiply( projectionMatrix!, viewDirectionMatrix!);
-
         return viewDirectionProjectionMatrix;
-        //
+        
     }
 
     public restorePosAttributeContext(gl: WebGL2RenderingContext, posBuffer: WebGLBuffer, posAttributeLocation: number, size: number)
@@ -394,7 +392,7 @@ export class BaseApp
         gl.bindVertexArray(this.vaoEnvironment!);
         this.restorePosAttributeContext(gl, this.positionBuffer!, this.positionAttributeLocation!, this.posdim); 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP,texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [0,1,0],  fov);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, this.up,  fov);
         var viewDirectionProjectionInverseMatrix = m4.inverse(viewDirectionProjectionMatrix!);
         gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(loc, 0);
@@ -413,7 +411,7 @@ export class BaseApp
     public renderenvironmentmapTwgl(gl: WebGL2RenderingContext, fov:number, texture: WebGLTexture)
     {
         gl.useProgram(this.envPrograminfo!.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl,[0,1,0], fov));          
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl,this.up, fov));          
         gl.bindVertexArray(this.vaoEnvironment!);
         twgl.setUniforms( this.envPrograminfo!, { 
           u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,

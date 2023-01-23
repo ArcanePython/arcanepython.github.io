@@ -52,7 +52,7 @@ class Fish extends boneanimation.BoneAnimation {
         this.scale = scale;
         var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip");
         if (cmeshtype == "strip") {
-            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.20);
+            var tsmesh = new stridedmesh.StridedMesh(name, nrows, stride, scale, 0.40);
             tsmesh.arrays.position = fstrip(tsmesh.segmentsize, nrows, stride, dictpar);
             tsmesh.type = gl.TRIANGLE_STRIP;
             return tsmesh;
@@ -105,7 +105,7 @@ class Fish extends boneanimation.BoneAnimation {
         this.bindPoseInv2 = this.prepareBoneInv(this.bindPose);
         this.EndOfBoneTrans = twgl_js_1.m4.identity();
     }
-    createUniforms(gl, dictpar) {
+    createUniforms() {
         return {
             world: twgl_js_1.m4.identity(),
             projection: twgl_js_1.m4.identity(),

@@ -18,6 +18,7 @@
     far: number=1000.0;                // far plane
     rotationVelocity = 0.012;          // mouse drag sensitivity for angle turns
     zoominVelocity = 1.0;                // mouse wheel sensitivity set at objectsize/40
+    camType: number = Camera.CamYUp;
     
     // lights
     ahorizlight = 3.0*Math.PI/2.0;     // light horizontal angle
@@ -97,6 +98,7 @@
     public static createCamera(gl: WebGL2RenderingContext, dictpar: Map<string,string>, camtype: number, szobj: number, app: mtls.MouseListener): Camera
     {
       var cam: Camera = new Camera(dictpar!);
+      cam.camType = camtype;
       cam.zoominVelocity = szobj/20.0;
       if (cam.radius0==0) { cam.radius0 = 2.0*szobj; console.log("set cam.radius0 to 2*object size = "+cam.radius0); }
       cam.target = [0,0,0];
@@ -107,6 +109,7 @@
         cam.setYUpPerspective(gl,app);
         cam.setYUpEye();
         cam.setYUpLight();
+
       } else
       if (camtype==this.CamZUp) {
         cam.setZUpPerspective(gl,app);
@@ -130,9 +133,13 @@
     {
       var t=m4.translation(v);
       this.target=m4.transformPoint(t, this.target) as number[]; 
-      this.lookAt = m4.lookAt(this.eye, this.target, this.up);
+      if (this.camType == Camera.CamYUp) this.setYUpEye();
+      if (this.camType == Camera.CamZUp) this.setZUpEye();
+
+
+    //  this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       //console.log("translate target "+this.target);
-      this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
+    //  this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
     }
 
     public ReportEye()
@@ -178,7 +185,7 @@
       m4.axisRotate(this.myr,this.zaxis, this.ahy, this.myr);
       m4.translate(this.myr,[0,this.camHeight,0],this.myr);
       this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[]; 
-      this.target[1]=this.camHeight; 
+   //   this.target[1]=this.camHeight; 
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
       this.ReportEye();
@@ -189,11 +196,17 @@
     {
     //  this.yaxis = m4.transformPoint(this.invworldmat, [0,1,0]) as number[];    
       this.myr = m4.identity();
-      m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
+   /*   m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
       //up = m4.transformPoint(myr,[0,1,0]) as number[];
       m4.translate(this.myr,[0,0,this.camHeight],this.myr);
       m4.axisRotate(this.myr,this.yaxis, this.ahy, this.myr);
-      this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[];      
+   */
+      m4.axisRotate(this.myr,this.zaxis, this.ahx, this.myr);
+      //up = m4.transformPoint(myr,[0,1,0]) as number[];
+      m4.axisRotate(this.myr,this.yaxis, this.ahy, this.myr);
+      m4.translate(this.myr,[0,0,this.camHeight],this.myr);
+      
+         this.eye = m4.transformPoint(this.myr, [this.radius, 0,0]) as number[];      
       this.lookAt = m4.lookAt(this.eye, this.target, this.up);
       this.viewProjection = m4.multiply(this.projection, m4.inverse(this.lookAt));
       this.ReportEye();

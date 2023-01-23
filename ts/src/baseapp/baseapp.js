@@ -34,6 +34,7 @@ class BaseApp {
         // environment image
         this.sceneenv = -1;
         // environment skybox camera
+        this.up = [0, 1, 0];
         this.cameraTarget = [0, 0, 0];
         this.cameraPosition = [0, 0, 0];
         // dat.UI
@@ -288,10 +289,8 @@ class BaseApp {
         var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
         var projectionMatrix = twgl_js_1.m4.perspective(fov, aspect, 1, 2000);
         // Build a view matrix.
-        // var up = [0, 1, 0];
-        //this.cameraPosition[1]=this.baseappParameters.camheight;
-        //this.cameraTarget[1]=this.baseappParameters.camheight;
-        var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, up);
+        var cameraMatrix = twgl_js_1.m4.lookAt(this.cameraPosition, this.cameraTarget, [0, 1, 0]);
+        cameraMatrix = twgl.m4.rotateZ(cameraMatrix, 0 * Math.PI / 2.0); // Z-cam
         var viewMatrix = twgl_js_1.m4.inverse(cameraMatrix);
         // viewDirectionMatrix is viewMatrix without translation (direction only)
         var viewDirectionMatrix = twgl_js_1.m4.copy(viewMatrix);
@@ -301,7 +300,6 @@ class BaseApp {
         //
         var viewDirectionProjectionMatrix = twgl_js_1.m4.multiply(projectionMatrix, viewDirectionMatrix);
         return viewDirectionProjectionMatrix;
-        //
     }
     restorePosAttributeContext(gl, posBuffer, posAttributeLocation, size) {
         // ==> 2023-03-01 restore this part to solve the clear error
@@ -325,7 +323,7 @@ class BaseApp {
         gl.bindVertexArray(this.vaoEnvironment);
         this.restorePosAttributeContext(gl, this.positionBuffer, this.positionAttributeLocation, this.posdim);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, [0, 1, 0], fov);
+        var viewDirectionProjectionMatrix = this.computeprojectionmatrices(gl, this.up, fov);
         var viewDirectionProjectionInverseMatrix = twgl_js_1.m4.inverse(viewDirectionProjectionMatrix);
         gl.uniformMatrix4fv(invproj, false, viewDirectionProjectionInverseMatrix);
         gl.uniform1i(loc, 0);
@@ -340,7 +338,7 @@ class BaseApp {
     }
     renderenvironmentmapTwgl(gl, fov, texture) {
         gl.useProgram(this.envPrograminfo.program);
-        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, [0, 1, 0], fov));
+        var viewDirectionProjectionInverseMatrix = twgl.m4.inverse(this.computeprojectionmatrices(gl, this.up, fov));
         gl.bindVertexArray(this.vaoEnvironment);
         twgl.setUniforms(this.envPrograminfo, {
             u_viewDirectionProjectionInverse: viewDirectionProjectionInverseMatrix,

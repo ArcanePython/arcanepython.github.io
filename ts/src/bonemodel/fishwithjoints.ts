@@ -29,8 +29,8 @@ export class FishWithJoints extends fish.Fish
   // produce a position item ready for stridedmesh0.Tarray
   {
     this.scale=scale;
-    var cstride =  this.numberDictPar(dictpar,"stride",80);
-    var cnumrows =  this.numberDictPar(dictpar,"numrows",80);
+    var cstride =  this.numberDictPar(dictpar,"stride",180);
+    var cnumrows =  this.numberDictPar(dictpar,"numrows",20);
     var cmeshtype = this.stringDictPar(dictpar, "mesh", "strip" );
     dictpar.set("r1",this.r1.toString());
     dictpar.set("r2",this.r2.toString());

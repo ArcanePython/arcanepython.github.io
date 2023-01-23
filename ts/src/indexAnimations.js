@@ -21,7 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mtls = __importStar(require("./baseapp/mouselistener")); // baseapp connects events for mouse click, move and wheel to an app object
 const twgl = __importStar(require("twgl.js"));
-const skyboxcube = __importStar(require("./others/skyboxcube")); // baseapp derivative: show reflecting cube in skybox
+//import * as skyboxcube from "./others/skyboxcube"                      // baseapp derivative: show reflecting cube in skybox
 const objectlist = __importStar(require("./others/objectlist")); // baseapp derivative: show bouncing guy node tree
 const drawinstanced = __importStar(require("./others/drawinstanced")); // baseapp derivative: show texture space navigator
 const canvas3dtexture = __importStar(require("./others/canvas3dtexture")); // baseapp derivative: show 3d on texture
@@ -57,10 +57,8 @@ function preparedefaultparameters(dictPars) {
                 dictPars.set("whales", "");
                 dictPars.set("radius0", "150");
                 dictPars.set("mesh", "strip");
-                dictPars.set("hx", "1.2");
-                dictPars.set("hy", "0.1");
-                dictPars.set("stride", "180");
-                dictPars.set("numrows", "39");
+                dictPars.set("hx", "60");
+                dictPars.set("hy", "10");
                 dictPars.set("env", "2");
                 break;
             }
@@ -90,6 +88,7 @@ function showScenesAnimation(gl, app, dictPars, scenes) {
     var mta1 = new animation2.Animation2(gl, app, scenes, dictPars, cdiv);
     mta1.main(gl, dictPars);
     mta1.changedCam = true;
+    //mta1.baseappParameters!.move=false;
     mta1.initGUI(mta1.baseappParameters, 0);
     return mta1;
 }
@@ -102,12 +101,13 @@ function showBaseAppAnimation(gl, app, dictPars) {
         ims.initGUI({ move: false, teal: true, speed: 0.4, texture: 'geotriangle2', color0: "#D0A010" });
         return ims;
     }
-    else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("skyboxcube")) != undefined) {
-        var sbc = new skyboxcube.skyboxcube(gl, app, dictPars, cdiv);
-        sbc.main(gl, dictPars);
-        sbc.initGUI({ movecube: false, moveenv: false, fieldOfViewDegrees: 32, radiusCam: 5.0, angVelocityCam: 0.005, angVelocityCube: 0.003 });
-        return sbc;
-    }
+    //   else if (dictPars?.get("skyboxcube")!=undefined)
+    //   {  
+    //     var sbc  = new skyboxcube.skyboxcube(gl,app,dictPars, cdiv); 
+    //     sbc.main(gl, dictPars);
+    //     sbc.initGUI({movecube:false, moveenv:false, fieldOfViewDegrees:32, radiusCam:5.0, angVelocityCam:0.005, angVelocityCube:0.003 });
+    //     return sbc;
+    //   } 
     else if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined) {
         let accuracy = 5;
         let gravity = 0.02;
@@ -153,30 +153,26 @@ function show(gl, app, dictPars) {
     //if (dictPars?.get("cloth")!=undefined) a = [new clothsimscene.ClothSimScene(gl,app,dictPars),new skeletonscene.SkeletonScene(gl),new fishanimationscene.FishAnimationScene(gl)]; //,new fishanimationscene.FishAnimationScene(gl)];
     var defspeed = 0.019;
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cloth")) != undefined)
-        a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)), new clothsimscene.ClothSimScene(gl, app, dictPars)];
+        a = [new clothsimscene.ClothSimScene(gl, app, dictPars), new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed)),];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation7")) != undefined)
         a = [new objectlistscene.ObjectListScene(gl), new matobjscene.MatObjScene(gl, app, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation3")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new lightscene.LightScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation1")) != undefined)
         a = [new drawinstancedscene.DrawInstancedScene(gl), new rotatingcubescene.MixedTextureScene(gl)];
-    // if (dictPars?.get("animationi")!=undefined) a = [new  drawinstancedscene.DrawInstancedScene(gl), new skeletonscene.SkeletonScene(gl)];
-    // if (dictPars?.get("animation2")!=undefined) a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation2")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new objectlistscene.ObjectListScene(gl)];
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("whales")) != undefined)
+    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation8")) != undefined)
         a = [new fishanimationscene.FishAnimationScene(gl, new fishanimationscene.hoard1(defspeed))];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation5")) != undefined)
         a = [new manytexturescene.ManyTexturesScene(gl)];
-    if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation4")) != undefined)
-        a = [new skyboxcubescene.SkyBoxCubeScene(gl)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation6")) != undefined)
         a = [new skyboxscene.SkyBoxScene(gl, dictPars)];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation9")) != undefined)
         a = [new canvas3dtexturescene.Canvas3dTextureScene(gl), new canvas3dtexturescene2.Canvas3dTextureScene2(gl)];
-    // if (dictPars?.get("animation10")!=undefined) a =  [new drawinstancedscene.DrawInstancedScene(gl),new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("animation10")) != undefined)
-        a = [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
+        a = [new drawinstancedscene.DrawInstancedScene(gl), new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
+    //  if (dictPars?.get("animation10")!=undefined) a =  [new fishtrajectoryscene.FishTrajectoryScene(gl, new fishtrajectoryscene.hoardsingle(defspeed))];
     if (a != undefined)
         return showScenesAnimation(gl, app, dictPars, a);
     else {

@@ -82,7 +82,6 @@ class FishAnimationScene {
         this.scenesize = 40;
         this.vertexShaderSource = ``;
         this.fragmentShaderSource = ``;
-        //private velocitytrans: m4.Mat4 | undefined;
         this.firstframe = true;
         this.dtime = 0;
         this.vtime = 0;
@@ -108,13 +107,12 @@ class FishAnimationScene {
             afish.setNumBones(gl);
             afish.createBoneTexture(gl, time0, dictpar);
             afish.createSurfaceTexture(gl);
-            afish.uniforms = afish.createUniforms(gl, dictpar);
+            afish.uniforms = afish.createUniforms();
             afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh.arrays);
             afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo, afish.bufferInfo);
             nFish++;
             if (nFish == this.h.fish.length && textureReadyCallback != undefined)
                 textureReadyCallback(0);
-            //  textureReadyCallback(0);
         });
     }
     anglebetween(vectora, vectorb) {

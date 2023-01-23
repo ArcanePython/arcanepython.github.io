@@ -26,8 +26,8 @@ const trianglesmesh = __importStar(require("./trianglesmesh")); // mesh and bone
 const fish = __importStar(require("./fish"));
 class Whale extends fish.Fish {
     prepareMesh(gl, dictpar, scale) {
-        var cstride = this.numberDictPar(dictpar, "stride", 80);
-        var cnumrows = this.numberDictPar(dictpar, "numrows", 80);
+        var cstride = this.numberDictPar(dictpar, "stride", 180);
+        var cnumrows = this.numberDictPar(dictpar, "numrows", 40);
         return this.prepareMeshGen(gl, dictpar, this.name, scale, cnumrows, cstride, stridedmesh.StridedMesh.getWhalePositions, trianglesmesh.StridedMesh.getTrianglesMeshPositions);
     }
     computeBoneMatrices(bones, di) {

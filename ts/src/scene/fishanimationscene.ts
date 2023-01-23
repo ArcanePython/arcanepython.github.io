@@ -80,24 +80,29 @@ export class hoard1 implements fish.hoard
 
 export class FishAnimationScene implements scene.SceneInterface
 {          
-  scenesize: number = 40;
-  animationParameters: TAnimation1Parameters | undefined;
-  vertexShaderSource = ``;
-  fragmentShaderSource = ``; 
-  private twglprograminfo: twgl.ProgramInfo|undefined;
-  cameraPosition: [number,number,number] | undefined
-  positionLocation: number | undefined;
-  resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
-  defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) {}
- 
-  extendGUI(gui: datgui.GUI)
-   {
-      gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
-      gui.add(this.animationParameters!, 'movetail');
-   }
-      
-    //clock: animationclock.AnimationClock = new animationclock.AnimationClock();
+    scenesize: number = 40;
+    animationParameters: TAnimation1Parameters | undefined;
+    vertexShaderSource = ``;
+    fragmentShaderSource = ``; 
+    cameraPosition: [number,number,number] | undefined
+    positionLocation: number | undefined;
+    resizeCanvas(gl: WebGL2RenderingContext) { twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement); }
+    defaultCamera(gl: WebGL2RenderingContext, cam: camhandler.Camera) {}
+  
+    private twglprograminfo: twgl.ProgramInfo|undefined;
+    
+    private h: fish.hoard; // = new hoard1(-0.007);
+    
+    private firstframe: boolean=true;
+    private dtime: number=0;
+    private vtime: number=0;
 
+    extendGUI(gui: datgui.GUI)
+    {
+       gui.add(this.animationParameters!, 'fov', 5.0,85.0,1.0 );
+       gui.add(this.animationParameters!, 'movetail');
+    }
+      
     static instance: FishAnimationScene;
 
     constructor( cgl: WebGL2RenderingContext, ch: fish.hoard)
@@ -120,23 +125,13 @@ export class FishAnimationScene implements scene.SceneInterface
         afish.setNumBones(gl);
         afish.createBoneTexture(gl, time0, dictpar!);
         afish.createSurfaceTexture(gl);
-        afish.uniforms= afish.createUniforms(gl, dictpar!);
+        afish.uniforms= afish.createUniforms();
         afish.bufferInfo = twgl.createBufferInfoFromArrays(gl, afish.mesh!.arrays);
         afish.skinVAO = twgl.createVAOFromBufferInfo(gl, this.twglprograminfo!, afish.bufferInfo);
         nFish++;
         if (nFish==this.h.fish.length && textureReadyCallback!=undefined) textureReadyCallback(0);
-       
-       
-      //  textureReadyCallback(0);
-      });   
+       });   
     }
-
-    h: fish.hoard; // = new hoard1(-0.007);
-    //private velocitytrans: m4.Mat4 | undefined;
-
-     firstframe: boolean=true;
-    dtime: number=0;
-    vtime: number=0;
 
     anglebetween( vectora: twgl.v3.Vec3,  vectorb: twgl.v3.Vec3): number
         {

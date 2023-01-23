@@ -59,23 +59,28 @@ class Animation2 extends baseapp.BaseApp {
             n++;
         });
     }
+    maxSceneSize() {
+        var maxsize = 0;
+        this.scene.forEach((s) => { if (s.scenesize > maxsize)
+            maxsize = s.scenesize; });
+        return maxsize;
+    }
     main(gl, dictPars) {
         this.dictpars = dictPars;
-        this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.scene[0].scenesize, this.app);
+        var camtp;
+        if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cam")) != undefined)
+            camtp = dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("cam");
+        if (camtp == undefined || camtp == "yup") {
+            this.cam = camhandler.Camera.createCamera(gl, dictPars, camhandler.Camera.CamYUp, this.maxSceneSize(), this.app);
+            this.up = [0, 1, 0];
+        }
+        else {
+            this.cam = camhandler.Camera.createCamera(this.gl, this.dictpars, camhandler.Camera.CamZUp, this.maxSceneSize(), this.app);
+            this.up = [0, 0, 1];
+        }
         this.cam.zoominVelocity = 0.5;
         if ((dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env")) != undefined)
             this.sceneenv = +(dictPars === null || dictPars === void 0 ? void 0 : dictPars.get("env"));
-        /*        if (this.sceneenv>0)
-                {
-                  console.log("animation2 initscenes with background");
-                    if (this.doTwglEnv) this.createEnvironmentMapGeoTwgl(gl); else this.createEnvironmentMapGeo(gl);
-                    this.skyboxtexture= this.createEnvironmentMapTexture(gl, this.sceneenv, this.textureEnvReadyCallback)!;
-                } else
-                {
-                  console.log("animation2 initscenes without background");
-                  this.initScenes();
-                }
-        */
         if (this.doTwglEnv)
             this.createEnvironmentMapGeoTwgl(gl);
         else
@@ -83,70 +88,70 @@ class Animation2 extends baseapp.BaseApp {
         this.skyboxtexture = this.createEnvironmentMapTexture(gl, (this.sceneenv < 0) ? 1 : this.sceneenv, this.textureEnvReadyCallback);
     }
     sceneReadyCallback(err) {
+        var _a, _b;
         console.log("-> sceneReadyCallback");
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
+        if (((_a = ainstance.dictpars) === null || _a === void 0 ? void 0 : _a.get("cat")) != undefined || ((_b = ainstance.dictpars) === null || _b === void 0 ? void 0 : _b.get("chair2")) != undefined) {
+            ainstance.cam = camhandler.Camera.createCamera(ainstance.gl, ainstance.dictpars, camhandler.Camera.CamZUp, ainstance.maxSceneSize(), ainstance.app);
+            // ainstance.changedCam=true;
+        }
+        ainstance.cam.zoominVelocity = 0.5;
         ainstance.scene[0].defaultCamera(ainstance.gl, ainstance.cam);
         ainstance.scene[0].resizeCanvas(ainstance.gl);
         console.log("-> sceneReadyCallback request first frame");
+        ainstance.changedCam = true;
         requestAnimationFrame(() => ainstance.render(ainstance.ctime)); //ainstance.clock.getTime(this.clock.frame))); 
     }
     textureEnvReadyCallback(err, texture) {
         var thisinstance = baseapp.instance;
         var ainstance = thisinstance;
-        //    var n: number=0;
         ainstance.initScenes();
-        //    ainstance.scene.forEach((s)=>{ s.initScene(ainstance.gl!, ainstance.animation1Parameters, ainstance.cam!, ainstance.dictpars,
-        //                                               (ainstance.scene.length==(n+1)) ?ainstance.sceneReadyCallback:undefined); n++;});
     }
     render(time) {
         var gl = this.gl;
-        /*  if (this.doclear)
-          {
-            gl.clear(gl.DEPTH_BUFFER_BIT);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          }
-         // scene.resizeCanvas(gl);
-          gl.viewport(0, 0,  gl.canvas.width, gl.canvas.height);
-         */ var gl = this.gl;
+        var gl = this.gl;
         if (this.doclear) {
             gl.clear(gl.DEPTH_BUFFER_BIT);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         }
-        //  scene.resizeCanvas(gl);  
+        //scene.resizeCanvas(gl);  
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         var cam = this.cam;
+        cam.camHeight = this.animation1Parameters.camheight;
         if (this.changedCam) {
-            cam.camHeight = this.animation1Parameters.camheight;
-            cam.setYUpEye();
-            console.log("camHeight=" + cam.camHeight);
+            if (cam.camType == camhandler.Camera.CamYUp)
+                cam.setYUpEye();
+            if (cam.camType == camhandler.Camera.CamZUp)
+                cam.setZUpEye();
+            // console.log("camHeight="+cam.camHeight);
             this.changedCam = false;
         }
-        cam.CamHandlingYUp(gl, this.app, 1.0, -1.0);
-        this.scene.forEach((s) => { this.renderscene(gl, time, s, cam); });
+        else if (cam.camType == camhandler.Camera.CamYUp)
+            cam.CamHandlingYUp(gl, this.app, 1.0, 1.0);
+        else
+            cam.CamHandlingZUp(gl, this.app, 1.0, -1.0);
+        var n = 0;
+        this.scene.forEach((s) => { this.renderscene(gl, time, s, cam, n == 0); n++; });
         requestAnimationFrame(() => this.render(this.clock.getTime(this.clock.frame)));
     }
-    renderscene(gl, time, scene, cam) {
-        // var scene = this.scene[cscene];
+    renderscene(gl, time, scene, cam, renderEnvironment) {
         var _a, _b;
-        // prepare camera
         // set current scene parameters
         scene.animationParameters = this.animation1Parameters;
         // render skybox                                                                          
-        if (this.sceneenv >= 0) {
+        if (this.sceneenv >= 0 && renderEnvironment) {
             // set skybox camera
             if (!((_a = scene.animationParameters) === null || _a === void 0 ? void 0 : _a.move))
-                this.cameraPosition = [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[1], cam === null || cam === void 0 ? void 0 : cam.Position()[2]];
+                this.cameraPosition = (cam.camType == camhandler.Camera.CamZUp) ? [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[2], cam === null || cam === void 0 ? void 0 : cam.Position()[1]] : [cam === null || cam === void 0 ? void 0 : cam.Position()[0], cam === null || cam === void 0 ? void 0 : cam.Position()[1], cam === null || cam === void 0 ? void 0 : cam.Position()[2]];
             else
                 this.cameraPosition = ((_b = scene.animationParameters) === null || _b === void 0 ? void 0 : _b.move) ? [Math.cos(time * 0.005 * scene.animationParameters.speed), 0.0,
                     Math.sin(time * 0.005 * scene.animationParameters.speed)] : [4.0, 0.0, 0.0];
-            //    gl.disable(gl.CULL_FACE);  
             gl.depthFunc(gl.LEQUAL);
             if (this.doTwglEnv) {
                 this.renderenvironmentmapTwgl(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             }
             else {
-                console.log("render environment");
                 gl.disable(gl.CULL_FACE);
                 this.renderenvironmentmap(gl, this.animation1Parameters.fov * Math.PI / 180, this.skyboxtexture);
             }

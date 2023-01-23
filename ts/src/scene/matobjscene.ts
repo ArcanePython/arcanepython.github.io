@@ -133,21 +133,28 @@ export class MatObjScene implements scene.SceneInterface
 
 //------------------------------------------------------------------------
 
+  name: string="";
+  orientations:Map<string,number> = new Map<string,number>(); // for  each object, contains orientation YUp(1) or ZUp(2)
+ 
   async getFiles(UrlPars:Map<string,string>)
   {
     const useInMemoryObj = false;
     if (useInMemoryObj) mobj.GetDeclaredObjMtl();
     else {
       var cresolvedfilepair = mobjfiles.getFileNamesCube();
-      if (UrlPars?.get("koenigsegg")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
-      if (UrlPars?.get("building")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
-      if (UrlPars?.get("chair")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
-      if (UrlPars?.get("chair2")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
-      if (UrlPars?.get("cat")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
-      if (UrlPars?.get("plane")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
-      if (UrlPars?.get("rubik")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
-      if (UrlPars?.get("stone")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
-      if (UrlPars?.get("greenhouse")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+      this.name="";
+      if (UrlPars?.get(this.name="koenigsegg")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg(); else
+      if (UrlPars?.get(this.name="building")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();else
+      if (UrlPars?.get(this.name="chair")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();else
+      if (UrlPars?.get(this.name="chair2")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();else
+      if (UrlPars?.get(this.name="cat")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();else
+      if (UrlPars?.get(this.name="plane")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();else
+      if (UrlPars?.get(this.name="rubik")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();else
+      if (UrlPars?.get(this.name="stone")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();else
+      if (UrlPars?.get(this.name="greenhouse")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+
+      this.orientations.set(this.name, cresolvedfilepair.orientation);
+   
       console.log("=> await "+cresolvedfilepair.cobjname+" " +cresolvedfilepair.cmatname)
       await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
       if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length>0)
@@ -314,16 +321,8 @@ export class MatObjScene implements scene.SceneInterface
 
   ctime: number = 0;
   public drawScene(gl: WebGL2RenderingContext, cam: camhandler.Camera, time: number) 
-  //render(dtime: number)
   {
-   // var gl: WebGL2RenderingContext = this.gl!;
-   // gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-   // gl.enable(gl.DEPTH_TEST);
-   // gl.enable(gl.CULL_FACE);
-
-   // var dtime = time - this.ctime;
     this.ctime = time;
-   // this.time+=dtime;
     
     if (cam==undefined ||this.twglprograminfo==undefined) return;   
 

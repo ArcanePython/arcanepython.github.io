@@ -14,8 +14,8 @@ export class Whale extends fish.Fish
   prepareMesh(gl: WebGL2RenderingContext, dictpar:Map<string,string>, scale: number)
   // create mesh positions for a fish with tail in horizontal pose, moving up/down
   {
-    var cstride =  this.numberDictPar(dictpar,"stride",80);
-    var cnumrows = this.numberDictPar(dictpar,"numrows",80);
+    var cstride =  this.numberDictPar(dictpar,"stride",180);
+    var cnumrows = this.numberDictPar(dictpar,"numrows",40);
     return this.prepareMeshGen(gl,dictpar,this.name,scale,cnumrows,cstride,stridedmesh.StridedMesh.getWhalePositions,trianglesmesh.StridedMesh.getTrianglesMeshPositions);
   }
 

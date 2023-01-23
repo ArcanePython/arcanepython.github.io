@@ -39,6 +39,10 @@ export class ObjMtlImport
   
     static instance: ObjMtlImport|undefined;
 
+    name: string =""; // name of the object, e.g. "cat"
+
+    orientations:Map<string,number> = new Map<string,number>(); // for  each object, contains orientation YUp(1) or ZUp(2)
+  
     time: number = 0;
     dtime: number = 0.01;
        
@@ -71,6 +75,9 @@ export class ObjMtlImport
 
     private imgs: HTMLImageElement[] = [];
     private imgsa: ArrayBuffer[] = [];
+
+    gui: datgui.GUI|null=null;
+
     
   constructor( cgl: WebGL2RenderingContext, capp: mtls.MouseListener | undefined , UrlPars:Map<string,string>)
   {
@@ -82,7 +89,6 @@ export class ObjMtlImport
 
   main(gl:WebGL2RenderingContext,UrlPars:Map<string,string>)
   {
-    
     this.getFiles(UrlPars).then(() =>  // Fetch obj/mtl content
     { 
       var cc = (gl.canvas as HTMLCanvasElement).parentNode;
@@ -117,7 +123,7 @@ export class ObjMtlImport
         console.log("obj/mtl mesh read ok");
         mobj.CreateMeshWithBuffers(this.gl); // unpack index and positions
         mobj.PrepareIndexBuffers(this.gl );  // for each material, set up an index buffer
-        console.log("<= Prepare obj/mtl mesh <= buffers ok");
+        console.log("<= Prepare obj/mtl mesh <= buffers ok, orientation="+this.orientations.get(this.name));
        
         // Fetch file texture content, start rendering when all textures read
         this.Prepare();   
@@ -128,10 +134,7 @@ export class ObjMtlImport
     }); // getfiles then({})
   }
 
-      
-
-  gui: datgui.GUI|null=null;
-
+    
   onChangeTextureCombo(value? : any)
   {
     var thisinstance = ObjMtlImport.instance!;
@@ -190,23 +193,25 @@ export class ObjMtlImport
     }
 
 //------------------------------------------------------------------------
-
+  
   async getFiles(UrlPars:Map<string,string>)
   {
     const useInMemoryObj = false;
     if (useInMemoryObj) mobj.GetDeclaredObjMtl();
     else {
       var cresolvedfilepair = mobjfiles.getFileNamesCube();
-      if (UrlPars?.get("koenigsegg")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg();
-      if (UrlPars?.get("building")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding();
-      if (UrlPars?.get("chair")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();
-      if (UrlPars?.get("chair2")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();
-      if (UrlPars?.get("cat")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesCat();
-      if (UrlPars?.get("plane")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane();
-      if (UrlPars?.get("rubik")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik();
-      if (UrlPars?.get("stone")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();
-      if (UrlPars?.get("greenhouse")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
-      console.log("=> await "+cresolvedfilepair.cobjname+" " +cresolvedfilepair.cmatname)
+      if (UrlPars?.get(this.name="koenigsegg")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesKoenigsEgg(); else
+      if (UrlPars?.get(this.name="building")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesBuilding(); else
+      if (UrlPars?.get(this.name="chair2")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair2();  else
+      if (UrlPars?.get(this.name="chair")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesChair();  else
+      if (UrlPars?.get(this.name="cat")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesCat(); else
+      if (UrlPars?.get(this.name="plane")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesPlane(); else
+      if (UrlPars?.get(this.name="rubik")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesRubik(); else
+      if (UrlPars?.get(this.name="stone")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesStone();  else
+      if (UrlPars?.get(this.name="greenhouse")!=undefined) cresolvedfilepair = mobjfiles.getFileNamesGreenhouse();
+
+      console.log("=> await "+cresolvedfilepair.cobjname+" " +cresolvedfilepair.cmatname+" orientation="+cresolvedfilepair.orientation);
+      this.orientations.set(this.name, cresolvedfilepair.orientation);
       await mobj.asyncFetchObjMtl(cresolvedfilepair.cobjname, cresolvedfilepair.cmatname);
       if (cresolvedfilepair.cfiles != undefined && cresolvedfilepair.cfiles.length>0)
       {
